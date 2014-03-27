@@ -1,7 +1,5 @@
 #include "Hashes.h"
-
 #include "Random.h"
-
 
 #include <stdlib.h>
 //#include <stdint.h>
@@ -86,7 +84,7 @@ void MurmurOAAT_test ( const void * key, int len, uint32_t seed, void * out )
 
 //----------------------------------------------------------------------------
 
-void FNV ( const void * key, int len, uint32_t seed, void * out )
+void FNV32a ( const void * key, int len, uint32_t seed, void * out )
 {
   unsigned int h = seed;
 
@@ -101,6 +99,23 @@ void FNV ( const void * key, int len, uint32_t seed, void * out )
   }
 
   *(uint32_t*)out = h;
+}
+
+void FNV64a ( const void * key, int len, uint32_t seed, void * out )
+{
+  uint64_t h = (uint64_t)seed;
+
+  const uint8_t * data = (const uint8_t*)key;
+
+  h ^= BIG_CONSTANT(0xcbf29ce484222325);
+
+  for(int i = 0; i < len; i++)
+  {
+    h ^= data[i];
+    h *= 0x100000001b3ULL;
+  }
+
+  *(uint64_t*)out = h;
 }
 
 //-----------------------------------------------------------------------------
@@ -153,3 +168,54 @@ void Crap8_test ( const void * key, int len, uint32_t seed, void * out )
 {
   *(uint32_t*)out = Crap8((const uint8_t*)key,len,seed);
 }
+
+extern "C" {
+#ifdef __SSE2__
+  void hasshe2( const void *input, int len, uint32_t seed, void *out );
+#endif
+#if defined(__SSE4_2__) && defined(__x86_64__)
+  uint32_t crc32c_hw(const void *input, int len, uint32_t seed);
+  uint32_t crc32c(const void *input, int len, uint32_t seed);
+  uint64_t crc64c_hw(const void *input, int len, uint32_t seed);
+#endif
+}
+
+#ifdef __SSE2__
+void hasshe2_test( const void *input, int len, uint32_t seed, void *out ) {
+  if (!len) {
+    *(uint32_t*)out = 0;
+    return;
+  }
+  if (len % 16) { // add pad NUL
+    len += 16 - (len % 16);
+  }
+  hasshe2(input, len, seed, out);
+}
+#endif
+
+#if defined(__SSE4_2__) && defined(__x86_64__)
+/* Compute CRC-32C using the Intel hardware instruction. */
+void crc32c_hw_test( const void *input, int len, uint32_t seed, void *out ) {
+  if (!len) {
+    *(uint32_t*)out = 0;
+    return;
+  }
+  *(uint32_t*)out = crc32c_hw(input, len, seed);
+}
+/* Compute CRC-64C using the Intel hardware instruction. */
+void crc64c_hw_test( const void *input, int len, uint32_t seed, void *out ) {
+  if (!len) {
+    *(uint64_t*)out = 0;
+    return;
+  }
+  *(uint64_t*)out = crc64c_hw(input, len, seed);
+}
+/* Faster Adler SSE4.2 crc32 in HW */
+void crc32c_hw1_test( const void *input, int len, uint32_t seed, void *out ) {
+  if (!len) {
+    *(uint32_t*)out = 0;
+    return;
+  }
+  *(uint32_t*)out = crc32c(input, len, seed);
+}
+#endif

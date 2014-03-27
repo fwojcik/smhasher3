@@ -24,11 +24,30 @@ void randhash_128          ( const void * key, int len, uint32_t seed, void * ou
 
 void md5_32                ( const void * key, int len, uint32_t seed, void * out );
 void sha1_32a              ( const void * key, int len, uint32_t seed, void * out );
+#if 0
+void sha1_64a              ( const void * key, int len, uint32_t seed, void * out );
+void sha2_32a              ( const void * key, int len, uint32_t seed, void * out );
+void sha2_64a              ( const void * key, int len, uint32_t seed, void * out );
+void BLAKE2_32a            ( const void * key, int len, uint32_t seed, void * out );
+void BLAKE2_64a            ( const void * key, int len, uint32_t seed, void * out );
+void bcrypt_32a            ( const void * key, int len, uint32_t seed, void * out );
+void scrypt_32a            ( const void * key, int len, uint32_t seed, void * out );
+#endif
 
 //----------
 // General purpose hashes
 
-void FNV                   ( const void * key, int len, uint32_t seed, void * out );
+#ifdef __SSE2__
+void hasshe2               ( const void * key, int len, uint32_t seed, void * out );
+#endif
+#if defined(__SSE4_2__) && defined(__x86_64__)
+void crc32c_hw              ( const void * key, int len, uint32_t seed, void * out );
+void crc32c_hw1             ( const void * key, int len, uint32_t seed, void * out );
+void crc64c_hw              ( const void * key, int len, uint32_t seed, void * out );
+void CityHashCrc128_test    ( const void * key, int len, uint32_t seed, void * out );
+#endif
+void FNV32a                ( const void * key, int len, uint32_t seed, void * out );
+void FNV64a                ( const void * key, int len, uint32_t seed, void * out );
 void Bernstein             ( const void * key, int len, uint32_t seed, void * out );
 void SuperFastHash         ( const void * key, int len, uint32_t seed, void * out );
 void lookup3_test          ( const void * key, int len, uint32_t seed, void * out );

@@ -51,8 +51,26 @@ HashInfo g_hashes[] =
 
   { md5_32,               32, 0xC10C356B, "md5_32a",     "MD5, first 32 bits of result" },
   { sha1_32a,             32, 0xF9376EA7, "sha1_32a",    "SHA1, first 32 bits of result" },
+#if 0
+  { sha1_64a,             32, 0xF9376EA7, "sha1_64a",    "SHA1 64-bit, first 64 bits of result" },
+  { sha2_32a,             32, 0xF9376EA7, "sha2_32a",    "SHA2, first 32 bits of result" },
+  { sha2_64a,             64, 0xF9376EA7, "sha2_64a",    "SHA2 64-bit, first 64 bits of result" },
+  { BLAKE2_32a,           32, 0xF9376EA7, "blake2_32a",  "BLAKE2, first 32 bits of result" },
+  { BLAKE2_64a,           64, 0xF9376EA7, "blake2_64a",  "BLAKE2 64bit, first 64 bits of result" },
+  { bcrypt_32a,           32, 0xF9376EA7, "bcrypt_32a",  "bcrypt, first 32 bits of result" },
+  { scrypt_32a,           64, 0xF9376EA7, "scrypt_32a",  "scrypt, first 32 bits of result" },
+#endif
 
-  { FNV,                  32, 0xE3CBBE91, "FNV",         "Fowler-Noll-Vo hash, 32-bit" },
+#ifdef __SSE2__
+  { hasshe2,             128, 0x115218A1, "hasshe2",     "SSE2 hasshe2, 128-bit" }, 
+#endif
+#if defined(__SSE4_2__) && defined(__x86_64__)
+  { crc32c_hw_test,       32, 0x3719DB20, "crc32_hw",    "SSE4.2 crc32 in HW" },
+  { crc64c_hw_test,       64, 0xE7C3FD0E, "crc64_hw",    "SSE4.2 crc64 in HW" },
+  { crc32c_hw1_test,      32, 0x0C7346F0, "crc32_hw1",   "Faster Adler SSE4.2 crc32 in HW" },
+#endif
+  { FNV32a,               32, 0xE3CBBE91, "FNV",         "Fowler-Noll-Vo hash, 32-bit" },
+  { FNV64a,               64, 0x103455FC, "FNV64",       "Fowler-Noll-Vo hash, 64-bit" },
   { Bernstein,            32, 0xBDB4B640, "bernstein",   "Bernstein, 32-bit" },
   { lookup3_test,         32, 0x3D83917A, "lookup3",     "Bob Jenkins' lookup3" },
   { SuperFastHash,        32, 0x980ACD1D, "superfast",   "Paul Hsieh's SuperFastHash" },
@@ -61,6 +79,9 @@ HashInfo g_hashes[] =
 
   { CityHash64_test,      64, 0x25A20825, "City64",      "Google CityHash64WithSeed" },
   { CityHash128_test,    128, 0x6531F54E, "City128",     "Google CityHash128WithSeed" },
+#if defined(__SSE4_2__) && defined(__x86_64__)
+  { CityHashCrc128_test, 128, 0xD4389C97, "CityCrc128",  "Google CityHashCrc128WithSeed SSE4.2" },
+#endif
 
   { SpookyHash32_test,    32, 0x3F798BBB, "Spooky32",    "Bob Jenkins' SpookyHash, 32-bit result" },
   { SpookyHash64_test,    64, 0xA7F955F1, "Spooky64",    "Bob Jenkins' SpookyHash, 64-bit result" },
@@ -553,25 +574,32 @@ int main ( int argc, char ** argv )
 
   if(argc < 2)
   {
-    printf("(No test hash given on command line, testing Murmur3_x86_32.)\n");
+    printf("No test hash given on command line, testing %s (Murmur3_x86_32).\n", hashToTest);
   }
   else
   {
     hashToTest = argv[1];
+
+    if (!strcmp(hashToTest,"--list")) {
+      for(size_t i = 0; i < sizeof(g_hashes) / sizeof(HashInfo); i++) {
+        printf("%s\t(%s)\n", g_hashes[i].name, g_hashes[i].desc);
+      }
+      exit;
+    }
   }
 
   // Code runs on the 3rd CPU by default
 
   SetAffinity((1 << 2));
 
-  SelfTest();
+  //SelfTest();
 
   int timeBegin = clock();
 
   g_testAll = true;
 
   //g_testSanity = true;
-  //g_testSpeed = true;
+  g_testSpeed = true;
   //g_testAvalanche = true;
   //g_testBIC = true;
   //g_testCyclic = true;
@@ -579,7 +607,7 @@ int main ( int argc, char ** argv )
   //g_testDiff = true;
   //g_testDiffDist = true;
   //g_testSparse = true;
-  //g_testPermutation = true;
+  g_testPermutation = true;
   //g_testWindow = true;
   //g_testZeroes = true;
 
