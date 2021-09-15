@@ -181,14 +181,18 @@ HashInfo g_hashes[] =
   { md5_64,               64, 0x12F0BA8E, "md5-64",      "MD5, bits 32-95", POOR, {} },
   { md5_32,               32, 0xF3DFF19F, "md5-32",      "MD5, bits 32-63", POOR, {} },
 #ifdef _MSC_VER /* truncated long to 32 */
-#  define SHA1_VERIF          0xED2F35E4
-#  define SHA1a_VERIF         0x480A2B09
+#  define SHA1_VERIF            0xED2F35E4
+#  define SHA1_32_VERIF         0x00000000
+#  define SHA1_64_VERIF         0x00000000
 #else
-#  define SHA1_VERIF          0x6AF411D8
-#  define SHA1a_VERIF         0xB3122757
+#  define SHA1_VERIF            0x6AF411D8
+#  define SHA1_32_VERIF         0x995397D5
+#  define SHA1_64_VERIF         0xB3122757
 #endif
-  { sha1_160,            160, SHA1_VERIF, "sha1-160",     "SHA1", POOR},
-  { sha1_32a,             32, SHA1a_VERIF,"sha1_32a",     "SHA1, low 32 bits", POOR},
+  { sha1_160,            160, SHA1_VERIF,   "sha1-160",  "SHA1", POOR},
+  { sha1_64,              64, SHA1_32_VERIF,"sha1-64",   "SHA1, low 64 bits", POOR},
+  { sha1_32,              32, SHA1_64_VERIF,"sha1-32",   "SHA1, low 32 bits", POOR},
+
   // totally broken seed mixin
   { sha2_224,            224, 0x407AA518, "sha2-224",     "SHA2-224", GOOD, {0xc1059ed8} /* >100 bad seeds */ },
   { sha2_224_64,          64, 0xF3E40ECA, "sha2-224_64",  "SHA2-224, low 64 bits", GOOD, {0xc1059ed8} },
@@ -1022,7 +1026,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   }
   fflush(NULL);
 
-  // sha1_32a runs 30s
+  // sha1_32 runs 30s
   if(g_testSanity || g_testAll)
   {
     printf("[[[ Sanity Tests ]]]\n\n");
@@ -1065,7 +1069,8 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
      { md5_32,           670.99 },
      { md5_64,           670.99 },
      { md5_128,          730.30 },
-     { sha1_32a,        1385.80 },
+     { sha1_32,         1385.80 },
+     { sha1_64,         1385.80 },
      { sha1_160,        1470.55 },
      { sha2_224,        1354.81 },
      { sha2_224_64,     1360.10 },
