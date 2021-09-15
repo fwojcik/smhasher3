@@ -68,6 +68,8 @@
 #if NCPU > 1 // disable with -DNCPU=0 or 1
 #include <thread>
 #include <chrono>
+#include <atomic>
+#include <mutex>
 #endif
 
 #undef MAX
@@ -156,7 +158,7 @@ bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
       memset(&key, c, len);
       hash(key, len, secret, &h);
       if (h == 0 && c == 0) {
-        printf("Broken seed 0x%" PRIx64 " => 0 with key[%d] of all %d bytes confirmed => hash 0\n",
+        printf("Confirmed broken seed 0x%" PRIx64 " => 0 with key[%d] of all %d bytes => hash 0\n",
                secret, len, c);
         hashes.push_back(h);
         result = false;
@@ -165,7 +167,7 @@ bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
         hashes.push_back(h);
     }
     if (!TestHashList(hashes, false, true, false, false, false, false)) {
-      printf(" Bad seed 0x%" PRIx64 " for len %d confirmed ", secret, len);
+      printf(" Confirmed bad seed 0x%" PRIx64 " for len %d ", secret, len);
 #if !defined __clang__ && !defined _MSC_VER
       printf("=> hashes: ");
       for (hashtype x : hashes) printf ("%lx ", x);
@@ -178,23 +180,61 @@ bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
   return result;
 }
 
+#if NCPU > 1
+// For keeping track of progress printouts across threads
+extern std::atomic<unsigned> secret_progress;
+// So only one thread prints at a time
+extern std::mutex print_mutex;
+#else
+extern unsigned secret_progress;
+#endif
+
 // Process part of a 2^32 range, split into NCPU threads
 template< typename hashtype >
 void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
-                             const uint32_t start, const uint32_t len, bool &result )
+                             const uint32_t start, const uint32_t len,
+                             bool &result, bool &newresult )
 {
+  size_t last = hi | (start + len - 1);
+  const char * progress_fmt =
+      (last <= UINT64_C(0xffffffff)) ?
+      "%8" PRIx64 "%c"  : "%16" PRIx64 "%c";
+  const uint64_t progress_nl_every =
+      (last <= UINT64_C(0xffffffff)) ? 8 : 4;
+#ifdef HAVE_INT64
+  const std::vector<uint64_t> secrets = info->secrets;
+#else
+  const std::vector<size_t> secrets = info->secrets;
+#endif
   pfHash hash = info->hash;
   std::vector<hashtype> hashes;
   int fails = 0;
   hashes.resize(4);
   result = true;
-  printf("at %lx ", hi | start);
+  {
+#if NCPU > 1
+    std::lock_guard<std::mutex> lock(print_mutex);
+#endif
+    printf("Testing [0x%016" PRIx64 ", 0x%016" PRIx64 "] ... \n", hi | start, last);
+  }
   size_t end = (size_t)start + (size_t)len;
   for (size_t y=start; y < end; y++) {
     static hashtype zero;
     uint64_t seed = hi | y;
-    if ((seed & UINT64_C(0x1ffffff)) == UINT64_C(0x1ffffff))
-      printf ("%" PRIx64 " ", seed);
+    /*
+     * Print out progress using *one* printf() statement (for thread
+     * friendliness). Add newlines periodically to make output
+     * friendlier to humans, keeping track of printf()s across all
+     * threads.
+     */
+    if ((seed & UINT64_C(0x1ffffff)) == UINT64_C(0x1ffffff)) {
+#if NCPU > 1
+      std::lock_guard<std::mutex> lock(print_mutex);
+#endif
+      unsigned count = ++secret_progress;
+      const char spacer = ((count % progress_nl_every) == 0) ? '\n' : ' ';
+      printf (progress_fmt, seed, spacer);
+    }
     hashes.clear();
     Hash_Seed_init (hash, seed);
     for (int x : std::vector<int> {0,32,127,255}) {
@@ -203,21 +243,41 @@ void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
       memset(&key, x, sizeof(key));
       hash(key, 16, seed, &h);
       if (h == 0 && x == 0) {
-        printf("Broken seed 0x%" PRIx64 " => 0 with key[16] of all %d bytes\n", seed, x);
+        bool known_seed = (std::find(secrets.begin(), secrets.end(), seed) != secrets.end());
+        {
+#if NCPU > 1
+          std::lock_guard<std::mutex> lock(print_mutex);
+#endif
+          if (known_seed)
+            printf("\nVerified broken seed 0x%" PRIx64 " => 0 with key[16] of all %d bytes\n", seed, x);
+          else
+            printf("\nNew broken seed 0x%" PRIx64 " => 0 with key[16] of all %d bytes\n", seed, x);
+        }
         hashes.push_back(h);
         fails++;
         result = false;
+        if (!known_seed)
+          newresult = true;
       }
       else {
         hashes.push_back(h);
       }
     }
     if (!TestHashList(hashes, false, true, false, false, false, false)) {
+#if NCPU > 1
+      std::lock_guard<std::mutex> lock(print_mutex);
+#endif
+      bool known_seed = (std::find(secrets.begin(), secrets.end(), seed) != secrets.end());
+      if (known_seed)
+        printf("\nVerified bad seed 0x%" PRIx64 "\n", seed);
+      else
+        printf("\nNew bad seed 0x%" PRIx64 "\n", seed);
       fails++;
-      printf("Bad seed 0x%" PRIx64 "\n", seed);
-      if (fails < 32) // don't print too many lines
+      if (!known_seed && (fails < 32)) // don't print too many lines
         TestHashList(hashes, false);
       result = false;
+      if (!known_seed)
+        newresult = true;
     }
     if (fails > 300) {
       fprintf(stderr, "Too many bad seeds, aborting\n");
@@ -230,19 +290,23 @@ void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
 }
 
 // Test the full 2^32 range [hi + 0, hi + 0xffffffff], the hi part
+// If no new bad seed is found, then newresult must be left unchanged.
 template< typename hashtype >
-bool TestSecret32 ( const HashInfo* info, const uint64_t hi ) {
+bool TestSecret32 ( const HashInfo* info, const uint64_t hi, bool &newresult ) {
   bool result = true;
+  secret_progress = 0;
 #if NCPU > 1
   // split into NCPU threads
   const uint64_t len = 0x100000000UL / NCPU;
   const uint32_t len32 = (const uint32_t)(len & 0xffffffff);
   static std::thread t[NCPU];
   bool *results = (bool*)calloc (NCPU, sizeof(bool));
+  bool *newresults = (bool*)calloc (NCPU, sizeof(bool));
   printf("%d threads starting...\n", NCPU);
   for (int i=0; i < NCPU; i++) {
     const uint32_t start = i * len;
-    t[i] = std::thread {TestSecretRangeThread<hashtype>, info, hi, start, len32, std::ref(results[i])};
+    t[i] = std::thread {TestSecretRangeThread<hashtype>, info, hi, start, len32,
+                        std::ref(results[i]), std::ref(newresults[i])};
     // pin it? moves around a lot. but the result is fair
   }
   std::this_thread::sleep_for(std::chrono::seconds(30));
@@ -252,10 +316,11 @@ bool TestSecret32 ( const HashInfo* info, const uint64_t hi ) {
   printf("All %d threads ended\n", NCPU);
   for (int i=0; i < NCPU; i++) {
     result &= results[i];
+    newresult |= newresults[i];
   }
   free(results);
 #else
-  TestSecretRangeThread<hashtype>(info, hi, 0x0, 0xffffffff, result);
+  TestSecretRangeThread<hashtype>(info, hi, 0x0, 0xffffffff, result, newresult);
   printf("\n");
 #endif
   return result;
@@ -264,6 +329,7 @@ bool TestSecret32 ( const HashInfo* info, const uint64_t hi ) {
 template< typename hashtype >
 bool BadSeedsTest ( HashInfo* info, bool testAll ) {
   bool result = true;
+  bool newresult = false;
   bool have_lower = false;
 #ifdef HAVE_INT64
   const std::vector<uint64_t> secrets = info->secrets;
@@ -299,7 +365,7 @@ bool BadSeedsTest ( HashInfo* info, bool testAll ) {
 
   // many days with >= 64 bit hashes
   printf("Testing the first 0xffffffff seeds ...\n");
-  result &= TestSecret32<hashtype>(info, UINT64_C(0x0));
+  result &= TestSecret32<hashtype>(info, UINT64_C(0x0), newresult);
 #ifdef HAVE_INT64
   // Currently *only* seeds going through Hash_Seed_init() can be
   // wider than 32 bits!!
@@ -311,19 +377,22 @@ bool BadSeedsTest ( HashInfo* info, bool testAll ) {
             uint64_t s = secret;
             s = s << 32;
             printf("Suspect the 0x%" PRIx64 " seeds ...\n", s);
-            result &= TestSecret32<hashtype>(info, s);
+            result &= TestSecret32<hashtype>(info, s, newresult);
           }
         }
       }
     }
     printf("And the last 0xffffffff00000000 seeds ...\n");
-    result &= TestSecret32<hashtype>(info, UINT64_C(0xffffffff00000000));
+    result &= TestSecret32<hashtype>(info, UINT64_C(0xffffffff00000000), newresult);
   }
 #endif
   if (result)
     printf("PASS\n");
-  else
-    printf("FAIL\nEnsure to add these bad seeds to the list of secrets in main.cpp\n");
+  else {
+    printf("FAIL\n");
+    if (newresult)
+      printf("Consider adding any new bad seeds to this hash's list of secrets in main.cpp\n");
+  }
   fflush(NULL);
   return result;
 }
