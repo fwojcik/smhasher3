@@ -275,8 +275,9 @@ static double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits
     return NAN;
 }
 
-static bool ReportCollisions( int collcount, double expected, unsigned hashsize, bool verbose )
+static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool verbose )
 {
+  double expected = EstimateNbCollisions(nbH, hashsize);
   double ratio = double(collcount) / expected;
   if (verbose)
   {
@@ -322,40 +323,13 @@ static bool ReportCollisions( int collcount, double expected, unsigned hashsize,
 }
 
 template< typename hashtype >
-bool CountLowbitsCollisions ( std::vector<hashtype> & revhashes, int nbLBits)
+int CountNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nbHBits)
 {
   const int origBits = sizeof(hashtype) * 8;
-  int shiftBy = origBits - nbLBits;
+  const int shiftBy = origBits - nbHBits;
 
-  if (shiftBy <= 0) return true;
+  if (shiftBy <= 0) return -1;
 
-  size_t const nbH = revhashes.size();
-  double expected = EstimateNbCollisions(nbH, nbLBits);
-  printf("Testing collisions (low  %2i-bit)", nbLBits);
-  int collcount = 0;
-
-  for (size_t hnb = 1; hnb < nbH; hnb++)
-  {
-    hashtype const h1 = revhashes[hnb-1] >> shiftBy;
-    hashtype const h2 = revhashes[hnb]   >> shiftBy;
-    if(h1 == h2)
-      collcount++;
-  }
-
-  return ReportCollisions(collcount, expected, nbLBits, true);
-}
-
-template< typename hashtype >
-bool CountHighbitsCollisions ( std::vector<hashtype> & hashes, int nbHBits)
-{
-  int origBits = sizeof(hashtype) * 8;
-  int shiftBy = origBits - nbHBits;
-
-  if (shiftBy <= 0) return true;
-
-  size_t const nbH = hashes.size();
-  double expected = EstimateNbCollisions(nbH, nbHBits);
-  printf("Testing collisions (high %2i-bit)", nbHBits);
   int collcount = 0;
 
   for (size_t hnb = 1; hnb < nbH; hnb++)
@@ -366,7 +340,20 @@ bool CountHighbitsCollisions ( std::vector<hashtype> & hashes, int nbHBits)
       collcount++;
   }
 
-  return ReportCollisions(collcount, expected, nbHBits, true);
+  return collcount;
+}
+
+
+template< typename hashtype >
+bool CountNBitsCollisions ( std::vector<hashtype> & hashes, int nbBits, bool highbits)
+{
+  if (CountNbCollisions(hashes, 0, nbBits) < 0) return true;
+
+  printf("Testing collisions (%s %2i-bit)", highbits ? "high" : "low ", nbBits);
+
+  size_t const nbH = hashes.size();
+  int collcount = CountNbCollisions(hashes, nbH, nbBits);
+  return ReportCollisions(nbH, collcount, nbBits, true);
 }
 
 static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
@@ -393,72 +380,7 @@ static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions)
 }
 
 template< typename hashtype >
-int CountNbCollisions ( std::vector<hashtype> & hashes, int nbHBits)
-{
-  const int origBits = sizeof(hashtype) * 8;
-  const int shiftBy = origBits - nbHBits;
-
-  assert(shiftBy > 0);
-
-  size_t const nbH = hashes.size();
-  int collcount = 0;
-
-  for (size_t hnb = 1; hnb < nbH; hnb++)
-  {
-    hashtype const h1 = hashes[hnb-1] >> shiftBy;
-    hashtype const h2 = hashes[hnb]   >> shiftBy;
-    if(h1 == h2)
-    {
-      collcount++;
-    }
-  }
-
-  return collcount;
-}
-
-template< typename hashtype >
-bool TestLowbitsCollisions ( std::vector<hashtype> & revhashes)
-{
-  int origBits = sizeof(hashtype) * 8;
-
-  size_t const nbH = revhashes.size();
-  int const minBits = FindMinBits_TargetCollisionShare(nbH, 0.01);
-  int const maxBits = FindMaxBits_TargetCollisionNb(nbH, 20);
-  if (maxBits <= 0 || maxBits >= origBits || minBits > maxBits) return true;
-
-  printf("Testing collisions (low  %2i-%2i bits) - ", minBits, maxBits);
-  double maxCollDev = 0.0;
-  int maxCollDevBits = 0;
-  int maxCollDevNb = 0;
-  double maxCollDevExp = 1.0;
-
-  for (int b = minBits; b <= maxBits; b++) {
-      int    const nbColls = CountNbCollisions(revhashes, b);
-      double const expected = EstimateNbCollisions(nbH, b);
-      assert(expected > 0.0);
-      double const dev = (double)nbColls / expected;
-      if (dev > maxCollDev) {
-          maxCollDev = dev;
-          maxCollDevBits = b;
-          maxCollDevNb = nbColls;
-          maxCollDevExp = expected;
-      }
-  }
-
-  printf("Worst is %2i bits: %2i/%2i (%.2fx)",
-        maxCollDevBits, maxCollDevNb, (int)maxCollDevExp, maxCollDev);
-
-  if (maxCollDev > 2.0) {
-    printf(" !!!!!\n");
-    return false;
-  }
-
-  printf("\n");
-  return true;
-}
-
-template< typename hashtype >
-bool TestHighbitsCollisions ( std::vector<hashtype> & hashes)
+bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits )
 {
   int origBits = sizeof(hashtype) * 8;
 
@@ -467,14 +389,15 @@ bool TestHighbitsCollisions ( std::vector<hashtype> & hashes)
   int const maxBits = FindMaxBits_TargetCollisionNb(nbH, 20);
   if (maxBits <= 0 || maxBits >= origBits || minBits > maxBits) return true;
 
-  printf("Testing collisions (high %2i-%2i bits) - ", minBits, maxBits);
+  printf("Testing collisions (%s %2i-%2i bits) - ",
+          highbits ? "high" : "low ", minBits, maxBits);
   double maxCollDev = 0.0;
   int maxCollDevBits = 0;
   int maxCollDevNb = 0;
   double maxCollDevExp = 1.0;
 
   for (int b = minBits; b <= maxBits; b++) {
-      int    const nbColls = CountNbCollisions(hashes, b);
+      int    const nbColls = CountNbCollisions(hashes, nbH, b);
       double const expected = EstimateNbCollisions(nbH, b);
       assert(expected > 0.0);
       double const dev = (double)nbColls / expected;
@@ -649,16 +572,15 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
 
   if (testCollision)
   {
-    size_t const count = hashes.size();
     unsigned const hashbits = sizeof(hashtype) * 8;
-    double const expected = EstimateNbCollisions(count, hashbits);
     if (verbose)
       printf("Testing collisions (    %3i-bit)", hashbits);
 
+    size_t const count = hashes.size();
     int collcount = 0;
     HashSet<hashtype> collisions;
     collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
-    result &= ReportCollisions(collcount, expected, hashbits, verbose);
+    result &= ReportCollisions(count, collcount, hashbits, verbose);
 
     if(!result && drawDiagram)
     {
@@ -671,76 +593,57 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       //DumpCollisionMap(cmap);
     }
 
-    if (testHighBits) {
-      result &= CountHighbitsCollisions(hashes, 224);
-      result &= CountHighbitsCollisions(hashes, 160);
-      result &= CountHighbitsCollisions(hashes, 128);
-      result &= CountHighbitsCollisions(hashes,  64);
-      result &= CountHighbitsCollisions(hashes,  32);
-
-      /*
-        int const optimalNbBits = FindNbBitsForCollisionTarget(100, count);
-        result &= CountHighbitsCollisions(hashes, optimalNbBits);
-      */
-
-      result &= TestHighbitsCollisions(hashes);
-
-      /*
-       * cyan: The 12- and -8-bit tests are too small : tables are necessarily saturated.
-       * It would be better to count the nb of collisions per Cell, and
-       * compared the distribution of values against a random source.
-       * But that would be a different test.
-       *
-       * rurban: No, these tests are for non-prime hash tables, using only
-       *     the lower 5-10 bits
-       *
-       * fwojcik: Count{High,Low}bitsCollisions() do not currently seem
-       * to reflect rurban's comment, as they count the sum of
-       * collisions across _all_ buckets. So if there are many more
-       * hashes than 2**nbBits, and the hash is even _slightly_ not
-       * broken, then every n-bit truncated hash value will appear at
-       * least once, in which case the "actual" value reported would
-       * always be (hashes.size() - 2**nbBits). Checking the results in
-       * doc/ confirms this. cyan's comment is correct.
-       */
-      //result &= CountHighbitsCollisions(hashes,   12);
-      //result &= CountHighbitsCollisions(hashes,   8);
-    }
-    if (testLowBits) {
+    std::vector<hashtype> revhashes;
+    if (testLowBits)
+    {
       // reverse: bitwise flip the hashes. lowest bits first
-      std::vector<hashtype> revhashes = hashes;
-      for (size_t i = 0; i < revhashes.size(); i++) {
-        revhashes[i] = bitreverse(hashes[i]);
-      }
+      revhashes.reserve(hashes.size());
+      for(const auto hashval: hashes)
+        revhashes.push_back(bitreverse(hashval));
       std::sort(revhashes.begin(), revhashes.end());
-
-      result &= CountLowbitsCollisions(revhashes, 224);
-      result &= CountLowbitsCollisions(revhashes, 160);
-      result &= CountLowbitsCollisions(revhashes, 128);
-      result &= CountLowbitsCollisions(revhashes,  64);
-      result &= CountLowbitsCollisions(revhashes,  32);
-
-      /*
-        int const optimalNbBits = FindNbBitsForCollisionTarget(100, count);
-        result &= CountLowbitsCollisions(hashes, optimalNbBits);
-      */
-
-      result &= TestLowbitsCollisions(revhashes);
-
-      //result &= CountLowbitsCollisions(revhashes,   12);
-      //result &= CountLowbitsCollisions(revhashes,   8);
-
-      //std::vector<hashtype>().swap(revhashes);
-      //revhashes.clear();
     }
+
+    /*
+      TODO -
+        int const optimalNbBits = FindNbBitsForCollisionTarget(100, count);
+        result &= CountbitsCollisions(hashes, optimalNbBits);
+    */
+    /*
+     * cyan: The 12- and -8-bit tests are too small : tables are necessarily saturated.
+     * It would be better to count the nb of collisions per Cell, and
+     * compared the distribution of values against a random source.
+     * But that would be a different test.
+     *
+     * rurban: No, these tests are for non-prime hash tables, using only
+     *     the lower 5-10 bits
+     *
+     * fwojcik: CountNBbitsCollisions() does not currently seem
+     * to reflect rurban's comment, as it counts the sum of
+     * collisions across _all_ buckets. So if there are many more
+     * hashes than 2**nbBits, and the hash is even _slightly_ not
+     * broken, then every n-bit truncated hash value will appear at
+     * least once, in which case the "actual" value reported would
+     * always be (hashes.size() - 2**nbBits). Checking the results in
+     * doc/ confirms this. cyan's comment is correct.
+     */
+    std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, /* 12, 8 */ };
+    if (testHighBits)
+      for(const int nbBits: nbBitsvec)
+        result &= CountNBitsCollisions(hashes, nbBits, true);
+    if (testLowBits)
+      for(const int nbBits: nbBitsvec)
+        result &= CountNBitsCollisions(revhashes, nbBits, false);
+
+    if (testHighBits)
+      result &= TestBitsCollisions(hashes, true);
+    if (testLowBits)
+      result &= TestBitsCollisions(revhashes, false);
   }
 
   //----------
 
   if(testDist)
-  {
     result &= TestDistribution(hashes,drawDiagram);
-  }
 
   return result;
 }
