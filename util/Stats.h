@@ -102,6 +102,31 @@ unsigned int FindCollisions ( std::vector<hashtype> & hashes,
                               bool drawDiagram = false)
 {
   unsigned int collcount = 0;
+  std::sort(hashes.begin(),hashes.end());
+
+  for(size_t hnb = 1; hnb < hashes.size(); hnb++)
+    {
+      if(hashes[hnb] == hashes[hnb-1])
+        {
+          collcount++;
+          if(collcount < maxCollisions)
+            {
+#ifdef DEBUG
+              printf ("\n%zu: ", hnb);
+              printHash(&hashes[hnb], sizeof(hashtype));
+#endif
+              if (drawDiagram)
+                collisions.insert(hashes[hnb]);
+            }
+        }
+    }
+
+#ifdef DEBUG
+    if (collcount)
+      printf ("\n");
+#endif
+  return collcount;
+
 #if 0
   // sort indices instead
   std::vector< std::pair<hashtype, size_t>> pairs;
@@ -128,32 +153,7 @@ unsigned int FindCollisions ( std::vector<hashtype> & hashes,
             }
         }
     }
-#else
-    std::sort(hashes.begin(),hashes.end());
-
-    for(size_t hnb = 1; hnb < hashes.size(); hnb++)
-      {
-        if(hashes[hnb] == hashes[hnb-1])
-          {
-            collcount++;
-            if(collcount < maxCollisions)
-              {
-#ifdef DEBUG
-                printf ("\n%zu: ", hnb);
-                printHash(&hashes[hnb], sizeof(hashtype));
 #endif
-                if (drawDiagram)
-                  collisions.insert(hashes[hnb]);
-              }
-          }
-      }
-#endif
-
-#ifdef DEBUG
-    if (collcount)
-      printf ("\n");
-#endif
-  return collcount;
 }
 
 // Note: with 32bit 77163 keys will get a 50% probability of one collision.
@@ -275,6 +275,49 @@ static double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits
     return NAN;
 }
 
+static bool ReportCollisions( int collcount, double expected, unsigned hashsize, bool verbose )
+{
+  double ratio = double(collcount) / expected;
+  if (verbose)
+  {
+    printf("actual %6i (%.2fx)", collcount, expected > 0.0 ? ratio : (double)collcount);
+    if (ratio > 0.98 && collcount != (int)expected)
+      printf(" (%i)", collcount - (int)expected);
+  }
+
+  bool warning = false, failure = false;
+  ratio = ceil(ratio);
+  // For all hashes larger than 32 bits, _any_ collisions are a failure.
+  if (hashsize > (8 * sizeof(uint32_t)))
+      failure = (collcount > 0 && expected < 1.0);
+  // For all other size hashes, low estimation values can be inaccurate
+  // TODO - make collision failure cutoff be expressed as a standard
+  // deviation instead of a scale factor, so we don't fail erroneously
+  // if there are a small expected number of collisions.
+  else if (expected >= 0.1 && expected <= 10.0) {
+      failure = (ratio > 4.0);
+      warning = (ratio > 2.0);
+  } else if (collcount > 1)
+      // If expected is large enough, then fail with > 2x expected collisions
+      failure = ratio > 2.0;
+  else if (collcount == 1)
+      // Don't allow expected 0.0+epsilon and actual 1
+      failure = expected < 0.001;
+
+  if (verbose)
+  {
+    if (failure)
+      printf(" !!!!!\n");
+    else if (warning)
+      printf(" !\n");
+    else
+      printf("\n");
+    fflush(NULL);
+  }
+
+  return !failure;
+}
+
 template< typename hashtype >
 bool CountLowbitsCollisions ( std::vector<hashtype> & revhashes, int nbLBits)
 {
@@ -290,41 +333,13 @@ bool CountLowbitsCollisions ( std::vector<hashtype> & revhashes, int nbLBits)
 
   for (size_t hnb = 1; hnb < nbH; hnb++)
   {
-#ifdef DEBUG
-    hashtype const h1x = revhashes[hnb-1];
-    hashtype const h2x = revhashes[hnb];
-#endif
     hashtype const h1 = revhashes[hnb-1] >> shiftBy;
     hashtype const h2 = revhashes[hnb]   >> shiftBy;
     if(h1 == h2)
       collcount++;
   }
 
-  double ratio = double(collcount) / expected;
-  printf("actual %6i (%.2fx)", collcount, expected > 0.0 ? ratio : (double)collcount);
-  if (ratio > 0.98 && collcount != (int)expected)
-    printf(" (%i)", collcount - (int)expected);
-
-  // low estimation values are too inaccurate
-  if (expected >= 0.1 && expected <= 10.0)
-    {
-      if (ratio > 4.0)
-        {
-          printf(" !!!!!\n");
-          return false;
-        }
-      else if (ratio > 2.0)
-        printf(" !");
-    }
-  // allow expected 0.3 and actual 1
-  else if (ratio > 2.0 && collcount > 1)
-  {
-    printf(" !!!!!\n");
-    return false;
-  }
-
-  printf("\n");
-  return true;
+  return ReportCollisions(collcount, expected, nbLBits, true);
 }
 
 template< typename hashtype >
@@ -342,41 +357,13 @@ bool CountHighbitsCollisions ( std::vector<hashtype> & hashes, int nbHBits)
 
   for (size_t hnb = 1; hnb < nbH; hnb++)
   {
-#ifdef DEBUG
-    hashtype const h1x = hashes[hnb-1];
-    hashtype const h2x = hashes[hnb];
-#endif
     hashtype const h1 = hashes[hnb-1] >> shiftBy;
     hashtype const h2 = hashes[hnb]   >> shiftBy;
     if(h1 == h2)
       collcount++;
   }
 
-  double ratio = double(collcount) / expected;
-  printf("actual %6i (%.2fx)", collcount, expected > 0.0 ? ratio : (double)collcount);
-  if (ratio > 0.98 && collcount != (int)expected)
-    printf(" (%i)", collcount - (int)expected);
-
-  // low estimation values are too inaccurate
-  if (expected >= 0.1 && expected <= 10.0)
-    {
-      if (ratio > 4.0)
-        {
-          printf(" !!!!!\n");
-          return false;
-        }
-      else if (ratio > 2.0)
-        printf(" !");
-    }
-  // allow expected 0.3 and actual 1
-  else if (ratio > 2.0 && collcount > 1)
-  {
-    printf(" !!!!!\n");
-    return false;
-  }
-
-  printf("\n");
-  return true;
+  return ReportCollisions(collcount, expected, nbHBits, true);
 }
 
 static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
@@ -660,79 +647,26 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
   if (testCollision)
   {
     size_t const count = hashes.size();
-    double const expected = EstimateNbCollisions(count, sizeof(hashtype) * 8);
+    unsigned const hashbits = sizeof(hashtype) * 8;
+    double const expected = EstimateNbCollisions(count, hashbits);
     if (verbose)
-      printf("Testing collisions (%3i-bit) - Expected %6.1f, ",
-             (int)sizeof(hashtype)*8, expected);
-    const int i_expected = (int)expected;
+      printf("Testing collisions (%3i-bit) - Expected %6.1f, ", hashbits, expected);
 
     int collcount = 0;
     HashSet<hashtype> collisions;
     collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
-    double ratio = double(collcount) / expected;
-    if (verbose) {
-      printf("actual %6i (%.2fx)", (int)collcount, expected > 0.0 ? ratio : (double)collcount);
-      if (ratio > 0.98 && collcount != i_expected)
-        printf(" (%i)", collcount - i_expected);
-    }
+    result &= ReportCollisions(collcount, expected, hashbits, verbose);
 
-    if (sizeof(hashtype) <= sizeof(uint32_t))
+    if(!result && drawDiagram)
     {
-      // fail with >= 2x expected collisions
-
-      // TODO - collision failure cutoff needs to be expressed as a standard deviation instead
-      // of a scale factor, otherwise we fail erroneously if there are a small expected number
-      // of collisions
-
-      // low estimation values are too inaccurate
-      if (expected >= 0.1 && expected <= 10.0)
-        {
-          ratio = ceil(ratio);
-          if (ceil(ratio) > 4.0)
-            {
-              printf(" !!!!!\n");
-              return false;
-            }
-          else if (ceil(ratio) > 2.0)
-            printf(" !");
-        }
-      // allow expected 0.3 and actual 1
-      else if (ceil(ratio) > 2.0 && collcount > 1)
-        {
-          printf(" !!!!!\n");
-          return false;
-        }
-      // don't allow expected 0.0+epsilon and actual 1
-      else if (expected < 0.001 && collcount == 1)
-        {
-          printf(" !!!!!\n");
-          return false;
-        }
+      PrintCollisions(collisions);
+      //printf("Mapping collisions\n");
+      //CollisionMap<uint128_t,ByteVec> cmap;
+      //CollisionCallback<uint128_t> c2(hash,collisions,cmap);
+      ////TwoBytesKeygen(20,c2);
+      //printf("Dumping collisions\n");
+      //DumpCollisionMap(cmap);
     }
-    else
-    {
-      // For all hashes larger than 32 bits, _any_ collisions are a failure.
-      if (collcount > 0 && expected < 1.0)
-      {
-        printf(" !!!!!");
-        result = false;
-        if(drawDiagram)
-          {
-            PrintCollisions(collisions);
-            //printf("Mapping collisions\n");
-            //CollisionMap<uint128_t,ByteVec> cmap;
-            //CollisionCallback<uint128_t> c2(hash,collisions,cmap);
-            ////TwoBytesKeygen(20,c2);
-            //printf("Dumping collisions\n");
-            //DumpCollisionMap(cmap);
-          }
-      }
-    }
-
-    if (verbose) {
-      printf("\n");
-    }
-    fflush(NULL);
 
     if (testHighBits) {
       result &= CountHighbitsCollisions(hashes, 224);
@@ -797,7 +731,6 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       //revhashes.clear();
     }
   }
-
 
   //----------
 
