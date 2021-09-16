@@ -280,7 +280,10 @@ static bool ReportCollisions( int collcount, double expected, unsigned hashsize,
   double ratio = double(collcount) / expected;
   if (verbose)
   {
-    printf("actual %6i (%.2fx)", collcount, expected > 0.0 ? ratio : (double)collcount);
+    // 10 integer digits matches the 12.1 float specifier (12
+    // characters - 1 decimal point - 1 digit after the decimal).
+    printf(" - Expected %12.1f, actual %10i (%.2fx)", expected, collcount,
+        (expected > 0.0) ? ratio : (double)collcount);
     if (ratio > 0.98 && collcount != (int)expected)
       printf(" (%i)", collcount - (int)expected);
   }
@@ -328,7 +331,7 @@ bool CountLowbitsCollisions ( std::vector<hashtype> & revhashes, int nbLBits)
 
   size_t const nbH = revhashes.size();
   double expected = EstimateNbCollisions(nbH, nbLBits);
-  printf("Testing collisions (low  %2i-bit) - Expected %12.1f, ", nbLBits, expected);
+  printf("Testing collisions (low  %2i-bit)", nbLBits);
   int collcount = 0;
 
   for (size_t hnb = 1; hnb < nbH; hnb++)
@@ -352,7 +355,7 @@ bool CountHighbitsCollisions ( std::vector<hashtype> & hashes, int nbHBits)
 
   size_t const nbH = hashes.size();
   double expected = EstimateNbCollisions(nbH, nbHBits);
-  printf("Testing collisions (high %2i-bit) - Expected %12.1f, ", nbHBits, expected);
+  printf("Testing collisions (high %2i-bit)", nbHBits);
   int collcount = 0;
 
   for (size_t hnb = 1; hnb < nbH; hnb++)
@@ -650,7 +653,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     unsigned const hashbits = sizeof(hashtype) * 8;
     double const expected = EstimateNbCollisions(count, hashbits);
     if (verbose)
-      printf("Testing collisions (%3i-bit) - Expected %6.1f, ", hashbits, expected);
+      printf("Testing collisions (    %3i-bit)", hashbits);
 
     int collcount = 0;
     HashSet<hashtype> collisions;
