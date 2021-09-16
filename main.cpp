@@ -1984,6 +1984,26 @@ void MomentChi2Thread ( const struct HashInfo *info, const int inputSize,
   b[7] = db1l;
 }
 
+double MomentChi2Results ( long double srefh, long double srefl,
+        long double b1h, long double b1l,
+        long double b0h, long double b0l )
+{
+  double worse;
+  {
+      double chi2 = (b1h-srefh) * (b1h-srefh) / (b1l+srefl);
+      printf("From counting 1s : %9.2Lf, %9.2Lf  -  moment chisq %10.4f\n",
+              b1h, b1l, chi2);
+      worse = chi2;
+  }
+  {
+      double chi2 = (b0h-srefh) * (b0h-srefh) / (b0l+srefl);
+      printf("From counting 0s : %9.2Lf, %9.2Lf  -  moment chisq %10.4f\n",
+              b0h, b0l, chi2);
+      worse = std::max(worse, chi2);
+  }
+  return worse;
+}
+
 // sha1_32a: 23m with step 3
 //           4m30 with step 2, 4 threads, ryzen3
 bool MomentChi2Test ( struct HashInfo *info, int inputSize)
@@ -1999,8 +2019,8 @@ bool MomentChi2Test ( struct HashInfo *info, int inputSize)
   assert(hbits <= HASH_SIZE_MAX*8);
   assert(inputSize > 0);
 
-  printf("Analyze hashes produced from a serie of linearly increasing numbers "
-         "of %i-bit, using a step of %d ... \n", inputSize*8, step);
+  printf("Generating hashes from a linear sequence of %i-bit numbers "
+         "with a step size of %d ... \n", inputSize*8, step);
   fflush(NULL);
 
   /* Notes on the ranking system.
@@ -2020,6 +2040,26 @@ bool MomentChi2Test ( struct HashInfo *info, int inputSize)
    *
    * Another limitation of this test is that it only popcounts the first 64-bit.
    * For large hashes, bits beyond this limit are ignored.
+   *
+   * Derivative hash testing:
+   * In this scenario, 2 consecutive hashes are xored,
+   * and the outcome of this xor operation is then popcount controlled.
+   * Obviously, the _order_ in which the hash values are generated becomes critical.
+   *
+   * This scenario comes from the prng world,
+   * where derivative of the generated suite of random numbers is analyzed
+   * to ensure the suite is truly "random".
+   *
+   * However, in almost all prng, the seed of next random number is the previous random number.
+   *
+   * This scenario is quite different: it introduces a fixed distance between 2 consecutive "seeds".
+   * This is especially detrimental to algorithms relying on linear operations, such as multiplications.
+   *
+   * This scenario is relevant if the hash is used as a prng and generates values from a linearly increasing counter as a seed.
+   * It is not relevant for scenarios employing the hash as a prng
+   * with the more classical method of using the previous random number as a seed for the next one.
+   * This scenario has no relevance for classical usages of hash algorithms,
+   * such as hash tables, bloom filters and such, were only the raw values are ever used.
    */
 
   long double srefh, srefl;
@@ -2046,7 +2086,6 @@ bool MomentChi2Test ( struct HashInfo *info, int inputSize)
           printf("hash size not covered \n");
           abort();
   }
-  printf("Target values to approximate : %Lf - %Lf \n", srefh, srefl);
 
 #if NCPU > 1
   // split into NCPU threads
@@ -2096,52 +2135,19 @@ bool MomentChi2Test ( struct HashInfo *info, int inputSize)
   b0h  /= n;  b0l = (b0l/n  - b0h*b0h) / n;
   db0h /= n; db0l = (db0l/n - db0h*db0h) / n;
 
-  printf("Popcount 1 stats : %Lf - %Lf\n", b1h, b1l);
-  printf("Popcount 0 stats : %Lf - %Lf\n", b0h, b0l);
-  double worsec2 = 0;
-  {   double chi2 = (b1h-srefh) * (b1h-srefh) / (b1l+srefl);
-      printf("MomentChi2 for bits 1 :  %8.6g \n", chi2);
-      if (chi2 > worsec2) worsec2 = chi2;
-  }
-  {   double chi2 = (b0h-srefh) * (b0h-srefh) / (b0l+srefl);
-      printf("MomentChi2 for bits 0 :  %8.6g \n", chi2);
-      if (chi2 > worsec2) worsec2 = chi2;
-  }
+  double worstL, worstD;
 
-  /* Derivative :
-   * In this scenario, 2 consecutive hashes are xored,
-   * and the outcome of this xor operation is then popcount controlled.
-   * Obviously, the _order_ in which the hash values are generated becomes critical.
-   *
-   * This scenario comes from the prng world,
-   * where derivative of the generated suite of random numbers is analyzed
-   * to ensure the suite is truly "random".
-   *
-   * However, in almost all prng, the seed of next random number is the previous random number.
-   *
-   * This scenario is quite different: it introduces a fixed distance between 2 consecutive "seeds".
-   * This is especially detrimental to algorithms relying on linear operations, such as multiplications.
-   *
-   * This scenario is relevant if the hash is used as a prng and generates values from a linearly increasing counter as a seed.
-   * It is not relevant for scenarios employing the hash as a prng
-   * with the more classical method of using the previous random number as a seed for the next one.
-   * This scenario has no relevance for classical usages of hash algorithms,
-   * such as hash tables, bloom filters and such, were only the raw values are ever used.
-   */
-  printf("\nDerivative stats (transition from 2 consecutive values) : \n");
-  printf("Popcount 1 stats : %Lf - %Lf\n", db1h, db1l);
-  printf("Popcount 0 stats : %Lf - %Lf\n", db0h, db0l);
-  {   double chi2 = (db1h-srefh) * (db1h-srefh) / (db1l+srefl);
-      printf("MomentChi2 for deriv b1 :  %8.6g \n", chi2);
-      if (chi2 > worsec2) worsec2 = chi2;
-  }
-  {   double chi2 = (db0h-srefh) * (db0h-srefh) / (db0l+srefl);
-      printf("MomentChi2 for deriv b0 :  %8.6g \n", chi2);
-      if (chi2 > worsec2) worsec2 = chi2;
-  }
+  printf("Ideal results    : %9.2Lf, %9.2Lf\n", srefh, srefl);
+
+  printf("\nResults from literal hashes :\n");
+  worstL = MomentChi2Results(srefh, srefl, b1h, b1l, b0h, b0l);
+
+  printf("\nResults from derivative hashes (XOR of 2 consecutive values) :\n");
+  worstD = MomentChi2Results(srefh, srefl, db1h, db1l, db0h, db0l);
 
   // note : previous threshold : 3.84145882069413
-  int const rank = (worsec2 < 500.) + (worsec2 < 50.) + (worsec2 < 5.);
+  double worstchisq = std::max(worstL, worstD);
+  int const rank = (worstchisq < 500.) + (worstchisq < 50.) + (worstchisq < 5.);
   assert(0 <= rank && rank <= 3);
 
   const char* rankstr[4] = { "FAIL !!!!", "pass", "Good !", "Great !!" };
