@@ -1068,24 +1068,22 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testSpeed || g_testAll)
   {
-    double sum = 0.0;
     printf("[[[ Speed Tests ]]]\n\n");
     fflush(NULL);
 
     Hash_Seed_init (hash, info->verification);
-    BulkSpeedTest(info->hash,info->verification);
+
+    BulkSpeedTest(hash,info->verification, true, false);
+    printf("\n");
+    fflush(NULL);
+    BulkSpeedTest(hash,info->verification, true, true);
     printf("\n");
     fflush(NULL);
 
-    for(int i = 1; i < 32; i++)
-    {
-      volatile int j = i;
-      sum += TinySpeedTest(hashfunc<hashtype>(info->hash),sizeof(hashtype),j,info->verification,true);
-    }
-    g_speed = sum = sum / 31.0;
-    printf("Average                                    %6.3f cycles/hash\n",sum);
+    g_speed = TinySpeedTest(hashfunc<hashtype>(hash),sizeof(hashtype),31,info->verification,true,true);
     printf("\n");
     fflush(NULL);
+
   } else {
     // known slow hashes (> 500), cycle/hash
     const struct { pfHash h; double cycles; } speeds[] = {

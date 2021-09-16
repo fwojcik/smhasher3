@@ -264,93 +264,146 @@ NEVER_INLINE int64_t timehash_small ( pfHash hash, const void * key, int len, in
 
 //-----------------------------------------------------------------------------
 
-double SpeedTest ( pfHash hash, uint32_t seed, const int trials, const int blocksize, const int align )
+double SpeedTest ( pfHash hash, uint32_t seed, const int trials, const int blocksize, const int align, const int varysize, const int varyalign )
 {
   Rand r(seed);
-  uint8_t *buf = new uint8_t[blocksize + 512];
-  uint64_t t1 = reinterpret_cast<uint64_t>(buf);
-  
+  uint8_t *buf = new uint8_t[blocksize + 512]; // assumes (align + varyalign) <= 257
+  uintptr_t t1 = reinterpret_cast<uintptr_t>(buf);
+
   t1 = (t1 + 255) & UINT64_C(0xFFFFFFFFFFFFFF00);
   t1 += align;
-  
+
   uint8_t * block = reinterpret_cast<uint8_t*>(t1);
 
-  r.rand_p(block,blocksize);
+  std::vector<int> sizes;
+  if (varysize > 0)
+  {
+      sizes.reserve(trials);
+      for(int i = 0; i < trials; i++)
+          sizes.push_back(blocksize - varysize + (i % (varysize + 1)));
+      for(int i = trials - 1; i > 0; i--)
+          std::swap(sizes[i], sizes[r.rand_range(i + 1)]);
+  }
 
-  //----------
+  std::vector<int> alignments;
+  if (varyalign > 0)
+  {
+      alignments.reserve(trials);
+      for(int i = 0; i < trials; i++)
+          alignments.push_back((i + 1) % (varyalign + 1));
+      for(int i = trials - 1; i > 0; i--)
+          std::swap(alignments[i], alignments[r.rand_range(i + 1)]);
+  }
+
+  //----------w
 
   std::vector<double> times;
   times.reserve(trials);
 
+  int testsize = blocksize;
   for(int itrial = 0; itrial < trials; itrial++)
   {
-    r.rand_p(block,blocksize);
+    if (varysize > 0)
+        testsize = sizes[itrial];
+    if (varyalign > 0)
+        block = reinterpret_cast<uint8_t*>(t1 + alignments[itrial]);
+
+    r.rand_p(block,testsize);
 
     double t;
 
-    if(blocksize < 100)
+    if(testsize < 100)
     {
-      t = (double)timehash_small(hash,block,blocksize,itrial);
+      t = (double)timehash_small(hash,block,testsize,itrial);
     }
     else
     {
-      t = (double)timehash(hash,block,blocksize,itrial);
+      t = (double)timehash(hash,block,testsize,itrial);
     }
 
     if(t > 0) times.push_back(t);
   }
 
   //----------
-  
+
   std::sort(times.begin(),times.end());
-  
+
   FilterOutliers(times);
-  
+
   delete [] buf;
-  
+
   return CalcMean(times);
 }
 
 //-----------------------------------------------------------------------------
 // 256k blocks seem to give the best results.
 
-void BulkSpeedTest ( pfHash hash, uint32_t seed )
+void BulkSpeedTest ( pfHash hash, uint32_t seed, bool vary_align, bool vary_size )
 {
   const int trials = 2999;
   const int blocksize = 256 * 1024;
+  const int maxvary = vary_size ? 127 : 0;
 
-  printf("Bulk speed test - %d-byte keys\n",blocksize);
+  if (vary_size)
+      printf("Bulk speed test - [%d, %d]-byte keys\n",blocksize - maxvary, blocksize);
+  else
+      printf("Bulk speed test - %d-byte keys\n",blocksize);
   double sumbpc = 0.0;
 
-  volatile double warmup_cycles = SpeedTest(hash,seed,trials,blocksize,0);
+  volatile double warmup_cycles = SpeedTest(hash,seed,trials,blocksize,0,0,0);
 
   for(int align = 7; align >= 0; align--)
   {
-    double cycles = SpeedTest(hash,seed,trials,blocksize,align);
+    double cycles = SpeedTest(hash,seed,trials,blocksize,align,maxvary,0);
 
-    double bestbpc = double(blocksize)/cycles;
+    double bestbpc = double(blocksize - (maxvary + 1) / 2)/cycles;
 
     double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
-    printf("Alignment %2d - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n",align,bestbpc,bestbps);
+    printf("Alignment  %2d - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n",align,bestbpc,bestbps);
     sumbpc += bestbpc;
   }
+  if (vary_align)
+  {
+    double cycles = SpeedTest(hash,seed,trials,blocksize,0,maxvary,7);
+
+    double bestbpc = double(blocksize - (maxvary + 1) / 2)/cycles;
+
+    double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
+    printf("Alignment rnd - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n",bestbpc,bestbps);
+    // Deliberately not counted in the Average stat, so the two can be directly compared
+  }
+
   sumbpc = sumbpc / 8.0;
-  printf("Average      - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n",sumbpc,(sumbpc * 3000000000.0 / 1048576.0));
+  printf("Average       - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n",sumbpc,(sumbpc * 3000000000.0 / 1048576.0));
   fflush(NULL);
 }
 
 //-----------------------------------------------------------------------------
 
-double TinySpeedTest ( pfHash hash, int hashsize, int keysize, uint32_t seed, bool verbose )
+double TinySpeedTest ( pfHash hash, int hashsize, int maxkeysize, uint32_t seed, bool verbose, bool include_vary )
 {
   const int trials = 99999;
+  double sum = 0.0;
 
-  if(verbose) printf("Small key speed test - %4d-byte keys - ",keysize);
-  
-  double cycles = SpeedTest(hash,seed,trials,keysize,0);
-  
-  printf("%8.2f cycles/hash\n",cycles);
-  return cycles;
+  printf("Small key speed test - [1, %2d]-byte keys\n",maxkeysize);
+
+  for(int i = 1; i <= maxkeysize; i++)
+  {
+    volatile int j = i;
+    double cycles = SpeedTest(hash,seed,trials,j,0,0,0);
+    if(verbose) printf("  %2d-byte keys - %8.2f cycles/hash\n",j,cycles);
+    sum += cycles;
+  }
+  if (include_vary) {
+    double cycles = SpeedTest(hash,seed,trials,maxkeysize,0,maxkeysize-1,0);
+    if(verbose) printf(" rnd-byte keys - %8.2f cycles/hash\n",maxkeysize,cycles);
+    // Deliberately not counted in the Average stat, so the two can be directly compared
+  }
+
+  sum = sum / (double)maxkeysize;
+  printf("Average        - %8.2f cycles/hash\n",sum);
+
+  return sum;
 }
 
 double HashMapSpeedTest ( pfHash pfhash, const int hashbits,

@@ -114,6 +114,15 @@ struct Rand
     return (a << 32) | b;
   }
 
+  // Returns a value in the range [0, max)
+  uint32_t rand_range ( uint32_t max )
+  {
+      uint64_t r = rand_u32();
+      return (r * max) >> 32;
+
+  }
+
+
 #ifdef __SIZEOF_INT128__
   __uint128_t rand_u128 ( void ) 
   {

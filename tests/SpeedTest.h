@@ -47,8 +47,8 @@
 
 #include "Types.h"
 
-void BulkSpeedTest ( pfHash hash, uint32_t seed );
-double TinySpeedTest ( pfHash hash, int hashsize, int keysize, uint32_t seed, bool verbose );
+void BulkSpeedTest ( pfHash hash, uint32_t seed, bool vary_align, bool vary_size );
+double TinySpeedTest ( pfHash hash, int hashsize, int maxkeysize, uint32_t seed, bool verbose, bool include_vary );
 double HashMapSpeedTest ( pfHash pfhash, int hashbits, std::vector<std::string> words,
                           const uint32_t seed, const int trials, bool verbose );
 //-----------------------------------------------------------------------------
