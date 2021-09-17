@@ -145,51 +145,15 @@ double calcScore ( const int * bins, const int bincount, const int keycount )
   return score;
 }
 
-// Since scores as computed above follow a standard normal
-// distribution, this can turn them into p-values using the CDF of
-// that distribution.
-//
-// Since we are reporting on the worst result of some small-ish number
-// of tests, which are from identical distributions and are actually
-// kinda-sorta close to being independent, we can rely on the CDF of
-// max{X0, X1, X2...Xn} being equal to {CDF(Xi)}**n. But to maximize
-// float-point accuracy, we compute {failure_pvalue}**(1/n) instead of
-// raising the p-value to power n.
-//
-// From there, in order to generate a score that is visually close to
-// the scores previously reported and yet still meaningful, some
-// human-friendly scaling of the pvalue takes place.
-double normalizeScore ( double score, int tests )
+// Convert the score from calcScore back into (rmse/sqrt(lambda) -
+// 1.0), to show the user something like the previous report.
+double normalizeScore ( double score, int scorewidth, int tests )
 {
     // Never return a result higher than this, as a precise value
     // would be visually cluttered and not really meaningful.
     const double maxresult = 9999.999;
-    // This is the CDF of a normal distribution with mu=0 and sigma=1.
-    // erf() results are [-1, 1], and erfc() goes from [0, 2], so
-    // instead of the usual scaling to [0, 1], these pvalues go from 2
-    // to 1 for negative/zero scores, and go from 1 (good) to 0 (bad)
-    // for positive scores, which is one minus a traditional pvalue.
-    const double pvalue = erfc(score / sqrt(2));
-    // Fail value corresponding to FAILURE_PBOUND across some number
-    // of tests. This is also in 1-pvalue space.
-    const double bound = -expm1(log1p(-FAILURE_PBOUND)/tests);
 
-    // This keeps negative/zero scores as negative/zero results.
-    // Passing scores are gradually scaled from 0 to 1 based on how
-    // many powers of 2 are between them.
-    // Failing scores are scaled from 1 on based on how many powers of
-    // 2 past the failure point they are.
-    //
-    // If the "pvalue > bound" test seems backwards, remember that
-    // these numbers are really 1-p, to keep floating-point precision
-    // where it is needed.
-    double result;
-    if (score <= 0.0)
-        result = erf(score / sqrt(2));
-    else if (pvalue > bound)
-        result = std::max(0.0, 1.0 + ((log2(bound) - log2(pvalue)) / 16.0));
-    else
-        result = 1.0 + (log2(bound) - log2(pvalue));
+    double result = score / sqrt(2.0 * scorewidth);
 
     if (result > maxresult)
         return maxresult;
@@ -203,7 +167,7 @@ void plot ( double n )
 {
   int ni = (int)floor(n);
 
-  // Less than [0,3) sigma is fine, [3, 12) sigma is notable, 12+ sigma is really bad
+  // Less than [0,3) sigma is fine, [3, 12) sigma is notable, 12+ sigma is pretty bad
   if(ni <= 2)
     putchar('.');
   else if (ni <= 11)

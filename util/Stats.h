@@ -62,13 +62,16 @@
 #include <assert.h>
 
 // If score exceeds this improbability of happening, note a failing result
-const double FAILURE_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%
+const double FAILURE_PBOUND = exp2(-15); // 2**-15 == 1/32768 =~ 0.00305%
 // If score exceeds this improbability of happening, note a warning
-const double WARNING_PBOUND = exp2(-9); // 2**-9 == 1/512 =~ 0.195%, 8x as much as failure
+const double WARNING_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%, 8x as much as failure
+// If these bounds seem overly generous, remember that SMHasher3 uses
+// about 1000 tests, so a 1/1000 chance event will hit once per run on
+// average, even with a perfect-quality hash function.
 
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
 double calcScore ( const int * bins, const int bincount, const int ballcount );
-double normalizeScore ( double score, int tests );
+double normalizeScore ( double score, int scorewidth, int tests );
 
 void plot ( double n );
 
@@ -282,124 +285,271 @@ static double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits
 
 //-----------------------------------------------------------------------------
 
-// The function for the 'dc' constant from the paper cited below
-static double BallsInBinsDcfunc( const double c, const double x )
+/*
+ * What SMHasher3 frequently reports on is the worst result across some
+ * number of tests. If we compute the CDF/p-value of each test and
+ * consider only those, then the tests become statistically identical,
+ * since CDFs are continuous ~Uniform(0,1). Assuming sufficient
+ * independence also, the CDF of the maximum of N values is equal to
+ * the CDF of a single value raised to the Nth power, so we can just
+ * raise the p-value itself to the power of the number of tests.
+ *
+ * The p-values in SMHasher3 are usually stored in variables as 1.0-p,
+ * so that p-values very close to 1 (which are in the vicinity of
+ * failing results) can be kept as accurate as possible in the face of
+ * floating-point representation realities. This means we can't just
+ * use pow(), but this alternate formulation does the same thing for
+ * values in 1-p space.
+ */
+static double ScalePValue ( double p_value, unsigned testcount )
 {
-    return 1 + x*(log(c) - log(x) + 1) - c;
-}
-
-static double BallsInBinsDcfunc_dx( const double c, const double x )
-{
-    return log(c) - log(x);
-}
-
-// Returns solution (x) for func(c, x) == 0.
-static double NewtonRaphsonDc( const double c )
-{
-    int maxiter = 100;     // Don't do more than 100 iterations
-    double maxerr = 0.001; // Anything within .001 collisions is fine
-    double x0 = c + 1;     // Initial guess; we know solution is >c
-    double x1;
-
-    for (int iter = 0; iter < maxiter; iter++)
-    {
-      double h = BallsInBinsDcfunc(c, x0) / BallsInBinsDcfunc_dx(c, x0);
-      x1 = x0 - h;
-      if (fabs(h) < maxerr)
-        break;
-      x0 = x1;
-    }
-    assert(x1 > c); // Not true in general, but needs to be true for
-                    // our results. The function is well-behaved
-                    // enough that this should never happen. If this
-                    // does fire, a better root finder is needed.
-    return x1;
+  return -expm1(log1p(-p_value) * testcount);
 }
 
 /*
- * Assume that m balls are i.i.d. randomly across n bins, where m is
- * not much less than n. This function computes an estimate of an
- * upper bound on the number of balls in the bin with the most. This
- * set of formulas comes from:
+ * This is exactly the same as ScalePValue, but for 2**N tests.
+ */
+static double ScalePValue2N ( double p_value, unsigned testbits )
+{
+  return -expm1(log1p(-p_value) * exp2(testbits));
+}
+
+/*
+ * SMHasher3 reports p-values by displaying how many powers of 2 the
+ * improbability is. This is the nicest way of summarizing the p-value
+ * I've found. And since the really, truly most important result of
+ * these tests is "does a hash pass or fail", and perhaps how close to
+ * the line it is, the precise p-value is generally better left
+ * unprinted.
+ *
+ * This is not a percentage or a ratio, and there is no standard unit
+ * of log probability that I can find, so I've semi-arbitrarily chosen
+ * the caret (^) to display these values, as that can indicate
+ * exponentiation, and the p-value is no less than 1/(2**logp_value).
+ */
+static int GetLog2PValue ( double p_value )
+{
+    return (log2(p_value) <= -99.0) ? 99 : -ceil(log2(p_value));
+}
+
+/*
+ * Given a mean and standard deviation, return (1.0 - p) for the given
+ * random normal variable.
+ */
+static double GetNormalPValue(const double mu, const double sd, const double variable)
+{
+    double stdvar = (variable - mu) / sd;
+    double p_value = erfc(stdvar/sqrt(2.0))/2.0;
+
+    return p_value;
+}
+
+/*
+ * A helper function for the Peizer and Pratt approximation below.
+ */
+static double GFunc_PeizerPratt(const double x) {
+    if (x < 0.0)
+        return NAN;
+    if (x == 0.0)
+        return 1.0;
+    if (x == 1.0)
+        return 0.0;
+    if (x > 1.0)
+        return -GFunc_PeizerPratt(1.0/x);
+    return (1.0 - x*x + 2*x*log(x))/((1.0 - x)*(1.0 - x));
+}
+
+/*
+ * Assume that m balls are i.i.d. randomly across n bins, with m >=
+ * n*log(n). Then, the number of balls in any given bin tends to have
+ * about log(n) balls and follows a binomial distribution. That is, if
+ * Xi is the number of balls in bin i, then Xi ~ Bin(m, 1/n).
+ *
+ * But we aren't reporting on Xi, we are reporting on Xm = max{i=1..n;
+ * Xi}. All the Xi are from identical distributions, and are actually
+ * sufficiently independent in the random case that we can use the
+ * usual {CDF(Xm)} = {CDF(Xi)}**n.
+ *
+ * The best non-iterative approximation to the Binomial distribution
+ * CDF that I've found is the Peizer and Pratt transformation into a
+ * standard normal distribution. We use that to find a p-value for Xi.
+ * NB: "best" here is akin to "closest to p-values obtained through
+ * simulation for Xm in the extreme tails", and not "least error
+ * compared to actual overall binomial distribution values".
+ *
+ * Thanks to the paper:
+ *   "APPROXIMATIONS TO THE BINOMIAL", by MYRTLE ANNA BRUCE
+ *   https://core.ac.uk/download/pdf/33362622.pdf
+ */
+static double EstimatedBinomialPValue(const unsigned long nbH, const int nbBits, const int maxColl)
+{
+    const double s = maxColl + 1;
+    const double n = nbH;
+    const double t = nbH - maxColl;
+    const double p = exp2(-nbBits);
+    const double q = 1.0 - p;
+
+    const double d1 = s + 1.0/6.0 - p * (n + 1.0/3.0);
+    const double d2 = d1 + 0.02 * (q/(s+0.5) - p/(t+0.5) + (q-0.5)/(n+1));
+
+    const double num = 1.0 + q*GFunc_PeizerPratt(s/(n*p)) + p*GFunc_PeizerPratt(t/(n*q));
+    const double denom = (n + 1.0/6.0) * p * q;
+    const double z2 = d2 * sqrt(num/denom);
+
+    // (1.0 - p) for one hash bin
+    double p_value = GetNormalPValue(0.0, 1.0, z2);
+    //fprintf(stderr, "Pr(Xi > %ld; %d, %d) ~= 1.0 - N(%f)\n", nbH, nbBits, maxColl, z2);
+
+    // (1.0 - p) across all 2**nbBits hash bins
+    double pm_value = ScalePValue2N(p_value, nbBits);
+    //fprintf(stderr,"Pr(Xm > %ld; %d, %d) ~= 1.0-((1.0-%e)**(2**n)) == %.12f\n", nbH, nbBits, maxColl, p_value, pm_value, pm_value);
+
+    return pm_value;
+}
+
+/*
+ * For estimating the maximum value, we could get the normal value
+ * with p=0.5 and back-convert, but the C standard library doesn't
+ * have an inverse erf(), and I don't want to add an external
+ * dependency just for this.
+ *
+ * This function computes an estimate of an upper bound on the number
+ * of balls in the most-occupied bin. This set of formulas comes from:
  *
  * '"Balls into Bins" - A Simple and Tight Analysis', by
  *   Martin Raab and Angelika Steger
  *   http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.399.3974
  *
- * A number of hash counts and widths were run through these formulas,
- * and the results analyzed manually. It was determined that the
- * formula for the 'm = c * n log n' case was also sufficient for our
- * purposes for the 'm <<< n log n' case, and that c == 10.0 was a
- * good enough threshold for the 'm >>> n log n' case. Annoyingly, the
- * formula for 'm = c * n log n' is needed (the 'm >>> n log n'
- * formula is not a good enough estimator) and it does not have a
- * nice, closed form in terms of fundamental functions. So a
- * Newton-Raphson approximation is done to find the needed constant.
+ * The adjustments for calculating the value that corresponds to the
+ * 50th-percentile for a given nbBits were computed via linear
+ * regression from Monte Carlo experiments by fwojcik [N ~= 80,000,000].
  */
 static double EstimateMaxCollisions(const unsigned long nbH, const int nbBits)
 {
-    double alpha = 1.001;        // any number > 1 yields a strong bound
-    double m     = (double)nbH;  // m hashes were distributed over
-    double n     = exp2(nbBits); // n different hash slots.
+    double alpha = -expm1(-0.128775055 * nbBits - 0.759110989);
+    double m     = (double)nbH - 16;
+    double n     = exp2(nbBits);
+    double logn  = nbBits * log(2);
 
-    double logn  = nbBits * log(2); // If m is much larger than n*log(n), then
-    double c     = m / (n * logn);  // the estimation formula is different
+    return (m/n) + alpha * sqrt(2.0 * (m/n) * logn);
+}
 
-    if (c < 10.0)
-      return (NewtonRaphsonDc(c) - 1.0 + alpha) * logn;
-    else
-      return (m/n) + alpha * sqrt(2.0 * (m/n) * logn);
+/*
+ * While computing p-values for Poisson distributions is generally
+ * straightforward, it is also iterative and can require special care
+ * due to floating-point considerations, especially in the long tail
+ * of the distribution. Instead, this computes an upper bound on the
+ * p-value using a single calculation. This is taken from:
+ *
+ * "Sharp Bounds on Tail Probabilities for Poisson Random Variables", by
+ *   Peter Harremoës
+ *   https://helda.helsinki.fi/bitstream/handle/10138/229679/witmse_proc_17.pdf
+ *
+ * Similar to other places in SMHasher3, this returns 1.0-p, so the
+ * closer to 0 the worse the result. This also doesn't bother
+ * computing real p-values for lower-than-expected collision counts,
+ * since that is never a failure condition.
+ */
+static double BoundedPoissonPValue(const double expected, const uint64_t collisions)
+{
+    if (collisions < expected)
+        return 1.0;
+    double x = (double)collisions - 0.5;
+    double g_over_root2 = sqrt(x * log(x / expected) + expected - x);
+    double p_lbound = erfc(g_over_root2)/2.0;
+    return p_lbound;
 }
 
 //-----------------------------------------------------------------------------
 
 static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool maxcoll, bool verbose, bool drawDiagram )
 {
-  double expected;
+  bool largehash = hashsize > (8 * sizeof(uint32_t));
+
+  double expected, p_value;
   // The expected number depends on what collision statistic is being
   // reported on; "worst of N buckets" is very different than "sum
   // over N buckets".
+  //
+  // Also determine an upper-bound on the unlikelihood of the observed
+  // collision count.
+
   if (maxcoll)
+  {
     expected = EstimateMaxCollisions(nbH, hashsize);
+    p_value = EstimatedBinomialPValue(nbH, hashsize, collcount);
+  }
   else
+  {
     expected = EstimateNbCollisions(nbH, hashsize);
-  double ratio = double(collcount) / expected;
+    p_value = BoundedPoissonPValue(expected, collcount);
+  }
+  int logp_value = GetLog2PValue(p_value);
+
+  // Since p-values are now used to determine pass/warning/failure
+  // status, ratios are now solely for humans reading the results.
+  //
+  // If there were no collisions and none were expected, for a
+  // suitably fuzzy value of "none", then a ratio of 1.00 ("test
+  // exactly met expectations") is most sensible.
+  //
+  // If there were no collisions and there was a decent chance of
+  // seeing one, then a ratio of 0.00 ("test saw 0% of expected
+  // collisions") seems best.
+  //
+  // If there were any collisions, and the odds of seeing one were
+  // quite low (arbitrarily chosen to be 0.01), then a ratio isn't
+  // really meaningful, so we use +inf.
+  //
+  // A collision count matching the rounded expectation value is
+  // treated as "exactly expected". For small hash sizes, if the
+  // expected count has more than 0.1 after the decimal place and the
+  // actual collision count is the next integer above the expected
+  // one, then that case is also treated as "exactly expected".
+  //
+  // In all other cases, the true ratio is computed, but the value
+  // will be bounded to not clutter the output in failure cases.
+  double ratio;
+  if (collcount == 0)
+      ratio = (expected < 0.1) ? 1.00 : 0.00;
+  else if (expected < 0.01)
+      ratio = INFINITY;
+  else if (collcount == (int)round(expected))
+      ratio = 1.00;
+  else if (!largehash && (collcount == (int)round(expected+0.4)))
+      ratio = 1.00;
+  else {
+      ratio = double(collcount) / expected;
+      if (ratio > 9999.99)
+          ratio = INFINITY;
+  }
+
+  bool warning = false, failure = false;
+  if (p_value <  FAILURE_PBOUND)
+      failure = true;
+  else if (p_value < WARNING_PBOUND)
+      warning = true;
+  else if (isnan(ratio))
+      warning = true;
+
   if (verbose)
   {
     // 7 integer digits would match the 9.1 float specifier
     // (9 characters - 1 decimal point - 1 digit after the decimal),
     // but some hashes greatly exceed expected collision counts.
-    printf(" - Expected %9.1f, actual %9i  (%.2fx)", expected, collcount, ratio);
-    // Since ratios are most important to humans, and deltas add
-    // visual noise and variable line widths and possibly field
-    // counts, they are now only printed out in --verbose mode.
+    if (finite(ratio))
+      printf(" - Expected %9.1f, actual %9i  (%.3fx) ", expected, collcount, ratio);
+    else
+      printf(" - Expected %9.1f, actual %9i  (------) ", expected, collcount);
+    // Since ratios and pvalue summaries are most important to humans,
+    // and deltas and exact pvalues add visual noise and variable line
+    // widths and possibly field counts, they are now only printed out
+    // in --verbose mode.
     if (drawDiagram)
-      printf(" (%+i)",  collcount - (int)round(expected));
+      printf("(%+i) (p<%8.6f) (^%2d)",  collcount - (int)round(expected), p_value, logp_value);
+    else
+      printf("(^%2d)", logp_value);
   }
-
-  bool warning = false, failure = false;
-  // For all hashes larger than 32 bits, _any_ collisions are a failure.
-  if (hashsize > (8 * sizeof(uint32_t)))
-      failure = (collcount > 0 && expected < 1.0);
-  else if (maxcoll) {
-  // The computable bound for the maximum load of m balls over n bins
-  // is quite generous, so we can be strict here.
-      failure = (ratio > 1.25);
-      warning = (ratio > 1.01);
-  }
-  // For all other size hashes, low estimation values can be inaccurate
-  // TODO - make collision failure cutoff be expressed as a standard
-  // deviation instead of a scale factor, so we don't fail erroneously
-  // if there are a small expected number of collisions.
-  else if (expected >= 0.1 && expected <= 10.0) {
-      failure = (ratio > 4.0);
-      warning = (ratio > 2.0);
-  } else if (collcount > 1)
-      // If expected is large enough, then fail with > 2x expected collisions
-      failure = ratio > 2.0;
-  else if (collcount == 1)
-      // Don't allow expected 0.0+epsilon and actual 1
-      failure = expected < 0.001;
 
   if (verbose)
   {
@@ -482,12 +632,15 @@ bool CountNBitsCollisions ( std::vector<hashtype> & hashes, int nbBits, bool hig
   // of keys (indeed, it will converge to every hash bucket being
   // full, leaving nbH - 2**nbBits collisions). In those cases, it is
   // not very useful to count all collisions, so at some point of high
-  // expected collisions (arbitrarily chosen here at 20% of keys), we
-  // instead count the number of keys in the fullest
-  // bucket. ReportCollisions() will estimate the correct key count
-  // for that differently, as it is a different statistic.
+  // expected collisions, it is better to instead count the number of
+  // keys in the fullest bucket. The cutoff here is if there are
+  // (n*log(n)) hashes, where n is the number of hash buckets. This
+  // cutoff is an inflection point where the "balls-into-bins"
+  // statistics really start changing. ReportCollisions() will
+  // estimate the correct key count for that differently, as it is a
+  // different statistic.
   size_t const nbH = hashes.size();
-  bool countmax = EstimateNbCollisions(nbH, nbBits) >= 0.20 * nbH;
+  bool countmax = (nbH >= (nbBits * exp2(nbBits) * log(2.0))) ? true : false;
 
   printf("Testing %s collisions (%s %3i-bit)", countmax ? "max" : "all",
       highbits ? "high" : "low ", nbBits);
@@ -524,7 +677,7 @@ static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions)
 }
 
 template< typename hashtype >
-bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits )
+bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits, bool drawDiagram )
 {
   int origBits = sizeof(hashtype) * 8;
 
@@ -540,13 +693,17 @@ bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits )
   int maxCollDevBits = 0;
   int maxCollDevNb = 0;
   double maxCollDevExp = 1.0;
+  double maxPValue = INFINITY;
 
   for (int b = minBits; b <= maxBits; b++) {
       int    const nbColls = CountNbCollisions(hashes, nbH, b);
       double const expected = EstimateNbCollisions(nbH, b);
       assert(expected > 0.0);
       double const dev = (double)nbColls / expected;
-      if (dev > maxCollDev) {
+      double const p_value = BoundedPoissonPValue(expected, nbColls);
+      //printf("%d bits, %d/%f, p %f\n", b, nbColls, expected, p_value);
+      if (p_value < maxPValue) {
+          maxPValue = p_value;
           maxCollDev = dev;
           maxCollDevBits = b;
           maxCollDevNb = nbColls;
@@ -561,14 +718,32 @@ bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits )
       spacelen = 0;
   else if (spacelen > strlen(spaces))
       spacelen = strlen(spaces);
-  printf("%.*s(%.2fx)", spacelen, spaces, maxCollDev);
 
-  if (maxCollDev > 2.0) {
+  if (maxCollDev > 9999.99)
+      maxCollDev = INFINITY;
+
+  if (finite(maxCollDev))
+    printf("%.*s(%.3fx) ", spacelen, spaces, maxCollDev);
+  else
+    printf("%.*s(------) ", spacelen, spaces);
+
+  double p_value = ScalePValue(maxPValue, maxBits - minBits + 1);
+  int logp_value = GetLog2PValue(p_value);
+
+  if (drawDiagram)
+    printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+  else
+    printf("(^%2d)", logp_value);
+
+  if (p_value < FAILURE_PBOUND)
+  {
     printf(" !!!!!\n");
     return false;
   }
-
-  printf("\n");
+  else if (p_value < WARNING_PBOUND)
+    printf(" !\n");
+  else
+    printf("\n");
   return true;
 }
 
@@ -612,7 +787,7 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
   std::vector<int> bins;
   bins.resize(1 << maxwidth);
 
-  double worst = 0; // Only report on biases above 0
+  double worstN = 0; // Only report on biases above 0
   int worstStart = -1;
   int worstWidth = -1;
   int tests = 0;
@@ -646,9 +821,9 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 
       if(drawDiagram) plot(n);
 
-      if(n > worst)
+      if(n > worstN)
       {
-        worst = n;
+        worstN = n;
         worstStart = start;
         worstWidth = width;
       }
@@ -667,23 +842,32 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
     if(drawDiagram) printf("]\n");
   }
 
-  double mult = normalizeScore(worst, tests);
+  double p_value = ScalePValue(GetNormalPValue(0, 1, worstN), tests);
+  int logp_value = GetLog2PValue(p_value);
+  double mult = normalizeScore(worstN, worstWidth, tests);
 
   if (worstStart == -1)
-      printf("Worst bias is                              - %.3fx",
-              mult);
+      printf("Worst bias is                              - %.3fx             ",
+              mult, logp_value);
   else
-      printf("Worst bias is the %2d-bit window at bit %3d - %.3fx",
-              worstWidth, worstStart, mult);
+      printf("Worst bias is the %2d-bit window at bit %3d - %.3fx             ",
+              worstWidth, worstStart, mult, logp_value);
 
-  if(mult >= 1.0) {
+  if (drawDiagram)
+    printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
+  else
+    printf("(^%2d)", logp_value);
+
+  if (p_value < FAILURE_PBOUND)
+  {
     printf(" !!!!!\n");
     return false;
   }
-  else {
+  else if (p_value < WARNING_PBOUND)
+    printf(" !\n");
+  else
     printf("\n");
-    return true;
-  }
+  return true;
 }
 
 //----------------------------------------------------------------------------
@@ -796,9 +980,9 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     }
 
     if (testHighBits)
-      result &= TestBitsCollisions(hashes, true);
+      result &= TestBitsCollisions(hashes, true, drawDiagram);
     if (testLowBits)
-      result &= TestBitsCollisions(revhashes, false);
+      result &= TestBitsCollisions(revhashes, false, drawDiagram);
   }
 
   //----------
