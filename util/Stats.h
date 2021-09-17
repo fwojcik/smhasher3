@@ -274,9 +274,89 @@ static double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits
     return NAN;
 }
 
-static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool verbose, bool drawDiagram )
+//-----------------------------------------------------------------------------
+
+// The function for the 'dc' constant from the paper cited below
+static double BallsInBinsDcfunc( const double c, const double x )
 {
-  double expected = EstimateNbCollisions(nbH, hashsize);
+    return 1 + x*(log(c) - log(x) + 1) - c;
+}
+
+static double BallsInBinsDcfunc_dx( const double c, const double x )
+{
+    return log(c) - log(x);
+}
+
+// Returns solution (x) for func(c, x) == 0.
+static double NewtonRaphsonDc( const double c )
+{
+    int maxiter = 100;     // Don't do more than 100 iterations
+    double maxerr = 0.001; // Anything within .001 collisions is fine
+    double x0 = c + 1;     // Initial guess; we know solution is >c
+    double x1;
+
+    for (int iter = 0; iter < maxiter; iter++)
+    {
+      double h = BallsInBinsDcfunc(c, x0) / BallsInBinsDcfunc_dx(c, x0);
+      x1 = x0 - h;
+      if (fabs(h) < maxerr)
+        break;
+      x0 = x1;
+    }
+    assert(x1 > c); // Not true in general, but needs to be true for
+                    // our results. The function is well-behaved
+                    // enough that this should never happen. If this
+                    // does fire, a better root finder is needed.
+    return x1;
+}
+
+/*
+ * Assume that m balls are i.i.d. randomly across n bins, where m is
+ * not much less than n. This function computes an estimate of an
+ * upper bound on the number of balls in the bin with the most. This
+ * set of formulas comes from:
+ *
+ * '"Balls into Bins" - A Simple and Tight Analysis', by
+ *   Martin Raab and Angelika Steger
+ *   http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.399.3974
+ *
+ * A number of hash counts and widths were run through these formulas,
+ * and the results analyzed manually. It was determined that the
+ * formula for the 'm = c * n log n' case was also sufficient for our
+ * purposes for the 'm <<< n log n' case, and that c == 10.0 was a
+ * good enough threshold for the 'm >>> n log n' case. Annoyingly, the
+ * formula for 'm = c * n log n' is needed (the 'm >>> n log n'
+ * formula is not a good enough estimator) and it does not have a
+ * nice, closed form in terms of fundamental functions. So a
+ * Newton-Raphson approximation is done to find the needed constant.
+ */
+static double EstimateMaxCollisions(const unsigned long nbH, const int nbBits)
+{
+    double alpha = 1.001;        // any number > 1 yields a strong bound
+    double m     = (double)nbH;  // m hashes were distributed over
+    double n     = exp2(nbBits); // n different hash slots.
+
+    double logn  = nbBits * log(2); // If m is much larger than n*log(n), then
+    double c     = m / (n * logn);  // the estimation formula is different
+
+    if (c < 10.0)
+      return (NewtonRaphsonDc(c) - 1.0 + alpha) * logn;
+    else
+      return (m/n) + alpha * sqrt(2.0 * (m/n) * logn);
+}
+
+//-----------------------------------------------------------------------------
+
+static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool maxcoll, bool verbose, bool drawDiagram )
+{
+  double expected;
+  // The expected number depends on what collision statistic is being
+  // reported on; "worst of N buckets" is very different than "sum
+  // over N buckets".
+  if (maxcoll)
+    expected = EstimateMaxCollisions(nbH, hashsize);
+  else
+    expected = EstimateNbCollisions(nbH, hashsize);
   double ratio = double(collcount) / expected;
   if (verbose)
   {
@@ -292,10 +372,15 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
   }
 
   bool warning = false, failure = false;
-  ratio = ceil(ratio);
   // For all hashes larger than 32 bits, _any_ collisions are a failure.
   if (hashsize > (8 * sizeof(uint32_t)))
       failure = (collcount > 0 && expected < 1.0);
+  else if (maxcoll) {
+  // The computable bound for the maximum load of m balls over n bins
+  // is quite generous, so we can be strict here.
+      failure = (ratio > 1.25);
+      warning = (ratio > 1.01);
+  }
   // For all other size hashes, low estimation values can be inaccurate
   // TODO - make collision failure cutoff be expressed as a standard
   // deviation instead of a scale factor, so we don't fail erroneously
@@ -324,6 +409,8 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
   return !failure;
 }
 
+// Sum the number of collisions in the high nbHBits values across all
+// given hashes. This requires the vector to be sorted.
 template< typename hashtype >
 int CountNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nbHBits)
 {
@@ -345,17 +432,66 @@ int CountNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nb
   return collcount;
 }
 
+// Find the highest number of collisions in the high nbHBits values
+// across all given hashes. This requires the vector to be sorted.
+template< typename hashtype >
+int CountMaxCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nbHBits)
+{
+  const int origBits = sizeof(hashtype) * 8;
+  const int shiftBy = origBits - nbHBits;
+
+  if (shiftBy <= 0) return -1;
+
+  int maxcollcount = 0;
+  int collcount = 0;
+
+  for (size_t hnb = 1; hnb < nbH; hnb++)
+  {
+    hashtype const h1 = hashes[hnb-1] >> shiftBy;
+    hashtype const h2 = hashes[hnb]   >> shiftBy;
+    if(h1 == h2)
+      collcount++;
+    else
+    {
+      if (maxcollcount < collcount)
+        maxcollcount = collcount;
+      collcount = 0;
+    }
+  }
+
+  if (maxcollcount < collcount)
+    maxcollcount = collcount;
+
+  return maxcollcount;
+}
 
 template< typename hashtype >
 bool CountNBitsCollisions ( std::vector<hashtype> & hashes, int nbBits, bool highbits, bool drawDiagram )
 {
+  // If the nbBits value is too large for this hashtype, do nothing.
   if (CountNbCollisions(hashes, 0, nbBits) < 0) return true;
 
-  printf("Testing collisions (%s %3i-bit)", highbits ? "high" : "low ", nbBits);
-
+  // If many hashes are being tested (compared to the hash width),
+  // then the expected number of collisions will approach the number
+  // of keys (indeed, it will converge to every hash bucket being
+  // full, leaving nbH - 2**nbBits collisions). In those cases, it is
+  // not very useful to count all collisions, so at some point of high
+  // expected collisions (arbitrarily chosen here at 20% of keys), we
+  // instead count the number of keys in the fullest
+  // bucket. ReportCollisions() will estimate the correct key count
+  // for that differently, as it is a different statistic.
   size_t const nbH = hashes.size();
-  int collcount = CountNbCollisions(hashes, nbH, nbBits);
-  return ReportCollisions(nbH, collcount, nbBits, true, drawDiagram);
+  bool countmax = EstimateNbCollisions(nbH, nbBits) >= 0.20 * nbH;
+
+  printf("Testing %s collisions (%s %3i-bit)", countmax ? "max" : "all",
+      highbits ? "high" : "low ", nbBits);
+
+  int collcount;
+  if (countmax)
+    collcount = CountMaxCollisions(hashes, nbH, nbBits);
+  else
+    collcount = CountNbCollisions(hashes, nbH, nbBits);
+  return ReportCollisions(nbH, collcount, nbBits, countmax, true, drawDiagram);
 }
 
 static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
@@ -390,9 +526,9 @@ bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits )
   int const minBits = FindMinBits_TargetCollisionShare(nbH, 0.01);
   int const maxBits = FindMaxBits_TargetCollisionNb(nbH, 20);
   if (maxBits <= 0 || maxBits >= origBits || minBits > maxBits) return true;
-  int spacelen = 74;
+  int spacelen = 78;
 
-  spacelen -= printf("Testing collisions (%s %2i..%2i bits) - ",
+  spacelen -= printf("Testing all collisions (%s %2i..%2i bits) - ",
           highbits ? "high" : "low ", minBits, maxBits);
   double maxCollDev = 0.0;
   int maxCollDevBits = 0;
@@ -583,13 +719,13 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
   {
     unsigned const hashbits = sizeof(hashtype) * 8;
     if (verbose)
-      printf("Testing collisions (     %3i-bit)", hashbits);
+      printf("Testing all collisions (     %3i-bit)", hashbits);
 
     size_t const count = hashes.size();
     int collcount = 0;
     HashSet<hashtype> collisions;
     collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
-    result &= ReportCollisions(count, collcount, hashbits, verbose, drawDiagram);
+    result &= ReportCollisions(count, collcount, hashbits, false, verbose, drawDiagram);
 
     if(!result && drawDiagram)
     {
@@ -626,22 +762,28 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
      * rurban: No, these tests are for non-prime hash tables, using only
      *     the lower 5-10 bits
      *
-     * fwojcik: CountNBbitsCollisions() does not currently seem
-     * to reflect rurban's comment, as it counts the sum of
-     * collisions across _all_ buckets. So if there are many more
-     * hashes than 2**nbBits, and the hash is even _slightly_ not
-     * broken, then every n-bit truncated hash value will appear at
-     * least once, in which case the "actual" value reported would
-     * always be (hashes.size() - 2**nbBits). Checking the results in
-     * doc/ confirms this. cyan's comment is correct.
+     * fwojcik: CountNBitsCollisions() did not previously reflect
+     * rurban's comment, as that code counted the sum of collisions
+     * across _all_ buckets. So if there are many more hashes than
+     * 2**nbBits, and the hash is even _slightly_ not broken, then
+     * every n-bit truncated hash value will appear at least once, in
+     * which case the "actual" value reported would always be
+     * (hashes.size() - 2**nbBits). Checking the results in doc/
+     * confirms this. cyan's comment was correct.
+     *
+     * CountNBitsCollisions() has now been modified to report on the
+     * single bucket with the most collisions when fuller hash tables
+     * are being tested, and ReportCollisions() computes an
+     * appropriate "expected" statistic.
      */
-    std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, /* 12, 8 */ };
-    if (testHighBits)
-      for(const int nbBits: nbBitsvec)
+    std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, 12, 8, };
+    for(const int nbBits: nbBitsvec)
+    {
+      if (testHighBits)
         result &= CountNBitsCollisions(hashes, nbBits, true, drawDiagram);
-    if (testLowBits)
-      for(const int nbBits: nbBitsvec)
+      if (testLowBits)
         result &= CountNBitsCollisions(revhashes, nbBits, false, drawDiagram);
+    }
 
     if (testHighBits)
       result &= TestBitsCollisions(hashes, true);
