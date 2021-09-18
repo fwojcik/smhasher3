@@ -150,7 +150,7 @@ bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
   // wider than 32 bits!!
   if (!Hash_Seed_init (hash, secret) && (secret > UINT64_C(0xffffffff)))
       return true;
-  printf("0x%" PRIx64 " ", secret);
+  printf("0x%" PRIx64 "  ", secret);
   for (int len : std::vector<int> {1,2,4,8,12,16,32,64,128}) {
     std::vector<hashtype> hashes;
     for (int c : std::vector<int> {0,32,'0',127,128,255}) {
@@ -167,7 +167,7 @@ bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
         hashes.push_back(h);
     }
     if (!TestHashList(hashes, false, true, false, false, false, false)) {
-      printf(" Confirmed bad seed 0x%" PRIx64 " for len %d ", secret, len);
+      printf("Confirmed bad seed 0x%" PRIx64 " for len %d ", secret, len);
 #if !defined __clang__ && !defined _MSC_VER
       printf("=> hashes: ");
       for (hashtype x : hashes) printf ("%lx ", x);
@@ -419,7 +419,7 @@ void PerlinNoiseTest (int Xbits, int Ybits,
   assert(inputLen <= INPUT_LEN_MAX);
   char key[INPUT_LEN_MAX] = {0};
 
-  printf("Testing %i coordinates (L%i) : \n", xMax * yMax, inputLen);
+  printf("Generating %i coordinates (%3i-byte keys) : \n", xMax * yMax, inputLen);
 
   for(uint64_t x = 0; x < xMax; x++) {
       memcpy(key, &x, inputLen);  // Note : only works with Little Endian
@@ -640,10 +640,11 @@ bool WindowedKeyTest ( hashfunc<hashtype> hash, int windowbits,
                        bool testCollision, bool testDistribution, bool drawDiagram )
 {
   const int keybits = sizeof(keytype) * 8;
+  const int hashbits = sizeof(hashtype) * 8;
   // calc keycount to expect min. 0.5 collisions: EstimateNbCollisions, except for 64++bit.
   // there limit to 2^25 = 33554432 keys
   int keycount = 1 << windowbits;
-  while (EstimateNbCollisions(keycount, sizeof(hashtype) * 8) < 0.5 && windowbits < 25) {
+  while (EstimateNbCollisions(keycount, hashbits) < 0.5 && windowbits < 25) {
     if ((int)log2(2.0 * keycount) < 0) // overflow
       break;
     keycount *= 2;
@@ -674,10 +675,10 @@ bool WindowedKeyTest ( hashfunc<hashtype> hash, int windowbits,
       hash(&key,sizeof(keytype),0,&hashes[i]);
     }
 
-    printf("Window at %3d - ",j);
+    printf("Window at bit %3d\n",j);
     result &= TestHashList(hashes, drawDiagram, testCollision, testDistribution,
                            /* do not test high/low bits (to not clobber the screen) */
-                           false, false);
+                           false, false, true);
     //printf("\n");
   }
 

@@ -275,18 +275,21 @@ static double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits
     return NAN;
 }
 
-static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool verbose )
+static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool verbose, bool drawDiagram )
 {
   double expected = EstimateNbCollisions(nbH, hashsize);
   double ratio = double(collcount) / expected;
   if (verbose)
   {
-    // 10 integer digits matches the 12.1 float specifier (12
-    // characters - 1 decimal point - 1 digit after the decimal).
-    printf(" - Expected %12.1f, actual %10i (%.2fx)", expected, collcount,
-        (expected > 0.0) ? ratio : (double)collcount);
-    if (ratio > 0.98 && collcount != (int)expected)
-      printf(" (%i)", collcount - (int)expected);
+    // 7 integer digits would match the 9.1 float specifier
+    // (9 characters - 1 decimal point - 1 digit after the decimal),
+    // but some hashes greatly exceed expected collision counts.
+    printf(" - Expected %9.1f, actual %9i  (%.2fx)", expected, collcount, ratio);
+    // Since ratios are most important to humans, and deltas add
+    // visual noise and variable line widths and possibly field
+    // counts, they are now only printed out in --verbose mode.
+    if (drawDiagram)
+      printf(" (%+i)",  collcount - (int)round(expected));
   }
 
   bool warning = false, failure = false;
@@ -345,15 +348,15 @@ int CountNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nb
 
 
 template< typename hashtype >
-bool CountNBitsCollisions ( std::vector<hashtype> & hashes, int nbBits, bool highbits)
+bool CountNBitsCollisions ( std::vector<hashtype> & hashes, int nbBits, bool highbits, bool drawDiagram )
 {
   if (CountNbCollisions(hashes, 0, nbBits) < 0) return true;
 
-  printf("Testing collisions (%s %2i-bit)", highbits ? "high" : "low ", nbBits);
+  printf("Testing collisions (%s %3i-bit)", highbits ? "high" : "low ", nbBits);
 
   size_t const nbH = hashes.size();
   int collcount = CountNbCollisions(hashes, nbH, nbBits);
-  return ReportCollisions(nbH, collcount, nbBits, true);
+  return ReportCollisions(nbH, collcount, nbBits, true, drawDiagram);
 }
 
 static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
@@ -388,8 +391,9 @@ bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits )
   int const minBits = FindMinBits_TargetCollisionShare(nbH, 0.01);
   int const maxBits = FindMaxBits_TargetCollisionNb(nbH, 20);
   if (maxBits <= 0 || maxBits >= origBits || minBits > maxBits) return true;
+  int spacelen = 74;
 
-  printf("Testing collisions (%s %2i-%2i bits) - ",
+  spacelen -= printf("Testing collisions (%s %2i..%2i bits) - ",
           highbits ? "high" : "low ", minBits, maxBits);
   double maxCollDev = 0.0;
   int maxCollDevBits = 0;
@@ -409,8 +413,14 @@ bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits )
       }
   }
 
-  printf("Worst is %2i bits: %2i/%2i (%.2fx)",
-        maxCollDevBits, maxCollDevNb, (int)maxCollDevExp, maxCollDev);
+  const char * spaces = "                ";
+  int i_maxCollDevExp = (int)round(maxCollDevExp);
+  spacelen -= printf("Worst is %2i bits: %i/%i ", maxCollDevBits, maxCollDevNb, i_maxCollDevExp);
+  if (spacelen < 0)
+      spacelen = 0;
+  else if (spacelen > strlen(spaces))
+      spacelen = strlen(spaces);
+  printf("%.*s(%.2fx)", spacelen, spaces, maxCollDev);
 
   if (maxCollDev > 2.0) {
     printf(" !!!!!\n");
@@ -461,7 +471,7 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
   std::vector<int> bins;
   bins.resize(1 << maxwidth);
 
-  double worst = 0;
+  double worst = 0; // Only report on biases above 0
   int worstStart = -1;
   int worstWidth = -1;
 
@@ -516,10 +526,10 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
   double pct = worst * 100.0;
 
   if (worstStart == -1)
-      printf("Worst bias is                               - %.3f%%",
+      printf("Worst bias is                              - %.3f%%",
               pct);
   else
-      printf("Worst bias is the %2d-bit window at bit %2d - %.3f%%",
+      printf("Worst bias is the %2d-bit window at bit %3d - %.3f%%",
          worstWidth, worstStart, pct);
   if(pct >= 1.0) {
     printf(" !!!!!\n");
@@ -566,7 +576,7 @@ template < typename hashtype >
 bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
                     bool testCollision = true, bool testDist = true,
                     bool testHighBits = true, bool testLowBits = true,
-                    bool verbose = true)
+                    bool verbose = true )
 {
   bool result = true;
 
@@ -574,13 +584,13 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
   {
     unsigned const hashbits = sizeof(hashtype) * 8;
     if (verbose)
-      printf("Testing collisions (    %3i-bit)", hashbits);
+      printf("Testing collisions (     %3i-bit)", hashbits);
 
     size_t const count = hashes.size();
     int collcount = 0;
     HashSet<hashtype> collisions;
     collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
-    result &= ReportCollisions(count, collcount, hashbits, verbose);
+    result &= ReportCollisions(count, collcount, hashbits, verbose, drawDiagram);
 
     if(!result && drawDiagram)
     {
@@ -629,10 +639,10 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, /* 12, 8 */ };
     if (testHighBits)
       for(const int nbBits: nbBitsvec)
-        result &= CountNBitsCollisions(hashes, nbBits, true);
+        result &= CountNBitsCollisions(hashes, nbBits, true, drawDiagram);
     if (testLowBits)
       for(const int nbBits: nbBitsvec)
-        result &= CountNBitsCollisions(revhashes, nbBits, false);
+        result &= CountNBitsCollisions(revhashes, nbBits, false, drawDiagram);
 
     if (testHighBits)
       result &= TestBitsCollisions(hashes, true);
