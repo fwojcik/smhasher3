@@ -46,6 +46,9 @@
 #include "HashMapTest.h"
 #include "SpeedTest.h"
 #include "Random.h"
+#include "Wordlist.h"
+
+#include <string.h>
 
 #include <string>
 #include <unordered_map>
@@ -60,36 +63,25 @@ using namespace std;
 // in a hash table. There the size matters more than the bulk speed.
 
 std::vector<std::string> HashMapInit(bool verbose) {
-  std::vector<std::string> words;
+  std::vector<std::string> wordvec;
   std::string line;
-  std::string filename = "/usr/share/dict/words";
-  int lines = 0, sum = 0;
-  std::ifstream wordfile(filename.c_str());
-  if (!wordfile.is_open()) {
-#ifdef __aarch64__ /* should be __ANDROID_API__, but not yet */
-    filename = "dict.words";
-    std::ifstream wordfile1(filename.c_str());
-    if (wordfile1.is_open()) {
-      wordfile = move(wordfile1);
-      goto ok_file;
-    }
-#endif
-    std::cout << "Unable to open words dict file " << filename << "\n";
-    return words;
+  unsigned sum = 0;
+
+  const char * ptr = hashmap_words + 1; // Skip over initial newline
+  while (*ptr != '\0')
+  {
+      const char * end = (const char *)rawmemchr(ptr, '\n');
+      std::string str (ptr, end - ptr);
+      wordvec.push_back(str);
+      sum += end - ptr;
+      ptr = end + 1;
   }
- ok_file:
-  while (getline(wordfile, line)) {
-    int len = line.length();
-    lines++;
-    sum += len;
-    words.push_back(line);
-  }
-  wordfile.close();
+
   if (verbose) {
-    printf ("Read %d words from '%s'\n", lines, filename.c_str());
-    printf ("Avg len: %0.3f\n", (sum+0.0)/lines);
+    printf ("Read %d words from internal list, ", wordvec.size());
+    printf ("avg len: %0.3f\n\n", (sum+0.0)/wordvec.size());
   }
-  return words;
+  return wordvec;
 }
 
 bool HashMapTest ( pfHash pfhash, 
