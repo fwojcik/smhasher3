@@ -61,8 +61,14 @@
 #include <stdio.h>     // for printf
 #include <assert.h>
 
+// If score exceeds this improbability of happening, note a failing result
+const double FAILURE_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%
+// If score exceeds this improbability of happening, note a warning
+const double WARNING_PBOUND = exp2(-9); // 2**-9 == 1/512 =~ 0.195%, 8x as much as failure
+
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
 double calcScore ( const int * bins, const int bincount, const int ballcount );
+double normalizeScore ( double score, int tests );
 
 void plot ( double n );
 
@@ -609,6 +615,7 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
   double worst = 0; // Only report on biases above 0
   int worstStart = -1;
   int worstWidth = -1;
+  int tests = 0;
 
   for(int start = 0; start < hashbits; start++)
   {
@@ -635,6 +642,8 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
     {
       double n = calcScore(&bins[0],bincount,(int)hashes.size());
 
+      tests++;
+
       if(drawDiagram) plot(n);
 
       if(n > worst)
@@ -658,15 +667,16 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
     if(drawDiagram) printf("]\n");
   }
 
-  double pct = worst * 100.0;
+  double mult = normalizeScore(worst, tests);
 
   if (worstStart == -1)
-      printf("Worst bias is                              - %.3f%%",
-              pct);
+      printf("Worst bias is                              - %.3fx",
+              mult);
   else
-      printf("Worst bias is the %2d-bit window at bit %3d - %.3f%%",
-         worstWidth, worstStart, pct);
-  if(pct >= 1.0) {
+      printf("Worst bias is the %2d-bit window at bit %3d - %.3fx",
+              worstWidth, worstStart, mult);
+
+  if(mult >= 1.0) {
     printf(" !!!!!\n");
     return false;
   }
