@@ -77,6 +77,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <time.h>
+#include <errno.h>
 
 //-----------------------------------------------------------------------------
 // Configuration.
@@ -832,7 +833,7 @@ void Hash_init (HashInfo* info) {
            (info->hash == aesrng160) ||
            (info->hash == aesrng224) ||
            (info->hash == aesrng256))
-      aesrng_init(0);
+      aesrng_init(g_seed);
 #endif
   else if (info->hash == rmd128)
     rmd128_init(&ltc_state);
@@ -1032,6 +1033,20 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   // eventual initializers
   Hash_init (info);
 
+  // Most hashes don't use Hash_Seed_init(), so they only get their
+  // seed through hash(), which has a uint32_t seed parameter, so
+  // there's no way of getting big seeds to them at all.
+  //
+  // XXX - This general problem will need to be addressed at
+  // some point!! For now, just limit global seeds to 32 bits.
+  if (g_seed > (1ULL << (8 * sizeof(uint32_t)))) {
+      if (!Hash_Seed_init(hash, g_seed)) {
+          printf("Specified global seed 0x%016" PRIx64 ""
+                  " is larger than the hash harness can accept\n", g_seed);
+          exit(1);
+      }
+  }
+
   //-----------------------------------------------------------------------------
   // Sanity tests
 
@@ -1042,12 +1057,16 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     printf("PASS\n\n"); fflush(NULL); // if not it does exit(1)
   }
 
-  if (g_testAll || g_testSpeed || g_testHashmap) {
-    printf("--- Testing %s \"%s\" %s\n\n", info->name, info->desc, quality_str[info->quality]);
-  } else {
-    fprintf(stderr, "--- Testing %s \"%s\" %s\n\n", info->name, info->desc, quality_str[info->quality]);
-  }
-  fflush(NULL);
+  FILE * outfile;
+  if (g_testAll || g_testSpeed || g_testHashmap)
+    outfile = stdout;
+  else
+    outfile = stderr;
+  fprintf(outfile, "--- Testing %s \"%s\" %s", info->name, info->desc, quality_str[info->quality]);
+  if (g_seed != 0)
+    fprintf(outfile, " seed 0x%016" PRIx64 "\n\n", g_seed);
+  else
+    fprintf(outfile, "\n\n");
 
   // sha1_32 runs 30s
   if(g_testSanity || g_testAll)
@@ -1170,7 +1189,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     bool result = true;
     bool verbose = true; //.......... progress dots
 
-    Hash_Seed_init (hash, 0, 2);
+    Hash_Seed_init (hash, g_seed, 2);
     result &= AvalancheTest< Blob< 24>, hashtype > (hash,300000,verbose);
     result &= AvalancheTest< Blob< 32>, hashtype > (hash,300000,verbose);
     result &= AvalancheTest< Blob< 40>, hashtype > (hash,300000,verbose);
@@ -1228,7 +1247,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
     bool result = true;
 
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
 
       result &= SparseKeyTest<  16,hashtype>(hash,9,true,true,true, g_drawDiagram);
       result &= SparseKeyTest<  24,hashtype>(hash,8,true,true,true, g_drawDiagram);
@@ -1306,7 +1325,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
       bool result = true;
       uint32_t blocks[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
-      Hash_Seed_init (hash, 0);
+      Hash_Seed_init (hash, g_seed);
       result &= CombinationKeyTest<hashtype>(hash,7,blocks,
                                              sizeof(blocks) / sizeof(uint32_t),
                                              true,true, g_drawDiagram);
@@ -1602,7 +1621,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     int windowbits = 20;
     const int keybits = (hashbits >= 64) ? 32 : hashbits*2+2;
 
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     result &= WindowedKeyTest< Blob<keybits>, hashtype >
         ( hash, windowbits, testCollision, testDistribution, g_drawDiagram );
 
@@ -1627,7 +1646,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 #endif
     bool result = true;
 
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+0,8,reps, g_drawDiagram);
     result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+1,8,reps, g_drawDiagram);
     result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+2,8,reps, g_drawDiagram);
@@ -1663,7 +1682,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
         maxlen = 8;
     }
 
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     for(int len = 4; len <= maxlen; len += 4)
     {
       result &= TwoBytesTest2<hashtype>(hash, len, g_drawDiagram);
@@ -1687,7 +1706,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
                                  ".,!?:;-+=()<>/|\"'@#$%&*_^";
 
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     result &= TextKeyTest( hash, "Foo",    alnum, 4, "Bar",    g_drawDiagram );
     result &= TextKeyTest( hash, "FooBar", alnum, 4, "",       g_drawDiagram );
     result &= TextKeyTest( hash, "",       alnum, 4, "FooBar", g_drawDiagram );
@@ -1712,7 +1731,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
     bool result = true;
 
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     result &= ZeroKeyTest<hashtype>( hash, g_drawDiagram );
 
     if(!result) printf("*********FAIL*********\n");
@@ -1847,7 +1866,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     bool testDistribution = g_testExtra;
 
     bool result = true;
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     result &= PrngTest<hashtype>( hash, testCollision, testDistribution, g_drawDiagram );
 
     if(!result) printf("\n*********FAIL*********\n");
@@ -1871,7 +1890,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
     bool result = true;
 
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     result &= testLongNeighbors(info->hash, info->hashbits, g_drawDiagram);
 
     if(!result) printf("*********FAIL*********\n");
@@ -1892,7 +1911,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     fflush(NULL);
 
     bool result = true;
-    Hash_Seed_init (hash, 0);
+    Hash_Seed_init (hash, g_seed);
     if (info->hashbits > 64 || g_speed > 500.0) {
       result &= BicTest3<Blob<128>,hashtype>(hash,100000,g_drawDiagram);
     } else {
@@ -1946,7 +1965,7 @@ void MomentChi2Thread ( const struct HashInfo *info, const int inputSize,
                         moments &b)
 {
   pfHash const hash = info->hash;
-  uint32_t seed = 0;
+  uint32_t seed = g_seed;
   long double const n = (end-(start+1)) / step;
   uint64_t previous = 0;
   long double b0h = b[0], b0l = b[1], db0h = b[2], db0l = b[3];
@@ -2718,7 +2737,7 @@ static char* strndup(char const *s, size_t n)
 void usage( void )
 {
     printf("Usage: SMHasher3 [--list][--listnames][--tests] [--verbose][--extra]\n"
-           "       [--test=Speed,...] hash\n");
+           "       [--test=Speed,...] [--seed=globalseed] hash\n");
 }
 
 int main ( int argc, const char ** argv )
@@ -2771,6 +2790,17 @@ int main ( int argc, const char ** argv )
       }
       if (strcmp(arg,"--extra") == 0) {
         g_testExtra = true;
+        continue;
+      }
+      if (strncmp(arg,"--seed=", 7) == 0) {
+        errno = 0;
+        char * endptr;
+        uint64_t seed = strtol(&arg[7], &endptr, 0);
+        if ((errno != 0) || (arg[7] == '\0') || (*endptr != '\0')) {
+            printf("Error parsing global seed value \"%s\"\n", &arg[7]);
+            exit(1);
+        }
+        g_seed = seed;
         continue;
       }
       if (strcmp(arg,"--EstimateNbCollisions") == 0) {

@@ -98,14 +98,14 @@ void calcBiasRange ( const pfHash hash, std::vector<int> &bins, Rand r,
     }
 
     r.rand_p(&K,keybytes);
-    hash(&K,keybytes,0,&A);
+    hash(&K,keybytes,g_seed,&A);
 
     int * cursor = &bins[keystart * hashbits]; // 0 .. 1536
 
     for(int iBit = keystart; iBit < keyend; iBit++)
     {
       flipbit(&K,keybytes,iBit);
-      hash(&K,keybytes,0,&B);
+      hash(&K,keybytes,g_seed,&B);
       flipbit(&K,keybytes,iBit);
 
       for(int iOut = 0; iOut < hashbits; iOut++)
@@ -195,10 +195,10 @@ void BicTest ( pfHash hash, const int keybit, const int reps, double & maxBias, 
     }
 
     r.rand_p(&key,keybytes);
-    hash(&key,keybytes,0,&h1);
+    hash(&key,keybytes,g_seed,&h1);
 
     flipbit(key,keybit);
-    hash(&key,keybytes,0,&h2);
+    hash(&key,keybytes,g_seed,&h2);
 
     hashtype d = h1 ^ h2;
 
@@ -331,9 +331,9 @@ bool BicTest3 ( pfHash hash, const int reps, bool verbose = false )
     for(int irep = 0; irep < reps; irep++)
     {
       r.rand_p(&key,keybytes);
-      hash(&key,keybytes,0,&h1);
+      hash(&key,keybytes,g_seed,&h1);
       flipbit(key,keybit);
-      hash(&key,keybytes,0,&h2);
+      hash(&key,keybytes,g_seed,&h2);
 
       hashtype d = h1 ^ h2;
 
@@ -442,9 +442,9 @@ void BicTest2 ( pfHash hash, const int reps, bool verbose = true )
       for(int irep = 0; irep < reps; irep++)
       {
         r.rand_p(&key,keybytes);
-        hash(&key,keybytes,0,&h1);
+        hash(&key,keybytes,g_seed,&h1);
         flipbit(key,keybit);
-        hash(&key,keybytes,0,&h2);
+        hash(&key,keybytes,g_seed,&h2);
 
         hashtype d = h1 ^ h2;
 

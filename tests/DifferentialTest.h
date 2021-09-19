@@ -157,7 +157,7 @@ void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, h
     flipbit(&k2,sizeof(k2),i);
     bitsleft--;
 
-    hash(&k2,sizeof(k2),0,&h2);
+    hash(&k2,sizeof(k2),g_seed,&h2);
 
     if(h1 == h2)
     {
@@ -198,7 +198,7 @@ bool DiffTest ( pfHash hash, int diffbits, int reps, bool dumpCollisions )
   printf("%d reps, %0.f total tests, expecting %2.2f random collisions",
          reps,testcount,expected);
 
-  Hash_Seed_init (hash, 0);
+  Hash_Seed_init (hash, g_seed);
   for(int i = 0; i < reps; i++)
   {
     if(i % (reps/10) == 0) printf(".");
@@ -206,7 +206,7 @@ bool DiffTest ( pfHash hash, int diffbits, int reps, bool dumpCollisions )
     r.rand_p(&k1,sizeof(keytype));
     k2 = k1;
 
-    hash(&k1,sizeof(k1),0,(uint32_t*)&h1);
+    hash(&k1,sizeof(k1),g_seed,(uint32_t*)&h1);
 
     DiffTestRecurse<keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffs);
   }
@@ -241,12 +241,12 @@ void DiffDistTest ( pfHash hash, const int diffbits, int trials, double & worst,
   std::vector<keytype>  keys(trials);
   std::vector<hashtype> A(trials),B(trials);
 
-  Hash_Seed_init (hash, 0);
+  Hash_Seed_init (hash, g_seed);
   for(int i = 0; i < trials; i++)
   {
     rand_p(&keys[i],sizeof(keytype));
 
-    hash(&keys[i],sizeof(keytype),0,(uint32_t*)&A[i]);
+    hash(&keys[i],sizeof(keytype),g_seed,(uint32_t*)&A[i]);
   }
 
   //----------
@@ -272,7 +272,7 @@ void DiffDistTest ( pfHash hash, const int diffbits, int trials, double & worst,
     {
       keytype k2 = keys[i] ^ d;
 
-      hash(&k2,sizeof(k2),0,&h2);
+      hash(&k2,sizeof(k2),g_seed,&h2);
 
       B[i] = A[i] ^ h2;
     }
@@ -307,7 +307,7 @@ bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
 
   bool result = true;
 
-  Hash_Seed_init (hash, 0);
+  Hash_Seed_init (hash, g_seed);
   for(int keybit = 0; keybit < keybits; keybit++)
   {
     printf("Testing bit %d - %d keys\n",keybit, keycount);
@@ -316,9 +316,9 @@ bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
     {
       r.rand_p(&k,sizeof(keytype));
       
-      hash(&k,sizeof(keytype),0,&h1);
+      hash(&k,sizeof(keytype),g_seed,&h1);
       flipbit(&k,sizeof(keytype),keybit);
-      hash(&k,sizeof(keytype),0,&h2);
+      hash(&k,sizeof(keytype),g_seed,&h2);
 
       hashes[i] = h1 ^ h2;
     }

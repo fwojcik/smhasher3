@@ -77,6 +77,12 @@ static inline uint8_t bitrev(uint8_t b)
 }
 
 //-----------------------------------------------------------------------------
+// To be able to sample different statistics sets from the same hash,
+// a seed can be supplied which will be used in each test where a seed
+// is not explicitly part of that test.
+extern uint64_t g_seed;
+
+//-----------------------------------------------------------------------------
 // We want to verify that every test produces the same result on every platform
 // To do this, we hash the results of every test to produce an overall
 // verification value for the whole test suite. If two runs produce the same
@@ -227,7 +233,7 @@ struct HashCallback : public KeyCallback
     m_hashes.resize(newsize);
 
     hashtype h;
-    m_pfHash(key, len, 0, &h);
+    m_pfHash(key, len, g_seed, &h);
 
     m_hashes.back() = h;
   }
@@ -266,7 +272,7 @@ struct CollisionCallback : public KeyCallback
   {
     hashtype h;
 
-    m_pfHash(key,len,0,&h);
+    m_pfHash(key,len,g_seed,&h);
 
     if(m_collisions.count(h))
     {

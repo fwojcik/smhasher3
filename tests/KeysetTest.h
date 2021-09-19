@@ -108,7 +108,7 @@ void Prn_gen (int nbRn, pfHash hash, std::vector<hashtype> & hashes )
   // a generated random number becomes the input for the next one
   for (int i=0; i< nbRn; i++) {
       hashtype h;
-      hash(&hcopy, sizeof(hcopy), 0, &h);
+      hash(&hcopy, sizeof(hcopy), g_seed, &h);
       hashes.push_back(h);
       memcpy(&hcopy, &h, sizeof(h));
   }
@@ -469,7 +469,7 @@ void CombinationKeygenRecurse ( blocktype * key, int len, int maxlen,
     key[len] = blocks[i];
 
     hashtype h;
-    hash(key, (len+1) * sizeof(blocktype), 0, &h);
+    hash(key, (len+1) * sizeof(blocktype), g_seed, &h);
     hashes.push_back(h);
 
     CombinationKeygenRecurse(key,len+1,maxlen,blocks,blockcount,hash,hashes);
@@ -520,7 +520,7 @@ void PermutationKeygenRecurse ( pfHash hash, uint32_t * blocks, int blockcount, 
   {
     hashtype h;
 
-    hash(blocks,blockcount * sizeof(uint32_t),0,&h);
+    hash(blocks,blockcount * sizeof(uint32_t),g_seed,&h);
 
     hashes.push_back(h);
 
@@ -588,7 +588,7 @@ void SparseKeygenRecurse ( pfHash hash, int start, int bitsleft, bool inclusive,
 
     if(inclusive || (bitsleft == 1))
     {
-      hash(&k, sizeof(keytype), 0, &h);
+      hash(&k, sizeof(keytype), g_seed, &h);
       hashes.push_back(h);
     }
 
@@ -620,7 +620,7 @@ bool SparseKeyTest ( hashfunc<hashtype> hash, const int setbits, bool inclusive,
   if(inclusive)
   {
     hashes.resize(1);
-    hash(&k,sizeof(keytype),0,&hashes[0]);
+    hash(&k,sizeof(keytype),g_seed,&hashes[0]);
   }
 
   SparseKeygenRecurse(hash,0,setbits,inclusive,k,hashes);
@@ -674,7 +674,7 @@ bool WindowedKeyTest ( hashfunc<hashtype> hash, int windowbits,
       key = i;
       //key = key << minbit;
       lrot(&key,sizeof(keytype),minbit);
-      hash(&key,sizeof(keytype),0,&hashes[i]);
+      hash(&key,sizeof(keytype),g_seed,&hashes[i]);
     }
 
     printf("Window at bit %3d\n",j);
@@ -721,7 +721,7 @@ bool CyclicKeyTest ( pfHash hash, int cycleLen, int cycleReps, const int keycoun
       key[j] = cycle[j % cycleLen];
     }
 
-    hash(key,keyLen,0,&hashes[i]);
+    hash(key,keyLen,g_seed,&hashes[i]);
   }
 
   //----------
@@ -797,7 +797,7 @@ bool TextKeyTest ( hashfunc<hashtype> hash, const char * prefix, const char * co
       key[prefixlen+j] = coreset[t % corecount]; t /= corecount;
     }
 
-    hash(key,keybytes,0,&hashes[i]);
+    hash(key,keybytes,g_seed,&hashes[i]);
   }
 
   //----------
@@ -845,7 +845,7 @@ bool WordsKeyTest ( hashfunc<hashtype> hash, const long keycount,
     }
     words.insert(key_str);
 
-    hash(key,len,0,&hashes[i]);
+    hash(key,len,g_seed,&hashes[i]);
 
 #if 0 && defined DEBUG
     uint64_t h;
@@ -885,7 +885,7 @@ bool WordsStringTest ( hashfunc<hashtype> hash, std::vector<std::string> & words
     wordset.insert(words[i]);
     const int len = words[i].length();
     const char *key = words[i].c_str();
-    hash(key, len, 0, &hashes[i]);
+    hash(key, len, g_seed, &hashes[i]);
   }
 
   //----------
@@ -918,7 +918,7 @@ bool ZeroKeyTest ( pfHash hash, bool drawDiagram )
 
   for(int i = 0; i < keycount; i++)
   {
-    hash(nullblock,i,0,&hashes[i]);
+    hash(nullblock,i,g_seed,&hashes[i]);
   }
 
   bool result = TestHashList(hashes,drawDiagram);

@@ -69,6 +69,8 @@ uint32_t whitehole ( void )
 #pragma optimize( "", on ) 
 #endif
 
+uint64_t g_seed = 0;
+
 uint32_t g_verify = 1;
 
 void MixVCode ( const void * blob, int len )

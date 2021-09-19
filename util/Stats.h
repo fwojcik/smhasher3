@@ -817,7 +817,7 @@ bool TestKeyList ( hashfunc<hashtype> hash, std::vector<keytype> & keys,
 
     keytype & k = keys[i];
 
-    hash(&k,sizeof(k),0,&hashes[i]);
+    hash(&k,sizeof(k),g_seed,&hashes[i]);
   }
   printf("\n");
 
