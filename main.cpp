@@ -858,9 +858,9 @@ void Hash_init (HashInfo* info) {
 
 // optional hash seed initializers.
 // esp. for Hashmaps, whenever the seed changes, for expensive seeding.
-void Seed_init (HashInfo* info, size_t seed) {
-  Hash_Seed_init (info->hash, seed);
+bool Seed_init (HashInfo* info, size_t seed) {
   //Bad_Seed_init (info->hash, seed);
+  return Hash_Seed_init (info->hash, seed);
 }
 
 // Needed for hashed with a few bad seeds, to reject this seed and generate a new one.
@@ -921,7 +921,7 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
 #endif
 }
 
-void Hash_Seed_init (pfHash hash, size_t seed) {
+bool Hash_Seed_init (pfHash hash, size_t seed) {
   uint32_t seed32 = seed;
   //if (hash == md5_128 || hash == md5_32)
   //  md5_seed_init(seed);
@@ -959,6 +959,9 @@ void Hash_Seed_init (pfHash hash, size_t seed) {
     hashx_seed_init(info, seed);
   */
 #endif
+  else
+      return false;
+  return true;
 }
 
 
