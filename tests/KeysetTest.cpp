@@ -312,7 +312,7 @@ void TwoBytesKeygen ( int maxlen, KeyCallback & c )
   for(int i = 2; i <= maxlen; i++)
     keycount += i*255;
 
-  printf("Keyset 'TwoBytes' - up-to-%d-byte keys, %d total keys\n", maxlen, keycount);
+  printf("Keyset 'TwoBytes' - up-to-%d-byte keys - %d keys\n", maxlen, keycount);
 
   c.reserve(keycount);
 

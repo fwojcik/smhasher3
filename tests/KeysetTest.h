@@ -100,7 +100,7 @@ void Prn_gen (int nbRn, pfHash hash, std::vector<hashtype> & hashes )
 {
   assert(nbRn > 0);
 
-  printf("Generating %i random numbers : \n", nbRn);
+  printf("Generating random numbers by hashing previous output - %d keys\n", nbRn);
 
   hashtype hcopy;
   memset(&hcopy, 0, sizeof(hcopy));
@@ -419,7 +419,7 @@ void PerlinNoiseTest (int Xbits, int Ybits,
   assert(inputLen <= INPUT_LEN_MAX);
   char key[INPUT_LEN_MAX] = {0};
 
-  printf("Generating %i coordinates (%3i-byte keys) : \n", xMax * yMax, inputLen);
+  printf("Generating coordinates from %3i-byte keys - %d keys\n", inputLen, xMax * yMax);
 
   for(uint64_t x = 0; x < xMax; x++) {
       memcpy(key, &x, inputLen);  // Note : only works with Little Endian
@@ -659,7 +659,7 @@ bool WindowedKeyTest ( hashfunc<hashtype> hash, int windowbits,
   bool result = true;
   int testcount = keybits;
 
-  printf("Keyset 'Window' - %3d-bit key, %3d-bit window - %d tests, %d keys per test\n",
+  printf("Keyset 'Window' - %3d-bit key, %3d-bit window - %d tests - %d keys\n",
          keybits,windowbits,testcount,keycount);
 
   for(int j = 0; j <= testcount; j++)
@@ -816,7 +816,7 @@ bool WordsKeyTest ( hashfunc<hashtype> hash, const long keycount,
                     const char* name, bool drawDiagram )
 {
   const int corecount = (int)strlen(coreset);
-  printf("Keyset 'Words' - %ld random keys of len %d-%d from %s charset\n", keycount, minlen, maxlen, name);
+  printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n", minlen, maxlen, name, keycount);
   assert (minlen >= 0);
   assert (maxlen > minlen);
 
@@ -865,7 +865,7 @@ bool WordsStringTest ( hashfunc<hashtype> hash, std::vector<std::string> & words
                        bool drawDiagram )
 {
   long wordscount = words.size();
-  printf("Keyset 'Words' - %ld dict words\n", wordscount);
+  printf("Keyset 'Words' - dictionary words - %d keys\n", wordscount);
 
   std::vector<hashtype> hashes;
   hashes.resize(wordscount);

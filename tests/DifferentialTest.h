@@ -310,7 +310,7 @@ bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
   Hash_Seed_init (hash, 0);
   for(int keybit = 0; keybit < keybits; keybit++)
   {
-    printf("Testing bit %d\n",keybit);
+    printf("Testing bit %d - %d keys\n",keybit, keycount);
 
     for(int i = 0; i < keycount; i++)
     {
