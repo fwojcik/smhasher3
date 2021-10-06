@@ -66,16 +66,6 @@
 void     blackhole ( uint32_t x );
 uint32_t whitehole ( void );
 
-static inline uint8_t bitrev(uint8_t b)
-{
-  static const unsigned char revbits[16] =
-    {
-     0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
-     0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf
-    };
-  return (revbits[ b & 0b1111 ] << 4) | revbits[ b >> 4 ];
-}
-
 //-----------------------------------------------------------------------------
 // To be able to sample different statistics sets from the same hash,
 // a seed can be supplied which will be used in each test where a seed
@@ -488,16 +478,6 @@ public:
   {
     rshift(&bytes[0], sizeof(bytes), c);
 
-    return *this;
-  }
-
-  Blob & bitreverse ( void )
-  {
-    assert (_bits % 8 == 0);
-    const int j = _bits / 8;
-    for (int i = 0; i < j; i++) {
-      bytes[j - i] = bitrev(bytes[i]);
-    }
     return *this;
   }
 

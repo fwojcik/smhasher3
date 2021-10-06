@@ -71,12 +71,14 @@ void     clearbit    ( void * blob, int len, uint32_t bit );
 
 void     flipbit     ( void * blob, int len, uint32_t bit );
 
+void     reversebits ( void * blob, int len );
+void     reverse32   ( uint32_t & v );
+void     reverse64   ( uint64_t & v );
+
 int      countbits   ( uint32_t v );
 int      countbits   ( std::vector<uint32_t> & v );
 
 int      countbits   ( const void * blob, int len );
-
-void     invert      ( std::vector<uint32_t> & v );
 
 //----------
 
@@ -110,6 +112,17 @@ inline void flipbit ( T & blob, uint32_t bit )
 
 template<> inline void flipbit ( uint32_t & blob, uint32_t bit ) { bit &= 31; blob ^= (uint32_t(1) << bit); }
 template<> inline void flipbit ( uint64_t & blob, uint32_t bit ) { bit &= 63; blob ^= (uint64_t(1) << bit); }
+
+//----------
+
+template< typename T >
+inline void reversebits ( T & blob )
+{
+  reversebits(&blob,sizeof(blob));
+}
+
+template<> inline void reversebits ( uint32_t & blob ) { reverse32(blob); }
+template<> inline void reversebits ( uint64_t & blob ) { reverse64(blob); }
 
 //-----------------------------------------------------------------------------
 // Left and right shift of blobs. The shift(N) versions work on chunks of N

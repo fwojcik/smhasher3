@@ -887,20 +887,6 @@ static int FindNbBitsForCollisionTarget(int targetNbCollisions, int nbHashes)
     return nb-1;
 }
 
-// 0xf00f1001 => 0x8008f00f
-template <typename hashtype>
-hashtype bitreverse(hashtype n, size_t b = sizeof(hashtype) * 8)
-{
-    assert(b <= std::numeric_limits<hashtype>::digits);
-    hashtype rv = 0;
-    for (size_t i = 0; i < b; i += 8) {
-        rv <<= 8;
-        rv |= bitrev(n & 0xff); // ensure overloaded |= op for Blob not underflowing
-        n >>= 8;
-    }
-    return rv;
-}
-
 template < typename hashtype >
 bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
                     bool testCollision = true, bool testDist = true,
@@ -938,7 +924,11 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       // reverse: bitwise flip the hashes. lowest bits first
       revhashes.reserve(hashes.size());
       for(const auto hashval: hashes)
-        revhashes.push_back(bitreverse(hashval));
+      {
+        hashtype rev = hashval;
+        reversebits(rev);
+        revhashes.push_back(rev);
+      }
       std::sort(revhashes.begin(), revhashes.end());
     }
 

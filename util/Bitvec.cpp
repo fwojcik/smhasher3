@@ -235,7 +235,56 @@ void flipbit ( void * block, int len, uint32_t bit )
 }
 
 // from the "Bit Twiddling Hacks" webpage
+static inline uint8_t byterev(uint8_t b)
+{
+  return ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
+}
 
+// 0xf00f1001 => 0x8008f00f
+void reversebits ( void * blob, int len )
+{
+  uint8_t * b = (uint8_t*)blob;
+  uint8_t tmp[len];
+
+  for (size_t i = 0; i < len; i++)
+    tmp[len - i - 1] = byterev(b[i]);
+  memcpy(blob, tmp, len);
+}
+
+// from the "Bit Twiddling Hacks" webpage
+void reverse32 ( uint32_t & v )
+{
+  // swap odd and even bits
+  v = ((v >> 1) & 0x55555555) | ((v & 0x55555555) <<  1);
+  // swap consecutive pairs
+  v = ((v >> 2) & 0x33333333) | ((v & 0x33333333) <<  2);
+  // swap nibbles ...
+  v = ((v >> 4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) <<  4);
+  // swap bytes
+  v = ((v >> 8) & 0x00FF00FF) | ((v & 0x00FF00FF) <<  8);
+  // swap 2-byte long pairs
+  v = ( v >> 16             ) | ( v               << 16);
+}
+
+// from the "Bit Twiddling Hacks" webpage
+void reverse64 ( uint64_t & v )
+{
+  // swap odd and even bits
+  v = ((v >> 1)  & 0x5555555555555555) | ((v & 0x5555555555555555) <<  1);
+  // swap consecutive pairs
+  v = ((v >> 2)  & 0x3333333333333333) | ((v & 0x3333333333333333) <<  2);
+  // swap nibbles ...
+  v = ((v >> 4)  & 0x0F0F0F0F0F0F0F0F) | ((v & 0x0F0F0F0F0F0F0F0F) <<  4);
+  // swap bytes
+  v = ((v >> 8)  & 0x00FF00FF00FF00FF) | ((v & 0x00FF00FF00FF00FF) <<  8);
+  // swap 2-byte long pairs
+  v = ((v >> 16) & 0x0000FFFF0000FFFF) | ((v & 0x0000FFFF0000FFFF) << 16);
+  // swap 4-byte long pairs
+  v = ( v >> 32                      ) | ( v                       << 32);
+}
+
+
+// from the "Bit Twiddling Hacks" webpage
 int countbits ( uint32_t v )
 {
   v = v - ((v >> 1) & 0x55555555);                    // reuse input as temporary
