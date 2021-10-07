@@ -104,9 +104,9 @@ void calcBiasRange ( const pfHash hash, std::vector<int> &bins, Rand r,
 
     for(int iBit = keystart; iBit < keyend; iBit++)
     {
-      flipbit(&K,keybytes,iBit);
+      flipbit(K,iBit);
       hash(&K,keybytes,g_seed,&B);
-      flipbit(&K,keybytes,iBit);
+      flipbit(K,iBit);
 
       for(int iOut = 0; iOut < hashbits; iOut++)
       {

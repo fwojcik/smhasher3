@@ -584,7 +584,7 @@ void SparseKeygenRecurse ( pfHash hash, int start, int bitsleft, bool inclusive,
 
   for(int i = start; i < nbits; i++)
   {
-    flipbit(&k, nbytes, i);
+    flipbit(k, i);
 
     if(inclusive || (bitsleft == 1))
     {
@@ -597,7 +597,7 @@ void SparseKeygenRecurse ( pfHash hash, int start, int bitsleft, bool inclusive,
       SparseKeygenRecurse(hash, i+1, bitsleft-1, inclusive, k, hashes);
     }
 
-    flipbit(&k, nbytes, i);
+    flipbit(k, i);
   }
 }
 
@@ -673,7 +673,7 @@ bool WindowedKeyTest ( hashfunc<hashtype> hash, int windowbits,
     {
       key = i;
       //key = key << minbit;
-      lrot(&key,sizeof(keytype),minbit);
+      lrot(key,minbit);
       hash(&key,sizeof(keytype),g_seed,&hashes[i]);
     }
 
