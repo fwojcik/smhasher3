@@ -801,9 +801,9 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 
     for(size_t j = 0; j < hashes.size(); j++)
     {
-      hashtype & hash = hashes[j];
+      hashtype hash = hashes[j];
 
-      uint32_t index = window(&hash,sizeof(hash),start,width);
+      uint32_t index = window(hash,start,width);
 
       bins[index]++;
     }
@@ -1048,10 +1048,10 @@ double TestDistributionBytepairs ( std::vector<hashtype> & hashes, bool drawDiag
 
       for(size_t i = 0; i < hashes.size(); i++)
       {
-        hashtype & hash = hashes[i];
+        hashtype hash = hashes[i];
 
-        uint32_t pa = window(&hash,sizeof(hash),a,8);
-        uint32_t pb = window(&hash,sizeof(hash),b,8);
+        uint32_t pa = window(hash,a,8);
+        uint32_t pb = window(hash,b,8);
 
         bins[pa | (pb << 8)]++;
       }
@@ -1093,9 +1093,9 @@ void TestDistributionFast ( std::vector<hashtype> & hashes, double & dworst, dou
 
     for(size_t j = 0; j < hashes.size(); j++)
     {
-      hashtype & hash = hashes[j];
+      hashtype hash = hashes[j];
 
-      uint32_t index = window(&hash,sizeof(hash),start,16);
+      uint32_t index = window(hash,start,16);
 
       bins[index]++;
     }
