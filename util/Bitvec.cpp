@@ -182,9 +182,9 @@ uint32_t getbit ( const void * block, int len, uint32_t bit )
   int byte = bit >> 3;
   bit = bit & 0x7;
 
-  if(byte < len) return (b[byte] >> bit) & 1;
+  if(byte >= len) return 0;
 
-  return 0;
+  return (b[byte] >> bit) & 1;
 }
 
 uint32_t getbit_wrap ( const void * block, int len, uint32_t bit )
