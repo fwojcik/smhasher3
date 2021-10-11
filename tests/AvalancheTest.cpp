@@ -80,11 +80,11 @@ void PrintAvalancheDiagram ( int x, int y, int reps, double scale, int * bins )
 
 //----------------------------------------------------------------------------
 
-double maxBias ( std::vector<int> & counts, int reps )
+double maxBias ( int * counts, int buckets, int reps )
 {
   double worst = 0;
 
-  for(int i = 0; i < (int)counts.size(); i++)
+  for(int i = 0; i < buckets; i++)
   {
     double c = double(counts[i]) / double(reps);
 

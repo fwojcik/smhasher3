@@ -67,7 +67,7 @@
 // Avalanche fails if a bit is biased by more than 1%
 #define AVALANCHE_FAIL 0.01
 
-double maxBias ( std::vector<int> & counts, int reps );
+double maxBias ( int * counts, int buckets, int reps );
 
 //-----------------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ typedef int a_int;
 
 // threaded: loop over bins
 template < typename keytype, typename hashtype >
-void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
+void calcBiasRange ( const pfHash hash, std::array<int, sizeof(keytype)*sizeof(hashtype)*8*8> &bins,
                      std::vector<keytype> &keys, a_int & irepp,
                      const int reps, const int i, const bool verbose )
 {
@@ -131,6 +131,8 @@ bool AvalancheTest ( pfHash hash, const int reps, bool verbose )
   const int keybits = keybytes * 8;
   const int hashbits = hashbytes * 8;
 
+  const int arraysize = keybits * hashbits;
+
   printf("Testing %4d-bit keys -> %3d-bit hashes, %6d reps",
          keybits, hashbits, reps);
   //----------
@@ -140,8 +142,7 @@ bool AvalancheTest ( pfHash hash, const int reps, bool verbose )
 
   a_int irep(0);
 #if NCPU > 1
-  std::array<std::vector<int>, NCPU> bins;
-  std::fill(bins.begin(), bins.end(), std::vector<int>(keybits*hashbits,0));
+  std::array<std::array<int, arraysize>, NCPU> bins{};
   static std::thread t[NCPU];
   //printf("%d threads starting...\n", NCPU);
   for (int i=0; i < NCPU; i++) {
@@ -155,7 +156,7 @@ bool AvalancheTest ( pfHash hash, const int reps, bool verbose )
     for (int b=0; b < keybits*hashbits; b++)
       bins[0][b] += bins[i][b];
 #else
-  std::array<std::vector<int>, 1> bins{{std::vector<int>(keybits*hashbits,0)}};
+  std::array<std::array<int, arraysize>, 1> bins{{std::array<int, arraysize>{}}};
   calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,verbose);
 #endif
 
@@ -163,7 +164,7 @@ bool AvalancheTest ( pfHash hash, const int reps, bool verbose )
 
   bool result = true;
 
-  double b = maxBias(bins[0],reps);
+  double b = maxBias(&bins[0][0], arraysize, reps);
 
   printf(" worst bias is %f%%", b * 100.0);
 
