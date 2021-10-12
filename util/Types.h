@@ -290,68 +290,46 @@ public:
 
   Blob()
   {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
-      bytes[i] = 0;
-    }
+    memset(bytes, 0, sizeof(bytes));
   }
 
   Blob ( int x )
   {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
-      bytes[i] = 0;
-    }
-    *(int*)bytes = x;
+    set(&x, sizeof(x));
   }
-  Blob ( unsigned long long x )
-  {
-    *(unsigned long long*)bytes = x;
-  }
+
   Blob ( unsigned long x )
   {
-    *(unsigned long*)bytes = x;
+    set(&x, sizeof(x));
   }
 
-  Blob ( const Blob & k )
+  Blob ( unsigned long long x )
   {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
-      bytes[i] = k.bytes[i];
-    }
-  }
-
-  Blob & operator = ( const Blob & k )
-  {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
-      bytes[i] = k.bytes[i];
-    }
-
-    return *this;
+    set(&x, sizeof(x));
   }
 
   Blob ( uint64_t a, uint64_t b )
   {
     uint64_t t[2] = {a,b};
-    set(&t,16);
+    set(&t, sizeof(t));
   }
 
   void set ( const void * blob, size_t len )
   {
-    const uint8_t * k = (const uint8_t*)blob;
+    len = std::min(len, sizeof(bytes));
+    memcpy(bytes, blob, len);
+    memset(&bytes[len], 0, sizeof(bytes) - len);
+  }
 
-    len = len > sizeof(bytes) ? sizeof(bytes) : len;
+  Blob ( const Blob & k )
+  {
+    memcpy(bytes, k.bytes, sizeof(bytes));
+  }
 
-    for(size_t i = 0; i < len; i++)
-    {
-      bytes[i] = k[i];
-    }
-
-    for(size_t i = len; i < sizeof(bytes); i++)
-    {
-      bytes[i] = 0;
-    }
+  Blob & operator = ( const Blob & k )
+  {
+    memcpy(bytes, k.bytes, sizeof(bytes));
+    return *this;
   }
 
   uint8_t & operator [] ( int i )
@@ -380,12 +358,8 @@ public:
 
   bool operator == ( const Blob & k ) const
   {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
-      if(bytes[i] != k.bytes[i]) return false;
-    }
-
-    return true;
+    int r = memcmp(&bytes[0], &k.bytes[0], sizeof(bytes));
+    return (r == 0) ? true : false;
   }
 
   bool operator != ( const Blob & k ) const
