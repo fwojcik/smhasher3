@@ -175,6 +175,15 @@ uint32_t parity ( uint32_t v )
 
 //-----------------------------------------------------------------------------
 
+uint32_t getbyte ( const void * block, int len, uint32_t byte )
+{
+  uint8_t * b = (uint8_t*)block;
+
+  if(byte >= len) return 0;
+
+  return b[byte];
+}
+
 uint32_t getbit ( const void * block, int len, uint32_t bit )
 {
   uint8_t * b = (uint8_t*)block;

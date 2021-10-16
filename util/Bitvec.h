@@ -61,6 +61,8 @@ void     printbytes2 ( const void * blob, int len );
 uint32_t popcount    ( uint32_t v );
 uint32_t parity      ( uint32_t v );
 
+uint32_t getbyte     ( const void * blob, int len, uint32_t byte );
+
 uint32_t getbit      ( const void * blob, int len, uint32_t bit );
 uint32_t getbit_wrap ( const void * blob, int len, uint32_t bit );
 
@@ -79,6 +81,17 @@ int      countbits   ( uint32_t v );
 int      countbits   ( std::vector<uint32_t> & v );
 
 int      countbits   ( const void * blob, int len );
+
+//----------
+
+template< typename T >
+inline uint32_t getbyte ( T & blob, uint32_t byte )
+{
+  return getbyte(&blob,sizeof(T),byte);
+}
+
+template<> inline uint32_t getbyte ( uint32_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
+template<> inline uint32_t getbyte ( uint64_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
 
 //----------
 
