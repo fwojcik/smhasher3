@@ -114,6 +114,8 @@ void SetAffinity ( int cpu );
 #define popcount8(x)  __popcnt64(x)
 #endif
 
+#define assume(x) (__assume(x))
+
 //-----------------------------------------------------------------------------
 // Other compilers
 
@@ -259,6 +261,8 @@ __inline__ uint64_t timer_end()
 #endif
 }
 
+/* Should work for gcc, clang, and icc at least */
+#define assume(x) do { if (!(x)) __builtin_unreachable(); } while (0)
 
 #include <strings.h>
 #define _stricmp strcasecmp
