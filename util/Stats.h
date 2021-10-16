@@ -110,7 +110,7 @@ unsigned int FindCollisions ( std::vector<hashtype> & hashes,
                               bool drawDiagram = false)
 {
   unsigned int collcount = 0;
-  std::sort(hashes.begin(),hashes.end());
+  blobsort(hashes.begin(),hashes.end());
 
   for(size_t hnb = 1; hnb < hashes.size(); hnb++)
     {
@@ -929,7 +929,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
         reversebits(rev);
         revhashes.push_back(rev);
       }
-      std::sort(revhashes.begin(), revhashes.end());
+      blobsort(revhashes.begin(), revhashes.end());
     }
 
     /*
