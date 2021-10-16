@@ -108,6 +108,7 @@ void SetAffinity ( int cpu );
 #define timer_start() __rdtsc()
 #define timer_end()   __rdtsc()
 
+#define popcount4(x) __popcnt(x)
 #ifdef HAVE_BIT32
 #define popcount8(x)  __popcnt(x)
 #else
@@ -135,6 +136,7 @@ void SetAffinity ( int cpu );
 #define	NEVER_INLINE __attribute__((noinline))
 #define ALIGNED(n)   __attribute__ ((aligned(n)))
 
+#define popcount4(x) __builtin_popcount(x)
 #ifdef HAVE_BIT32
 #define popcount8(x) __builtin_popcountll(x)
 #else

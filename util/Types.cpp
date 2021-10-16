@@ -133,8 +133,8 @@ void GenerateMixingConstants ( void )
     //----------
     // must have between 14 and 18 set bits
 
-    if(popcount(b) < 16) { b = 0; popfail++; }
-    if(popcount(b) > 16) { b = 0; popfail++; }
+    if(popcount4(b) < 16) { b = 0; popfail++; }
+    if(popcount4(b) > 16) { b = 0; popfail++; }
 
     if(b == 0) continue;
 
@@ -145,8 +145,8 @@ void GenerateMixingConstants ( void )
     {
       uint32_t c = ROTL32(b,i) & 0xFF;
 
-      if(popcount(c) < 3) { b = 0; bitfail++; break; }
-      if(popcount(c) > 5) { b = 0; bitfail++; break; }
+      if(popcount4(c) < 3) { b = 0; bitfail++; break; }
+      if(popcount4(c) > 5) { b = 0; bitfail++; break; }
     }
 
     if(b == 0) continue;
