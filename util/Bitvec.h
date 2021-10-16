@@ -75,6 +75,8 @@ int      countbits   ( std::vector<uint32_t> & v );
 
 int      countbits   ( const void * blob, int len );
 
+extern const uint32_t hzb[256];
+
 //----------
 
 static inline uint32_t getbyte ( const void * block, int len, uint32_t byte )
@@ -209,6 +211,30 @@ inline void reversebits ( T & blob )
 
 template<> inline void reversebits ( uint32_t & blob ) { reverse32(blob); }
 template<> inline void reversebits ( uint64_t & blob ) { reverse64(blob); }
+
+//----------
+
+static inline uint32_t highzerobits ( void * block, size_t len )
+{
+  uint8_t * b = (uint8_t*)block;
+  uint32_t zb = 0;
+  for(int i = len - 1; i >= 0; i--)
+  {
+    zb += hzb[b[i]];
+    if (b[i] != 0)
+      break;
+  }
+  return zb;
+}
+
+template< typename T >
+inline uint32_t highzerobits ( T & blob )
+{
+  return highzerobits(&blob,sizeof(blob));
+}
+
+template<> inline uint32_t highzerobits ( uint32_t & blob ) { return blob == 0 ? 32 : clz4(blob); }
+template<> inline uint32_t highzerobits ( uint64_t & blob ) { return blob == 0 ? 64 : clz8(blob); }
 
 //-----------------------------------------------------------------------------
 // Left and right shift of blobs. The shift(N) versions work on chunks of N

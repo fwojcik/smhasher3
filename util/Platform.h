@@ -115,6 +115,25 @@ void SetAffinity ( int cpu );
 #define popcount8(x)  __popcnt64(x)
 #endif
 
+// Assumes x is not 0!!!
+#ifdef HAVE_INT64
+#define clz4(x) __lzcnt(x)
+#define clz8(x) __lzcnt64(x)
+#else
+static inline uint32_t clz4(uint32_t x)
+{
+  uint32_t idx;
+  _BitScanReverse(&idx, x);
+  return 31 ^ idx;
+}
+static inline uint32_t clz4(uint64_t x)
+{
+  uint32_t idx;
+  _BitScanReverse64(&idx, x);
+  return 31 ^ idx;
+}
+#endif
+
 #define assume(x) (__assume(x))
 
 //-----------------------------------------------------------------------------
@@ -141,6 +160,14 @@ void SetAffinity ( int cpu );
 #define popcount8(x) __builtin_popcountll(x)
 #else
 #define popcount8(x) __builtin_popcountl(x)
+#endif
+
+// Assumes x is not 0!!!
+#define clz4(x) __builtin_clz(x)
+#ifdef HAVE_BIT32
+#define clz8(x) __builtin_clzll(x)
+#else
+#define clz8(x) __builtin_clzl(x)
 #endif
 
 inline uint32_t rotl32 ( uint32_t x, int8_t r )
