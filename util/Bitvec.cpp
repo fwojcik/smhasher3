@@ -45,18 +45,10 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Bitvec.h"
-
 #include "Random.h"
 
 #include <assert.h>
 #include <stdio.h>
-
-#ifndef DEBUG
-#undef assert
-void assert ( bool )
-{
-}
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -617,7 +609,7 @@ bool test_shift ( void )
 
 //-----------------------------------------------------------------------------
 
-uint32_t window1 ( void * blob, int len, int start, int count )
+static NEVER_INLINE uint32_t window1 ( void * blob, int len, int start, int count )
 {
   int nbits = len*8;
   start %= nbits;
@@ -632,7 +624,7 @@ uint32_t window1 ( void * blob, int len, int start, int count )
   return t;
 }
 
-uint32_t window8 ( void * blob, int len, int start, int count )
+static NEVER_INLINE uint32_t window8 ( void * blob, int len, int start, int count )
 {
   int nbits = len*8;
   start %= nbits;
@@ -664,7 +656,7 @@ uint32_t window8 ( void * blob, int len, int start, int count )
   return t;
 }
 
-uint32_t window32 ( void * blob, int len, int start, int count )
+static NEVER_INLINE uint32_t window32 ( void * blob, int len, int start, int count )
 {
   int nbits = len*8;
   start %= nbits;
@@ -720,14 +712,16 @@ bool test_window2 ( void )
 
     for(int start = 0; start < nbits; start++)
     {
-      for(int count = 0; count < 32; count++)
+      for(int count = 0; count < std::min(nbits, 24); count++)
       {
         uint32_t a = window1(&k,nbytes,start,count);
         uint32_t b = window8(&k,nbytes,start,count);
-        uint32_t c = window(&k,nbytes,start,count);
+        uint32_t c = ((nbytes&3) != 0) ? b :window32(&k,nbytes,start,count);
+        uint32_t d = window(&k,start,count);
 
-        assert(a == b);
-        assert(a == c);
+        verify(a == b);
+        verify(a == c);
+        verify(a == d);
       }
     }
   }
@@ -754,20 +748,22 @@ bool test_window ( void )
 
     for(int start = 0; start < nbits; start++)
     {
-      for(int count = 0; count < 32; count++)
+      for(int count = 0; count <= 24; count++)
       {
         uint32_t a = (uint32_t)ROTR64(x,start);
         a &= ((1 << count)-1);
 
-        uint32_t b = window1 (&x,nbytes,start,count);
-        uint32_t c = window8 (&x,nbytes,start,count);
-        uint32_t d = window32(&x,nbytes,start,count);
-        uint32_t e = window  (x,start,count);
+        uint32_t b = window1   (&x,nbytes,start,count);
+        uint32_t c = window8   (&x,nbytes,start,count);
+        uint32_t d = window32  (&x,nbytes,start,count);
+        uint32_t e = window<64>(&x,start,count);
+        uint32_t f = window    (x,start,count);
 
-        assert(a == b);
-        assert(a == c);
-        assert(a == d);
-        assert(a == e);
+        verify(a == b);
+        verify(a == c);
+        verify(a == d);
+        verify(a == e);
+        verify(a == f);
       }
     }
   }
@@ -782,6 +778,8 @@ bool test_window ( void )
   test_window2<48>();
   test_window2<56>();
   test_window2<64>();
+  test_window2<128>();
+  test_window2<256>();
 
   return true;
 }

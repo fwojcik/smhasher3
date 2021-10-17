@@ -385,43 +385,54 @@ template<> inline void rrot ( uint64_t & blob, int c ) { blob = ROTR64(blob,c); 
 //-----------------------------------------------------------------------------
 // Bit-windowing functions - select some N-bit subset of the input blob
 
-uint32_t window1  ( void * blob, int len, int start, int count );
-uint32_t window8  ( void * blob, int len, int start, int count );
-uint32_t window32 ( void * blob, int len, int start, int count );
-
-inline uint32_t window ( void * blob, int len, int start, int count )
+template<uint32_t bitlen>
+inline uint32_t window ( const void * blob, int start, int count )
 {
-  if(len & 3)
-  {
-    return window8(blob,len,start,count);
+  assume(count <= 24);
+  const uint32_t mask = (1 << count) - 1;
+  const uint8_t * b = (const uint8_t *)blob;
+  uint32_t v;
+
+  if (bitlen == 8)
+      v = (b[0] | (b[0] << 8)) >> start;
+  else if (bitlen == 16)
+      v = (b[0] | (b[1] << 8) | (b[0] << 16) | (b[1] << 24)) >> start;
+  else if (bitlen == 24) {
+      uint8_t t[6];
+      memcpy(&t[0], b, 3);
+      memcpy(&t[3], b, 3);
+      memcpy(&v, t + (start >> 3), 4);
+      v >>= (start & 7);
+  } else if (start <= (bitlen - 25)) {
+      memcpy(&v, b + (start >> 3), 4);
+      v >>= (start & 7);
+  } else {
+      memcpy(&v, b + (bitlen / 8) - 4, 4);
+      v >>= 32 + start - bitlen;
+      if ((start + count) > bitlen) {
+          uint32_t v2;
+          memcpy(&v2, b, 4);
+          v2 <<= bitlen - start;
+          v |= v2;
+      }
   }
-  else
-  {
-    return window32(blob,len,start,count);
-  }
+  return v & mask;
 }
 
 template < typename T >
-inline uint32_t window ( T & blob, int start, int count )
+inline uint32_t window ( const T & blob, int start, int count )
 {
-  if((sizeof(T) & 3) == 0)
-  {
-    return window32(&blob,sizeof(T),start,count);
-  }
-  else
-  {
-    return window8(&blob,sizeof(T),start,count);
-  }
+  return window<8*sizeof(T)>(&blob,start,count);
 }
 
 template<>
-inline uint32_t window ( uint32_t & blob, int start, int count )
+inline uint32_t window ( const uint32_t & blob, int start, int count )
 {
   return ROTR32(blob,start) & ((1<<count)-1);
 }
 
 template<>
-inline uint32_t window ( uint64_t & blob, int start, int count )
+inline uint32_t window ( const uint64_t & blob, int start, int count )
 {
   return (uint32_t)ROTR64(blob,start) & ((1<<count)-1);
 }
