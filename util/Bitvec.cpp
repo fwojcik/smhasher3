@@ -576,6 +576,47 @@ void rrot32 ( void * blob, int len, int c )
 
 //-----------------------------------------------------------------------------
 
+bool test_shift ( void )
+{
+  Rand r(1123);
+
+  int nbits   = 64;
+  int nbytes  = nbits / 8;
+  int reps = 10000;
+
+  for(int j = 0; j < reps; j++)
+  {
+    if(j % (reps/10) == 0) printf(".");
+
+    uint64_t a = r.rand_u64();
+    uint64_t b;
+
+    for(int i = 0; i < nbits; i++)
+    {
+      b = a; lshift1  (&b,nbytes,i);  assert(b == (a << i));
+      b = a; lshift8  (&b,nbytes,i);  assert(b == (a << i));
+      b = a; lshift32 (&b,nbytes,i);  assert(b == (a << i));
+
+      b = a; rshift1  (&b,nbytes,i);  assert(b == (a >> i));
+      b = a; rshift8  (&b,nbytes,i);  assert(b == (a >> i));
+      b = a; rshift32 (&b,nbytes,i);  assert(b == (a >> i));
+
+      b = a; lrot1    (&b,nbytes,i);  assert(b == ROTL64(a,i));
+      b = a; lrot8    (&b,nbytes,i);  assert(b == ROTL64(a,i));
+      b = a; lrot32   (&b,nbytes,i);  assert(b == ROTL64(a,i));
+
+      b = a; rrot1    (&b,nbytes,i);  assert(b == ROTR64(a,i));
+      b = a; rrot8    (&b,nbytes,i);  assert(b == ROTR64(a,i));
+      b = a; rrot32   (&b,nbytes,i);  assert(b == ROTR64(a,i));
+    }
+  }
+
+  printf("PASS\n");
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+
 uint32_t window1 ( void * blob, int len, int start, int count )
 {
   int nbits = len*8;
@@ -652,47 +693,6 @@ uint32_t window32 ( void * blob, int len, int start, int count )
   t &= ((1 << count)-1);
 
   return t;
-}
-
-//-----------------------------------------------------------------------------
-
-bool test_shift ( void )
-{
-  Rand r(1123);
-
-  int nbits   = 64;
-  int nbytes  = nbits / 8;
-  int reps = 10000;
-
-  for(int j = 0; j < reps; j++)
-  {
-    if(j % (reps/10) == 0) printf(".");
-
-    uint64_t a = r.rand_u64();
-    uint64_t b;
-
-    for(int i = 0; i < nbits; i++)
-    {
-      b = a; lshift1  (&b,nbytes,i);  assert(b == (a << i));
-      b = a; lshift8  (&b,nbytes,i);  assert(b == (a << i));
-      b = a; lshift32 (&b,nbytes,i);  assert(b == (a << i));
-
-      b = a; rshift1  (&b,nbytes,i);  assert(b == (a >> i));
-      b = a; rshift8  (&b,nbytes,i);  assert(b == (a >> i));
-      b = a; rshift32 (&b,nbytes,i);  assert(b == (a >> i));
-
-      b = a; lrot1    (&b,nbytes,i);  assert(b == ROTL64(a,i));
-      b = a; lrot8    (&b,nbytes,i);  assert(b == ROTL64(a,i));
-      b = a; lrot32   (&b,nbytes,i);  assert(b == ROTL64(a,i));
-
-      b = a; rrot1    (&b,nbytes,i);  assert(b == ROTR64(a,i));
-      b = a; rrot8    (&b,nbytes,i);  assert(b == ROTR64(a,i));
-      b = a; rrot32   (&b,nbytes,i);  assert(b == ROTR64(a,i));
-    }
-  }
-
-  printf("PASS\n");
-  return true;
 }
 
 //-----------------------------------------------------------------------------
