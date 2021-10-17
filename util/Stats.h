@@ -771,18 +771,17 @@ template< typename hashtype >
 bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 {
   const int hashbits = sizeof(hashtype) * 8;
+  const uint32_t nbH = hashes.size();
 
   int maxwidth = 20;
   int minwidth = 8;
 
   // We need at least 5 keys per bin to reliably test distribution biases
   // down to 1%, so don't bother to test sparser distributions than that
-  while(double(hashes.size()) / double(1 << maxwidth) < 5.0)
+  while(double(nbH) / double(1 << maxwidth) < 5.0)
     if (--maxwidth < minwidth) return true;
 
-  printf("Testing distribution - ");
-
-  if(drawDiagram) printf("\n");
+  printf("Testing distribution - %s", drawDiagram ? "\n[" : "");
 
   std::vector<int> bins;
   bins.resize(1 << maxwidth);
@@ -799,11 +798,9 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 
     memset(&bins[0],0,sizeof(int)*bincount);
 
-    for(size_t j = 0; j < hashes.size(); j++)
+    for(size_t j = 0; j < nbH; j++)
     {
-      hashtype hash = hashes[j];
-
-      uint32_t index = window(hash,start,width);
+      uint32_t index = window(hashes[j],start,width);
 
       bins[index]++;
     }
@@ -811,11 +808,9 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
     // Test the distribution, then fold the bins in half,
     // repeat until we're down to 256 bins
 
-    if(drawDiagram) printf("[");
-
     while(bincount >= 256)
     {
-      double n = calcScore(&bins[0],bincount,(int)hashes.size());
+      double n = calcScore(&bins[0],bincount,nbH);
 
       tests++;
 
@@ -833,13 +828,16 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 
       if(width < minwidth) break;
 
+      // To allow the compiler to parallelize this loop
+      assume((bincount % 8) == 0);
+
       for(int i = 0; i < bincount; i++)
       {
         bins[i] += bins[i+bincount];
       }
     }
 
-    if(drawDiagram) printf("]\n");
+    if(drawDiagram) printf("]\n%s", ((start + 1) == hashbits) ? "" : "[");
   }
 
   double p_value = ScalePValue(GetNormalPValue(0, 1, worstN), tests);
@@ -1048,10 +1046,8 @@ double TestDistributionBytepairs ( std::vector<hashtype> & hashes, bool drawDiag
 
       for(size_t i = 0; i < hashes.size(); i++)
       {
-        hashtype hash = hashes[i];
-
-        uint32_t pa = window(hash,a,8);
-        uint32_t pb = window(hash,b,8);
+        uint32_t pa = window(hashes[i],a,8);
+        uint32_t pb = window(hashes[i],b,8);
 
         bins[pa | (pb << 8)]++;
       }
@@ -1093,9 +1089,7 @@ void TestDistributionFast ( std::vector<hashtype> & hashes, double & dworst, dou
 
     for(size_t j = 0; j < hashes.size(); j++)
     {
-      hashtype hash = hashes[j];
-
-      uint32_t index = window(hash,start,16);
+      uint32_t index = window(hashes[j],start,16);
 
       bins[index]++;
     }
