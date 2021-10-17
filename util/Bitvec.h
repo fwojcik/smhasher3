@@ -94,8 +94,10 @@ inline uint32_t getbyte ( T & blob, uint32_t byte )
   return getbyte(&blob,sizeof(T),byte);
 }
 
-template<> inline uint32_t getbyte ( uint32_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
-template<> inline uint32_t getbyte ( uint64_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
+template<>
+inline uint32_t getbyte ( uint32_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
+template<>
+inline uint32_t getbyte ( uint64_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
 
 //----------
 
@@ -114,22 +116,26 @@ static inline uint32_t getbit ( const void * block, int len, uint32_t bit )
 template< typename T >
 inline uint32_t getbit ( T & blob, uint32_t bit )
 {
-  return getbit(&blob,sizeof(blob),bit);
+  return getbit(&blob,sizeof(T),bit);
 }
 
-template<> inline uint32_t getbit ( uint32_t & blob, uint32_t bit ) { return (blob >> (bit & 31)) & 1; }
-template<> inline uint32_t getbit ( uint64_t & blob, uint32_t bit ) { return (blob >> (bit & 63)) & 1; }
+template<>
+inline uint32_t getbit ( uint32_t & blob, uint32_t bit ) { return (blob >> (bit & 31)) & 1; }
+template<>
+inline uint32_t getbit ( uint64_t & blob, uint32_t bit ) { return (blob >> (bit & 63)) & 1; }
 
 //----------
 
 template< typename T >
 inline void setbit ( T & blob, uint32_t bit )
 {
-  return setbit(&blob,sizeof(blob),bit);
+  return setbit(&blob,sizeof(T),bit);
 }
 
-template<> inline void setbit ( uint32_t & blob, uint32_t bit ) { blob |= uint32_t(1) << (bit & 31); }
-template<> inline void setbit ( uint64_t & blob, uint32_t bit ) { blob |= uint64_t(1) << (bit & 63); }
+template<>
+inline void setbit ( uint32_t & blob, uint32_t bit ) { blob |= uint32_t(1) << (bit & 31); }
+template<>
+inline void setbit ( uint64_t & blob, uint32_t bit ) { blob |= uint64_t(1) << (bit & 63); }
 
 //----------
 
@@ -146,11 +152,13 @@ static inline void flipbit ( void * block, int len, uint32_t bit )
 template< typename T >
 inline void flipbit ( T & blob, uint32_t bit )
 {
-  flipbit(&blob,sizeof(blob),bit);
+  flipbit(&blob,sizeof(T),bit);
 }
 
-template<> inline void flipbit ( uint32_t & blob, uint32_t bit ) { bit &= 31; blob ^= (uint32_t(1) << bit); }
-template<> inline void flipbit ( uint64_t & blob, uint32_t bit ) { bit &= 63; blob ^= (uint64_t(1) << bit); }
+template<>
+inline void flipbit ( uint32_t & blob, uint32_t bit ) { bit &= 31; blob ^= (uint32_t(1) << bit); }
+template<>
+inline void flipbit ( uint64_t & blob, uint32_t bit ) { bit &= 63; blob ^= (uint64_t(1) << bit); }
 
 //----------
 
@@ -206,11 +214,13 @@ static inline void reverse64 ( uint64_t & v )
 template< typename T >
 inline void reversebits ( T & blob )
 {
-  reversebits(&blob,sizeof(blob));
+  reversebits(&blob,sizeof(T));
 }
 
-template<> inline void reversebits ( uint32_t & blob ) { reverse32(blob); }
-template<> inline void reversebits ( uint64_t & blob ) { reverse64(blob); }
+template<>
+inline void reversebits ( uint32_t & blob ) { reverse32(blob); }
+template<>
+inline void reversebits ( uint64_t & blob ) { reverse64(blob); }
 
 //----------
 
@@ -230,11 +240,13 @@ static inline uint32_t highzerobits ( void * block, size_t len )
 template< typename T >
 inline uint32_t highzerobits ( T & blob )
 {
-  return highzerobits(&blob,sizeof(blob));
+  return highzerobits(&blob,sizeof(T));
 }
 
-template<> inline uint32_t highzerobits ( uint32_t & blob ) { return blob == 0 ? 32 : clz4(blob); }
-template<> inline uint32_t highzerobits ( uint64_t & blob ) { return blob == 0 ? 64 : clz8(blob); }
+template<>
+inline uint32_t highzerobits ( uint32_t & blob ) { return blob == 0 ? 32 : clz4(blob); }
+template<>
+inline uint32_t highzerobits ( uint64_t & blob ) { return blob == 0 ? 64 : clz8(blob); }
 
 //-----------------------------------------------------------------------------
 // Left and right shift of blobs. The shift(N) versions work on chunks of N
