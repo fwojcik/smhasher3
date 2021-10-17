@@ -594,24 +594,24 @@ template< typename hashtype >
 int CountMaxCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nbHBits)
 {
   const int origBits = sizeof(hashtype) * 8;
-  const int shiftBy = origBits - nbHBits;
-
-  if (shiftBy <= 0) return -1;
+  assert(nbhBits < origBits);
+  assert(nbhBits <= 24);
+  const uint32_t startBit = origBits - nbHBits;
 
   int maxcollcount = 0;
   int collcount = 0;
 
+  uint32_t h1 = window(hashes[0], startBit, nbHBits);
   for (size_t hnb = 1; hnb < nbH; hnb++)
   {
-    hashtype const h1 = hashes[hnb-1] >> shiftBy;
-    hashtype const h2 = hashes[hnb]   >> shiftBy;
-    if(h1 == h2)
-      collcount++;
-    else
-    {
+    uint32_t h2 = window(hashes[hnb], startBit, nbHBits);
+    if(h1 != h2) {
       if (maxcollcount < collcount)
         maxcollcount = collcount;
       collcount = 0;
+      h1 = h2;
+    } else {
+      collcount++;
     }
   }
 
