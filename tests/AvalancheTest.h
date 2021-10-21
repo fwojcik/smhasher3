@@ -87,7 +87,6 @@ void calcBiasRange ( const pfHash hash, std::array<int, sizeof(keytype)*sizeof(h
   const int hashbytes = sizeof(hashtype);
 
   const int keybits = keybytes * 8;
-  const int hashbits = hashbytes * 8;
 
   keytype K;
   hashtype A,B;
@@ -112,8 +111,15 @@ void calcBiasRange ( const pfHash hash, std::array<int, sizeof(keytype)*sizeof(h
 
       B ^= A;
 
-      for(int iOut = 0; iOut < hashbits; iOut++)
-        (*cursor++) += getbit(&B,hashbytes,iOut);
+      for(int oByte = 0; oByte < hashbytes; oByte++)
+      {
+        int byte = getbyte(B, oByte);
+        for(int oBit = 0; oBit < 8; oBit++)
+        {
+          (*cursor++) += byte & 1;
+          byte >>= 1;
+        }
+      }
     }
   }
 }
