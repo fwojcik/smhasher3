@@ -354,7 +354,15 @@ inline void rrot ( void * blob, int len, int c )
 template < typename T >
 inline void lrot ( T & blob, int c )
 {
-  if((sizeof(T) & 3) == 0)
+  if(sizeof(T) == 4)
+  {
+    return lrot((uint32_t &)blob, c);
+  }
+  else if(sizeof(T) == 8)
+  {
+    return lrot((uint64_t &)blob, c);
+  }
+  else if((sizeof(T) & 3) == 0)
   {
     return lrot32(&blob,sizeof(T),c);
   }
