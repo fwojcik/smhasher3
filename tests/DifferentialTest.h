@@ -152,7 +152,6 @@ void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, h
 {
   const int bits = sizeof(keytype)*8;
 
-  Hash_Seed_init (hash, 0);
   for(int i = start; i < bits; i++)
   {
     flipbit(&k2,sizeof(k2),i);
