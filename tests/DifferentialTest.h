@@ -154,7 +154,10 @@ void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, h
 
   for(int i = start; i < bits; i++)
   {
+    keytype k2_prev = k2;
+
     flipbit(&k2,sizeof(k2),i);
+
     bitsleft--;
 
     hash(&k2,sizeof(k2),g_seed,&h2);
@@ -164,12 +167,13 @@ void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, h
       diffs.push_back(k1 ^ k2);
     }
 
-    if(bitsleft)
+    if(bitsleft && ((i+1) < bits))
     {
       DiffTestRecurse(hash,k1,k2,h1,h2,i+1,bitsleft,diffs);
     }
 
-    flipbit(&k2,sizeof(k2),i);
+    //flipbit(&k2,sizeof(k2),i);
+    k2 = k2_prev;
     bitsleft++;
   }
 }
