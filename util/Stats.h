@@ -61,7 +61,7 @@
 #include <stdio.h>     // for printf
 #include <assert.h>
 
-bool Hash_Seed_init (pfHash hash, size_t seed);
+bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
 double calcScore ( const int * bins, const int bincount, const int ballcount );
 
 void plot ( double n );

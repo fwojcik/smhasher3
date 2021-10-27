@@ -689,7 +689,8 @@ add_library(
   hashes/rijndael-alg-fst.c
   hashes/pengyhash.c
   hashes/pearson_hash/pearsonb.c
-  # hashes/wyhash_condom.c
+  hashes/aesrng.cpp
+# hashes/wyhash_condom.c
 )
 
 add_executable(SMHasher3 main.cpp)

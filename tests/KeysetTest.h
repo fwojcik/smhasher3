@@ -236,7 +236,7 @@ void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
       printf (progress_fmt, seed, spacer);
     }
     hashes.clear();
-    Hash_Seed_init (hash, seed);
+    Hash_Seed_init (hash, seed, 1);
     for (int x : std::vector<int> {0,32,127,255}) {
       hashtype h;
       uint8_t key[64]; // for crc32_pclmul, otherwie we would need only 16 byte
@@ -360,7 +360,9 @@ bool BadSeedsTest ( HashInfo* info, bool testAll ) {
   }
   if (result)
     printf("PASS\n");
-  if (testAll == false || info->quality == SKIP)
+  if (testAll == false ||
+          ((info->quality == SKIP) &&
+                  (strncmp(info->name, "aes", 3) != 0)))
     return result;
 
   // many days with >= 64 bit hashes
