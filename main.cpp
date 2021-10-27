@@ -861,13 +861,6 @@ void Hash_init (HashInfo* info) {
     halftime_hash_init();
 }
 
-// optional hash seed initializers.
-// esp. for Hashmaps, whenever the seed changes, for expensive seeding.
-bool Seed_init (HashInfo* info, size_t seed) {
-  //Bad_Seed_init (info->hash, seed);
-  return Hash_Seed_init (info->hash, seed);
-}
-
 // Needed for hashed with a few bad seeds, to reject this seed and generate a new one.
 // (GH #99)
 void Bad_Seed_init (pfHash hash, uint32_t &seed) {
@@ -1033,7 +1026,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     fflush(NULL);
 
     VerificationTest(info,true);
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     SanityTest(hash,hashbits);
     AppendedZeroesTest(hash,hashbits);
     printf("\n");
@@ -1049,7 +1042,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     printf("[[[ Speed Tests ]]]\n\n");
     fflush(NULL);
 
-    Seed_init (info, info->verification);
+    Hash_Seed_init (hash, info->verification);
     BulkSpeedTest(info->hash,info->verification);
     printf("\n");
     fflush(NULL);
@@ -1118,7 +1111,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
       std::vector<std::string> words = HashMapInit(g_drawDiagram);
       if (words.size()) {
         const uint32_t seed = rand_u32();
-        Seed_init (info, seed);
+        Hash_Seed_init (hash, seed);
         result &= HashMapTest(hash,info->hashbits,words,seed,trials,g_drawDiagram);
       }
     }
@@ -1149,7 +1142,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     bool result = true;
     bool verbose = true; //.......... progress dots
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= AvalancheTest< Blob< 24>, hashtype > (hash,300000,verbose);
     result &= AvalancheTest< Blob< 32>, hashtype > (hash,300000,verbose);
     result &= AvalancheTest< Blob< 40>, hashtype > (hash,300000,verbose);
@@ -1207,7 +1200,8 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
     bool result = true;
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
+
       result &= SparseKeyTest<  16,hashtype>(hash,9,true,true,true, g_drawDiagram);
       result &= SparseKeyTest<  24,hashtype>(hash,8,true,true,true, g_drawDiagram);
       result &= SparseKeyTest<  32,hashtype>(hash,7,true,true,true, g_drawDiagram);
@@ -1284,7 +1278,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
       bool result = true;
       uint32_t blocks[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
-      Seed_init (info, 0);
+      Hash_Seed_init (hash, 0);
       result &= CombinationKeyTest<hashtype>(hash,7,blocks,
                                              sizeof(blocks) / sizeof(uint32_t),
                                              true,true, g_drawDiagram);
@@ -1580,7 +1574,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     int windowbits = 20;
     const int keybits = (hashbits >= 64) ? 32 : hashbits*2+2;
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= WindowedKeyTest< Blob<keybits>, hashtype >
         ( hash, windowbits, testCollision, testDistribution, g_drawDiagram );
 
@@ -1605,7 +1599,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 #endif
     bool result = true;
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+0,8,reps, g_drawDiagram);
     result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+1,8,reps, g_drawDiagram);
     result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+2,8,reps, g_drawDiagram);
@@ -1641,7 +1635,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
         maxlen = 8;
     }
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     for(int len = 4; len <= maxlen; len += 4)
     {
       result &= TwoBytesTest2<hashtype>(hash, len, g_drawDiagram);
@@ -1665,7 +1659,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
                                  ".,!?:;-+=()<>/|\"'@#$%&*_^";
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= TextKeyTest( hash, "Foo",    alnum, 4, "Bar",    g_drawDiagram );
     result &= TextKeyTest( hash, "FooBar", alnum, 4, "",       g_drawDiagram );
     result &= TextKeyTest( hash, "",       alnum, 4, "FooBar", g_drawDiagram );
@@ -1690,7 +1684,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
     bool result = true;
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= ZeroKeyTest<hashtype>( hash, g_drawDiagram );
 
     if(!result) printf("*********FAIL*********\n");
@@ -1725,7 +1719,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     bool testDistribution = g_testExtra;
 
     bool result = true;
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= PerlinNoise<hashtype>( hash, 2, testCollision, testDistribution, g_drawDiagram );
     if (g_testExtra) {
         result &= PerlinNoise<hashtype>( hash, 4, testCollision, testDistribution, g_drawDiagram );
@@ -1825,7 +1819,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     bool testDistribution = g_testExtra;
 
     bool result = true;
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= PrngTest<hashtype>( hash, testCollision, testDistribution, g_drawDiagram );
 
     if(!result) printf("\n*********FAIL*********\n");
@@ -1849,7 +1843,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
     bool result = true;
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     result &= testLongNeighbors(info->hash, info->hashbits, g_drawDiagram);
 
     if(!result) printf("*********FAIL*********\n");
@@ -1870,7 +1864,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     fflush(NULL);
 
     bool result = true;
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     if (info->hashbits > 64 || g_speed > 500.0) {
       result &= BicTest3<Blob<128>,hashtype>(hash,100000,g_drawDiagram);
     } else {
@@ -1889,7 +1883,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     printf("[[[ BadSeeds Tests ]]]\n\n");
     // g_testExtra: test all seeds. if not just some known secrets/bad seeds
 
-    Seed_init (info, 0);
+    Hash_Seed_init (hash, 0);
     bool result = BadSeedsTest<hashtype>( info, g_testExtra );
     if(!result) printf("\n*********FAIL*********\n");
     printf("\n");

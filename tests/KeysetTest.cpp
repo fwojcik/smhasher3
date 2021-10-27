@@ -49,7 +49,6 @@
 
 #include "Platform.h"
 #include "Random.h"
-bool Seed_init (HashInfo* info, size_t seed);
 
 #include <map>
 #include <set>
@@ -88,12 +87,12 @@ bool VerificationTest ( HashInfo* info, bool verbose )
   for(int i = 0; i < 256; i++)
   {
     key[i] = (uint8_t)i;
-    Seed_init (info, 256-i);
+    Hash_Seed_init (hash, 256-i);
     hash (key,i,256-i,&hashes[i*hashbytes]);
   }
 
   // Then hash the result array
-  Seed_init (info, 0);
+  Hash_Seed_init (hash, 0);
   hash (hashes,hashbytes*256,0,final);
 
   // The first four bytes of that hash, interpreted as a little-endian integer, is our
