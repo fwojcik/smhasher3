@@ -462,18 +462,17 @@ static double BoundedPoissonPValue(const double expected, const uint64_t collisi
 
 //-----------------------------------------------------------------------------
 
-static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool maxcoll, bool verbose, bool drawDiagram )
+static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram )
 {
   bool largehash = hashsize > (8 * sizeof(uint32_t));
 
-  double expected, p_value;
   // The expected number depends on what collision statistic is being
   // reported on; "worst of N buckets" is very different than "sum
   // over N buckets".
   //
   // Also determine an upper-bound on the unlikelihood of the observed
   // collision count.
-
+  double expected, p_value;
   if (maxcoll)
   {
     expected = EstimateMaxCollisions(nbH, hashsize);
@@ -534,6 +533,10 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
 
   if (verbose)
   {
+    if (header)
+      printf("Testing %s collisions (%s %3i-bit)", maxcoll ? "max" : "all",
+        highbits ? "high" : "low ", hashsize);
+
     // 7 integer digits would match the 9.1 float specifier
     // (9 characters - 1 decimal point - 1 digit after the decimal),
     // but some hashes greatly exceed expected collision counts.
@@ -541,116 +544,99 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
       printf(" - Expected %9.1f, actual %9i  (%.3fx) ", expected, collcount, ratio);
     else
       printf(" - Expected %9.1f, actual %9i  (------) ", expected, collcount);
-    // Since ratios and pvalue summaries are most important to humans,
-    // and deltas and exact pvalues add visual noise and variable line
+
+    // Since ratios and p-value summaries are most important to humans,
+    // and deltas and exact p-values add visual noise and variable line
     // widths and possibly field counts, they are now only printed out
     // in --verbose mode.
     if (drawDiagram)
       printf("(%+i) (p<%8.6f) (^%2d)",  collcount - (int)round(expected), p_value, logp_value);
     else
       printf("(^%2d)", logp_value);
-  }
 
-  if (verbose)
-  {
     if (failure)
       printf(" !!!!!\n");
     else if (warning)
       printf(" !\n");
     else
       printf("\n");
-    fflush(NULL);
   }
 
   return !failure;
 }
 
-// Sum the number of collisions in the high nbHBits values across all
-// given hashes. This requires the vector to be sorted.
+// If threshHBits is 0, then this tallies the total number of
+// collisions across all given hashes for each bit window in the range
+// of [minHBits, maxHBits], considering only the high bits.
+//
+// If threshHBits is not 0, then this tallies the total number of
+// collisions across all the given hashes for each bit window in the
+// range (threshHBits, maxHBits], and the peak/maximum number of
+// collisions for each bit window in the range [minHBits,
+// threshHBits], considering only the high bits in each case.
+//
+// This is possible to do in a single pass over all the hashes by
+// counting the number of bits which match the next-lower hash value,
+// since a collision for N bits is also a collision for N-k bits.
+//
+// This requires the vector of hashes to be sorted.
 template< typename hashtype >
-int CountNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nbHBits)
+void CountRangedNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int minHBits, int maxHBits, int threshHBits, int * collcounts)
 {
   const int origBits = sizeof(hashtype) * 8;
-  const int shiftBy = origBits - nbHBits;
+  assert(minHBits >= 1);
+  assert(minHBits <= maxHBits);
+  assert(origBits >= maxHBits);
+  assert((threshHBits == 0) || (threshHBits >= minHBits));
+  assert((threshHBits == 0) || (threshHBits <= maxHBits));
 
-  if (shiftBy <= 0) return -1;
+  const int collbins = maxHBits - minHBits + 1;
+  const int maxcollbins = (threshHBits == 0) ? 0 : threshHBits - minHBits + 1;
+  int prevcoll[maxcollbins] = { 0 };
+  int maxcoll[maxcollbins] = { 0 };
 
-  int collcount = 0;
-
+  memset(collcounts, 0, sizeof(collcounts[0])*collbins);
   for (size_t hnb = 1; hnb < nbH; hnb++)
   {
-    hashtype const h1 = hashes[hnb-1] >> shiftBy;
-    hashtype const h2 = hashes[hnb]   >> shiftBy;
-    if(h1 == h2)
-      collcount++;
-  }
-
-  return collcount;
-}
-
-// Find the highest number of collisions in the high nbHBits values
-// across all given hashes. This requires the vector to be sorted.
-template< typename hashtype >
-int CountMaxCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int nbHBits)
-{
-  const int origBits = sizeof(hashtype) * 8;
-  assert(nbhBits < origBits);
-  assert(nbhBits <= 24);
-  const uint32_t startBit = origBits - nbHBits;
-
-  int maxcollcount = 0;
-  int collcount = 0;
-
-  uint32_t h1 = window(hashes[0], startBit, nbHBits);
-  for (size_t hnb = 1; hnb < nbH; hnb++)
-  {
-    uint32_t h2 = window(hashes[hnb], startBit, nbHBits);
-    if(h1 != h2) {
-      if (maxcollcount < collcount)
-        maxcollcount = collcount;
-      collcount = 0;
-      h1 = h2;
-    } else {
-      collcount++;
+    hashtype hdiff = hashes[hnb-1] ^ hashes[hnb];
+    int hzb = highzerobits(hdiff);
+    if (hzb > maxHBits)
+      hzb = maxHBits;
+    if (hzb >= minHBits)
+      collcounts[hzb - minHBits]++;
+    // If we don't care about maximum collision counts, or if this
+    // hash is a collision for *all* bit widths where we do care about
+    // maximums, then this is all that need be done for this hash.
+    if (hzb >= threshHBits)
+      continue;
+    // If we do care about maximum collision counts, then any window
+    // sizes which are strictly larger than hzb have just encountered
+    // a non-collision. For each of those window sizes, see how many
+    // collisions there have been since the last non-collision, and
+    // record it if that's the new peak.
+    if (hzb < minHBits - 1)
+      hzb = minHBits - 1;
+    // coll is the total number of collisions so far, for the window
+    // width corresponding to index i
+    int coll = 0;
+    for (int i = collbins - 1; i >= maxcollbins; i--)
+      coll += collcounts[i];
+    for (int i = maxcollbins - 1; i > hzb - minHBits; i--)
+    {
+      coll += collcounts[i];
+      // See if this is the new peak for this window width
+      maxcoll[i] = std::max(maxcoll[i], coll - prevcoll[i]);
+      // Record the total number of collisions seen so far at this
+      // non-collision, so that when the next non-collision happens we
+      // can compute how many collisions there have been since this one.
+      prevcoll[i] = coll;
     }
   }
 
-  if (maxcollcount < collcount)
-    maxcollcount = collcount;
-
-  return maxcollcount;
-}
-
-template< typename hashtype >
-bool CountNBitsCollisions ( std::vector<hashtype> & hashes, int nbBits, bool highbits, bool drawDiagram )
-{
-  // If the nbBits value is too large for this hashtype, do nothing.
-  if (CountNbCollisions(hashes, 0, nbBits) < 0) return true;
-
-  // If many hashes are being tested (compared to the hash width),
-  // then the expected number of collisions will approach the number
-  // of keys (indeed, it will converge to every hash bucket being
-  // full, leaving nbH - 2**nbBits collisions). In those cases, it is
-  // not very useful to count all collisions, so at some point of high
-  // expected collisions, it is better to instead count the number of
-  // keys in the fullest bucket. The cutoff here is if there are
-  // (n*log(n)) hashes, where n is the number of hash buckets. This
-  // cutoff is an inflection point where the "balls-into-bins"
-  // statistics really start changing. ReportCollisions() will
-  // estimate the correct key count for that differently, as it is a
-  // different statistic.
-  size_t const nbH = hashes.size();
-  bool countmax = (nbH >= (nbBits * exp2(nbBits) * log(2.0))) ? true : false;
-
-  printf("Testing %s collisions (%s %3i-bit)", countmax ? "max" : "all",
-      highbits ? "high" : "low ", nbBits);
-
-  int collcount;
-  if (countmax)
-    collcount = CountMaxCollisions(hashes, nbH, nbBits);
-  else
-    collcount = CountNbCollisions(hashes, nbH, nbBits);
-  return ReportCollisions(nbH, collcount, nbBits, countmax, true, drawDiagram);
+  for (int i = collbins - 2; i >= 0; i--)
+    collcounts[i] += collcounts[i + 1];
+  for (int i = maxcollbins - 1; i >= 0; i--)
+    collcounts[i] = std::max(maxcoll[i], collcounts[i] - prevcoll[i]);
 }
 
 static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
@@ -695,8 +681,11 @@ bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits, bool dr
   double maxCollDevExp = 1.0;
   double maxPValue = INFINITY;
 
+  int collcounts[maxBits - minBits + 1];
+  CountRangedNbCollisions(hashes, nbH, minBits, maxBits, 0, collcounts);
+
   for (int b = minBits; b <= maxBits; b++) {
-      int    const nbColls = CountNbCollisions(hashes, nbH, b);
+      int    const nbColls = collcounts[b - minBits];
       double const expected = EstimateNbCollisions(nbH, b);
       assert(expected > 0.0);
       double const dev = (double)nbColls / expected;
@@ -885,6 +874,39 @@ static int FindNbBitsForCollisionTarget(int targetNbCollisions, int nbHashes)
     return nb-1;
 }
 
+static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, int nbH, int & minBits, int & maxBits, int & threshBits)
+{
+  minBits = origBits + 1;
+  maxBits = 0;
+  threshBits = 0;
+
+  for(const int nbBits: nbBitsvec)
+  {
+    // If the nbBits value is too large for this hashtype, do nothing.
+    if (nbBits >= origBits)
+      continue;
+    // If many hashes are being tested (compared to the hash width),
+    // then the expected number of collisions will approach the number
+    // of keys (indeed, it will converge to every hash bucket being
+    // full, leaving nbH - 2**nbBits collisions). In those cases, it is
+    // not very useful to count all collisions, so at some point of high
+    // expected collisions, it is better to instead count the number of
+    // keys in the fullest bucket. The cutoff here is if there are
+    // (n*log(n)) hashes, where n is the number of hash buckets. This
+    // cutoff is an inflection point where the "balls-into-bins"
+    // statistics really start changing. ReportCollisions() will
+    // estimate the correct key count for that differently, as it is a
+    // different statistic.
+    if ((nbH >= (nbBits * exp2(nbBits) * log(2.0))) && (threshBits == 0))
+      threshBits = nbBits;
+    // Record the highest and lowest valid bit widths to test
+    if (maxBits < nbBits)
+      maxBits = nbBits;
+    if (minBits > nbBits)
+      minBits = nbBits;
+  }
+}
+
 template < typename hashtype >
 bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
                     bool testCollision = true, bool testDist = true,
@@ -903,38 +925,18 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     int collcount = 0;
     HashSet<hashtype> collisions;
     collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
-    result &= ReportCollisions(count, collcount, hashbits, false, verbose, drawDiagram);
-
-    if(!result && drawDiagram)
-    {
-      PrintCollisions(collisions);
-      //printf("Mapping collisions\n");
-      //CollisionMap<uint128_t,ByteVec> cmap;
-      //CollisionCallback<uint128_t> c2(hash,collisions,cmap);
-      ////TwoBytesKeygen(20,c2);
-      //printf("Dumping collisions\n");
-      //DumpCollisionMap(cmap);
-    }
-
-    std::vector<hashtype> revhashes;
-    if (testLowBits)
-    {
-      // reverse: bitwise flip the hashes. lowest bits first
-      revhashes.reserve(hashes.size());
-      for(const auto hashval: hashes)
-      {
-        hashtype rev = hashval;
-        reversebits(rev);
-        revhashes.push_back(rev);
-      }
-      blobsort(revhashes.begin(), revhashes.end());
-    }
 
     /*
-      TODO -
-        int const optimalNbBits = FindNbBitsForCollisionTarget(100, count);
-        result &= CountbitsCollisions(hashes, optimalNbBits);
-    */
+     * Do all other compute-intensive stuff (if requested) before
+     * displaying any results from FindCollisions, to be a little bit
+     * more human-friendly.
+     */
+
+    /*
+     * TODO - Compute the number of bits for a collision count of 100,
+     * and add that to nbBitsvec (ensuring it is still sorted).
+     */
+    std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, 12, 8, };
     /*
      * cyan: The 12- and -8-bit tests are too small : tables are necessarily saturated.
      * It would be better to count the nb of collisions per Cell, and
@@ -953,19 +955,67 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
      * (hashes.size() - 2**nbBits). Checking the results in doc/
      * confirms this. cyan's comment was correct.
      *
-     * CountNBitsCollisions() has now been modified to report on the
+     * Collision counting has now been modified to report on the
      * single bucket with the most collisions when fuller hash tables
      * are being tested, and ReportCollisions() computes an
      * appropriate "expected" statistic.
      */
-    std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, 12, 8, };
-    for(const int nbBits: nbBitsvec)
+    std::vector<hashtype> revhashes;
+    std::vector<int> collcounts_fwd;
+    std::vector<int> collcounts_rev;
+    int minBits, maxBits, threshBits;
+
+    if (testHighBits || testLowBits)
+      ComputeCollBitBounds(nbBitsvec, hashbits, count, minBits, maxBits, threshBits);
+
+    if (testHighBits && (maxBits > 0))
     {
-      if (testHighBits)
-        result &= CountNBitsCollisions(hashes, nbBits, true, drawDiagram);
-      if (testLowBits)
-        result &= CountNBitsCollisions(revhashes, nbBits, false, drawDiagram);
+      collcounts_fwd.reserve(maxBits - minBits + 1);
+      CountRangedNbCollisions(hashes, count, minBits, maxBits, threshBits, &collcounts_fwd[0]);
     }
+
+    if (testLowBits && (maxBits > 0))
+    {
+      // reverse: bitwise flip the hashes. lowest bits first
+      revhashes.reserve(hashes.size());
+      for(const auto hashval: hashes)
+      {
+        hashtype rev = hashval;
+        reversebits(rev);
+        revhashes.push_back(rev);
+      }
+      blobsort(revhashes.begin(), revhashes.end());
+
+      collcounts_rev.reserve(maxBits - minBits + 1);
+      CountRangedNbCollisions(revhashes, count, minBits, maxBits, threshBits, &collcounts_rev[0]);
+    }
+
+    // Report on complete collisions, now that the heavy lifting is complete
+    result &= ReportCollisions(count, collcount, hashbits, false, false, false, verbose, drawDiagram);
+    if(!result && drawDiagram)
+    {
+      PrintCollisions(collisions);
+      //printf("Mapping collisions\n");
+      //CollisionMap<uint128_t,ByteVec> cmap;
+      //CollisionCallback<uint128_t> c2(hash,collisions,cmap);
+      ////TwoBytesKeygen(20,c2);
+      //printf("Dumping collisions\n");
+      //DumpCollisionMap(cmap);
+    }
+
+    if (testHighBits || testLowBits)
+      for(const int nbBits: nbBitsvec)
+      {
+        if ((nbBits < minBits) || (nbBits > maxBits))
+          continue;
+        bool maxcoll = (nbBits <= threshBits) ? true : false;
+        if (testHighBits)
+          result &= ReportCollisions(count, collcounts_fwd[nbBits - minBits], nbBits,
+              maxcoll, true, true, true, drawDiagram);
+        if (testLowBits)
+          result &= ReportCollisions(count, collcounts_rev[nbBits - minBits], nbBits,
+              maxcoll, false, true, true, drawDiagram);
+      }
 
     if (testHighBits)
       result &= TestBitsCollisions(hashes, true, drawDiagram);
