@@ -121,24 +121,36 @@ double chooseUpToK ( int n, int k )
 // actual/expected by a factor of sqrt(2.0 * bincount) makes the score
 // be a standard normal variable (E[score] = 0, Var[score] = 1)
 // independent of bincount and keycount.
-double calcScore ( const int * bins, const int bincount, const int keycount )
+//
+// The way the RMSE is calculated is a little odd. What we want is
+// sumN{(Bi - lambda)**2}. But Bi values are integers, and doing all
+// that math in a loop is expensive. So that formula gets rearranged:
+//
+// sumN{(Bi - lambda)**2}
+// sumN{(Bi**2 - 2 * Bi * lambda + lambda**2)}
+// sumN{(Bi**2)} - 2 * sumN{(Bi * lamba)} + sumN{(lambda**2)}
+// sumN{(Bi**2)} - 2 * lambda * sumN{(Bi)} + N * (lambda**2)
+// sumN{(Bi**2)} - 2 * lambda * M + N * (lambda**2)
+// sumN{(Bi**2)} - 2 * M / N * M + N * M**2 / N**2
+// sumN{(Bi**2)} - 2 * M**2 / N + M**2 / N
+// sumN{(Bi**2)} - M**2 / N
+// sumN{(Bi**2)} - M * lambda
+//
+// NB: bincount must be a non-zero multiple of 8!
+double calcScore ( const unsigned * bins, const int bincount, const int keycount )
 {
   const double n = bincount;
   const double k = keycount;
   const double lambda = k/n;
 
-  double se = 0;
+  size_t sumsq = 0;
 
-  for(int i = 0; i < bincount; i++)
-  {
-    double b = bins[i];
+  assume(bincount >= 8);
+  for(int i = 0; i < (bincount>>3)<<3; i++)
+    sumsq += (size_t)bins[i] * (size_t)bins[i];
 
-    b -= lambda;
-
-    se += b*b;
-  }
-
-  double rmse = sqrt(se/n);
+  double sumsqe = (double)sumsq - lambda * k;
+  double rmse = sqrt(sumsqe/n);
   double rmse_ratio_m1 = (rmse - sqrt(lambda))/sqrt(lambda); // == rmse/sqrt(lambda) - 1.0
   double score = (rmse_ratio_m1) * sqrt(2.0 * n);
 

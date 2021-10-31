@@ -70,7 +70,7 @@ const double WARNING_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%, 8x as m
 // average, even with a perfect-quality hash function.
 
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
-double calcScore ( const int * bins, const int bincount, const int ballcount );
+double calcScore ( const unsigned * bins, const int bincount, const int ballcount );
 double normalizeScore ( double score, int scorewidth, int tests );
 
 void plot ( double n );
@@ -772,7 +772,7 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 
   printf("Testing distribution - %s", drawDiagram ? "\n[" : "");
 
-  std::vector<int> bins;
+  std::vector<unsigned> bins;
   bins.resize(1 << maxwidth);
 
   double worstN = 0; // Only report on biases above 0
@@ -1077,7 +1077,7 @@ double TestDistributionBytepairs ( std::vector<hashtype> & hashes, bool drawDiag
 
   const int nbins = 65536;
 
-  std::vector<int> bins(nbins,0);
+  std::vector<unsigned> bins(nbins,0);
 
   double worst = 0;
 
@@ -1102,7 +1102,7 @@ double TestDistributionBytepairs ( std::vector<hashtype> & hashes, bool drawDiag
         bins[pa | (pb << 8)]++;
       }
 
-      double s = calcScore(bins,bins.size(),hashes.size());
+      double s = calcScore(bins,nbins,hashes.size());
 
       if(drawDiagram) plot(s);
 
@@ -1127,7 +1127,7 @@ void TestDistributionFast ( std::vector<hashtype> & hashes, double & dworst, dou
   const int hashbits = sizeof(hashtype) * 8;
   const int nbins = 65536;
 
-  std::vector<int> bins(nbins,0);
+  std::vector<unsigned> bins(nbins,0);
 
   dworst = -1.0e90;
   davg = 0;
@@ -1144,7 +1144,7 @@ void TestDistributionFast ( std::vector<hashtype> & hashes, double & dworst, dou
       bins[index]++;
     }
 
-    double n = calcScore(&bins.front(),(int)bins.size(),(int)hashes.size());
+    double n = calcScore(&bins.front(),nbins,(int)hashes.size());
 
     davg += n;
 
