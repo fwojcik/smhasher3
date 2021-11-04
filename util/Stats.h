@@ -946,10 +946,6 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
      * more human-friendly.
      */
 
-    /*
-     * TODO - Compute the number of bits for a collision count of 100,
-     * and add that to nbBitsvec (ensuring it is still sorted).
-     */
     std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, 12, 8, };
     /*
      * cyan: The 12- and -8-bit tests are too small : tables are necessarily saturated.
@@ -974,6 +970,19 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
      * are being tested, and ReportCollisions() computes an
      * appropriate "expected" statistic.
      */
+
+    /*
+     * Compute the number of bits for a collision count of
+     * approximately 100.
+     */
+    if (testHighBits || testLowBits)
+    {
+      int const hundredCollBits = FindMaxBits_TargetCollisionNb(nbH, 100, hashbits);
+      if (EstimateNbCollisions(nbH, hundredCollBits) >= 100)
+        nbBitsvec.push_back(hundredCollBits);
+      std::sort(nbBitsvec.rbegin(), nbBitsvec.rend());
+      std::unique(nbBitsvec.rbegin(), nbBitsvec.rend());
+    }
 
     /*
      * Each bit width value in nbBitsvec is explicitly reported on. If
