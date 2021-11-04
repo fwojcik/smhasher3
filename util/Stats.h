@@ -921,7 +921,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     if (verbose)
       printf("Testing all collisions (     %3i-bit)", hashbits);
 
-    size_t const count = hashes.size();
+    size_t const nbH = hashes.size();
     int collcount = 0;
     HashSet<hashtype> collisions;
     collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
@@ -966,12 +966,12 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     int minBits, maxBits, threshBits;
 
     if (testHighBits || testLowBits)
-      ComputeCollBitBounds(nbBitsvec, hashbits, count, minBits, maxBits, threshBits);
+      ComputeCollBitBounds(nbBitsvec, hashbits, nbH, minBits, maxBits, threshBits);
 
     if (testHighBits && (maxBits > 0))
     {
       collcounts_fwd.reserve(maxBits - minBits + 1);
-      CountRangedNbCollisions(hashes, count, minBits, maxBits, threshBits, &collcounts_fwd[0]);
+      CountRangedNbCollisions(hashes, nbH, minBits, maxBits, threshBits, &collcounts_fwd[0]);
     }
 
     if (testLowBits && (maxBits > 0))
@@ -987,11 +987,11 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       blobsort(revhashes.begin(), revhashes.end());
 
       collcounts_rev.reserve(maxBits - minBits + 1);
-      CountRangedNbCollisions(revhashes, count, minBits, maxBits, threshBits, &collcounts_rev[0]);
+      CountRangedNbCollisions(revhashes, nbH, minBits, maxBits, threshBits, &collcounts_rev[0]);
     }
 
     // Report on complete collisions, now that the heavy lifting is complete
-    result &= ReportCollisions(count, collcount, hashbits, false, false, false, verbose, drawDiagram);
+    result &= ReportCollisions(nbH, collcount, hashbits, false, false, false, verbose, drawDiagram);
     if(!result && drawDiagram)
     {
       PrintCollisions(collisions);
@@ -1010,10 +1010,10 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
           continue;
         bool maxcoll = (nbBits <= threshBits) ? true : false;
         if (testHighBits)
-          result &= ReportCollisions(count, collcounts_fwd[nbBits - minBits], nbBits,
+          result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits], nbBits,
               maxcoll, true, true, true, drawDiagram);
         if (testLowBits)
-          result &= ReportCollisions(count, collcounts_rev[nbBits - minBits], nbBits,
+          result &= ReportCollisions(nbH, collcounts_rev[nbBits - minBits], nbBits,
               maxcoll, false, true, true, drawDiagram);
       }
 
