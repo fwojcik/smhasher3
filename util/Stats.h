@@ -286,6 +286,22 @@ static double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits
 //-----------------------------------------------------------------------------
 
 /*
+ * Compute the lowest number of hash bits (n) such that there are
+ * fewer than (2**n)*log(2**n) hashes, for a given hash count.
+ *
+ * This may validly return a value exceeding the number of hash bits
+ * that exist for the hash being tested!
+ */
+static int GetNLogNBound ( unsigned nbH )
+{
+  int nbHBits;
+  for (nbHBits = 1; nbHBits <= 255; nbHBits++)
+    if (nbH < (log(2.0) * nbHBits * exp2(nbHBits)))
+      break;
+  return nbHBits - 1;
+}
+
+/*
  * What SMHasher3 frequently reports on is the worst result across some
  * number of tests. If we compute the CDF/p-value of each test and
  * consider only those, then the tests become statistically identical,
@@ -880,8 +896,10 @@ static int FindNbBitsForCollisionTarget(int targetNbCollisions, int nbHashes)
     return nb-1;
 }
 
-static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, int nbH, int & minBits, int & maxBits, int & threshBits)
+static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, int nbH, int & minBits, int & maxBits, int & threshBits )
 {
+  const int nlognBits = GetNLogNBound(nbH);
+
   minBits = origBits + 1;
   maxBits = 0;
   threshBits = 0;
@@ -903,13 +921,11 @@ static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, i
     // statistics really start changing. ReportCollisions() will
     // estimate the correct key count for that differently, as it is a
     // different statistic.
-    if ((nbH >= (nbBits * exp2(nbBits) * log(2.0))) && (threshBits == 0))
-      threshBits = nbBits;
+    if (nbBits < nlognBits)
+      threshBits = std::max(threshBits, nbBits);
     // Record the highest and lowest valid bit widths to test
-    if (maxBits < nbBits)
-      maxBits = nbBits;
-    if (minBits > nbBits)
-      minBits = nbBits;
+    maxBits = std::max(maxBits, nbBits);
+    minBits = std::min(minBits, nbBits);
   }
 }
 
