@@ -756,19 +756,25 @@ int PrintCollisions ( HashSet<hashtype> & collisions )
 // Measure the distribution "score" for each possible N-bit span, with
 // N going from 8 to 20 inclusive.
 
+static int MaxDistBits ( const size_t nbH )
+{
+  int maxwidth = 20;
+  // We need at least 5 keys per bin to reliably test distribution biases
+  // down to 1%, so don't bother to test sparser distributions than that
+  while(double(nbH) / double(1 << maxwidth) < 5.0)
+    --maxwidth;
+  return maxwidth;
+}
+
 template< typename hashtype >
 bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 {
   const int hashbits = sizeof(hashtype) * 8;
   const uint32_t nbH = hashes.size();
-
-  int maxwidth = 20;
+  int maxwidth = MaxDistBits(nbH);
   int minwidth = 8;
 
-  // We need at least 5 keys per bin to reliably test distribution biases
-  // down to 1%, so don't bother to test sparser distributions than that
-  while(double(nbH) / double(1 << maxwidth) < 5.0)
-    if (--maxwidth < minwidth) return true;
+  if (maxwidth < minwidth) return true;
 
   printf("Testing distribution - %s", drawDiagram ? "\n[" : "");
 
