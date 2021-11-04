@@ -667,10 +667,10 @@ static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
     return nb;
 }
 
-static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions)
+static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions, int maxbits)
 {
     int nb;
-    for (nb=63; nb>2; nb--) {
+    for (nb=maxbits; nb>2; nb--) {
         double const nbColls = EstimateNbCollisions(nbHashes, nb);
         if (nbColls > minCollisions) return nb;
     }
@@ -678,27 +678,19 @@ static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions)
     return nb;
 }
 
-template< typename hashtype >
-bool TestBitsCollisions ( std::vector<hashtype> & hashes, bool highbits, bool drawDiagram )
+static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, int maxBits, bool highbits, bool drawDiagram )
 {
-  int origBits = sizeof(hashtype) * 8;
+  if (maxBits <= 1 || minBits > maxBits) return true;
 
-  size_t const nbH = hashes.size();
-  int const minBits = FindMinBits_TargetCollisionShare(nbH, 0.01);
-  int const maxBits = FindMaxBits_TargetCollisionNb(nbH, 20);
-  if (maxBits <= 0 || maxBits >= origBits || minBits > maxBits) return true;
   int spacelen = 78;
-
   spacelen -= printf("Testing all collisions (%s %2i..%2i bits) - ",
           highbits ? "high" : "low ", minBits, maxBits);
+
   double maxCollDev = 0.0;
   int maxCollDevBits = 0;
   int maxCollDevNb = 0;
   double maxCollDevExp = 1.0;
   double maxPValue = INFINITY;
-
-  int collcounts[maxBits - minBits + 1];
-  CountRangedNbCollisions(hashes, nbH, minBits, maxBits, 0, collcounts);
 
   for (int b = minBits; b <= maxBits; b++) {
       int    const nbColls = collcounts[b - minBits];
@@ -949,7 +941,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
 
     /*
-     * Do all other compute-intensive stuff (if requested) before
+     * Do all other compute-intensive stuff (as requested) before
      * displaying any results from FindCollisions, to be a little bit
      * more human-friendly.
      */
@@ -968,8 +960,8 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
      * rurban: No, these tests are for non-prime hash tables, using only
      *     the lower 5-10 bits
      *
-     * fwojcik: CountNBitsCollisions() did not previously reflect
-     * rurban's comment, as that code counted the sum of collisions
+     * fwojcik: Collision counting did not previously reflect
+     * rurban's comment, as the code counted the sum of collisions
      * across _all_ buckets. So if there are many more hashes than
      * 2**nbBits, and the hash is even _slightly_ not broken, then
      * every n-bit truncated hash value will appear at least once, in
@@ -982,13 +974,53 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
      * are being tested, and ReportCollisions() computes an
      * appropriate "expected" statistic.
      */
+
+    /*
+     * Each bit width value in nbBitsvec is explicitly reported on. If
+     * any of those values are less than the n*log(n) bound, then the
+     * bin with the most collisions will be reported on, otherwise the
+     * total sum of collisions across all bins will be reported on.
+     *
+     * But there are many more bit widths that a) are probably used in
+     * the real world, and b) we can now cheaply analyze and report
+     * on. Any bit width above the n*log(n) bound that has a
+     * reasonable number of expected collisions is worth analyzing, so
+     * that range of widths is computed here.
+     *
+     * This is slightly complicated by the fact that
+     * TestDistribution() may also get invoked, which does an
+     * RMSE-based comparison to the expected distribution over some
+     * range of bit width values. If that will be invoked, then
+     * there's no point in doubly-reporting on collision counts for
+     * those bit widths, so they get excluded here.
+     */
+    std::vector<int> testBitsvec;
+    int const nlognBits = GetNLogNBound(nbH);
+    int const minTBits = testDist ? std::max(MaxDistBits(nbH)+1, nlognBits) : nlognBits;
+    int const maxTBits = FindMaxBits_TargetCollisionNb(nbH, 10, hashbits - 1);
+
+    if (testHighBits || testLowBits)
+      for (int i = minTBits; i <= maxTBits; i++)
+        testBitsvec.push_back(i);
+
+    /*
+     * Given the range of hash sizes we care about, compute all
+     * collision counts for them, for high- and low-bits as requested.
+     */
     std::vector<hashtype> revhashes;
     std::vector<int> collcounts_fwd;
     std::vector<int> collcounts_rev;
     int minBits, maxBits, threshBits;
 
     if (testHighBits || testLowBits)
-      ComputeCollBitBounds(nbBitsvec, hashbits, nbH, minBits, maxBits, threshBits);
+    {
+      std::vector<int> combinedBitsvec;
+      combinedBitsvec.insert(combinedBitsvec.begin(), nbBitsvec.begin(),   nbBitsvec.end());
+      combinedBitsvec.insert(combinedBitsvec.begin(), testBitsvec.begin(), testBitsvec.end());
+      std::sort(combinedBitsvec.rbegin(), combinedBitsvec.rend());
+      std::unique(combinedBitsvec.rbegin(), combinedBitsvec.rend());
+      ComputeCollBitBounds(combinedBitsvec, hashbits, nbH, minBits, maxBits, threshBits);
+    }
 
     if (testHighBits && (maxBits > 0))
     {
@@ -1040,9 +1072,9 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       }
 
     if (testHighBits)
-      result &= TestBitsCollisions(hashes, true, drawDiagram);
+      result &= ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits], minTBits, maxTBits, true, drawDiagram);
     if (testLowBits)
-      result &= TestBitsCollisions(revhashes, false, drawDiagram);
+      result &= ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits], minTBits, maxTBits, false, drawDiagram);
   }
 
   //----------
