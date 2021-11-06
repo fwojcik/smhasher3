@@ -519,6 +519,8 @@ static void radixsort( T * begin, T * end )
 //-----------------------------------------------------------------------------
 static const size_t    SORT_CUTOFF  = 60;
 
+#define expectp(x, p)  __builtin_expect_with_probability(!!(x), 1, (p))
+
 // This is an in-place MSB radix sort that recursively sorts each
 // block, sometimes known as an "American Flag Sort". Testing shows
 // that performance increases by devolving to std::sort once we get
@@ -564,18 +566,18 @@ static void flagsort( T * begin, T * end, int idx )
   T * nxt = begin + freqs[0];
   unsigned curblock = 0;
   while (curblock < (RADIX_SIZE - 1)) {
-    if (ptr >= nxt) {
+    if (expectp(ptr >= nxt, 0.0944)) {
       curblock++;
       nxt += freqs[curblock];
       continue;
     }
     unsigned value = getbyte(*ptr, idx);
-    if (value == curblock) {
+    if (expectp(value == curblock, 0.501155)) {
       ptr++;
       continue;
     }
     //assert(block_ptrs[value] < end);
-    std::swap(*ptr, *block_ptrs[value]++);
+    std::swap(*ptr, *block_ptrs[value]++); // MAYBE do this better manually?
   }
 
   if (idx == 0)
@@ -585,9 +587,9 @@ static void flagsort( T * begin, T * end, int idx )
   // std::sort if there are only a few entries in the block.
   ptr = begin;
   for (int i = 0; i < RADIX_SIZE; i++) {
-    if (freqs[i] > SORT_CUTOFF)
+    if (expectp(freqs[i] > SORT_CUTOFF, 0.00390611))
       flagsort(ptr, ptr + freqs[i], idx - 1);
-    else if (freqs[i] > 1)
+    else if (expectp(freqs[i] > 1, 0.3847))
       std::sort(ptr, ptr + freqs[i]);
     ptr += freqs[i];
   }
