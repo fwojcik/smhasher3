@@ -11,7 +11,7 @@ if(POLICY CMP0066) # honor per-config flags in try_compile() source-file
   cmake_policy(SET CMP0066 NEW) # since 3.7
 endif()
 
-project(SMHasher C CXX ASM)
+project(SMHasher3 C CXX ASM)
 
 include(CheckCCompilerFlag)
 # Check if the same compile family is used for both C and CXX
@@ -613,7 +613,7 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
 
 add_library(
-  SMHasherSupport STATIC
+  SMHasher3Support STATIC
 #
   util/Bitvec.cpp
   util/Platform.cpp
@@ -693,35 +693,35 @@ add_library(
   # hashes/wyhash_condom.c
 )
 
-add_executable(SMHasher main.cpp)
+add_executable(SMHasher3 main.cpp)
 
 if(ipo_supported)
   message(STATUS "IPO / LTO enabled")
-  set_property(TARGET SMHasherSupport PROPERTY INTERPROCEDURAL_OPTIMIZATION
+  set_property(TARGET SMHasher3Support PROPERTY INTERPROCEDURAL_OPTIMIZATION
                                                True)
-  set_property(TARGET SMHasher PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+  set_property(TARGET SMHasher3 PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLTO")
   # set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-DLTO")
 else()
   message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
 
-target_link_libraries(SMHasher SMHasherSupport
+target_link_libraries(SMHasher3 SMHasher3Support
                       ${HIGHWAY_LIB} ${BLAKE3_LIB} ${AHASH_C_LIB}
                       ${CMAKE_THREAD_LIBS_INIT})
 
 # add_executable( bittest bittest.cpp )
 #
-# target_link_libraries( bittest SMHasherSupport ${CMAKE_THREAD_LIBS_INIT} )
+# target_link_libraries( bittest SMHasher3Support ${CMAKE_THREAD_LIBS_INIT} )
 
 if(NOT (CMAKE_CROSSCOMPILING))
   enable_testing()
-  add_test(VerifyAll SMHasher --test=VerifyAll)
-  add_test(Sanity SMHasher --test=Sanity)
-  add_test(Speed SMHasher --test=Speed)
-  add_test(Cyclic SMHasher --test=Cyclic)
-  add_test(Zeroes SMHasher --test=Zeroes)
-  add_test(Seed SMHasher --test=Seed)
+  add_test(VerifyAll SMHasher3 --test=VerifyAll)
+  add_test(Sanity SMHasher3 --test=Sanity)
+  add_test(Speed SMHasher3 --test=Speed)
+  add_test(Cyclic SMHasher3 --test=Cyclic)
+  add_test(Zeroes SMHasher3 --test=Zeroes)
+  add_test(Seed SMHasher3 --test=Seed)
 endif()
 
 if(MSVC)
