@@ -71,9 +71,9 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(COMPARE EQUAL "sse2" "${SSE_THERE}" SSE2_TRUE)
     string(REGEX REPLACE "^.*(sse4_2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "sse4_2" "${SSE_THERE}" SSE42_TRUE)
-    set(FALKHASH_OBJ falkhash-elf64.o)
+    set(FALKHASH_OBJ hashes/falkhash-elf64.o)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(FHTW_OBJ fhtw-elf64.o)
+      set(FHTW_OBJ hashes/fhtw-elf64.o)
     endif()
     string(REGEX REPLACE "^.*(aes).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "aes" "${AES_THERE}" AES_TRUE)
@@ -94,9 +94,9 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(COMPARE EQUAL "SSE2" "${SSE_THERE}" SSE2_TRUE)
     string(REGEX REPLACE "^.*(SSE4.2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "SSE4.2" "${SSE_THERE}" SSE42_TRUE)
-    set(FALKHASH_OBJ falkhash-macho64.o)
+    set(FALKHASH_OBJ hashes/falkhash-macho64.o)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(FHTW_OBJ fhtw-macho64.o)
+      set(FHTW_OBJ hashes/fhtw-macho64.o)
     endif()
     string(REGEX REPLACE "^.*(AES).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "AES" "${AES_THERE}" AES_TRUE)
@@ -114,9 +114,9 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(COMPARE EQUAL "SSE2" "${SSE_THERE}" SSE2_TRUE)
     string(REGEX REPLACE "^.*(SSE4.2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "SSE4.2" "${SSE_THERE}" SSE42_TRUE)
-    set(FALKHASH_OBJ falkhash-elf64.o)
+    set(FALKHASH_OBJ hashes/falkhash-elf64.o)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(FHTW_OBJ fhtw-elf64.o)
+      set(FHTW_OBJ hashes/fhtw-elf64.o)
     endif()
     string(REGEX REPLACE "^.*(AES).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "AES" "${AES_THERE}" AES_TRUE)
@@ -206,9 +206,6 @@ if(CMAKE_COMPILER_IS_GNUCC
    OR (CMAKE_C_COMPILER_ID STREQUAL AppleClang)
    OR (CMAKE_C_COMPILER_ID STREQUAL Clang)
    OR (CMAKE_C_COMPILER_ID STREQUAL Intel))
-  if(CLMUL_TRUE)
-    set(CRC_PCLMUL_SRC crc32-pclmul_asm.S)
-  endif()
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
   set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
@@ -232,7 +229,7 @@ if(CMAKE_COMPILER_IS_GNUCC
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
   endif()
-  set_source_files_properties(blake3/blake3.c
+  set_source_files_properties(hashes/blake3/blake3.c
                               PROPERTIES COMPILE_FLAGS "-std=c99")
 elseif(MSVC)
   # using Visual Studio C++, already the default with VS17
@@ -334,7 +331,6 @@ if(CMAKE_CROSSCOMPILING)
   set(AES_FOUND false)
   set(SHA_FOUND false)
   set(CLMUL_FOUND false)
-  set(CRC_PCLMUL_SRC "")
 endif(CMAKE_CROSSCOMPILING)
 
 if(SSE2_FOUND)
@@ -432,97 +428,97 @@ find_package( Threads )
 #set(CMAKE_THREAD_LIBS_INIT "-lpthread")
 
 if(SSE2_FOUND)
-  set(SSE2_SRC hasshe2.c)
+  set(SSE2_SRC hashes/hasshe2.c)
 endif()
 if(SSE42_FOUND)
   # MSVC CL 14.16.27023 32bit crashes, 14.28.29910 works fine.
   if (MSVC AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND (MSVC_VERSION LESS 1928))
     add_definitions(-DHAVE_BROKEN_MSVC_CRC32C_HW)
   else()
-    set(SSE4_SRC "crc32_hw.c")
+    set(SSE4_SRC "hashes/crc32_hw.c")
   endif()
   # 64bit only:
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     # enable_language(ASM-NASM) set(CMAKE_ASM_FLAGS "-f elf64") # or
     # macho64/win64
-    set(X86_64ONLY_SRC farmhash-c.c farmhash-c-test.cc clhash.c)
+    set(X86_64ONLY_SRC hashes/farmhash-c.c hashes/farmhash-c-test.cc hashes/clhash.c)
     if(NOT MSVC)
-      list(APPEND X86_64ONLY_SRC metrohash/metrohash64crc.cpp
-           metrohash/metrohash128crc.cpp)
+      list(APPEND X86_64ONLY_SRC hashes/metrohash/metrohash64crc.cpp
+           hashes/metrohash/metrohash128crc.cpp)
     endif()
     if(NOT (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64") AND NOT MSVC)
-      list(APPEND X86_64ONLY_SRC crc32_hw1.c)
+      list(APPEND X86_64ONLY_SRC hashes/crc32_hw1.c)
     endif()
   else()
     message(STATUS "32bit only: CMAKE_SIZEOF_VOID_P=${CMAKE_SIZEOF_VOID_P}")
   endif()
   if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    set(SIPHASH_SRC siphash.c)
+    set(SIPHASH_SRC hashes/siphash.c)
   else()
-    set(SIPHASH_SRC siphash_ssse3.c)
+    set(SIPHASH_SRC hashes/siphash_ssse3.c)
   endif()
 elseif(SSE2_FOUND)
-  set(SIPHASH_SRC siphash_sse2.c)
+  set(SIPHASH_SRC hashes/siphash_sse2.c)
 else()
-  set(SIPHASH_SRC siphash.c)
+  set(SIPHASH_SRC hashes/siphash.c)
 endif(SSE42_FOUND)
 
 if(AES_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel"))
   set(T1HA_SRC
-      t1ha/t1ha0.c t1ha/t1ha1.c t1ha/t1ha2.c t1ha/t1ha0_ia32aes_noavx.c
-      t1ha/t1ha0_ia32aes_avx.c t1ha/t1ha0_ia32aes_avx2.c)
+      hashes/t1ha/t1ha0.c hashes/t1ha/t1ha1.c hashes/t1ha/t1ha2.c hashes/t1ha/t1ha0_ia32aes_noavx.c
+      hashes/t1ha/t1ha0_ia32aes_avx.c hashes/t1ha/t1ha0_ia32aes_avx2.c)
   if(MSVC)
     # ignoring unknown option '/arch:ia32'
-    # set_source_files_properties(t1ha/t1ha0_ia32aes_noavx.c PROPERTIES
+    # set_source_files_properties(hashes/t1ha/t1ha0_ia32aes_noavx.c PROPERTIES
     # COMPILE_FLAGS "/arch:ia32")
-    set_source_files_properties(t1ha/t1ha0_ia32aes_avx.c
+    set_source_files_properties(hashes/t1ha/t1ha0_ia32aes_avx.c
                                 PROPERTIES COMPILE_FLAGS "/arch:avx")
-    set_source_files_properties(t1ha/t1ha0_ia32aes_avx2.c
+    set_source_files_properties(hashes/t1ha/t1ha0_ia32aes_avx2.c
       PROPERTIES COMPILE_FLAGS "/arch:avx2")
   else()
     set_source_files_properties(
-      t1ha/t1ha0_ia32aes_noavx.c PROPERTIES COMPILE_FLAGS
+      hashes/t1ha/t1ha0_ia32aes_noavx.c PROPERTIES COMPILE_FLAGS
                                             "-mno-avx2 -mno-avx -maes")
     set_source_files_properties(
-      t1ha/t1ha0_ia32aes_avx.c PROPERTIES COMPILE_FLAGS "-mno-avx2 -mavx -maes")
-    set_source_files_properties(t1ha/t1ha0_ia32aes_avx2.c
+      hashes/t1ha/t1ha0_ia32aes_avx.c PROPERTIES COMPILE_FLAGS "-mno-avx2 -mavx -maes")
+    set_source_files_properties(hashes/t1ha/t1ha0_ia32aes_avx2.c
                                 PROPERTIES COMPILE_FLAGS "-mavx -mavx2 -maes")
   endif()
 else()
-  set(T1HA_SRC t1ha/t1ha0.c t1ha/t1ha1.c t1ha/t1ha2.c)
+  set(T1HA_SRC hashes/t1ha/t1ha0.c hashes/t1ha/t1ha1.c hashes/t1ha/t1ha2.c)
 endif(AES_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel"))
 
 if(SHA_FOUND)
   # todo: arm, power
-  set(SHA_SRC SHA-Intrinsics/sha1-x86.c SHA-Intrinsics/sha256-x86.c)
+  set(SHA_SRC hashes/SHA-Intrinsics/sha1-x86.c hashes/SHA-Intrinsics/sha256-x86.c)
 endif(SHA_FOUND)
 
 if(SSE42_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel") AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
-  set(SSE4_OBJ ${SSE4_OBJ} pearson_hash/pearson.c)
+  set(SSE4_OBJ ${SSE4_OBJ} hashes/pearson_hash/pearson.c)
 endif()
 
 if(NOT MSVC)
-  set(NOTMSVC_SRC seahash.c)
-  set_source_files_properties(HashMapTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++11")
-  set_source_files_properties(SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x -I${CMAKE_SOURCE_DIR}")
-  set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x")
-  set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -I${CMAKE_SOURCE_DIR} -flax-vector-conversions")
-  set_source_files_properties(bittest.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x")
-  set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -I${CMAKE_SOURCE_DIR} -flax-vector-conversions")
+  set(NOTMSVC_SRC hashes/seahash.c)
+  set_source_files_properties(tests/HashMapTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++11")
+  set_source_files_properties(tests/SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x -I${CMAKE_SOURCE_DIR}/tests")
+  set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x -I${CMAKE_SOURCE_DIR}/hashes -I${CMAKE_SOURCE_DIR}/tests")
+  set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -I${CMAKE_SOURCE_DIR} -flax-vector-conversions")
+  set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -I${CMAKE_SOURCE_DIR} -flax-vector-conversions")
   # https://github.com/dgryski/trifles/tree/master/tsip
-  set(TSIP_SRC tsip.c)
+  set(TSIP_SRC hashes/tsip.c)
 else(NOT MSVC)
-  set_source_files_properties(SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}")
+  set_source_files_properties(tests/SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/tests")
+  set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/hashes -I${CMAKE_SOURCE_DIR}/tests")
   # nmhash32 wants "/std:c++latest"
-  set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest -I${CMAKE_SOURCE_DIR}")
+  set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest -I${CMAKE_SOURCE_DIR}")
 endif(NOT MSVC)
 
 find_library(HIGHWAY highwayhash)
 if(HIGHWAY
    AND (NOT(CMAKE_CROSSCOMPILING)))
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(HIGHWAY_SRC HighwayHash.cpp)
-    set(HIGHWAY_LIB highwayhash)
+    set(HIGHWAY_SRC hashes/HighwayHash.cpp)
+    set(HIGHWAY_LIB hashes/highwayhash)
     add_definitions(-DHAVE_HIGHWAYHASH)
   endif()
 endif()
@@ -546,37 +542,37 @@ if(SSE42_FOUND AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
   # endif()
 endif()
 
-set(BLAKE3_SRC blake3/blake3.c blake3/blake3_dispatch.c
-               blake3/blake3_portable.c)
+set(BLAKE3_SRC hashes/blake3/blake3.c hashes/blake3/blake3_dispatch.c
+               hashes/blake3/blake3_portable.c)
 if(SSE42_FOUND)
   if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_neon.c)
+    set(BLAKE3_SRC ${BLAKE3_SRC} hashes/blake3/blake3_neon.c)
   else()
-    set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_sse41.c)
-    set_source_files_properties(blake3/blake3_sse41.c
+    set(BLAKE3_SRC ${BLAKE3_SRC} hashes/blake3/blake3_sse41.c)
+    set_source_files_properties(hashes/blake3/blake3_sse41.c
       PROPERTIES COMPILE_FLAGS "-DBLAKE3_USE_SSE41")
   endif()
 endif()
 if(AVX2_FOUND)
-  set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_avx2.c)
+  set(BLAKE3_SRC ${BLAKE3_SRC} hashes/blake3/blake3_avx2.c)
   set_source_files_properties(
-    blake3/blake3_avx2.c PROPERTIES COMPILE_FLAGS
+    hashes/blake3/blake3_avx2.c PROPERTIES COMPILE_FLAGS
                                     "-DBLAKE3_USE_SSE41 -DBLAKE3_USE_AVX2 -mavx2")
 endif()
 if(AVX512F_FOUND AND AVX512VL_FOUND)
-  set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_avx512.c)
+  set(BLAKE3_SRC ${BLAKE3_SRC} hashes/blake3/blake3_avx512.c)
   set_source_files_properties(
-    blake3/blake3_avx512.c
+    hashes/blake3/blake3_avx512.c
     PROPERTIES COMPILE_FLAGS
                "-DBLAKE3_USE_SSE41 -DBLAKE3_USE_AVX2 -DBLAKE3_USE_AVX512 -mavx512f -mavx512vl")
 endif()
 if(SSE42_FOUND
    AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
    AND (NOT MSVC))
-  set(UMASH_SRC umash.c umash.hpp)
+  set(UMASH_SRC hashes/umash.c hashes/umash.hpp)
 endif()
 
-set(ASCON_SRC asconhashv12/hash.c)
+set(ASCON_SRC hashes/asconhashv12/hash.c)
 set_source_files_properties(
     ${ASCON_SRC}
     PROPERTIES COMPILE_FLAGS "-Iasconhashv12 -DASCON_INLINE_MODE")
@@ -584,8 +580,8 @@ set_source_files_properties(
 if(NOT (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   # PMP breaks Debug build
   if(NOT (CMAKE_BUILD_TYPE STREQUAL "asan"))
-    set(PMPML_SRC PMP_Multilinear.cpp PMP_Multilinear_64.cpp
-                  PMP_Multilinear_test.cpp)
+    set(PMPML_SRC hashes/PMP_Multilinear.cpp hashes/PMP_Multilinear_64.cpp
+                  hashes/PMP_Multilinear_test.cpp)
   endif()
 endif()
 if(CMAKE_CROSSCOMPILING)
@@ -613,83 +609,89 @@ if((CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 9)
   check_ipo_supported(RESULT ipo_supported OUTPUT error)
 endif()
 
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
+
 add_library(
   SMHasherSupport STATIC
-  AvalancheTest.cpp
-  Bitslice.cpp
-  Bitvec.cpp
-  chaskey.c
-  CityTest.cpp
-  City.cpp
-  crc.cpp
-  DifferentialTest.cpp
-  HashMapTest.cpp
-  Hashes.cpp
+#
+  util/Bitvec.cpp
+  util/Platform.cpp
+  util/Random.cpp
+  util/Stats.cpp
+  util/Types.cpp
+#
+  tests/AvalancheTest.cpp
+  tests/DifferentialTest.cpp
+  tests/HashMapTest.cpp
+  tests/KeysetTest.cpp
+  tests/SpeedTest.cpp
+#
   ${HIGHWAY_SRC}
   ${SSE2_SRC}
   ${SSE4_SRC}
-  KeysetTest.cpp
-  lookup3.cpp
-  md5.cpp
-  MurmurHash1.cpp
-  MurmurHash2.cpp
-  MurmurHash3.cpp
-  Platform.cpp
-  Random.cpp
-  sha1.cpp
   ${SIPHASH_SRC}
-  SpeedTest.cpp
-  Spooky.cpp
-  SpookyTest.cpp
-  SpookyV2.cpp
-  SpookyTestV2.cpp
-  Stats.cpp
-  SuperFastHash.cpp
-  Types.cpp
-  PMurHash.c
-  tifuhash.cpp
-  floppsyhash.cpp
-  fasthash.cpp
-  beamsplitter.cpp
-  discohash.cpp
-  xxhash.c
-  metrohash/metrohash64.cpp
-  metrohash/metrohash128.cpp
-  cmetrohash64.c
-  opt_cmetrohash64_1.c
-  farmhash.cc
-  FarmTest.cc
   ${SSE4_OBJ}
   # ${FHTW_OBJ}
   ${T1HA_SRC}
   ${SHA_SRC}
-  mum.cc
-  jody_hash32.c
-  jody_hash64.c
   ${TSIP_SRC}
   # ${BEAGLE_SRC}
   ${NOTMSVC_SRC}
   ${X86_64ONLY_SRC}
-  ${CRC_PCLMUL_SRC}
-  blake2b.c
-  blake2s.c
-  rmd128.c
-  rmd160.c
-  rmd256.c
-  sha2/sha224.c
-  sha2/sha256.c
-  sha2/sha512_224.c
-  sha2/sha512_256.c
-  sha3.c
   ${PMPML_SRC}
-  vmac.cpp
-  rijndael-alg-fst.c
   ${BLAKE3_SRC}
-  pengyhash.c
-  pearson_hash/pearsonb.c
-  # wyhash_condom.c
   ${ASCON_SRC}
-  ${UMASH_SRC})
+  ${UMASH_SRC}
+#
+  hashes/chaskey.c
+  hashes/CityTest.cpp
+  hashes/City.cpp
+  hashes/crc.cpp
+  hashes/Hashes.cpp
+  hashes/lookup3.cpp
+  hashes/md5.cpp
+  hashes/MurmurHash1.cpp
+  hashes/MurmurHash2.cpp
+  hashes/MurmurHash3.cpp
+  hashes/sha1.cpp
+  hashes/Spooky.cpp
+  hashes/SpookyTest.cpp
+  hashes/SpookyV2.cpp
+  hashes/SpookyTestV2.cpp
+  hashes/SuperFastHash.cpp
+  hashes/PMurHash.c
+  hashes/tifuhash.cpp
+  hashes/floppsyhash.cpp
+  hashes/fasthash.cpp
+  hashes/beamsplitter.cpp
+  hashes/discohash.cpp
+  hashes/xxhash.c
+  hashes/metrohash/metrohash64.cpp
+  hashes/metrohash/metrohash128.cpp
+  hashes/cmetrohash64.c
+  hashes/opt_cmetrohash64_1.c
+  hashes/farmhash.cc
+  hashes/FarmTest.cc
+  hashes/mum.cc
+  hashes/jody_hash32.c
+  hashes/jody_hash64.c
+  hashes/blake2b.c
+  hashes/blake2s.c
+  hashes/rmd128.c
+  hashes/rmd160.c
+  hashes/rmd256.c
+  hashes/sha2/sha224.c
+  hashes/sha2/sha256.c
+  hashes/sha2/sha512_224.c
+  hashes/sha2/sha512_256.c
+  hashes/sha3.c
+  hashes/vmac.cpp
+  hashes/rijndael-alg-fst.c
+  hashes/pengyhash.c
+  hashes/pearson_hash/pearsonb.c
+  # hashes/wyhash_condom.c
+)
 
 add_executable(SMHasher main.cpp)
 
@@ -722,8 +724,16 @@ if(NOT (CMAKE_CROSSCOMPILING))
   add_test(Seed SMHasher --test=Seed)
 endif()
 
+if(MSVC)
 add_custom_target(
   TAGS
-  COMMAND etags --language=c++ *.cpp *.cc *.h
+  COMMAND dir /b /s *.cpp *.cc *.h | etags --language=c++ -
   DEPENDS ${SRCS}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+else()
+add_custom_target(
+  TAGS
+  COMMAND find . -name *.cpp -or -name *.cc -or -name *.h -print | etags --language=c++ -
+  DEPENDS ${SRCS}
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()

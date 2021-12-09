@@ -237,9 +237,6 @@ HashInfo g_hashes[] =
 #endif
 #endif
   // 32bit crashes
-#if defined(HAVE_CLMUL) && !defined(_MSC_VER) && defined(__x86_64__)
-  { crc32c_pclmul_test,   32, 0x0, "crc32_pclmul","-mpclmul crc32 in asm on HW", POOR, {0x0} /* !! */ },
-#endif
 #ifdef HAVE_INT64
   { o1hash_test,          64, 0x85051E87, "o1hash",       "o(1)hash unseeded, from wyhash", POOR, {0x0} /* !! */ },
 #endif
@@ -1498,7 +1495,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   // 7m for FNV64 with windowbits=27 / 32bit keys
   // 5m35 for hasshe2 with windowbits=25 / 32bit keys
 
-  if((g_testWindow || g_testAll) && !need_minlen64_align16(hash))
+  if(g_testWindow || g_testAll)
   {
     printf("[[[ Keyset 'Window' Tests ]]]\n\n");
 
@@ -1525,7 +1522,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   // 5s for crc32_hw
   // 18s for farmhash128_c
 
-  if ((g_testCyclic || g_testAll) && !need_minlen64_align16(hash))
+  if (g_testCyclic || g_testAll)
   {
     printf("[[[ Keyset 'Cyclic' Tests ]]]\n\n");
     fflush(NULL);
