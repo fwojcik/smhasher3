@@ -108,8 +108,6 @@ bool g_testBIC         = false;
 bool g_testBadSeeds    = false;
 //bool g_testLongNeighbors = false;
 
-double g_speed = 0.0;
-
 struct TestOpts {
   bool         &var;
   const char*  name;
@@ -140,7 +138,7 @@ TestOpts g_testopts[] =
   //{ g_testLongNeighbors,"LongNeighbors" }
 };
 
-bool MomentChi2Test ( struct HashInfo *info, int inputSize );
+bool MomentChi2Test ( struct HashInfo *info, int inputSize, bool hash_is_slow );
 
 //-----------------------------------------------------------------------------
 // This is the list of all hashes that SMHasher3 can test.
@@ -1054,7 +1052,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   {
     printf("[[[ VerifyAll Tests ]]]\n\n"); fflush(NULL);
     SelfTest(g_drawDiagram);
-    printf("PASS\n\n"); fflush(NULL); // if not it does exit(1)
+    printf("PASS\n\n");
   }
 
   FILE * outfile;
@@ -1068,7 +1066,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   else
     fprintf(outfile, "\n\n");
 
-  // sha1_32 runs 30s
   if(g_testSanity || g_testAll)
   {
     printf("[[[ Sanity Tests ]]]\n\n");
@@ -1099,58 +1096,54 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     printf("\n");
     fflush(NULL);
 
-    g_speed = TinySpeedTest(hashfunc<hashtype>(hash),sizeof(hashtype),31,info->verification,true,true);
+    TinySpeedTest(hashfunc<hashtype>(hash),sizeof(hashtype),31,info->verification,true,true);
     printf("\n");
     fflush(NULL);
-
-  } else {
-    // known slow hashes (> 500), cycle/hash
-    const struct { pfHash h; double cycles; } speeds[] = {
-     { md5_32,           670.99 },
-     { md5_64,           670.99 },
-     { md5_128,          730.30 },
-     { sha1_32,         1385.80 },
-     { sha1_64,         1385.80 },
-     { sha1_160,        1470.55 },
-     { sha2_224,        1354.81 },
-     { sha2_224_64,     1360.10 },
-     { sha2_256,        1374.90 },
-     { sha2_256_64,     1376.34 },
-     { rmd128,           672.35 },
-     { rmd160,          1045.79 },
-     { rmd256,           638.30 },
-     { blake2s128_test,  698.09 },
-     { blake2s160_test, 1026.74 },
-     { blake2s224_test, 1063.86 },
-     { blake2s256_test, 1014.88 },
-     { blake2s256_64,   1014.88 },
-     { blake2b160_test, 1236.84 },
-     { blake2b224_test, 1228.50 },
-     { blake2b256_test, 1232.22 },
-     { blake2b256_64,   1236.84 },
-     { sha3_256,        3877.18 },
-     { sha3_256_64,     3909.00 },
-     { tifuhash_64,     1679.52 },
-     { floppsyhash_64,   450.93 },
-     { beamsplitter_64,  682.45 },
-    };
-    for (int i=0; i<sizeof(speeds)/sizeof(speeds[0]); i++) {
-      if (speeds[i].h == hash)
-        {
-          g_speed = speeds[i].cycles; break;
-        }
-    }
   }
 
-  // sha1_32a runs 30s
+  // known slow hashes (typically > 500 cycle/hash)
+  const struct { pfHash h; } slowhashes[] = {
+     { md5_32                   },
+     { md5_64                   },
+     { md5_128                  },
+     { sha1_32                  },
+     { sha1_64                  },
+     { sha1_160                 },
+     { sha2_224                 },
+     { sha2_224_64              },
+     { sha2_256                 },
+     { sha2_256_64              },
+     { rmd128                   },
+     { rmd160                   },
+     { rmd256                   },
+     { blake2s128_test          },
+     { blake2s160_test          },
+     { blake2s224_test          },
+     { blake2s256_test          },
+     { blake2s256_64            },
+     { blake2b160_test          },
+     { blake2b224_test          },
+     { blake2b256_test          },
+     { blake2b256_64            },
+     { sha3_256                 },
+     { sha3_256_64              },
+     { tifuhash_64              },
+     { floppsyhash_64           },
+     { beamsplitter_64          },
+    };
+  bool hash_is_slow = false;
+  for (int i=0; i<sizeof(slowhashes)/sizeof(slowhashes[0]); i++) {
+      if (slowhashes[i].h == hash) {
+          hash_is_slow = true;
+          break;
+      }
+  }
+
   if(g_testHashmap || g_testAll)
   {
     printf("[[[ 'Hashmap' Speed Tests ]]]\n\n");
     fflush(NULL);
-    int trials = 50;
-    if ((g_speed > 500)
-         && !g_testExtra)
-      trials = 5;
+    const int trials = (hash_is_slow && !g_testExtra) ? 5 : 50;
     bool result = true;
     if (info->quality == SKIP) {
       printf("Skipping Hashmap test; it is designed for true hashes\n");
@@ -1236,9 +1229,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Keyset 'Sparse' - keys with all bits 0 except a few
-  // 3m30 for xxh3
-  // 14m  for xxh3 with --extra
-  // 6m30 for farmhash128_c (was too much with >= 512)
 
   if(g_testSparse || g_testAll)
   {
@@ -1304,9 +1294,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Keyset 'Permutation' - all possible combinations of a set of blocks
-  // 9m with xxh3 and maxlen=23, 4m15 with maxlen=22
-  // 120m for farmhash128_c with maxlen=18, 1m20 FAIL with maxlen=12
-  //                                        1m20 PASS with maxlen=14,16,17
 
   if(g_testPermutation || g_testAll)
   {
@@ -1598,15 +1585,8 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Keyset 'Window'
-
   // Skip distribution test for these - they're too easy to distribute well,
   // and it generates a _lot_ of testing.
-  // 11s for crc32_hw, 28s for xxh3
-  // 51s for crc32_hw --extra
-  // 180m for farmhash128_c with 20 windowbits,
-  //      0.19s with windowbits=10, 2s for 14, 9s for 16, 37s for 18
-  // 7m for FNV64 with windowbits=27 / 32bit keys
-  // 5m35 for hasshe2 with windowbits=25 / 32bit keys
 
   if(g_testWindow || g_testAll)
   {
@@ -1632,8 +1612,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Keyset 'Cyclic' - keys of the form "abcdabcdabcd..."
-  // 5s for crc32_hw
-  // 18s for farmhash128_c
 
   if (g_testCyclic || g_testAll)
   {
@@ -1642,7 +1620,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 #ifdef DEBUG
     const int reps = 2;
 #else
-    const int reps = g_speed > 500.0 ? 100000 : 1000000;
+    const int reps = hash_is_slow ? 100000 : 1000000;
 #endif
     bool result = true;
 
@@ -1661,11 +1639,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Keyset 'TwoBytes' - all keys up to N bytes containing two non-zero bytes
-  // 3m40 for crc32_hw (32bit), 8m30 for xxh3 --extra (64bit)
-  // 4m16 for xxh3
-  // 4m50 for metrohash128crc_1
-  // 260m for farmhash128_c with maxlen=16, 31s with maxlen=10, 2m with 12,14,15
-
   // With --extra this generates some huge keysets,
   // 128-bit tests will take ~1.3 gigs of RAM.
 
@@ -1677,9 +1650,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     bool result = true;
     int maxlen = 24;
     if (!g_testExtra && (info->hashbits > 32)) {
-      maxlen = (info->hashbits < 128) ? 20 : 15;
-      if (g_speed > 500.0)
-        maxlen = 8;
+      maxlen = hash_is_slow ? 8 : ((info->hashbits <= 64) ? 20 : 15);
     }
 
     Hash_Seed_init (hash, g_seed);
@@ -1781,10 +1752,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Differential tests
-  // 5m30 with xxh3
   // less reps with slow or very bad hashes
-  // md5: 1h38m with 1000 reps!
-  // halftime* > 40m
 
   if(g_testDiff || g_testAll)
   {
@@ -1794,14 +1762,14 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     bool result = true;
     bool dumpCollisions = g_drawDiagram; // from --verbose
     int reps = 1000;
-    if ((g_speed > 500.0 || info->hashbits > 128 ||
+    if ((hash_is_slow || info->hashbits > 128 ||
          hash == o1hash_test ||
          hash == halftime_hash_style64_test ||
          hash == halftime_hash_style128_test ||
          hash == halftime_hash_style256_test ||
          hash == halftime_hash_style512_test
          ) && !g_testExtra)
-      reps = 100; // sha1: 7m, md5: 4m53
+      reps = 100;
 
     result &= DiffTest< Blob<64>,  hashtype >(hash,5,reps,dumpCollisions);
     result &= DiffTest< Blob<128>, hashtype >(hash,4,reps,dumpCollisions);
@@ -1814,7 +1782,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Differential-distribution tests
-  // 2m40 with xxh3
 
   if (g_testDiffDist || g_testAll)
   {
@@ -1833,24 +1800,15 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   // Moment Chi-Square test, measuring the probability of the
   // lowest 32 bits set over the whole key space. Not where the bits are, but how many.
   // See e.g. https://www.statlect.com/fundamentals-of-probability/moment-generating-function
-  // 10s (16 step interval until 0x7ffffff)
-  // 20s (16 step interval until 0xcffffff)
-  //   step  time
-  //   1     300s
-  //   2     150s
-  //   3     90s
-  //   7     35s
-  //   13    20s
-  //   16    12s
   if (g_testMomentChi2 || g_testAll)
   {
     printf("[[[ MomentChi2 Tests ]]]\n\n");
 
     bool result = true;
-    result &= MomentChi2Test(info, 4);
+    result &= MomentChi2Test(info, 4, hash_is_slow);
     if (g_testExtra) {
-        result &= MomentChi2Test(info, 8);
-        result &= MomentChi2Test(info, 16);
+        result &= MomentChi2Test(info, 8, hash_is_slow);
+        result &= MomentChi2Test(info, 16, hash_is_slow);
     }
 
     if(!result) printf("\n*********FAIL*********\n");
@@ -1878,9 +1836,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   // LongNeighbors - collisions between long messages of low Hamming distance
   // esp. for testing separate word and then byte-wise processing of unaligned
   // rest parts. Only with --test=LongNeighbors or --extra
-  // 10s for fasthash32
-  // 7m with xxh3 (64bit)
-  // 10m30s with farmhash128_c
 
   // Not yet included for licensing reasons
 #if 0
@@ -1901,18 +1856,16 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Bit Independence Criteria. Interesting, but doesn't tell us much about
-  // collision or distribution. For 128bit hashes only with --extra
-  // 4m with xxh3
-  // 152m with farmhash128_c with reps=1000000, => 8m with 100000
+  // collision or distribution. For >=128bit hashes, do this only with --extra
 
-  if(g_testBIC || (g_testAll && info->hashbits > 64 && g_testExtra))
+  if(g_testBIC || (g_testAll && info->hashbits >= 128 && g_testExtra))
   {
     printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
     fflush(NULL);
 
     bool result = true;
     Hash_Seed_init (hash, g_seed);
-    if (info->hashbits > 64 || g_speed > 500.0) {
+    if (info->hashbits > 64 || hash_is_slow) {
       result &= BicTest3<Blob<128>,hashtype>(hash,100000,g_drawDiagram);
     } else {
       const long reps = 64000000/info->hashbits;
@@ -2045,13 +1998,10 @@ double MomentChi2Results ( long double srefh, long double srefl,
   return worse;
 }
 
-// sha1_32a: 23m with step 3
-//           4m30 with step 2, 4 threads, ryzen3
-bool MomentChi2Test ( struct HashInfo *info, int inputSize)
+bool MomentChi2Test ( struct HashInfo *info, int inputSize, bool hash_is_slow )
 {
   const pfHash hash = info->hash;
-  const int step = ((g_speed > 500 || info->hashbits > 128)
-                    && !g_testExtra) ? 6 : 2;
+  const int step = ((hash_is_slow || info->hashbits > 128) && !g_testExtra) ? 6 : 2;
   const unsigned mx = 0xffffffff;
   assert(inputSize >= 4);
   long double const n = 0x100000000UL / step;
