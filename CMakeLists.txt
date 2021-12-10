@@ -629,6 +629,7 @@ add_library(
   tests/TwoBytesKeysetTest.cpp
   tests/PermutationKeysetTest.cpp
   tests/BadSeedsTest.cpp
+  tests/PopcountTest.cpp
   tests/SpeedTest.cpp
 #
   hashes/HashSanityTest.cpp

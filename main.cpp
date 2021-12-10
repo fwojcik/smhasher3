@@ -73,6 +73,7 @@
 #include "TwoBytesKeysetTest.h"
 #include "PermutationKeysetTest.h"
 #include "SpeedTest.h"
+#include "PopcountTest.h"
 #include "AvalancheTest.h"
 #include "DifferentialTest.h"
 #include "HashMapTest.h"
@@ -111,7 +112,7 @@ bool g_testSeed        = false;
 bool g_testPerlinNoise = false;
 bool g_testDiff        = false;
 bool g_testDiffDist    = false;
-bool g_testMomentChi2  = false;
+bool g_testPopcount    = false;
 bool g_testPrng        = false;
 bool g_testBIC         = false;
 bool g_testBadSeeds    = false;
@@ -141,13 +142,11 @@ TestOpts g_testopts[] =
   { g_testDiff,         "Diff" },
   { g_testDiffDist,     "DiffDist" },
   { g_testBIC, 	        "BIC" },
-  { g_testMomentChi2,   "MomentChi2" },
+  { g_testPopcount,     "Popcount" },
   { g_testPrng,         "Prng" },
   { g_testBadSeeds,     "BadSeeds" },
   //{ g_testLongNeighbors,"LongNeighbors" }
 };
-
-bool MomentChi2Test ( struct HashInfo *info, int inputSize, bool hash_is_slow );
 
 //-----------------------------------------------------------------------------
 // This is the list of all hashes that SMHasher3 can test.
@@ -1315,23 +1314,13 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
       DiffDistTest<hashtype>(info, g_drawDiagram);
   }
 
-  // Moment Chi-Square test, measuring the probability of the
-  // lowest 32 bits set over the whole key space. Not where the bits are, but how many.
-  // See e.g. https://www.statlect.com/fundamentals-of-probability/moment-generating-function
-  if (g_testMomentChi2 || g_testAll)
+  //-----------------------------------------------------------------------------
+  // Measuring the distribution of the population count of the
+  // lowest 32 bits set over the whole key space.
+
+  if (g_testPopcount || g_testAll)
   {
-    printf("[[[ MomentChi2 Tests ]]]\n\n");
-
-    bool result = true;
-    result &= MomentChi2Test(info, 4, hash_is_slow);
-    if (g_testExtra) {
-        result &= MomentChi2Test(info, 8, hash_is_slow);
-        result &= MomentChi2Test(info, 16, hash_is_slow);
-    }
-
-    if(!result) printf("\n*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      PopcountTest<hashtype>(info, g_testExtra, hash_is_slow);
   }
 
   if (g_testPrng || g_testAll)
@@ -1407,244 +1396,6 @@ void VerifyHash ( const void * key, int len, uint32_t seed, void * out )
   g_hashUnderTest->hash(key, len, seed, out);
 
   g_outputVCode = MurmurOAAT((const char *)out, g_hashUnderTest->hashbits/8, g_outputVCode);
-}
-
-typedef long double moments[8];
-
-// Copy the results into NCPU ranges of 2^32
-void MomentChi2Thread ( const struct HashInfo *info, const int inputSize,
-                        const unsigned start, const unsigned end, const unsigned step,
-                        moments &b)
-{
-  pfHash const hash = info->hash;
-  uint32_t seed = g_seed;
-  long double const n = (end-(start+1)) / step;
-  uint64_t previous = 0;
-  long double b0h = b[0], b0l = b[1], db0h = b[2], db0l = b[3];
-  long double b1h = b[4], b1l = b[5], db1h = b[6], db1l = b[7];
-#define INPUT_SIZE_MAX 256
-  assert(inputSize <= INPUT_SIZE_MAX);
-  char key[INPUT_SIZE_MAX] = {0};
-#define HASH_SIZE_MAX 64
-  char hbuff[HASH_SIZE_MAX] = {0};
-  int hbits = info->hashbits;  
-  if (hbits > 64) hbits = 64;   // limited due to popcount8
-  Bad_Seed_init(hash, seed);
-  Hash_Seed_init(hash, seed, 1);
-  assert(sizeof(unsigned) <= inputSize);
-  assert(start < end);
-  //assert(step > 0);
-
-  uint64_t i = start - step;
-  memcpy(key, &i, sizeof(i));
-  hash(key, inputSize, seed, hbuff);
-  memcpy(&previous, hbuff, 8);
-
-  for (uint64_t i=start; i<=end; i+=step) {
-    memcpy(key, &i, sizeof(i));
-    hash(key, inputSize, seed, hbuff);
-
-    uint64_t h; memcpy(&h, hbuff, 8);
-    // popcount8 assumed to work on 64-bit
-    // note : ideally, one should rather popcount the whole hash
-    {
-      uint64_t const bits1 = popcount8(h);
-      uint64_t const bits0 = hbits - bits1;
-      uint64_t const b1_exp5 = bits1 * bits1 * bits1 * bits1 * bits1;
-      uint64_t const b0_exp5 = bits0 * bits0 * bits0 * bits0 * bits0;
-      b1h += b1_exp5; b1l += b1_exp5 * b1_exp5;
-      b0h += b0_exp5; b0l += b0_exp5 * b0_exp5;
-    }
-    // derivative
-    {
-      uint64_t const bits1 = popcount8(previous^h);
-      uint64_t const bits0 = hbits - bits1;
-      uint64_t const b1_exp5 = bits1 * bits1 * bits1 * bits1 * bits1;
-      uint64_t const b0_exp5 = bits0 * bits0 * bits0 * bits0 * bits0;
-      db1h += b1_exp5; db1l += b1_exp5 * b1_exp5;
-      db0h += b0_exp5; db0l += b0_exp5 * b0_exp5;
-    }
-    previous = h;
-  }
-
-  b[0] = b0h;
-  b[1] = b0l;
-  b[2] = db0h;
-  b[3] = db0l;
-  b[4] = b1h;
-  b[5] = b1l;
-  b[6] = db1h;
-  b[7] = db1l;
-}
-
-double MomentChi2Results ( long double srefh, long double srefl,
-        long double b1h, long double b1l,
-        long double b0h, long double b0l )
-{
-  double worse;
-  {
-      double chi2 = (b1h-srefh) * (b1h-srefh) / (b1l+srefl);
-      printf("From counting 1s : %9.2Lf, %9.2Lf  -  moment chisq %10.4f\n",
-              b1h, b1l, chi2);
-      worse = chi2;
-  }
-  {
-      double chi2 = (b0h-srefh) * (b0h-srefh) / (b0l+srefl);
-      printf("From counting 0s : %9.2Lf, %9.2Lf  -  moment chisq %10.4f\n",
-              b0h, b0l, chi2);
-      worse = std::max(worse, chi2);
-  }
-  return worse;
-}
-
-bool MomentChi2Test ( struct HashInfo *info, int inputSize, bool hash_is_slow )
-{
-  const pfHash hash = info->hash;
-  const int step = ((hash_is_slow || info->hashbits > 128) && !g_testExtra) ? 6 : 2;
-  const unsigned mx = 0xffffffff;
-  assert(inputSize >= 4);
-  long double const n = 0x100000000UL / step;
-  int hbits = info->hashbits;
-  if (hbits > 64) hbits = 64;   // limited due to popcount8
-  assert(hbits <= HASH_SIZE_MAX*8);
-  assert(inputSize > 0);
-
-  printf("Generating hashes from a linear sequence of %i-bit numbers "
-         "with a step size of %d ... \n", inputSize*8, step);
-  fflush(NULL);
-
-  /* Notes on the ranking system.
-   * Ideally, this test should report and sum all popcount values
-   * and compare the resulting distribution to an ideal distribution.
-   *
-   * What happens here is quite simplified :
-   * the test gives "points" for each popcount, and sum them all.
-   * The metric (using N^5) is heavily influenced by the largest outliers.
-   * For example, a 64-bit hash should have a popcount close to 32.
-   * But a popcount==40 will tilt the metric upward
-   * more than popcount==24 will tilt the metric downward.
-   * In reality, both situations should be ranked similarly.
-   *
-   * To compensate, we measure both popcount1 and popcount0,
-   * and compare to some pre-calculated "optimal" sums for the hash size.
-   *
-   * Another limitation of this test is that it only popcounts the first 64-bit.
-   * For large hashes, bits beyond this limit are ignored.
-   *
-   * Derivative hash testing:
-   * In this scenario, 2 consecutive hashes are xored,
-   * and the outcome of this xor operation is then popcount controlled.
-   * Obviously, the _order_ in which the hash values are generated becomes critical.
-   *
-   * This scenario comes from the prng world,
-   * where derivative of the generated suite of random numbers is analyzed
-   * to ensure the suite is truly "random".
-   *
-   * However, in almost all prng, the seed of next random number is the previous random number.
-   *
-   * This scenario is quite different: it introduces a fixed distance between 2 consecutive "seeds".
-   * This is especially detrimental to algorithms relying on linear operations, such as multiplications.
-   *
-   * This scenario is relevant if the hash is used as a prng and generates values from a linearly increasing counter as a seed.
-   * It is not relevant for scenarios employing the hash as a prng
-   * with the more classical method of using the previous random number as a seed for the next one.
-   * This scenario has no relevance for classical usages of hash algorithms,
-   * such as hash tables, bloom filters and such, were only the raw values are ever used.
-   */
-
-  long double srefh, srefl;
-  switch (hbits/8) {
-      case 8:
-          srefh = 38918200.;
-          if (step == 2)
-            srefl = 273633.333333;
-          else if (step == 6)
-            srefl = 820900.0;
-          else
-            abort();
-          break;
-      case 4:
-          srefh = 1391290.;
-          if (step == 2)
-            srefl = 686.6666667;
-          else if (step == 6)
-            srefl = 2060.0;
-          else
-            abort();
-          break;
-      default:
-          printf("hash size not covered \n");
-          abort();
-  }
-
-#if NCPU > 1
-  // split into NCPU threads
-  const uint64_t len = 0x100000000UL / NCPU;
-  moments b[NCPU];
-  static std::thread t[NCPU];
-  printf("%d threads starting... ", NCPU);
-  fflush(NULL);
-  for (int i=0; i < NCPU; i++) {
-    const unsigned start = i * len;
-    b[i][0] = 0.; b[i][1] = 0.; b[i][2] = 0.; b[i][3] = 0.;
-    b[i][4] = 0.; b[i][5] = 0.; b[i][6] = 0.; b[i][7] = 0.;
-    //printf("thread[%d]: %d, 0x%x - 0x%x %d\n", i, inputSize, start, start + len - 1, step);
-    t[i] = std::thread {MomentChi2Thread, info, inputSize, start, start + (len - 1), step, std::ref(b[i])};
-    // pin it? moves around a lot. but the result is fair
-  }
-  fflush(NULL);
-  std::this_thread::sleep_for(std::chrono::seconds(5));
-  for (int i=0; i < NCPU; i++) {
-    t[i].join();
-  }
-  printf(" done\n");
-  //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", 0,
-  //       b[0][0], b[0][1], b[0][2], b[0][3], b[0][4], b[0][5], b[0][6], b[0][7]);
-  for (int i=1; i < NCPU; i++) {
-    //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", i,
-    //       b[i][0], b[i][1], b[i][2], b[i][3], b[i][4], b[i][5], b[i][6], b[i][7]);
-    for (int j=0; j < 8; j++)
-      b[0][j] += b[i][j];
-  }
-
-  long double b0h = b[0][0], b0l = b[0][1], db0h = b[0][2], db0l = b[0][3];
-  long double b1h = b[0][4], b1l = b[0][5], db1h = b[0][6], db1l = b[0][7];
-
-#else  
-
-  moments b = {0.,0.,0.,0.,0.,0.,0.,0.};
-  MomentChi2Thread (info, inputSize, 0, 0xffffffff, step, b);
-
-  long double b0h = b[0], b0l = b[1], db0h = b[2], db0l = b[3];
-  long double b1h = b[4], b1l = b[5], db1h = b[6], db1l = b[7];
-
-#endif
-  
-  b1h  /= n;  b1l = (b1l/n  - b1h*b1h) / n;
-  db1h /= n; db1l = (db1l/n - db1h*db1h) / n;
-  b0h  /= n;  b0l = (b0l/n  - b0h*b0h) / n;
-  db0h /= n; db0l = (db0l/n - db0h*db0h) / n;
-
-  double worstL, worstD;
-
-  printf("Ideal results    : %9.2Lf, %9.2Lf\n", srefh, srefl);
-
-  printf("\nResults from literal hashes :\n");
-  worstL = MomentChi2Results(srefh, srefl, b1h, b1l, b0h, b0l);
-
-  printf("\nResults from derivative hashes (XOR of 2 consecutive values) :\n");
-  worstD = MomentChi2Results(srefh, srefl, db1h, db1l, db0h, db0l);
-
-  // note : previous threshold : 3.84145882069413
-  double worstchisq = std::max(worstL, worstD);
-  int const rank = (worstchisq < 500.) + (worstchisq < 50.) + (worstchisq < 5.);
-  assert(0 <= rank && rank <= 3);
-
-  const char* rankstr[4] = { "FAIL !!!!", "pass", "Good !", "Great !!" };
-  printf("\n  %s \n\n", rankstr[rank]);
-  fflush(NULL);
-
-  return (rank > 0);
 }
 
 
