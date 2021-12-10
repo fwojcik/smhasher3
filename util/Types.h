@@ -101,6 +101,8 @@ struct HashInfo
   const std::vector<uint64_t> secrets;
 };
 
+bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
+
 struct ByteVec : public std::vector<uint8_t>
 {
   ByteVec ( const void * key, int len )

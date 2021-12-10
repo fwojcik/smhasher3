@@ -69,7 +69,6 @@ const double WARNING_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%, 8x as m
 // about 1000 tests, so a 1/1000 chance event will hit once per run on
 // average, even with a perfect-quality hash function.
 
-bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
 double calcScore ( const unsigned * bins, const int bincount, const int ballcount );
 double normalizeScore ( double score, int scorewidth, int tests );
 

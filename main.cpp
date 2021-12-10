@@ -1162,69 +1162,16 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Avalanche tests
-  // 1m30 for xxh3
-  // 13m  for xxh3 with --extra
-  // 3m24 for xxh3 with --extra on 1 thread
-  // 6m41 for xxh3 with --extra on 4 threads over bins without lock
-  // 6m41 for xxh3 with --extra on 4 pinned threads
-  // 3m   for farmhash128_c (was 7m with 512,1024)
 
   if(g_testAvalanche || g_testAll)
   {
-    printf("[[[ Avalanche Tests ]]]\n\n");
-    fflush(NULL);
 #if NCPU_not >= 4 // 2x slower
     const bool extra = true;
 #else
     const bool extra = g_testExtra;
 #endif
 
-    bool result = true;
-    bool verbose = true; //.......... progress dots
-
-    Hash_Seed_init (hash, g_seed, 2);
-    result &= AvalancheTest< Blob< 24>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob< 32>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob< 40>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob< 48>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob< 56>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob< 64>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob< 72>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob< 80>, hashtype > (hash,300000,verbose);
-
-    result &= AvalancheTest< Blob< 96>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob<112>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob<128>, hashtype > (hash,300000,verbose);
-    result &= AvalancheTest< Blob<160>, hashtype > (hash,300000,verbose);
-
-    if(extra) {
-      result &= AvalancheTest< Blob<192>, hashtype > (hash,300000,verbose);
-      result &= AvalancheTest< Blob<224>, hashtype > (hash,300000,verbose);
-      result &= AvalancheTest< Blob<256>, hashtype > (hash,300000,verbose);
-
-      result &= AvalancheTest< Blob<320>, hashtype > (hash,300000,verbose);
-      result &= AvalancheTest< Blob<384>, hashtype > (hash,300000,verbose);
-      result &= AvalancheTest< Blob<448>, hashtype > (hash,300000,verbose);
-    }
-    if (extra || info->hashbits <= 64) {
-      result &= AvalancheTest< Blob<512>, hashtype > (hash,300000,verbose);
-    }
-    if(extra) {
-      result &= AvalancheTest< Blob<640>, hashtype > (hash,300000,verbose);
-      result &= AvalancheTest< Blob<768>, hashtype > (hash,300000,verbose);
-      result &= AvalancheTest< Blob<896>, hashtype > (hash,300000,verbose);
-    }
-    if (extra || info->hashbits <= 64) {
-      result &= AvalancheTest< Blob<1024>,hashtype > (hash,300000,verbose);
-    }
-    if(extra) {
-      result &= AvalancheTest< Blob<1280>,hashtype > (hash,300000,verbose);
-      result &= AvalancheTest< Blob<1536>,hashtype > (hash,300000,verbose);
-    }
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+    AvalancheTest<hashtype>(info, extra);
   }
 
   //-----------------------------------------------------------------------------
@@ -1860,22 +1807,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testBIC || (g_testAll && info->hashbits >= 128 && g_testExtra))
   {
-    printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
-    fflush(NULL);
-
-    bool result = true;
-    Hash_Seed_init (hash, g_seed);
-    if (info->hashbits > 64 || hash_is_slow) {
-      result &= BicTest3<Blob<128>,hashtype>(hash,100000,g_drawDiagram);
-    } else {
-      const long reps = 64000000/info->hashbits;
-      //result &= BicTest<uint64_t,hashtype>(hash,2000000);
-      result &= BicTest3<Blob<88>,hashtype>(hash,(int)reps,g_drawDiagram);
-    }
-
-    if(!result) printf("\n*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+    BicTest<hashtype>(info, g_drawDiagram, hash_is_slow);
   }
 
   if (g_testBadSeeds || g_testAll)
