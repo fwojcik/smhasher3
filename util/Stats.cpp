@@ -20,6 +20,10 @@
  * permission notice:
  *
  *     Copyright (c) 2010-2012 Austin Appleby
+ *     Copyright (c) 2015      Paul G
+ *     Copyright (c) 2015-2021 Reini Urban
+ *     Copyright (c) 2016      Vlad Egorov
+ *     Copyright (c) 2020      Paul Khuong
  *
  *     Permission is hereby granted, free of charge, to any person
  *     obtaining a copy of this software and associated documentation
@@ -43,6 +47,144 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Stats.h"
+
+#include <math.h>
+//-----------------------------------------------------------------------------
+
+double CalcMean ( std::vector<double> & v )
+{
+  double mean = 0;
+
+  for(int i = 0; i < (int)v.size(); i++)
+  {
+    mean += v[i];
+  }
+
+  mean /= double(v.size());
+
+  return mean;
+}
+
+double CalcMean ( std::vector<double> & v, int a, int b )
+{
+  double mean = 0;
+
+  for(int i = a; i <= b; i++)
+  {
+    mean += v[i];
+  }
+
+  mean /= (b-a+1);
+
+  return mean;
+}
+
+double CalcStdv ( std::vector<double> & v, int a, int b )
+{
+  double mean = CalcMean(v,a,b);
+
+  double stdv = 0;
+
+  for(int i = a; i <= b; i++)
+  {
+    double x = v[i] - mean;
+
+    stdv += x*x;
+  }
+
+  stdv = sqrt(stdv / (b-a+1));
+
+  return stdv;
+}
+
+double CalcStdv ( std::vector<double> & v )
+{
+  return CalcStdv(v, 0, v.size());
+}
+
+// Return true if the largest value in v[0,len) is more than three
+// standard deviations from the mean
+
+bool ContainsOutlier ( std::vector<double> & v, size_t len )
+{
+  double mean = 0;
+
+  for(size_t i = 0; i < len; i++)
+  {
+    mean += v[i];
+  }
+
+  mean /= double(len);
+
+  double stdv = 0;
+
+  for(size_t i = 0; i < len; i++)
+  {
+    double x = v[i] - mean;
+    stdv += x*x;
+  }
+
+  stdv = sqrt(stdv / double(len));
+
+  double cutoff = mean + stdv*3;
+
+  return v[len-1] > cutoff;
+}
+
+// Do a binary search to find the largest subset of v that does not contain
+// outliers.
+
+void FilterOutliers ( std::vector<double> & v )
+{
+  std::sort(v.begin(),v.end());
+
+  size_t len = 0;
+
+  for(size_t x = 0x40000000; x; x = x >> 1 )
+  {
+    if((len | x) >= v.size()) continue;
+
+    if(!ContainsOutlier(v,len | x))
+    {
+      len |= x;
+    }
+  }
+
+  v.resize(len);
+}
+
+#if 0
+// Iteratively tighten the set to find a subset that does not contain
+// outliers. I'm not positive this works correctly in all cases.
+
+void FilterOutliers2 ( std::vector<double> & v )
+{
+  std::sort(v.begin(),v.end());
+
+  int a = 0;
+  int b = (int)(v.size() - 1);
+
+  for(int i = 0; i < 10; i++)
+  {
+    //printf("%d %d\n",a,b);
+
+    double mean = CalcMean(v,a,b);
+    double stdv = CalcStdv(v,a,b);
+
+    double cutA = mean - stdv*3;
+    double cutB = mean + stdv*3;
+
+    while((a < b) && (v[a] < cutA)) a++;
+    while((b > a) && (v[b] > cutB)) b--;
+  }
+
+  std::vector<double> v2;
+
+  v2.insert(v2.begin(),v.begin()+a,v.begin()+b+1);
+
+  v.swap(v2);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 

@@ -62,6 +62,7 @@
  */
 #define _MAIN_CPP
 #include "Platform.h"
+#include "Types.h"
 #include "Hashes.h"
 #include "KeysetTest.h"
 #include "SpeedTest.h"
@@ -1141,23 +1142,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testHashmap || g_testAll)
   {
-    printf("[[[ 'Hashmap' Speed Tests ]]]\n\n");
-    fflush(NULL);
-    const int trials = (hash_is_slow && !g_testExtra) ? 5 : 50;
-    bool result = true;
-    if (info->quality == SKIP) {
-      printf("Skipping Hashmap test; it is designed for true hashes\n");
-    } else {
-      std::vector<std::string> words = HashMapInit(g_drawDiagram);
-      if (words.size()) {
-        const uint32_t seed = rand_u32();
-        Hash_Seed_init (hash, seed);
-        result &= HashMapTest(hash,info->hashbits,words,seed,trials,g_drawDiagram);
-      }
-    }
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      HashMapTest(info, g_drawDiagram, g_testExtra, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------

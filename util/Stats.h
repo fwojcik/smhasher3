@@ -20,9 +20,12 @@
  * permission notice:
  *
  *     Copyright (c) 2010-2012 Austin Appleby
- *     Copyright (c) 2019-2021 Reini Urban
+ *     Copyright (c) 2015      Paul G
+ *     Copyright (c) 2015-2021 Reini Urban
+ *     Copyright (c) 2016      Vlad Egorov
  *     Copyright (c) 2019-2020 Yann Collet
  *     Copyright (c) 2020      Bradley Austin Davis
+ *     Copyright (c) 2020      Paul Khuong
  *     Copyright (c) 2021      Jim Apple
  *     Copyright (c) 2021      Ori Livneh
  *
@@ -68,6 +71,13 @@ const double WARNING_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%, 8x as m
 // If these bounds seem overly generous, remember that SMHasher3 uses
 // about 1000 tests, so a 1/1000 chance event will hit once per run on
 // average, even with a perfect-quality hash function.
+
+double CalcMean ( std::vector<double> & v );
+double CalcMean ( std::vector<double> & v, int a, int b );
+double CalcStdv ( std::vector<double> & v );
+double CalcStdv ( std::vector<double> & v, int a, int b );
+bool ContainsOutlier ( std::vector<double> & v, size_t len );
+void FilterOutliers ( std::vector<double> & v );
 
 double calcScore ( const unsigned * bins, const int bincount, const int ballcount );
 double normalizeScore ( double score, int scorewidth, int tests );

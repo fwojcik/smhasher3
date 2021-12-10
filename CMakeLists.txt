@@ -499,8 +499,8 @@ endif()
 
 if(NOT MSVC)
   set(NOTMSVC_SRC hashes/seahash.c)
-  set_source_files_properties(tests/HashMapTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++11")
-  set_source_files_properties(tests/SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x -I${CMAKE_SOURCE_DIR}/tests")
+  set_source_files_properties(tests/HashMapTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++11 -I${CMAKE_SOURCE_DIR}/tests")
+  set_source_files_properties(tests/SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x")
   set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x -I${CMAKE_SOURCE_DIR}/hashes -I${CMAKE_SOURCE_DIR}/tests")
   set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -I${CMAKE_SOURCE_DIR} -flax-vector-conversions -Wno-ignored-attributes")
   # https://github.com/dgryski/trifles/tree/master/tsip

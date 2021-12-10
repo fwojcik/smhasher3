@@ -42,12 +42,7 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#pragma once
-
-#include "Platform.h"
-#include "Types.h"
 
 std::vector<std::string> HashMapInit(bool verbose);
-bool HashMapTest ( pfHash pfhash, 
-                   const int hashbits, std::vector<std::string> words,
-                   const uint32_t seed, const int trials, bool verbose );
+
+bool HashMapTest(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
