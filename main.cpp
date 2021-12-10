@@ -1696,35 +1696,21 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     fflush(NULL);
   }
 
-
   //-----------------------------------------------------------------------------
   // Differential tests
   // less reps with slow or very bad hashes
 
   if(g_testDiff || g_testAll)
   {
-    printf("[[[ Diff 'Differential' Tests ]]]\n\n");
-    fflush(NULL);
-
-    bool result = true;
-    bool dumpCollisions = g_drawDiagram; // from --verbose
-    int reps = 1000;
-    if ((hash_is_slow || info->hashbits > 128 ||
-         hash == o1hash_test ||
-         hash == halftime_hash_style64_test ||
-         hash == halftime_hash_style128_test ||
-         hash == halftime_hash_style256_test ||
-         hash == halftime_hash_style512_test
-         ) && !g_testExtra)
-      reps = 100;
-
-    result &= DiffTest< Blob<64>,  hashtype >(hash,5,reps,dumpCollisions);
-    result &= DiffTest< Blob<128>, hashtype >(hash,4,reps,dumpCollisions);
-    result &= DiffTest< Blob<256>, hashtype >(hash,3,reps,dumpCollisions);
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      bool slow =
+          hash_is_slow                        ||
+          info->hashbits > 128                ||
+          hash == o1hash_test                 ||
+          hash == halftime_hash_style64_test  ||
+          hash == halftime_hash_style128_test ||
+          hash == halftime_hash_style256_test ||
+          hash == halftime_hash_style512_test;
+      DiffTest<hashtype>(info, g_drawDiagram, g_testExtra, slow);
   }
 
   //-----------------------------------------------------------------------------
@@ -1732,16 +1718,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testDiffDist || g_testAll)
   {
-    printf("[[[ DiffDist 'Differential Distribution' Tests ]]]\n\n");
-    fflush(NULL);
-
-    bool result = true;
-
-    result &= DiffDistTest2<uint64_t,hashtype>(hash, g_drawDiagram);
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      DiffDistTest<hashtype>(info, g_drawDiagram);
   }
 
   // Moment Chi-Square test, measuring the probability of the
