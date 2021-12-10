@@ -626,6 +626,7 @@ add_library(
   tests/SparseKeysetTest.cpp
   tests/ZeroesKeysetTest.cpp
   tests/TwoBytesKeysetTest.cpp
+  tests/PermutationKeysetTest.cpp
   tests/BadSeedsTest.cpp
   tests/SpeedTest.cpp
 #
