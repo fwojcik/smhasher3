@@ -69,6 +69,7 @@
 #include "AvalancheTest.h"
 #include "DifferentialTest.h"
 #include "HashMapTest.h"
+#include "BadSeedsTest.h"
 
 #if NCPU > 1 // disable with -DNCPU=0 or 1
 #include <thread>
@@ -1758,16 +1759,12 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     BicTest<hashtype>(info, g_drawDiagram, hash_is_slow);
   }
 
+  //-----------------------------------------------------------------------------
+  // Test for known or unknown seed values which give bad/suspect hash values.
+
   if (g_testBadSeeds || g_testAll)
   {
-    printf("[[[ BadSeeds Tests ]]]\n\n");
-    // g_testExtra: test all seeds. if not just some known secrets/bad seeds
-
-    Hash_Seed_init (hash, 0);
-    bool result = BadSeedsTest<hashtype>( info, g_testExtra );
-    if(!result) printf("\n*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      BadSeedsTest<hashtype>(info, g_testExtra);
   }
   
 }

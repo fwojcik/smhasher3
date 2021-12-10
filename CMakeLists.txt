@@ -624,6 +624,7 @@ add_library(
   tests/DifferentialTest.cpp
   tests/HashMapTest.cpp
   tests/KeysetTest.cpp
+  tests/BadSeedsTest.cpp
   tests/SpeedTest.cpp
 #
   ${HIGHWAY_SRC}

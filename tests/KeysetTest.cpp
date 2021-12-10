@@ -53,14 +53,6 @@
 #include <map>
 #include <set>
 
-#if NCPU > 1
-// For keeping track of progress printouts across threads
-std::atomic<unsigned> secret_progress;
-std::mutex print_mutex;
-#else
-unsigned secret_progress;
-#endif
-
 //-----------------------------------------------------------------------------
 // This should hopefully be a thorough and uambiguous test of whether a hash
 // is correctly implemented on a given platform.
