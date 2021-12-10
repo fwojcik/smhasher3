@@ -183,54 +183,6 @@ bool PerlinNoise ( hashfunc<hashtype> hash, int inputLen,
 }
 
 //-----------------------------------------------------------------------------
-// Keyset 'Cyclic' - generate keys that consist solely of N repetitions of M
-// bytes.
-
-// (This keyset type is designed to make MurmurHash2 fail)
-
-template < typename hashtype >
-bool CyclicKeyTest ( pfHash hash, int cycleLen, int cycleReps, const int keycount, bool drawDiagram )
-{
-  printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n",cycleReps,cycleLen,keycount);
-
-  Rand r(483723);
-
-  std::vector<hashtype> hashes;
-  hashes.resize(keycount);
-
-  int keyLen = cycleLen * cycleReps;
-
-  uint8_t * cycle = new uint8_t[cycleLen + 16];
-  uint8_t * key = new uint8_t[keyLen];
-
-  //----------
-
-  for(int i = 0; i < keycount; i++)
-  {
-    r.rand_p(cycle,cycleLen);
-
-    *(uint32_t*)cycle = f3mix(i ^ 0x746a94f1);
-
-    for(int j = 0; j < keyLen; j++)
-    {
-      key[j] = cycle[j % cycleLen];
-    }
-
-    hash(key,keyLen,g_seed,&hashes[i]);
-  }
-
-  //----------
-
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
-
-  delete [] key;
-  delete [] cycle;
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
 // Keyset 'Text' - generate all keys of the form "prefix"+"core"+"suffix",
 // where "core" consists of all possible combinations of the given character
 // set of length N.

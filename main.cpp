@@ -70,6 +70,7 @@
 #include "SparseKeysetTest.h"
 #include "ZeroesKeysetTest.h"
 #include "WindowedKeysetTest.h"
+#include "CyclicKeysetTest.h"
 #include "TwoBytesKeysetTest.h"
 #include "PermutationKeysetTest.h"
 #include "SpeedTest.h"
@@ -1181,26 +1182,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testCyclic || g_testAll)
   {
-    printf("[[[ Keyset 'Cyclic' Tests ]]]\n\n");
-    fflush(NULL);
-#ifdef DEBUG
-    const int reps = 2;
-#else
-    const int reps = hash_is_slow ? 100000 : 1000000;
-#endif
-    bool result = true;
-
-    Hash_Seed_init (hash, g_seed);
-    result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+0,8,reps, g_drawDiagram);
-    result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+1,8,reps, g_drawDiagram);
-    result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+2,8,reps, g_drawDiagram);
-    result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+3,8,reps, g_drawDiagram);
-    result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+4,8,reps, g_drawDiagram);
-    result &= CyclicKeyTest<hashtype>(hash,sizeof(hashtype)+8,8,reps, g_drawDiagram);
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      CyclicKeyTest<hashtype>(info, g_drawDiagram, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------
