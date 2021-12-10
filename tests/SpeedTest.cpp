@@ -46,9 +46,11 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "SpeedTest.h"
+#include "Platform.h"
 #include "Stats.h"
 #include "Random.h"
+
+#include "SpeedTest.h"
 
 #include <stdio.h>   // for printf
 #include <algorithm> // for sort, min
@@ -69,7 +71,7 @@
 // possible by marking the function as NEVER_INLINE (to keep the optimizer from
 // moving it) and marking the timing variables as "volatile register".
 
-NEVER_INLINE int64_t timehash ( pfHash hash, const void * key, int len, int seed )
+NEVER_INLINE static int64_t timehash ( pfHash hash, const void * key, int len, int seed )
 {
   volatile int64_t begin, end;
   uint32_t temp[16];
@@ -87,7 +89,7 @@ NEVER_INLINE int64_t timehash ( pfHash hash, const void * key, int len, int seed
 // Specialized procedure for small lengths. Serialize invocations of the hash
 // function. Make sure they would not be computed in parallel on an out-of-order CPU.
 
-NEVER_INLINE int64_t timehash_small ( pfHash hash, const void * key, int len, int seed )
+NEVER_INLINE static int64_t timehash_small ( pfHash hash, const void * key, int len, int seed )
 {
   const int NUM_TRIALS = 200;
   volatile unsigned long long int begin, end;
@@ -123,7 +125,7 @@ NEVER_INLINE int64_t timehash_small ( pfHash hash, const void * key, int len, in
 
 //-----------------------------------------------------------------------------
 
-double SpeedTest ( pfHash hash, uint32_t seed, const int trials, const int blocksize, const int align, const int varysize, const int varyalign )
+static double SpeedTest ( pfHash hash, uint32_t seed, const int trials, const int blocksize, const int align, const int varysize, const int varyalign )
 {
   Rand r(seed);
   uint8_t *buf = new uint8_t[blocksize + 512]; // assumes (align + varyalign) <= 257
@@ -197,7 +199,7 @@ double SpeedTest ( pfHash hash, uint32_t seed, const int trials, const int block
 //-----------------------------------------------------------------------------
 // 256k blocks seem to give the best results.
 
-void BulkSpeedTest ( pfHash hash, uint32_t seed, bool vary_align, bool vary_size )
+static void BulkSpeedTest ( pfHash hash, uint32_t seed, bool vary_align, bool vary_size )
 {
   const int trials = 2999;
   const int blocksize = 256 * 1024;
@@ -239,7 +241,7 @@ void BulkSpeedTest ( pfHash hash, uint32_t seed, bool vary_align, bool vary_size
 
 //-----------------------------------------------------------------------------
 
-double TinySpeedTest ( pfHash hash, int hashsize, int maxkeysize, uint32_t seed, bool verbose, bool include_vary )
+static double TinySpeedTest ( pfHash hash, int maxkeysize, uint32_t seed, bool verbose, bool include_vary )
 {
   const int trials = 99999;
   double sum = 0.0;
@@ -263,4 +265,26 @@ double TinySpeedTest ( pfHash hash, int hashsize, int maxkeysize, uint32_t seed,
   printf("Average        - %8.2f cycles/hash\n",sum);
 
   return sum;
+}
+
+//-----------------------------------------------------------------------------
+
+bool SpeedTest(HashInfo * info) {
+    pfHash hash = info->hash;
+    bool result = true;
+
+    printf("[[[ Speed Tests ]]]\n\n");
+
+    Hash_Seed_init(hash, info->verification);
+
+    BulkSpeedTest(hash, info->verification, true, false);
+    printf("\n");
+
+    BulkSpeedTest(hash, info->verification, true, true);
+    printf("\n");
+
+    TinySpeedTest(hash, 31, info->verification, true, true);
+    printf("\n");
+
+    return result;
 }

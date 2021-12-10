@@ -1085,21 +1085,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testSpeed || g_testAll)
   {
-    printf("[[[ Speed Tests ]]]\n\n");
-    fflush(NULL);
-
-    Hash_Seed_init (hash, info->verification);
-
-    BulkSpeedTest(hash,info->verification, true, false);
-    printf("\n");
-    fflush(NULL);
-    BulkSpeedTest(hash,info->verification, true, true);
-    printf("\n");
-    fflush(NULL);
-
-    TinySpeedTest(hashfunc<hashtype>(hash),sizeof(hashtype),31,info->verification,true,true);
-    printf("\n");
-    fflush(NULL);
+      SpeedTest(info);
   }
 
   // known slow hashes (typically > 500 cycle/hash)
