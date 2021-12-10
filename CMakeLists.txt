@@ -623,6 +623,7 @@ add_library(
   tests/AvalancheTest.cpp
   tests/DifferentialTest.cpp
   tests/HashMapTest.cpp
+  tests/SparseKeysetTest.cpp
   tests/TwoBytesKeysetTest.cpp
   tests/BadSeedsTest.cpp
   tests/SpeedTest.cpp

@@ -67,6 +67,7 @@
 #include "KeysetTest.h"
 #include "HashSanityTest.h"
 
+#include "SparseKeysetTest.h"
 #include "TwoBytesKeysetTest.h"
 #include "SpeedTest.h"
 #include "AvalancheTest.h"
@@ -1154,64 +1155,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testSparse || g_testAll)
   {
-    printf("[[[ Keyset 'Sparse' Tests ]]]\n\n");
-    fflush(NULL);
-
-    bool result = true;
-
-    Hash_Seed_init (hash, g_seed);
-
-      result &= SparseKeyTest<  16,hashtype>(hash,9,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  24,hashtype>(hash,8,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  32,hashtype>(hash,7,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  40,hashtype>(hash,6,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  48,hashtype>(hash,6,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  56,hashtype>(hash,5,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  64,hashtype>(hash,5,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  72,hashtype>(hash,5,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<  96,hashtype>(hash,4,true,true,true, g_drawDiagram);
-    if (g_testExtra) {
-      result &= SparseKeyTest< 112,hashtype>(hash,4,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest< 128,hashtype>(hash,4,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest< 144,hashtype>(hash,4,true,true,true, g_drawDiagram);
-    }
-      result &= SparseKeyTest< 160,hashtype>(hash,4,true,true,true, g_drawDiagram);
-    if (g_testExtra) {
-      result &= SparseKeyTest< 192,hashtype>(hash,4,true,true,true, g_drawDiagram);
-    }
-      result &= SparseKeyTest< 256,hashtype>(hash,3,true,true,true, g_drawDiagram);
-    if (g_testExtra) {
-      result &= SparseKeyTest< 288,hashtype>(hash,3,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest< 320,hashtype>(hash,3,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest< 384,hashtype>(hash,3,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest< 448,hashtype>(hash,3,true,true,true, g_drawDiagram);
-    } else {
-      if (info->hashbits > 64) //too long
-        goto END_Sparse;
-    }
-      result &= SparseKeyTest< 512,hashtype>(hash,3,true,true,true, g_drawDiagram);
-    if (g_testExtra) {
-      result &= SparseKeyTest< 640,hashtype>(hash,3,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest< 768,hashtype>(hash,3,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest< 896,hashtype>(hash,2,true,true,true, g_drawDiagram);
-    }
-      result &= SparseKeyTest<1024,hashtype>(hash,2,true,true,true, g_drawDiagram);
-    if (g_testExtra) {
-      result &= SparseKeyTest<1280,hashtype>(hash,2,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<1536,hashtype>(hash,2,true,true,true, g_drawDiagram);
-    }
-      result &= SparseKeyTest<2048,hashtype>(hash,2,true,true,true, g_drawDiagram);
-    if (g_testExtra) {
-      result &= SparseKeyTest<3072,hashtype>(hash,2,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<4096,hashtype>(hash,2,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<6144,hashtype>(hash,2,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<8192,hashtype>(hash,2,true,true,true, g_drawDiagram);
-      result &= SparseKeyTest<9992,hashtype>(hash,2,true,true,true, g_drawDiagram);
-    }
-  END_Sparse:
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      SparseKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
