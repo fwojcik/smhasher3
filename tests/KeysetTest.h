@@ -530,40 +530,6 @@ bool WordsStringTest ( hashfunc<hashtype> hash, std::vector<std::string> & words
 }
 
 //-----------------------------------------------------------------------------
-// Keyset 'Zeroes' - keys consisting of all zeroes, differing only in length
-
-// We reuse one block of empty bytes, otherwise the RAM cost is enormous.
-
-template < typename hashtype >
-bool ZeroKeyTest ( pfHash hash, bool drawDiagram )
-{
-  int keycount = 200*1024;
-
-  printf("Keyset 'Zeroes' - %d keys\n",keycount);
-
-  unsigned char * nullblock = new unsigned char[keycount];
-  memset(nullblock,0,keycount);
-
-  //----------
-
-  std::vector<hashtype> hashes;
-
-  hashes.resize(keycount);
-
-  for(int i = 0; i < keycount; i++)
-  {
-    hash(nullblock,i,g_seed,&hashes[i]);
-  }
-
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
-
-  delete [] nullblock;
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 
 template < typename hashtype >

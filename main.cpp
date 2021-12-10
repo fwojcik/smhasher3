@@ -68,6 +68,7 @@
 #include "HashSanityTest.h"
 
 #include "SparseKeysetTest.h"
+#include "ZeroesKeysetTest.h"
 #include "TwoBytesKeysetTest.h"
 #include "SpeedTest.h"
 #include "AvalancheTest.h"
@@ -1547,16 +1548,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testZeroes || g_testAll)
   {
-    printf("[[[ Keyset 'Zeroes' Tests ]]]\n\n");
-
-    bool result = true;
-
-    Hash_Seed_init (hash, g_seed);
-    result &= ZeroKeyTest<hashtype>( hash, g_drawDiagram );
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      ZeroKeyTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
