@@ -51,8 +51,6 @@
 // the distribution and collision frequency of the hash results against an
 // ideal random distribution
 
-// The sanity checks are also in this cpp/h
-
 #pragma once
 
 #include "Types.h"
@@ -74,12 +72,6 @@
 
 #undef MAX
 #define MAX(x,  y)   (((x) > (y)) ? (x) : (y))
-//-----------------------------------------------------------------------------
-// Sanity tests
-
-bool VerificationTest   ( HashInfo *info, bool verbose );
-bool SanityTest         ( pfHash hash, const int hashbits );
-void AppendedZeroesTest ( pfHash hash, const int hashbits );
 
 static void printKey(const void* key, size_t len)
 {

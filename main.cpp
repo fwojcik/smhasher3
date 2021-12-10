@@ -65,6 +65,7 @@
 #include "Types.h"
 #include "Hashes.h"
 #include "KeysetTest.h"
+#include "HashSanityTest.h"
 
 #include "TwoBytesKeysetTest.h"
 #include "SpeedTest.h"

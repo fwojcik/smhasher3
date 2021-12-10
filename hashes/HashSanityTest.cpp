@@ -45,10 +45,10 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "KeysetTest.h"
-
 #include "Platform.h"
 #include "Random.h"
+
+#include "HashSanityTest.h"
 
 #include <map>
 #include <set>

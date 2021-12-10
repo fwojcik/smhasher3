@@ -623,10 +623,11 @@ add_library(
   tests/AvalancheTest.cpp
   tests/DifferentialTest.cpp
   tests/HashMapTest.cpp
-  tests/KeysetTest.cpp
   tests/TwoBytesKeysetTest.cpp
   tests/BadSeedsTest.cpp
   tests/SpeedTest.cpp
+#
+  hashes/HashSanityTest.cpp
 #
   ${HIGHWAY_SRC}
   ${SSE2_SRC}
