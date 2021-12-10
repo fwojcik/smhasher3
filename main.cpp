@@ -69,6 +69,7 @@
 
 #include "SparseKeysetTest.h"
 #include "ZeroesKeysetTest.h"
+#include "WindowedKeysetTest.h"
 #include "TwoBytesKeysetTest.h"
 #include "PermutationKeysetTest.h"
 #include "SpeedTest.h"
@@ -1170,29 +1171,10 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Keyset 'Window'
-  // Skip distribution test for these - they're too easy to distribute well,
-  // and it generates a _lot_ of testing.
 
   if(g_testWindow || g_testAll)
   {
-    printf("[[[ Keyset 'Window' Tests ]]]\n\n");
-
-    bool result = true;
-    bool testCollision = true;
-    bool testDistribution = g_testExtra;
-    // This value is now adjusted to generate at least 0.5 collisions per window,
-    // except for 64++bit where it unrealistic. There use smaller but more keys,
-    // to get a higher collision percentage.
-    int windowbits = 20;
-    const int keybits = (hashbits >= 64) ? 32 : hashbits*2+2;
-
-    Hash_Seed_init (hash, g_seed);
-    result &= WindowedKeyTest< Blob<keybits>, hashtype >
-        ( hash, windowbits, testCollision, testDistribution, g_drawDiagram );
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      WindowedKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------

@@ -183,60 +183,6 @@ bool PerlinNoise ( hashfunc<hashtype> hash, int inputLen,
 }
 
 //-----------------------------------------------------------------------------
-// Keyset 'Window' - for all possible N-bit windows of a K-bit key, generate
-// all possible keys with bits set in that window
-
-template < typename keytype, typename hashtype >
-bool WindowedKeyTest ( hashfunc<hashtype> hash, int windowbits,
-                       bool testCollision, bool testDistribution, bool drawDiagram )
-{
-  const int keybits = sizeof(keytype) * 8;
-  const int hashbits = sizeof(hashtype) * 8;
-  // calc keycount to expect min. 0.5 collisions: EstimateNbCollisions, except for 64++bit.
-  // there limit to 2^25 = 33554432 keys
-  int keycount = 1 << windowbits;
-  while (EstimateNbCollisions(keycount, hashbits) < 0.5 && windowbits < 25) {
-    if ((int)log2(2.0 * keycount) < 0) // overflow
-      break;
-    keycount *= 2;
-    windowbits = (int)log2(1.0 * keycount);
-    //printf (" enlarge windowbits to %d (%d keys)\n", windowbits, keycount);
-    //fflush (NULL);
-  }
-
-  std::vector<hashtype> hashes;
-  hashes.resize(keycount);
-
-  bool result = true;
-  int testcount = keybits;
-
-  printf("Keyset 'Window' - %3d-bit key, %3d-bit window - %d tests - %d keys\n",
-         keybits,windowbits,testcount,keycount);
-
-  for(int j = 0; j <= testcount; j++)
-  {
-    int minbit = j;
-    keytype key;
-
-    for(int i = 0; i < keycount; i++)
-    {
-      key = i;
-      //key = key << minbit;
-      lrot(key,minbit);
-      hash(&key,sizeof(keytype),g_seed,&hashes[i]);
-    }
-
-    printf("Window at bit %3d\n",j);
-    result &= TestHashList(hashes, drawDiagram, testCollision, testDistribution,
-                           /* do not test high/low bits (to not clobber the screen) */
-                           false, false, true);
-    //printf("\n");
-  }
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
 // Keyset 'Cyclic' - generate keys that consist solely of N repetitions of M
 // bytes.
 
