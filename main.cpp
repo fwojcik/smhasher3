@@ -65,6 +65,8 @@
 #include "Types.h"
 #include "Hashes.h"
 #include "KeysetTest.h"
+
+#include "TwoBytesKeysetTest.h"
 #include "SpeedTest.h"
 #include "AvalancheTest.h"
 #include "DifferentialTest.h"
@@ -1563,24 +1565,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testTwoBytes || g_testAll)
   {
-    printf("[[[ Keyset 'TwoBytes' Tests ]]]\n\n");
-    fflush(NULL);
-
-    bool result = true;
-    int maxlen = 24;
-    if (!g_testExtra && (info->hashbits > 32)) {
-      maxlen = hash_is_slow ? 8 : ((info->hashbits <= 64) ? 20 : 15);
-    }
-
-    Hash_Seed_init (hash, g_seed);
-    for(int len = 4; len <= maxlen; len += 4)
-    {
-      result &= TwoBytesTest2<hashtype>(hash, len, g_drawDiagram);
-    }
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      TwoBytesKeyTest<hashtype>(info, g_drawDiagram, g_testExtra, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------

@@ -473,26 +473,6 @@ bool CyclicKeyTest ( pfHash hash, int cycleLen, int cycleReps, const int keycoun
 }
 
 //-----------------------------------------------------------------------------
-// Keyset 'TwoBytes' - generate all keys up to length N with two non-zero bytes
-
-void TwoBytesKeygen ( int maxlen, KeyCallback & c );
-
-template < typename hashtype >
-bool TwoBytesTest2 ( pfHash hash, int maxlen, bool drawDiagram )
-{
-  std::vector<hashtype> hashes;
-
-  HashCallback<hashtype> c(hash,hashes);
-
-  TwoBytesKeygen(maxlen,c);
-
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
 // Keyset 'Text' - generate all keys of the form "prefix"+"core"+"suffix",
 // where "core" consists of all possible combinations of the given character
 // set of length N.
@@ -695,7 +675,3 @@ bool SeedTest ( pfHash hash, int keycount, bool drawDiagram )
 
   return result;
 }
-
-//-----------------------------------------------------------------------------
-
-void ReportCollisions ( pfHash hash );
