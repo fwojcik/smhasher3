@@ -628,6 +628,7 @@ add_library(
   tests/WindowedKeysetTest.cpp
   tests/CyclicKeysetTest.cpp
   tests/TwoBytesKeysetTest.cpp
+  tests/TextKeysetTest.cpp
   tests/PermutationKeysetTest.cpp
   tests/BadSeedsTest.cpp
   tests/PopcountTest.cpp

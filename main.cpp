@@ -72,6 +72,7 @@
 #include "WindowedKeysetTest.h"
 #include "CyclicKeysetTest.h"
 #include "TwoBytesKeysetTest.h"
+#include "TextKeysetTest.h"
 #include "PermutationKeysetTest.h"
 #include "SpeedTest.h"
 #include "PopcountTest.h"
@@ -1200,28 +1201,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testText || g_testAll)
   {
-    printf("[[[ Keyset 'Text' Tests ]]]\n\n");
-
-    bool result = true;
-
-    const char * alnum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-                                 ".,!?:;-+=()<>/|\"'@#$%&*_^";
-
-    Hash_Seed_init (hash, g_seed);
-    result &= TextKeyTest( hash, "Foo",    alnum, 4, "Bar",    g_drawDiagram );
-    result &= TextKeyTest( hash, "FooBar", alnum, 4, "",       g_drawDiagram );
-    result &= TextKeyTest( hash, "",       alnum, 4, "FooBar", g_drawDiagram );
-
-    // maybe use random-len vector of strings here, from len 6-16
-    result &= WordsKeyTest( hash, 4000000L, 6, 16, alnum, "alnum", g_drawDiagram );
-    result &= WordsKeyTest( hash, 4000000L, 6, 16, passwordchars, "password", g_drawDiagram );
-    std::vector<std::string> words = HashMapInit(g_drawDiagram);
-    result &= WordsStringTest( hash, words, g_drawDiagram );
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      TextKeyTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
