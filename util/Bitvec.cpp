@@ -52,6 +52,16 @@
 
 //----------------------------------------------------------------------------
 
+static void printKey(const void* key, size_t len)
+{
+    const unsigned char* const p = (const unsigned char*)key;
+    size_t s;
+    printf("\n0x");
+    for (s=0; s<len; s++) printf("%02X", p[s]);
+    printf("\n  ");
+    for (s=0; s<len; s+=8) printf("%-16zu", s);
+}
+
 void printbits ( const void * blob, int len )
 {
   const uint8_t * data = (const uint8_t *)blob;
