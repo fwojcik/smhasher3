@@ -54,6 +54,10 @@
 
 #include "Types.h"
 
+#ifdef DEBUG
+#include "Bitvec.h"
+#endif
+
 #include <math.h>
 #include <vector>
 #include <map>
@@ -98,14 +102,6 @@ inline uint32_t f3mix ( uint32_t k )
   k ^= k >> 16;
 
   return k;
-}
-
-static void printHash(const void* key, size_t len)
-{
-    const unsigned char* const p = (const unsigned char*)key;
-    assert(len < INT_MAX);
-    for (int i=(int)len-1; i >= 0 ; i--) printf("%02x", p[i]);
-    printf("  ");
 }
 
 //-----------------------------------------------------------------------------

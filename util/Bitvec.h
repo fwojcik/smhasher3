@@ -55,8 +55,9 @@
 
 //-----------------------------------------------------------------------------
 
+void     printHash   ( const void * key, size_t len );
 void     printbits   ( const void * blob, int len );
-void     printhex  ( const void * blob, int len );
+void     printhex    ( const void * blob, int len );
 void     printhex32  ( const void * blob, int len );
 void     printbytes  ( const void * blob, int len );
 void     printbytes2 ( const void * blob, int len );

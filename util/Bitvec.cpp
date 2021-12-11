@@ -20,7 +20,7 @@
  * permission notice:
  *
  *     Copyright (c) 2010-2012 Austin Appleby
- *     Copyright (c) 2019      Yann Collet
+ *     Copyright (c) 2019-2020 Yann Collet
  *     Copyright (c) 2020      Reini Urban
  *
  *     Permission is hereby granted, free of charge, to any person
@@ -60,6 +60,14 @@ static void printKey(const void* key, size_t len)
     for (s=0; s<len; s++) printf("%02X", p[s]);
     printf("\n  ");
     for (s=0; s<len; s+=8) printf("%-16zu", s);
+}
+
+void printHash(const void* key, size_t len)
+{
+    const unsigned char* const p = (const unsigned char*)key;
+    assert(len < INT_MAX);
+    for (int i=(int)len-1; i >= 0 ; i--) printf("%02x", p[i]);
+    printf("  ");
 }
 
 void printbits ( const void * blob, int len )
