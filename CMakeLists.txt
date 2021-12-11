@@ -634,6 +634,7 @@ add_library(
   tests/BadSeedsTest.cpp
   tests/PerlinNoiseTest.cpp
   tests/PopcountTest.cpp
+  tests/PRNGTest.cpp
   tests/SpeedTest.cpp
 #
   hashes/HashSanityTest.cpp

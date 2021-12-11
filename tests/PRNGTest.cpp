@@ -46,39 +46,66 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-//-----------------------------------------------------------------------------
-// Keyset tests generate various sorts of difficult-to-hash keysets and compare
-// the distribution and collision frequency of the hash results against an
-// ideal random distribution
-
-#pragma once
-
 #include "Types.h"
 #include "Stats.h"
-#include "Random.h"   // for rand_p
+#include "PRNGTest.h"
 
-#include <stdint.h>
-#include <inttypes.h>
 #include <assert.h>
 
-#include <algorithm>  // for std::swap
-#include <string>
-#if NCPU > 1 // disable with -DNCPU=0 or 1
-#include <thread>
-#include <chrono>
-#include <atomic>
-#include <mutex>
-#endif
+//-----------------------------------------------------------------------------
+// Keyset 'Prng'
 
-#undef MAX
-#define MAX(x,  y)   (((x) > (y)) ? (x) : (y))
-
-static void printKey(const void* key, size_t len)
+template< typename hashtype >
+static void Prn_gen (int nbRn, pfHash hash, std::vector<hashtype> & hashes )
 {
-    const unsigned char* const p = (const unsigned char*)key;
-    size_t s;
-    printf("\n0x");
-    for (s=0; s<len; s++) printf("%02X", p[s]);
-    printf("\n  ");
-    for (s=0; s<len; s+=8) printf("%-16zu", s);
+  assert(nbRn > 0);
+
+  printf("Generating random numbers by hashing previous output - %d keys\n", nbRn);
+
+  hashtype hcopy;
+  memset(&hcopy, 0, sizeof(hcopy));
+
+  // a generated random number becomes the input for the next one
+  for (int i=0; i< nbRn; i++) {
+      hashtype h;
+      hash(&hcopy, sizeof(hcopy), g_seed, &h);
+      hashes.push_back(h);
+      memcpy(&hcopy, &h, sizeof(h));
+  }
 }
+
+//-----------------------------------------------------------------------------
+
+template < typename hashtype >
+bool PRNGTest(HashInfo * info, const bool verbose, const bool extra) {
+    pfHash hash = info->hash;
+    bool result = true;
+    bool testCollision = true;
+    bool testDistribution = extra;
+    std::vector<hashtype> hashes;
+
+    printf("[[[ Prng Tests ]]]\n\n");
+
+    if (sizeof(hashtype) < 8) {
+        printf("Skipping PRNG test; it is designed for hashes >= 64-bits\n\n");
+        return result;
+    }
+
+    Hash_Seed_init (hash, g_seed);
+
+    Prn_gen(32 << 20, hash, hashes);
+
+    result &= TestHashList(hashes, verbose, testCollision, testDistribution);
+
+    if(!result) printf("\n*********FAIL*********\n");
+    printf("\n");
+
+    return result;
+}
+
+template bool PRNGTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra);
+template bool PRNGTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra);
+template bool PRNGTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra);
+template bool PRNGTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra);
+template bool PRNGTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra);
+template bool PRNGTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra);

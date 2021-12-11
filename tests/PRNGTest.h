@@ -46,39 +46,6 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-//-----------------------------------------------------------------------------
-// Keyset tests generate various sorts of difficult-to-hash keysets and compare
-// the distribution and collision frequency of the hash results against an
-// ideal random distribution
 
-#pragma once
-
-#include "Types.h"
-#include "Stats.h"
-#include "Random.h"   // for rand_p
-
-#include <stdint.h>
-#include <inttypes.h>
-#include <assert.h>
-
-#include <algorithm>  // for std::swap
-#include <string>
-#if NCPU > 1 // disable with -DNCPU=0 or 1
-#include <thread>
-#include <chrono>
-#include <atomic>
-#include <mutex>
-#endif
-
-#undef MAX
-#define MAX(x,  y)   (((x) > (y)) ? (x) : (y))
-
-static void printKey(const void* key, size_t len)
-{
-    const unsigned char* const p = (const unsigned char*)key;
-    size_t s;
-    printf("\n0x");
-    for (s=0; s<len; s++) printf("%02X", p[s]);
-    printf("\n  ");
-    for (s=0; s<len; s+=8) printf("%-16zu", s);
-}
+template < typename hashtype >
+bool PRNGTest(HashInfo * info, const bool verbose, const bool extra);

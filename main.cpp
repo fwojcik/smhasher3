@@ -77,6 +77,7 @@
 #include "SpeedTest.h"
 #include "PerlinNoiseTest.h"
 #include "PopcountTest.h"
+#include "PRNGTest.h"
 #include "AvalancheTest.h"
 #include "DifferentialTest.h"
 #include "HashMapTest.h"
@@ -1262,20 +1263,13 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
       PopcountTest<hashtype>(info, g_testExtra, hash_is_slow);
   }
 
+  //-----------------------------------------------------------------------------
+  // Test the hash function as a PRNG by repeatedly feeding its output
+  // back into the hash to get the next random number.
+
   if (g_testPrng || g_testAll)
   {
-    printf("[[[ Prng Tests ]]]\n\n");
-
-    bool testCollision = true;
-    bool testDistribution = g_testExtra;
-
-    bool result = true;
-    Hash_Seed_init (hash, g_seed);
-    result &= PrngTest<hashtype>( hash, testCollision, testDistribution, g_drawDiagram );
-
-    if(!result) printf("\n*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      PRNGTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
