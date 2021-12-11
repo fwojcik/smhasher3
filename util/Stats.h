@@ -64,10 +64,7 @@ double chooseK ( int b, int k );
 double chooseUpToK ( int n, int k );
 
 double EstimateNbCollisions(const unsigned long nbH, const int nbBits);
-
-// vvv For testing various estimator candidate functions only
-#define COLLISION_ESTIMATORS 3
-double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits, const int estimator);
+void ReportCollisionEstimates( void );
 
 int GetNLogNBound ( unsigned nbH );
 double ScalePValue ( double p_value, unsigned testcount );

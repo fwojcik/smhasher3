@@ -23,6 +23,7 @@
  *     Copyright (c) 2016      Leonid Yuriev
  *     Copyright (c) 2016      Mahmoud Al-Qudsi
  *     Copyright (c) 2016-2021 Reini Urban
+ *     Copyright (c) 2019      Yann Collet
  *
  *     Permission is hereby granted, free of charge, to any person
  *     obtaining a copy of this software and associated documentation
@@ -131,6 +132,18 @@ static inline uint32_t clz4(uint64_t x)
   uint32_t idx;
   _BitScanReverse64(&idx, x);
   return 31 ^ idx;
+}
+#endif
+
+#ifdef _WIN32
+static char* strndup(char const *s, size_t n)
+{
+  size_t const len = strnlen(s, n);
+  char *p = (char*) malloc(len + 1);
+  if (p == NULL) return NULL;
+  memcpy(p, s, len);
+  p[len] = '\0';
+  return p;
 }
 #endif
 
