@@ -878,21 +878,6 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 
 //----------------------------------------------------------------------------
 
-static int FindNbBitsForCollisionTarget(int targetNbCollisions, int nbHashes)
-{
-    int nb;
-    double const target = (double)targetNbCollisions;
-    for (nb=2; nb<64; nb++) {
-        double nbColls = EstimateNbCollisions(nbHashes, nb);
-        if (nbColls < target) break;
-    }
-
-    if ((EstimateNbCollisions(nbHashes, nb)) > targetNbCollisions/5)
-        return nb;
-
-    return nb-1;
-}
-
 static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, int nbH, int & minBits, int & maxBits, int & threshBits )
 {
   const int nlognBits = GetNLogNBound(nbH);
