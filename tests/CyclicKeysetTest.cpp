@@ -58,6 +58,17 @@
 //
 // (This keyset type is designed to make MurmurHash2 fail)
 
+static inline uint32_t f3mix ( uint32_t k )
+{
+  k ^= k >> 16;
+  k *= 0x85ebca6b;
+  k ^= k >> 13;
+  k *= 0xc2b2ae35;
+  k ^= k >> 16;
+
+  return k;
+}
+
 template < typename hashtype >
 static bool CyclicKeyImpl ( pfHash hash, int cycleLen, int cycleReps, const int keycount, bool drawDiagram )
 {

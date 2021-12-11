@@ -63,6 +63,7 @@
 #define _MAIN_CPP
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Hashes.h"
 #include "HashSanityTest.h"
 

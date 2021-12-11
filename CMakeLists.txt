@@ -618,6 +618,7 @@ add_library(
   util/Platform.cpp
   util/Random.cpp
   util/Analyze.cpp
+  util/Stats.cpp
   util/Types.cpp
 #
   tests/AvalancheTest.cpp
