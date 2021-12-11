@@ -1104,34 +1104,6 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
 }
 
 //-----------------------------------------------------------------------------
-
-template < class keytype, typename hashtype >
-bool TestKeyList ( hashfunc<hashtype> hash, std::vector<keytype> & keys,
-                   bool drawDiagram, bool testColl, bool testDist )
-{
-  int keycount = (int)keys.size();
-
-  std::vector<hashtype> hashes;
-  hashes.resize(keycount);
-
-  printf("Hashing");
-  for(int i = 0; i < keycount; i++)
-  {
-    if(i % (keycount / 10) == 0) printf(".");
-
-    keytype & k = keys[i];
-
-    hash(&k,sizeof(k),g_seed,&hashes[i]);
-  }
-  printf("\n");
-
-  bool result = TestHashList(hashes,drawDiagram,testColl,testDist);
-  printf("\n");
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
 // Bytepair test - generate 16-bit indices from all possible non-overlapping
 // 8-bit sections of the hash value, check distribution on all of them.
 
