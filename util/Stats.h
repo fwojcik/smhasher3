@@ -586,6 +586,7 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
   return !failure;
 }
 
+//-----------------------------------------------------------------------------
 // If threshHBits is 0, then this tallies the total number of
 // collisions across all given hashes for each bit window in the range
 // of [minHBits, maxHBits], considering only the high bits.
@@ -660,28 +661,8 @@ void CountRangedNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH,
     collcounts[i] = std::max(maxcoll[i], collcounts[i] - prevcoll[i]);
 }
 
-static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
-{
-    int nb;
-    for (nb=2; nb<64; nb++) {
-        double const maxColls = (double)(1ULL << nb) * share;
-        double const nbColls = EstimateNbCollisions(nbHashes, nb);
-        if (nbColls < maxColls) return nb;
-    }
-    assert(0);
-    return nb;
-}
-
-static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions, int maxbits)
-{
-    int nb;
-    for (nb=maxbits; nb>2; nb--) {
-        double const nbColls = EstimateNbCollisions(nbHashes, nb);
-        if (nbColls > minCollisions) return nb;
-    }
-    //assert(0);
-    return nb;
-}
+//-----------------------------------------------------------------------------
+//
 
 static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, int maxBits, bool highbits, bool drawDiagram )
 {
@@ -749,7 +730,9 @@ static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, in
   return true;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// Measure the distribution "score" for each possible N-bit span, with
+// N going from 8 to 20 inclusive.
 
 template < typename hashtype >
 int PrintCollisions ( HashSet<hashtype> & collisions )
@@ -764,10 +747,6 @@ int PrintCollisions ( HashSet<hashtype> & collisions )
   }
   return 0;
 }
-
-//----------------------------------------------------------------------------
-// Measure the distribution "score" for each possible N-bit span, with
-// N going from 8 to 20 inclusive.
 
 static int MaxDistBits ( const size_t nbH )
 {
@@ -876,7 +855,10 @@ bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
   return true;
 }
 
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Compute a number of statistical tests on a list of hashes,
+// comparing them to a list of i.i.d. random numbers across the full
+// origBits range.
 
 static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, int nbH, int & minBits, int & maxBits, int & threshBits )
 {
@@ -909,6 +891,29 @@ static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, i
     maxBits = std::max(maxBits, nbBits);
     minBits = std::min(minBits, nbBits);
   }
+}
+
+static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
+{
+    int nb;
+    for (nb=2; nb<64; nb++) {
+        double const maxColls = (double)(1ULL << nb) * share;
+        double const nbColls = EstimateNbCollisions(nbHashes, nb);
+        if (nbColls < maxColls) return nb;
+    }
+    assert(0);
+    return nb;
+}
+
+static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions, int maxbits)
+{
+    int nb;
+    for (nb=maxbits; nb>2; nb--) {
+        double const nbColls = EstimateNbCollisions(nbHashes, nb);
+        if (nbColls > minCollisions) return nb;
+    }
+    //assert(0);
+    return nb;
 }
 
 template < typename hashtype >
