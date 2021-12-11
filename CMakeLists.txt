@@ -617,7 +617,7 @@ add_library(
   util/Bitvec.cpp
   util/Platform.cpp
   util/Random.cpp
-  util/Stats.cpp
+  util/Analyze.cpp
   util/Types.cpp
 #
   tests/AvalancheTest.cpp

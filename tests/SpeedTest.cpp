@@ -47,7 +47,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Stats.h"
+#include "Analyze.h"
 #include "Random.h"
 
 #include "SpeedTest.h"

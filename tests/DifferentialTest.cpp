@@ -49,7 +49,7 @@
 #include <algorithm>
 
 #include "Types.h"
-#include "Stats.h"            // for chooseUpToK
+#include "Analyze.h"            // for chooseUpToK
 #include "Random.h"
 
 #include "DifferentialTest.h"

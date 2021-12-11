@@ -47,7 +47,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Types.h"
-#include "Stats.h"
+#include "Analyze.h"
 #include "Random.h"   // for rand_p
 
 #include "CyclicKeysetTest.h"

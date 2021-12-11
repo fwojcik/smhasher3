@@ -48,7 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "Stats.h"
+#include "Analyze.h"
 
 #include "BadSeedsTest.h"
 
