@@ -79,6 +79,7 @@
 #include "AvalancheTest.h"
 #include "DifferentialTest.h"
 #include "HashMapTest.h"
+#include "SeedTest.h"
 #include "BadSeedsTest.h"
 
 #if NCPU > 1 // disable with -DNCPU=0 or 1
@@ -1217,15 +1218,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testSeed || g_testAll)
   {
-    printf("[[[ Keyset 'Seed' Tests ]]]\n\n");
-
-    bool result = true;
-
-    result &= SeedTest<hashtype>( hash, 5000000, g_drawDiagram );
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      SeedTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------

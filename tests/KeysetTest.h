@@ -181,33 +181,3 @@ bool PerlinNoise ( hashfunc<hashtype> hash, int inputLen,
 
   return result;
 }
-
-//-----------------------------------------------------------------------------
-// Keyset 'Seed' - hash "the quick brown fox..." using different seeds
-
-template < typename hashtype >
-bool SeedTest ( pfHash hash, int keycount, bool drawDiagram )
-{
-  printf("Keyset 'Seed' - %d keys\n",keycount);
-  assert(keycount < (1<<31));
-
-  const char text[64] = "The quick brown fox jumps over the lazy dog";
-  const int len = (int)strlen(text);
-
-  //----------
-
-  std::vector<hashtype> hashes;
-
-  hashes.resize(keycount);
-
-  for(int i = 0; i < keycount; i++)
-  {
-    Hash_Seed_init (hash, i);
-    hash(text,len,i,&hashes[i]);
-  }
-
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
-
-  return result;
-}
