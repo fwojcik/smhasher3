@@ -638,6 +638,7 @@ add_library(
   tests/PRNGTest.cpp
   tests/SpeedTest.cpp
 #
+  hashes/LegacyHashes.cpp
   hashes/HashSanityTest.cpp
 #
   ${HIGHWAY_SRC}

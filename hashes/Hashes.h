@@ -786,10 +786,8 @@ inline void sha1_64(const void *key, int len, uint32_t seed, void *out) {
 }
 
 #include "tomcrypt.h"
-#ifndef _MAIN_CPP
-extern
-#endif
-       hash_state ltc_state;
+
+extern hash_state ltc_state;
 
 int blake2b_init(hash_state * md, unsigned long outlen,
                  const unsigned char *key, unsigned long keylen);
