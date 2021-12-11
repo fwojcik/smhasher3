@@ -53,6 +53,7 @@
 #include "Types.h"
 #include "Stats.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 #ifdef DEBUG
 #include "Bitvec.h"
 #endif
@@ -760,18 +761,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
   return result;
 }
 
-template bool TestHashList<uint32_t> ( std::vector<uint32_t> & hashes, bool drawDiagram,
-        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
-template bool TestHashList<uint64_t> ( std::vector<uint64_t> & hashes, bool drawDiagram,
-        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
-template bool TestHashList<uint128_t> ( std::vector<uint128_t> & hashes, bool drawDiagram,
-        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
-template bool TestHashList<Blob<160>> ( std::vector<Blob<160>> & hashes, bool drawDiagram,
-        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
-template bool TestHashList<Blob<224>> ( std::vector<Blob<224>> & hashes, bool drawDiagram,
-        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
-template bool TestHashList<uint256_t> ( std::vector<uint256_t> & hashes, bool drawDiagram,
-        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
+INSTANTIATE(TestHashList, HASHTYPELIST);
 
 //----------------------------------------------------------------------------
 

@@ -53,6 +53,7 @@
 #include "Stats.h"    // for chooseUpToK
 #include "Analyze.h"
 #include "Random.h"
+#include "Instantiate.h"
 
 #include "DifferentialTest.h"
 
@@ -356,6 +357,8 @@ bool DiffTest(HashInfo * info, const bool verbose, const bool extra, const bool 
     return result;
 }
 
+INSTANTIATE(DiffTest, HASHTYPELIST);
+
 template < typename hashtype >
 bool DiffDistTest(HashInfo * info, const bool verbose) {
     pfHash hash = info->hash;
@@ -371,16 +374,4 @@ bool DiffDistTest(HashInfo * info, const bool verbose) {
     return result;
 }
 
-template bool DiffTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool DiffTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool DiffTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool DiffTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool DiffTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool DiffTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-
-template bool DiffDistTest<uint32_t>(HashInfo * info, const bool verbose);
-template bool DiffDistTest<uint64_t>(HashInfo * info, const bool verbose);
-template bool DiffDistTest<uint128_t>(HashInfo * info, const bool verbose);
-template bool DiffDistTest<Blob<160>>(HashInfo * info, const bool verbose);
-template bool DiffDistTest<Blob<224>>(HashInfo * info, const bool verbose);
-template bool DiffDistTest<uint256_t>(HashInfo * info, const bool verbose);
+INSTANTIATE(DiffDistTest, HASHTYPELIST);

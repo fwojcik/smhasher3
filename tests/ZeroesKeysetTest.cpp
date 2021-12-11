@@ -48,6 +48,7 @@
  */
 #include "Types.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "ZeroesKeysetTest.h"
 
@@ -103,9 +104,4 @@ bool ZeroKeyTest(HashInfo * info, const bool verbose) {
     return result;
 }
 
-template bool ZeroKeyTest<uint32_t>(HashInfo * info, const bool verbose);
-template bool ZeroKeyTest<uint64_t>(HashInfo * info, const bool verbose);
-template bool ZeroKeyTest<uint128_t>(HashInfo * info, const bool verbose);
-template bool ZeroKeyTest<Blob<160>>(HashInfo * info, const bool verbose);
-template bool ZeroKeyTest<Blob<224>>(HashInfo * info, const bool verbose);
-template bool ZeroKeyTest<uint256_t>(HashInfo * info, const bool verbose);
+INSTANTIATE(ZeroKeyTest, HASHTYPELIST);

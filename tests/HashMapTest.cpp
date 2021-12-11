@@ -46,10 +46,9 @@
 #include "Types.h"
 #include "Stats.h"
 #include "Random.h"
+
 #include "HashMapTest.h"
 #include "Wordlist.h"
-
-#include <string.h>
 
 #include <string>
 #include <vector>

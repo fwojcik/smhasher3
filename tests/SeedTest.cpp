@@ -48,6 +48,7 @@
  */
 #include "Types.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "SeedTest.h"
 
@@ -100,9 +101,4 @@ bool SeedTest(HashInfo * info, const bool verbose) {
     return result;
 }
 
-template bool SeedTest<uint32_t>(HashInfo * info, const bool verbose);
-template bool SeedTest<uint64_t>(HashInfo * info, const bool verbose);
-template bool SeedTest<uint128_t>(HashInfo * info, const bool verbose);
-template bool SeedTest<Blob<160>>(HashInfo * info, const bool verbose);
-template bool SeedTest<Blob<224>>(HashInfo * info, const bool verbose);
-template bool SeedTest<uint256_t>(HashInfo * info, const bool verbose);
+INSTANTIATE(SeedTest, HASHTYPELIST);

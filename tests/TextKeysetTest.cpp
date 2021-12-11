@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Random.h"
+#include "Instantiate.h"
 
 #include "HashMapTest.h"
 
@@ -227,9 +228,4 @@ bool TextKeyTest(HashInfo * info, const bool verbose) {
     return result;
 }
 
-template bool TextKeyTest<uint32_t>(HashInfo * info, const bool verbose);
-template bool TextKeyTest<uint64_t>(HashInfo * info, const bool verbose);
-template bool TextKeyTest<uint128_t>(HashInfo * info, const bool verbose);
-template bool TextKeyTest<Blob<160>>(HashInfo * info, const bool verbose);
-template bool TextKeyTest<Blob<224>>(HashInfo * info, const bool verbose);
-template bool TextKeyTest<uint256_t>(HashInfo * info, const bool verbose);
+INSTANTIATE(TextKeyTest, HASHTYPELIST);

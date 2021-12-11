@@ -62,6 +62,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Instantiate.h"
 
 #include "PopcountTest.h"
 
@@ -329,9 +330,4 @@ bool PopcountTest(HashInfo * info, const bool extra, const bool hash_is_slow) {
     return result;
 }
 
-template bool PopcountTest<uint32_t>(HashInfo * info, const bool extra, const bool hash_is_slow);
-template bool PopcountTest<uint64_t>(HashInfo * info, const bool extra, const bool hash_is_slow);
-template bool PopcountTest<uint128_t>(HashInfo * info, const bool extra, const bool hash_is_slow);
-template bool PopcountTest<Blob<160>>(HashInfo * info, const bool extra, const bool hash_is_slow);
-template bool PopcountTest<Blob<224>>(HashInfo * info, const bool extra, const bool hash_is_slow);
-template bool PopcountTest<uint256_t>(HashInfo * info, const bool extra, const bool hash_is_slow);
+INSTANTIATE(PopcountTest, HASHTYPELIST);

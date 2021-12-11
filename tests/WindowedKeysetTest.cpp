@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Stats.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "WindowedKeysetTest.h"
 
@@ -138,9 +139,4 @@ bool WindowedKeyTest(HashInfo * info, const bool verbose, const bool extra) {
     return result;
 }
 
-template bool WindowedKeyTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool WindowedKeyTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool WindowedKeyTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool WindowedKeyTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra);
-template bool WindowedKeyTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra);
-template bool WindowedKeyTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra);
+INSTANTIATE(WindowedKeyTest, HASHTYPELIST);

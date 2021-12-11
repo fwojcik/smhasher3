@@ -49,6 +49,7 @@
 #include "Platform.h"
 #include "Types.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "BadSeedsTest.h"
 
@@ -341,9 +342,4 @@ bool BadSeedsTest(HashInfo * info, const bool find_new_seeds) {
     return result;
 }
 
-template bool BadSeedsTest<uint32_t>(HashInfo * info, const bool find_new_seeds);
-template bool BadSeedsTest<uint64_t>(HashInfo * info, const bool find_new_seeds);
-template bool BadSeedsTest<uint128_t>(HashInfo * info, const bool find_new_seeds);
-template bool BadSeedsTest<Blob<160>>(HashInfo * info, const bool find_new_seeds);
-template bool BadSeedsTest<Blob<224>>(HashInfo * info, const bool find_new_seeds);
-template bool BadSeedsTest<uint256_t>(HashInfo * info, const bool find_new_seeds);
+INSTANTIATE(BadSeedsTest, HASHTYPELIST);

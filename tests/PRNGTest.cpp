@@ -48,6 +48,8 @@
  */
 #include "Types.h"
 #include "Analyze.h"
+#include "Instantiate.h"
+
 #include "PRNGTest.h"
 
 #include <assert.h>
@@ -103,9 +105,4 @@ bool PRNGTest(HashInfo * info, const bool verbose, const bool extra) {
     return result;
 }
 
-template bool PRNGTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PRNGTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PRNGTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PRNGTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra);
-template bool PRNGTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra);
-template bool PRNGTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra);
+INSTANTIATE(PRNGTest, HASHTYPELIST);

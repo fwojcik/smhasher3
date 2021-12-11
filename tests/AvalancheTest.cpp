@@ -51,6 +51,7 @@
 #include "Types.h"
 #include "Platform.h"
 #include "Random.h"
+#include "Instantiate.h"
 
 #include "AvalancheTest.h"
 
@@ -581,6 +582,8 @@ bool BicTest(HashInfo * info, const bool verbose, const bool hash_is_slow) {
     return result;
 }
 
+INSTANTIATE(BicTest, HASHTYPELIST);
+
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
@@ -635,18 +638,4 @@ bool AvalancheTest(HashInfo* info, const bool extra) {
     return result;
 }
 
-//-----------------------------------------------------------------------------
-
-template bool AvalancheTest<uint32_t>(HashInfo * info, const bool extra);
-template bool AvalancheTest<uint64_t>(HashInfo * info, const bool extra);
-template bool AvalancheTest<uint128_t>(HashInfo * info, const bool extra);
-template bool AvalancheTest<Blob<160>>(HashInfo * info, const bool extra);
-template bool AvalancheTest<Blob<224>>(HashInfo * info, const bool extra);
-template bool AvalancheTest<uint256_t>(HashInfo * info, const bool extra);
-
-template bool BicTest<uint32_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool BicTest<uint64_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool BicTest<uint128_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool BicTest<Blob<160>>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool BicTest<Blob<224>>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool BicTest<uint256_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
+INSTANTIATE(AvalancheTest, HASHTYPELIST);

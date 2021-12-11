@@ -48,6 +48,7 @@
  */
 #include "Types.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "SparseKeysetTest.h"
 
@@ -192,9 +193,4 @@ bool SparseKeyTest(HashInfo * info, const bool verbose, const bool extra) {
     return result;
 }
 
-template bool SparseKeyTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool SparseKeyTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool SparseKeyTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool SparseKeyTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra);
-template bool SparseKeyTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra);
-template bool SparseKeyTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra);
+INSTANTIATE(SparseKeyTest, HASHTYPELIST);

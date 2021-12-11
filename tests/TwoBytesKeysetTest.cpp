@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Stats.h"   // for chooseK
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "TwoBytesKeysetTest.h"
 
@@ -159,9 +160,4 @@ bool TwoBytesKeyTest(HashInfo * info, const bool verbose, const bool extra, cons
     return result;
 }
 
-template bool TwoBytesKeyTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool TwoBytesKeyTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool TwoBytesKeyTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool TwoBytesKeyTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool TwoBytesKeyTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
-template bool TwoBytesKeyTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
+INSTANTIATE(TwoBytesKeyTest, HASHTYPELIST);

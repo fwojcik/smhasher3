@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Random.h"   // for rand_p
+#include "Instantiate.h"
 
 #include "CyclicKeysetTest.h"
 
@@ -140,9 +141,5 @@ bool CyclicKeyTest(HashInfo * info, const bool verbose, const bool hash_is_slow)
     return result;
 }
 
-template bool CyclicKeyTest<uint32_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool CyclicKeyTest<uint64_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool CyclicKeyTest<uint128_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool CyclicKeyTest<Blob<160>>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool CyclicKeyTest<Blob<224>>(HashInfo * info, const bool verbose, const bool hash_is_slow);
-template bool CyclicKeyTest<uint256_t>(HashInfo * info, const bool verbose, const bool hash_is_slow);
+INSTANTIATE(CyclicKeyTest, HASHTYPELIST);
+

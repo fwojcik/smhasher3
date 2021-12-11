@@ -48,6 +48,7 @@
  */
 #include "Types.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "PerlinNoiseTest.h"
 
@@ -117,9 +118,4 @@ bool PerlinNoiseTest (HashInfo * info, const bool verbose, const bool extra) {
     return result;
 }
 
-template bool PerlinNoiseTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PerlinNoiseTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PerlinNoiseTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PerlinNoiseTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra);
-template bool PerlinNoiseTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra);
-template bool PerlinNoiseTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra);
+INSTANTIATE(PerlinNoiseTest, HASHTYPELIST);

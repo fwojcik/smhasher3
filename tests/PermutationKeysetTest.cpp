@@ -48,6 +48,7 @@
  */
 #include "Types.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 
 #include "PermutationKeysetTest.h"
 
@@ -258,9 +259,4 @@ bool PermutedKeyTest(HashInfo * info, const bool verbose, const bool extra) {
     return result;
 }
 
-template bool PermutedKeyTest<uint32_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PermutedKeyTest<uint64_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PermutedKeyTest<uint128_t>(HashInfo * info, const bool verbose, const bool extra);
-template bool PermutedKeyTest<Blob<160>>(HashInfo * info, const bool verbose, const bool extra);
-template bool PermutedKeyTest<Blob<224>>(HashInfo * info, const bool verbose, const bool extra);
-template bool PermutedKeyTest<uint256_t>(HashInfo * info, const bool verbose, const bool extra);
+INSTANTIATE(PermutedKeyTest, HASHTYPELIST);
