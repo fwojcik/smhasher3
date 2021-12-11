@@ -330,4 +330,101 @@ void plot ( double n )
     putchar('X');
 }
 
+#if 0
 //-----------------------------------------------------------------------------
+// Bytepair test - generate 16-bit indices from all possible non-overlapping
+// 8-bit sections of the hash value, check distribution on all of them.
+
+// This is a very good test for catching weak intercorrelations between bits -
+// much harder to pass than the normal distribution test. However, it doesn't
+// really model the normal usage of hash functions in hash table lookup, so
+// I'm not sure it's that useful (and hash functions that fail this test but
+// pass the normal distribution test still work well in practice)
+
+template < typename hashtype >
+double TestDistributionBytepairs ( std::vector<hashtype> & hashes, bool drawDiagram )
+{
+  const int nbytes = sizeof(hashtype);
+  const int hashbits = nbytes * 8;
+
+  const int nbins = 65536;
+
+  std::vector<unsigned> bins(nbins,0);
+
+  double worst = 0;
+
+  for(int a = 0; a < hashbits; a++)
+  {
+    if(drawDiagram) if((a % 8 == 0) && (a > 0)) printf("\n");
+
+    if(drawDiagram) printf("[");
+
+    for(int b = 0; b < hashbits; b++)
+    {
+      if(drawDiagram) if((b % 8 == 0) && (b > 0)) printf(" ");
+
+      bins.clear();
+      bins.resize(nbins,0);
+
+      for(size_t i = 0; i < hashes.size(); i++)
+      {
+        uint32_t pa = window(hashes[i],a,8);
+        uint32_t pb = window(hashes[i],b,8);
+
+        bins[pa | (pb << 8)]++;
+      }
+
+      double s = calcScore(bins,nbins,hashes.size());
+
+      if(drawDiagram) plot(s);
+
+      if(s > worst)
+      {
+        worst = s;
+      }
+    }
+
+    if(drawDiagram) printf("]\n");
+  }
+
+  return worst;
+}
+
+//-----------------------------------------------------------------------------
+// Simplified test - only check 64k distributions, and only on byte boundaries
+
+template < typename hashtype >
+void TestDistributionFast ( std::vector<hashtype> & hashes, double & dworst, double & davg )
+{
+  const int hashbits = sizeof(hashtype) * 8;
+  const int nbins = 65536;
+
+  std::vector<unsigned> bins(nbins,0);
+
+  dworst = -1.0e90;
+  davg = 0;
+
+  for(int start = 0; start < hashbits; start += 8)
+  {
+    bins.clear();
+    bins.resize(nbins,0);
+
+    for(size_t j = 0; j < hashes.size(); j++)
+    {
+      uint32_t index = window(hashes[j],start,16);
+
+      bins[index]++;
+    }
+
+    double n = calcScore(&bins.front(),nbins,(int)hashes.size());
+
+    davg += n;
+
+    if(n > dworst) dworst = n;
+  }
+
+  davg /= double(hashbits/8);
+}
+
+//-----------------------------------------------------------------------------
+#endif
