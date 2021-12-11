@@ -64,7 +64,6 @@
 #include "Platform.h"
 #include "Types.h"
 #include "Hashes.h"
-#include "KeysetTest.h"
 #include "HashSanityTest.h"
 
 #include "SparseKeysetTest.h"
@@ -91,6 +90,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <time.h>
 #include <errno.h>
 
