@@ -632,6 +632,7 @@ add_library(
   tests/PermutationKeysetTest.cpp
   tests/SeedTest.cpp
   tests/BadSeedsTest.cpp
+  tests/PerlinNoiseTest.cpp
   tests/PopcountTest.cpp
   tests/SpeedTest.cpp
 #

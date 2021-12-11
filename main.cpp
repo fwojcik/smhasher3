@@ -75,6 +75,7 @@
 #include "TextKeysetTest.h"
 #include "PermutationKeysetTest.h"
 #include "SpeedTest.h"
+#include "PerlinNoiseTest.h"
 #include "PopcountTest.h"
 #include "AvalancheTest.h"
 #include "DifferentialTest.h"
@@ -1226,22 +1227,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testPerlinNoise || g_testAll)
   {
-    printf("[[[ Keyset 'PerlinNoise' Tests ]]]\n\n");
-
-    bool testCollision = true;
-    bool testDistribution = g_testExtra;
-
-    bool result = true;
-    Hash_Seed_init (hash, 0);
-    result &= PerlinNoise<hashtype>( hash, 2, testCollision, testDistribution, g_drawDiagram );
-    if (g_testExtra) {
-        result &= PerlinNoise<hashtype>( hash, 4, testCollision, testDistribution, g_drawDiagram );
-        result &= PerlinNoise<hashtype>( hash, 8, testCollision, testDistribution, g_drawDiagram );
-    }
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
+      PerlinNoiseTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
