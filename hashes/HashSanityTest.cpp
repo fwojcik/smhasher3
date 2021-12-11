@@ -50,8 +50,7 @@
 
 #include "HashSanityTest.h"
 
-#include <map>
-#include <set>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 // This should hopefully be a thorough and uambiguous test of whether a hash
@@ -101,24 +100,24 @@ bool VerificationTest ( HashInfo* info, bool verbose )
   if (expected != verification) {
     if (!expected) {
       if (verbose)
-        printf("Verification value 0x%08X ....... SKIP (self- or unseeded)\n",
+        printf("Verification value 0x%08X ........ SKIP (self- or unseeded)\n",
                verification);
       return true;
     } else {
       if (verbose)
-        printf("Verification value 0x%08X ....... FAIL! (Expected 0x%08x)\n",
+        printf("Verification value 0x%08X ........ FAIL! (Expected 0x%08x)\n",
                verification, expected);
       return false;
     }
   } else {
     if (!expected) {
       if (verbose)
-        printf("Verification value 0x%08X ....... INSECURE (should not be 0)\n",
+        printf("Verification value 0x%08X ........ INSECURE (should not be 0)\n",
                verification);
       return true;
     } else {
       if (verbose)
-        printf("Verification value 0x%08X ....... PASS\n", verification);
+        printf("Verification value 0x%08X ........ PASS\n", verification);
     }
     return true;
   }
@@ -138,7 +137,7 @@ bool VerificationTest ( HashInfo* info, bool verbose )
 
 bool SanityTest ( pfHash hash, const int hashbits )
 {
-  printf("Running sanity check 1     ");
+  printf("Running sanity check 1      ");
 
   Rand r(883743);
 
@@ -159,7 +158,7 @@ bool SanityTest ( pfHash hash, const int hashbits )
   //----------
   memset(hash1, 1, hashbytes);
   memset(hash2, 2, hashbytes);
-  
+
   for(int irep = 0; irep < reps; irep++)
   {
     if(irep % (reps/10) == 0) printf(".");
@@ -246,7 +245,7 @@ void AppendedZeroesTest ( pfHash hash, const int hashbits )
 {
 //printf("Verification value 0x%08X ....... PASS\n",verification);
 //printf("Running sanity check 1     ");
-  printf("Running AppendedZeroesTest ");
+  printf("Running AppendedZeroesTest  ");
 
   Rand r(173994);
 
@@ -257,29 +256,88 @@ void AppendedZeroesTest ( pfHash hash, const int hashbits )
     if(rep % 10 == 0) printf(".");
 
     unsigned char key[256];
-
     memset(key,0,sizeof(key));
 
     r.rand_p(key,32);
 
-    uint32_t h1[16];
-    uint32_t h2[16];
+    std::vector<std::vector<uint8_t>> hashes;
 
-    memset(h1,0,hashbytes);
-    memset(h2,0,hashbytes);
-
-    for(int i = 0; i < 32; i++)
-    {
-      hash(key,32+i,0,h1);
-
-      if(memcmp(h1,h2,hashbytes) == 0)
-      {
-        printf(" FAIL !!!!!\n");
-        return;
-      }
-
-      memcpy(h2,h1,hashbytes);
+    for(int i = 0; i < 32; i++) {
+      std::vector<uint8_t> h(hashbytes);
+      hash(key,32+i,0,&h[0]);
+      hashes.push_back(h);
     }
+
+    // Sort in little-endian order, for human friendliness
+    std::sort(hashes.begin(), hashes.end(),
+            [](const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
+                for (int i = a.size(); i >= 0; i--) {
+                    if (a[i] != b[i]) {
+                        return a[i] < b[i];
+                    }
+                }
+                return false;
+            } );
+
+    for(int i = 1; i < 32; i++) {
+        if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
+            printf(" FAIL !!!!!\n");
+            return;
+        }
+    }
+
+  }
+
+  printf(" PASS\n");
+}
+
+//----------------------------------------------------------------------------
+// Prepending zero bytes to a key should also always cause it to
+// produce a different hash value
+
+void PrependedZeroesTest ( pfHash hash, const int hashbits )
+{
+  printf("Running PrependedZeroesTest ");
+
+  Rand r(534281);
+
+  const int hashbytes = hashbits/8;
+
+  for(int rep = 0; rep < 100; rep++)
+  {
+    if(rep % 10 == 0) printf(".");
+
+    unsigned char key[256];
+    memset(key,0,sizeof(key));
+
+    r.rand_p(key+32,32);
+
+    std::vector<std::vector<uint8_t>> hashes;
+
+    for(int i = 0; i < 32; i++) {
+      std::vector<uint8_t> h(hashbytes);
+      hash(key+32-i,32+i,0,&h[0]);
+      hashes.push_back(h);
+    }
+
+    // Sort in little-endian order, for human friendliness
+    std::sort(hashes.begin(), hashes.end(),
+            [](const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
+                for (int i = a.size(); i >= 0; i--) {
+                    if (a[i] != b[i]) {
+                        return a[i] < b[i];
+                    }
+                }
+                return false;
+            } );
+
+    for(int i = 1; i < 32; i++) {
+        if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
+            printf(" FAIL !!!!!\n");
+            return;
+        }
+    }
+
   }
 
   printf(" PASS\n");

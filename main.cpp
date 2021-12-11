@@ -204,14 +204,13 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   if(g_testSanity || g_testAll)
   {
     printf("[[[ Sanity Tests ]]]\n\n");
-    fflush(NULL);
 
     VerificationTest(info,true);
     Hash_Seed_init (hash, 0);
     SanityTest(hash,hashbits);
     AppendedZeroesTest(hash,hashbits);
+    PrependedZeroesTest(hash,hashbits);
     printf("\n");
-    fflush(NULL);
   }
 
   //-----------------------------------------------------------------------------
