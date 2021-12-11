@@ -47,9 +47,12 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 
 #include "WindowedKeysetTest.h"
+
+#include <math.h>
 
 //-----------------------------------------------------------------------------
 // Keyset 'Window' - for all possible N-bit windows of a K-bit key, generate

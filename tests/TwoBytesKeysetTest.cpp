@@ -47,6 +47,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Types.h"
+#include "Stats.h"   // for chooseK
 #include "Analyze.h"
 
 #include "TwoBytesKeysetTest.h"

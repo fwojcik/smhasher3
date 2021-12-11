@@ -52,6 +52,7 @@
 
 #include "HashMapTest.h"
 
+#include <math.h>
 #include <assert.h>
 #include <string>
 

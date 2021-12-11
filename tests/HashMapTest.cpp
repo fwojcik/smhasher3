@@ -44,7 +44,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "Analyze.h"
+#include "Stats.h"
 #include "Random.h"
 #include "HashMapTest.h"
 #include "Wordlist.h"

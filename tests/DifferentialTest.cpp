@@ -47,9 +47,11 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <math.h>
 
 #include "Types.h"
-#include "Analyze.h"            // for chooseUpToK
+#include "Stats.h"    // for chooseUpToK
+#include "Analyze.h"
 #include "Random.h"
 
 #include "DifferentialTest.h"
