@@ -120,7 +120,6 @@ bool g_testPopcount    = false;
 bool g_testPrng        = false;
 bool g_testBIC         = false;
 bool g_testBadSeeds    = false;
-//bool g_testLongNeighbors = false;
 
 struct TestOpts {
   bool         &var;
@@ -149,7 +148,6 @@ TestOpts g_testopts[] =
   { g_testPopcount,     "Popcount" },
   { g_testPrng,         "Prng" },
   { g_testBadSeeds,     "BadSeeds" },
-  //{ g_testLongNeighbors,"LongNeighbors" }
 };
 
 //-----------------------------------------------------------------------------
@@ -1279,28 +1277,6 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     printf("\n");
     fflush(NULL);
   }
-
-  //-----------------------------------------------------------------------------
-  // LongNeighbors - collisions between long messages of low Hamming distance
-  // esp. for testing separate word and then byte-wise processing of unaligned
-  // rest parts. Only with --test=LongNeighbors or --extra
-
-  // Not yet included for licensing reasons
-#if 0
-  if(g_testLongNeighbors || (g_testAll && g_testExtra))
-  {
-    printf("[[[ LongNeighbors Tests ]]]\n\n");
-
-    bool result = true;
-
-    Hash_Seed_init (hash, g_seed);
-    result &= testLongNeighbors(info->hash, info->hashbits, g_drawDiagram);
-
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
-    fflush(NULL);
-  }
-#endif
 
   //-----------------------------------------------------------------------------
   // Bit Independence Criteria. Interesting, but doesn't tell us much about
