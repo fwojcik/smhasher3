@@ -94,20 +94,16 @@ static void PrintAvalancheDiagram ( int x, int y, int reps, double scale, int * 
 
 //----------------------------------------------------------------------------
 
-static double maxBias ( int * counts, int buckets, int reps )
+static int maxBias ( int * counts, int buckets, int reps )
 {
-  double worst = 0;
+  int expected = reps / 2;
+  int worst = 0;
 
   for(int i = 0; i < buckets; i++)
   {
-    double c = double(counts[i]) / double(reps);
-
-    double d = fabs(c * 2 - 1);
-
-    if(d > worst)
-    {
-      worst = d;
-    }
+    int c = abs(counts[i] - expected);
+    if(worst < c)
+      worst = c;
   }
 
   return worst;
@@ -122,7 +118,7 @@ static double maxBias ( int * counts, int buckets, int reps )
 // hash function to fail to create an even, random distribution of hash values.
 
 // Avalanche fails if a bit is biased by more than 1%
-#define AVALANCHE_FAIL 0.01
+#define AVALANCHE_FAIL 1.00
 
 //-----------------------------------------------------------------------------
 
@@ -214,10 +210,11 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool verbose )
   }
   //printf("All %d threads ended\n", NCPU);
   for (int i=1; i < NCPU; i++)
-    for (int b=0; b < keybits*hashbits; b++)
+    for (int b=0; b < arraysize; b++)
       bins[0][b] += bins[i][b];
 #else
-  std::array<std::array<int, arraysize>, 1> bins{{std::array<int, arraysize>{}}};
+  //std::array<std::array<int, arraysize>, 1> bins{{std::array<int, arraysize>{}}};
+  std::array<std::array<int, arraysize>, 1> bins{};
   calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,verbose);
 #endif
 
@@ -225,11 +222,13 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool verbose )
 
   bool result = true;
 
-  double b = maxBias(&bins[0][0], arraysize, reps);
+  int b = maxBias(&bins[0][0], arraysize, reps);
+  double bpct = 200.0 * ((double)b / (double)reps);
 
-  printf(" worst bias is %f%%", b * 100.0);
+  printf(" worst bias is %f%%", bpct);
+  // printf(" worst bias is %f%% (%d) (%f) (%f) (^%2d)", bpct, b, p1value, pvalue, GetLog2PValue(pvalue));
 
-  if(b > AVALANCHE_FAIL)
+  if(bpct > AVALANCHE_FAIL)
   {
     printf(" !!!!!");
     result = false;
