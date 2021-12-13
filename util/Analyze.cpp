@@ -422,6 +422,10 @@ static int PrintCollisions ( HashSet<hashtype> & collisions )
 
 static int MaxDistBits ( const size_t nbH )
 {
+  // If there aren't 5 keys per bin over 8 bins, then don't bother
+  // testing distribution at all.
+  if (nbH < (5 * 8))
+    return 0;
   int maxwidth = 20;
   // We need at least 5 keys per bin to reliably test distribution biases
   // down to 1%, so don't bother to test sparser distributions than that
