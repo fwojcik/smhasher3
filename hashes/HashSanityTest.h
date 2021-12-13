@@ -49,5 +49,5 @@
 
 bool VerificationTest   ( HashInfo *info, bool verbose );
 bool SanityTest         ( pfHash hash, const int hashbits );
-void AppendedZeroesTest ( pfHash hash, const int hashbits );
-void PrependedZeroesTest( pfHash hash, const int hashbits );
+bool AppendedZeroesTest ( pfHash hash, const int hashbits );
+bool PrependedZeroesTest( pfHash hash, const int hashbits );
