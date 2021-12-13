@@ -499,17 +499,16 @@ endif()
 
 if(NOT MSVC)
   set(NOTMSVC_SRC hashes/seahash.c)
-  set_source_files_properties(tests/HashMapTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++11 -I${CMAKE_SOURCE_DIR}/tests")
+  set_source_files_properties(tests/HashMapTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++11")
   set_source_files_properties(tests/SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x")
   set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-std=c++0x -I${CMAKE_SOURCE_DIR}/hashes -I${CMAKE_SOURCE_DIR}/tests")
-  set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -I${CMAKE_SOURCE_DIR} -flax-vector-conversions -Wno-ignored-attributes")
+  set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -flax-vector-conversions -Wno-ignored-attributes")
   # https://github.com/dgryski/trifles/tree/master/tsip
   set(TSIP_SRC hashes/tsip.c)
 else(NOT MSVC)
-  set_source_files_properties(tests/SpeedTest.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/tests")
   set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/hashes -I${CMAKE_SOURCE_DIR}/tests")
   # nmhash32 wants "/std:c++latest"
-  set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest -I${CMAKE_SOURCE_DIR}")
+  set_source_files_properties(hashes/Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest")
 endif(NOT MSVC)
 
 find_library(HIGHWAY highwayhash)
