@@ -543,10 +543,10 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
 
   if (worstStart == -1)
       printf("Worst bias is                              - %.3fx             ",
-              mult, logp_value);
+              mult);
   else
       printf("Worst bias is the %2d-bit window at bit %3d - %.3fx             ",
-              worstWidth, worstStart, mult, logp_value);
+              worstWidth, worstStart, mult);
 
   if (drawDiagram)
     printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
