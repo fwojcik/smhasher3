@@ -208,9 +208,9 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
 
     result &= VerificationTest(info,true);
     Hash_Seed_init (hash, 0);
-    result &= SanityTest(hash,hashbits);
-    result &= AppendedZeroesTest(hash,hashbits);
-    result &= PrependedZeroesTest(hash,hashbits);
+    result &= (SanityTest(hash,hashbits)          || (info->quality == SKIP));
+    result &= (AppendedZeroesTest(hash,hashbits)  || (info->quality == SKIP));
+    result &= (PrependedZeroesTest(hash,hashbits) || (info->quality == SKIP));
     printf("\n");
   }
 
