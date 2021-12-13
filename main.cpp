@@ -155,9 +155,10 @@ const char* quality_str[3] = { "SKIP", "POOR", "GOOD" };
 //----------------------------------------------------------------------------
 
 template < typename hashtype >
-void test ( hashfunc<hashtype> hash, HashInfo* info )
+bool test ( hashfunc<hashtype> hash, HashInfo* info )
 {
   const int hashbits = sizeof(hashtype) * 8;
+  bool result = true;
 
   if (g_testAll) {
     printf("-------------------------------------------------------------------------------\n");
@@ -205,11 +206,11 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
   {
     printf("[[[ Sanity Tests ]]]\n\n");
 
-    VerificationTest(info,true);
+    result &= VerificationTest(info,true);
     Hash_Seed_init (hash, 0);
-    SanityTest(hash,hashbits);
-    AppendedZeroesTest(hash,hashbits);
-    PrependedZeroesTest(hash,hashbits);
+    result &= SanityTest(hash,hashbits);
+    result &= AppendedZeroesTest(hash,hashbits);
+    result &= PrependedZeroesTest(hash,hashbits);
     printf("\n");
   }
 
@@ -261,7 +262,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testHashmap || g_testAll)
   {
-      HashMapTest(info, g_drawDiagram, g_testExtra, hash_is_slow);
+      result &= HashMapTest(info, g_drawDiagram, g_testExtra, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------
@@ -275,7 +276,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     const bool extra = g_testExtra;
 #endif
 
-    AvalancheTest<hashtype>(info, g_drawDiagram, extra);
+    result &= AvalancheTest<hashtype>(info, g_drawDiagram, extra);
   }
 
   //-----------------------------------------------------------------------------
@@ -283,7 +284,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testSparse || g_testAll)
   {
-      SparseKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= SparseKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -291,7 +292,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testPermutation || g_testAll)
   {
-      PermutedKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= PermutedKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -299,7 +300,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testWindow || g_testAll)
   {
-      WindowedKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= WindowedKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -307,7 +308,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testCyclic || g_testAll)
   {
-      CyclicKeyTest<hashtype>(info, g_drawDiagram, hash_is_slow);
+      result &= CyclicKeyTest<hashtype>(info, g_drawDiagram, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------
@@ -317,7 +318,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testTwoBytes || g_testAll)
   {
-      TwoBytesKeyTest<hashtype>(info, g_drawDiagram, g_testExtra, hash_is_slow);
+      result &= TwoBytesKeyTest<hashtype>(info, g_drawDiagram, g_testExtra, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------
@@ -325,7 +326,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testText || g_testAll)
   {
-      TextKeyTest<hashtype>(info, g_drawDiagram);
+      result &= TextKeyTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -333,7 +334,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testZeroes || g_testAll)
   {
-      ZeroKeyTest<hashtype>(info, g_drawDiagram);
+      result &= ZeroKeyTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -341,7 +342,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testSeed || g_testAll)
   {
-      SeedTest<hashtype>(info, g_drawDiagram);
+      result &= SeedTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -349,7 +350,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testPerlinNoise || g_testAll)
   {
-      PerlinNoiseTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= PerlinNoiseTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -366,7 +367,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
           hash == halftime_hash_style128_test ||
           hash == halftime_hash_style256_test ||
           hash == halftime_hash_style512_test;
-      DiffTest<hashtype>(info, g_drawDiagram, g_testExtra, slow);
+      result &= DiffTest<hashtype>(info, g_drawDiagram, g_testExtra, slow);
   }
 
   //-----------------------------------------------------------------------------
@@ -374,7 +375,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testDiffDist || g_testAll)
   {
-      DiffDistTest<hashtype>(info, g_drawDiagram);
+      result &= DiffDistTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -383,7 +384,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testPopcount || g_testAll)
   {
-      PopcountTest<hashtype>(info, g_testExtra, hash_is_slow);
+      result &= PopcountTest<hashtype>(info, g_testExtra, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------
@@ -392,7 +393,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testPrng || g_testAll)
   {
-      PRNGTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= PRNGTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -401,7 +402,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testBIC || (g_testAll && info->hashbits >= 128 && g_testExtra))
   {
-    BicTest<hashtype>(info, g_drawDiagram, hash_is_slow);
+    result &= BicTest<hashtype>(info, g_drawDiagram, hash_is_slow);
   }
 
   //-----------------------------------------------------------------------------
@@ -409,9 +410,14 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testBadSeeds || g_testAll)
   {
-      BadSeedsTest<hashtype>(info, g_testExtra);
+      result &= BadSeedsTest<hashtype>(info, g_testExtra);
   }
-  
+
+  if (g_testAll) {
+      printf("-------------------------------------------------------------------------------\n");
+      printf("Overall result: %s\n", result ? "pass" : "FAIL");
+  }
+  return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -436,49 +442,33 @@ void VerifyHash ( const void * key, int len, uint32_t seed, void * out )
 
 //-----------------------------------------------------------------------------
 
-void testHash ( const char * name )
+bool testHash ( const char * name )
 {
   HashInfo * pInfo = findHash(name);
 
-  if(pInfo == NULL)
-  {
+  if(pInfo == NULL) {
     printf("Invalid hash '%s' specified\n", name);
-    return;
+    return false;
   }
-  else
-  {
-    //g_hashUnderTest = pInfo;
 
-    if(pInfo->hashbits == 32)
-    {
-      test<uint32_t>( pInfo->hash, pInfo );
-    }
-    else if(pInfo->hashbits == 64)
-    {
-      test<uint64_t>( pInfo->hash, pInfo );
-    }
-    else if(pInfo->hashbits == 128)
-    {
-      test<uint128_t>( pInfo->hash, pInfo );
-    }
-    else if(pInfo->hashbits == 160)
-    {
-      test<Blob<160>>( pInfo->hash, pInfo );
-    }
-    else if(pInfo->hashbits == 224)
-    {
-      test<Blob<224>>( pInfo->hash, pInfo );
-    }
-    else if(pInfo->hashbits == 256)
-    {
-      test<uint256_t>( pInfo->hash, pInfo );
-    }
-    else
-    {
-      printf("Invalid hash bit width %d for hash '%s'",
-             pInfo->hashbits, pInfo->name);
-    }
-  }
+  //g_hashUnderTest = pInfo;
+
+  if(pInfo->hashbits == 32)
+      return test<uint32_t>( pInfo->hash, pInfo );
+  if(pInfo->hashbits == 64)
+      return test<uint64_t>( pInfo->hash, pInfo );
+  if(pInfo->hashbits == 128)
+      return test<uint128_t>( pInfo->hash, pInfo );
+  if(pInfo->hashbits == 160)
+      return test<Blob<160>>( pInfo->hash, pInfo );
+  if(pInfo->hashbits == 224)
+      return test<Blob<224>>( pInfo->hash, pInfo );
+  if(pInfo->hashbits == 256)
+      return test<uint256_t>( pInfo->hash, pInfo );
+
+  printf("Invalid hash bit width %d for hash '%s'",
+          pInfo->hashbits, pInfo->name);
+  return false;
 }
 
 //-----------------------------------------------------------------------------
