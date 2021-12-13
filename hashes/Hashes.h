@@ -1231,6 +1231,9 @@ inline void komihash_test ( const void * key, int len, unsigned seed, void * out
 inline void mx3hash64_test ( const void * key, int len, uint32_t seed, void * out ) {
   *(uint64_t*)out = mx3::hash((const uint8_t*)(key), (size_t) len, (uint64_t)seed);
 }
+inline void mx3rev1hash64_test ( const void * key, int len, uint32_t seed, void * out ) {
+  *(uint64_t*)out = mx3::hash_rev1((const uint8_t*)(key), (size_t) len, (uint64_t)seed);
+}
 
 // objsize: 63d0 - 6575: 421
 extern "C" {

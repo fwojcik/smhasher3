@@ -659,7 +659,8 @@ static HashInfo g_hashes[] =
   { SpookyV2_64_test,     64, 0x972C4BDC, "SpookyV2_64",  "Bob Jenkins' SpookyV2, 64-bit result", GOOD, {} },
   { SpookyV2_128_test,   128, 0x893CFCBE, "SpookyV2_128", "Bob Jenkins' SpookyV2, 128-bit result", GOOD, {} },
   { pengyhash_test,       64, 0x1FC2217B, "pengyhash",   "pengyhash", GOOD, {} },
-  { mx3hash64_test,       64, 0x4DB51E5B, "mx3",         "mx3 64bit", GOOD, {0x10} /* !! and all & 0x10 */},
+  { mx3rev1hash64_test,   64, 0x4DB51E5B, "mx3-rev1",    "mx3 revision 1 64bit", GOOD, {0x10} /* !! and all & 0x10 */},
+  { mx3hash64_test,       64, 0x0,        "mx3",         "mx3 revision 3 64bit", GOOD, {} },
 #if defined(HAVE_SSE42) &&  (defined(__x86_64__) ||  defined(__aarch64__)) && !defined(_MSC_VER)
   { umash32,              32, 0x03E16CA1, "umash32",     "umash 32", GOOD, {0x90e37057} /* !! */},
   { umash32_hi,           32, 0xE29D613C, "umash32_hi",  "umash 32 hi", GOOD, {} },
