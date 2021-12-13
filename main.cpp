@@ -275,7 +275,7 @@ void test ( hashfunc<hashtype> hash, HashInfo* info )
     const bool extra = g_testExtra;
 #endif
 
-    AvalancheTest<hashtype>(info, extra);
+    AvalancheTest<hashtype>(info, g_drawDiagram, extra);
   }
 
   //-----------------------------------------------------------------------------

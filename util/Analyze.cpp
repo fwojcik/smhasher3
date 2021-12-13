@@ -73,6 +73,37 @@ static const double WARNING_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%, 
 // about 1000 tests, so a 1/1000 chance event will hit once per run on
 // average, even with a perfect-quality hash function.
 
+//-----------------------------------------------------------------------------
+// Report on the fact that, in each of the specified number of trials,
+// a fair coin was "flipped" coinflips times, and the worst bias
+// (number of excess "heads" or "tails") over all those trials was the
+// specified worstbiascnt.
+
+bool ReportBias(const int worstbiascnt, const int coinflips, const int trials, const bool drawDiagram )
+{
+  double ratio = (double)worstbiascnt / (double)coinflips;
+  double p1value = 2 * exp(-(double)worstbiascnt * ratio); // two-tailed Chernoff Bound
+  double p_value = ScalePValue(p1value, trials);
+  int logp_value = GetLog2PValue(p_value);
+  bool result = true;
+
+  if (drawDiagram)
+    printf(" worst bias is %f%% (%6d) (p<%8.6e) (^%2d)", ratio*200.0, worstbiascnt, p_value, logp_value);
+  else
+    printf(" worst bias is %f%% (^%2d)", ratio*200.0, logp_value);
+
+  if (p_value < FAILURE_PBOUND)
+  {
+    printf(" !!!!!\n");
+    result = false;
+  }
+  else if (p_value < WARNING_PBOUND)
+    printf(" !\n");
+  else
+    printf("\n");
+
+  return result;
+}
 
 //-----------------------------------------------------------------------------
 

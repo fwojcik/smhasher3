@@ -52,6 +52,7 @@
 #include "Platform.h"
 #include "Random.h"
 #include "Instantiate.h"
+#include "Analyze.h"
 
 #include "AvalancheTest.h"
 
@@ -178,7 +179,7 @@ static void calcBiasRange ( const pfHash hash, std::array<int, sizeof(keytype)*s
 //-----------------------------------------------------------------------------
 
 template < typename keytype, typename hashtype >
-static bool AvalancheImpl ( pfHash hash, const int reps, bool verbose )
+static bool AvalancheImpl ( pfHash hash, const int reps, bool drawDiagram, bool drawdots )
 {
   Rand r(48273);
 
@@ -203,7 +204,7 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool verbose )
   static std::thread t[NCPU];
   //printf("%d threads starting...\n", NCPU);
   for (int i=0; i < NCPU; i++) {
-    t[i] = std::thread {calcBiasRange<keytype,hashtype>,hash,std::ref(bins[i]),std::ref(keys),std::ref(irep),reps,i,verbose};
+    t[i] = std::thread {calcBiasRange<keytype,hashtype>,hash,std::ref(bins[i]),std::ref(keys),std::ref(irep),reps,i,drawdots};
   }
   for (int i=0; i < NCPU; i++) {
     t[i].join();
@@ -215,25 +216,16 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool verbose )
 #else
   //std::array<std::array<int, arraysize>, 1> bins{{std::array<int, arraysize>{}}};
   std::array<std::array<int, arraysize>, 1> bins{};
-  calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,verbose);
+  calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,drawdots);
 #endif
 
   //----------
 
+  int bias = maxBias(&bins[0][0], arraysize, reps);
   bool result = true;
 
-  int b = maxBias(&bins[0][0], arraysize, reps);
-  double bpct = 200.0 * ((double)b / (double)reps);
+  result &= ReportBias(bias, reps, arraysize, drawDiagram);
 
-  printf(" worst bias is %f%%", bpct);
-  // printf(" worst bias is %f%% (%d) (%f) (%f) (^%2d)", bpct, b, p1value, pvalue, GetLog2PValue(pvalue));
-
-  if(bpct > AVALANCHE_FAIL)
-  {
-    printf(" !!!!!");
-    result = false;
-  }
-  printf("\n");
   return result;
 }
 
@@ -586,49 +578,49 @@ INSTANTIATE(BicTest, HASHTYPELIST);
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool AvalancheTest(HashInfo* info, const bool extra) {
+bool AvalancheTest(HashInfo* info, const bool verbose, const bool extra) {
     pfHash hash = info->hash;
     bool result = true;
-    bool verbose = true; //.......... progress dots
+    bool drawdots = true; //.......... progress dots
 
     printf("[[[ Avalanche Tests ]]]\n\n");
     Hash_Seed_init (hash, g_seed, 2);
 
-    result &= AvalancheImpl< Blob< 24>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 32>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 40>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 48>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 56>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 64>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 72>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 80>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob< 96>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob<112>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob<128>, hashtype > (hash,300000,verbose);
-    result &= AvalancheImpl< Blob<160>, hashtype > (hash,300000,verbose);
+    result &= AvalancheImpl< Blob< 24>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 32>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 40>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 48>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 56>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 64>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 72>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 80>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob< 96>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob<112>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob<128>, hashtype > (hash,300000,verbose,drawdots);
+    result &= AvalancheImpl< Blob<160>, hashtype > (hash,300000,verbose,drawdots);
 
     if(extra) {
-      result &= AvalancheImpl< Blob<192>, hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<224>, hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<256>, hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<320>, hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<384>, hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<448>, hashtype > (hash,300000,verbose);
+      result &= AvalancheImpl< Blob<192>, hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<224>, hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<256>, hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<320>, hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<384>, hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<448>, hashtype > (hash,300000,verbose,drawdots);
     }
     if (extra || info->hashbits <= 64) {
-      result &= AvalancheImpl< Blob<512>, hashtype > (hash,300000,verbose);
+      result &= AvalancheImpl< Blob<512>, hashtype > (hash,300000,verbose,drawdots);
     }
     if(extra) {
-      result &= AvalancheImpl< Blob<640>, hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<768>, hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<896>, hashtype > (hash,300000,verbose);
+      result &= AvalancheImpl< Blob<640>, hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<768>, hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<896>, hashtype > (hash,300000,verbose,drawdots);
     }
     if (extra || info->hashbits <= 64) {
-      result &= AvalancheImpl< Blob<1024>,hashtype > (hash,300000,verbose);
+      result &= AvalancheImpl< Blob<1024>,hashtype > (hash,300000,verbose,drawdots);
     }
     if(extra) {
-      result &= AvalancheImpl< Blob<1280>,hashtype > (hash,300000,verbose);
-      result &= AvalancheImpl< Blob<1536>,hashtype > (hash,300000,verbose);
+      result &= AvalancheImpl< Blob<1280>,hashtype > (hash,300000,verbose,drawdots);
+      result &= AvalancheImpl< Blob<1536>,hashtype > (hash,300000,verbose,drawdots);
     }
 
     if(!result) printf("*********FAIL*********\n");

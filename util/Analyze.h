@@ -52,6 +52,8 @@
  */
 #include <vector>
 
+bool ReportBias(const int biascnt, const int coinflips, const int trials, const bool drawDiagram);
+
 template < typename hashtype >
 unsigned int FindCollisions ( std::vector<hashtype> & hashes,
                               HashSet<hashtype> & collisions,
