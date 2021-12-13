@@ -49,6 +49,7 @@
 #include <algorithm>
 #include <math.h>
 
+#include "Platform.h"
 #include "Types.h"
 #include "Stats.h"    // for chooseUpToK
 #include "Analyze.h"
@@ -146,11 +147,12 @@ static bool ProcessDifferentials ( std::vector<keytype> & diffs, int reps, bool 
 // 2^32 tests, we'll probably see some spurious random collisions, so don't report
 // them.
 
-template < typename keytype, typename hashtype >
+template < bool recursemore, typename keytype, typename hashtype >
 static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, hashtype & h2, int start, int bitsleft, std::vector<keytype> & diffs )
 {
   const int bits = sizeof(keytype)*8;
 
+  assume(start < bits);
   for(int i = start; i < bits; i++)
   {
     keytype k2_prev = k2;
@@ -166,9 +168,12 @@ static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype 
       diffs.push_back(k1 ^ k2);
     }
 
-    if(bitsleft && ((i+1) < bits))
+    if(recursemore && likely((i+1) < bits))
     {
-      DiffTestRecurse(hash,k1,k2,h1,h2,i+1,bitsleft,diffs);
+      if (bitsleft > 1)
+        DiffTestRecurse<true>(hash,k1,k2,h1,h2,i+1,bitsleft,diffs);
+      else
+        DiffTestRecurse<false>(hash,k1,k2,h1,h2,i+1,bitsleft,diffs);
     }
 
     //flipbit(&k2,sizeof(k2),i);
@@ -211,7 +216,7 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
 
     hash(&k1,sizeof(k1),g_seed,(uint32_t*)&h1);
 
-    DiffTestRecurse<keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffs);
+    DiffTestRecurse<true,keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffs);
   }
   printf("\n");
 

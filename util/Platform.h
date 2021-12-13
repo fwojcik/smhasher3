@@ -147,6 +147,7 @@ static char* strndup(char const *s, size_t n)
 }
 #endif
 
+#define likely(x) (x)
 #define assume(x) (__assume(x))
 
 //-----------------------------------------------------------------------------
@@ -303,6 +304,7 @@ __inline__ uint64_t timer_end()
 #endif
 }
 
+#define likely(x) __builtin_expect(!!(x), 1)
 /* Should work for gcc, clang, and icc at least */
 #define assume(x) do { if (!(x)) __builtin_unreachable(); } while (0)
 
