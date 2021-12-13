@@ -71,6 +71,7 @@ static bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
   static hashtype zero;
   pfHash hash = info->hash;
   uint8_t key[128];
+  HashSet<hashtype> collisions_dummy;
   // Currently *only* seeds going through Hash_Seed_init() can be
   // wider than 32 bits!!
   if (!Hash_Seed_init (hash, secret) && (secret > UINT64_C(0xffffffff)))
@@ -91,14 +92,14 @@ static bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
       else
         hashes.push_back(h);
     }
-    if (!TestHashList(hashes, false, true, false, false, false, false)) {
+    if (FindCollisions(hashes, collisions_dummy, 0, false) > 0) {
       printf("Confirmed bad seed 0x%" PRIx64 " for len %d ", secret, len);
 #if !defined __clang__ && !defined _MSC_VER
       printf("=> hashes: ");
       for (hashtype x : hashes) printf ("%lx ", x);
 #endif
       printf ("\n");
-      TestHashList(hashes, false);
+      TestHashList(hashes, true, true, false, false, false, true);
       result = false;
     }
   }
@@ -132,6 +133,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
 #endif
   pfHash hash = info->hash;
   std::vector<hashtype> hashes;
+  HashSet<hashtype> collisions_dummy;
   int fails = 0;
   hashes.resize(4);
   result = true;
@@ -166,6 +168,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
       uint8_t key[64]; // for crc32_pclmul, otherwie we would need only 16 byte
       memset(&key, x, sizeof(key));
       hash(key, 16, seed, &h);
+      hashes.push_back(h);
       if (h == 0 && x == 0) {
         bool known_seed = (std::find(secrets.begin(), secrets.end(), seed) != secrets.end());
         {
@@ -177,17 +180,13 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
           else
             printf("\nNew broken seed 0x%" PRIx64 " => 0 with key[16] of all %d bytes\n", seed, x);
         }
-        hashes.push_back(h);
         fails++;
         result = false;
         if (!known_seed)
           newresult = true;
       }
-      else {
-        hashes.push_back(h);
-      }
     }
-    if (!TestHashList(hashes, false, true, false, false, false, false)) {
+    if (FindCollisions(hashes, collisions_dummy, 0, false) > 0) {
 #if NCPU > 1
       std::lock_guard<std::mutex> lock(print_mutex);
 #endif
@@ -198,7 +197,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
         printf("\nNew bad seed 0x%" PRIx64 "\n", seed);
       fails++;
       if (!known_seed && (fails < 32)) // don't print too many lines
-        TestHashList(hashes, false);
+        TestHashList(hashes, true, true, false, false, false, true);
       result = false;
       if (!known_seed)
         newresult = true;

@@ -198,10 +198,10 @@ static void plot ( double n )
 // Sort the hash list, count the total number of collisions and return
 // the first N collisions for further processing
 template< typename hashtype >
-static unsigned int FindCollisions ( std::vector<hashtype> & hashes,
+unsigned int FindCollisions ( std::vector<hashtype> & hashes,
                               HashSet<hashtype> & collisions,
-                              int maxCollisions = 1000,
-                              bool drawDiagram = false)
+                              int maxCollisions,
+                              bool drawDiagram)
 {
   unsigned int collcount = 0;
   blobsort(hashes.begin(),hashes.end());
@@ -257,6 +257,8 @@ static unsigned int FindCollisions ( std::vector<hashtype> & hashes,
     }
 #endif
 }
+
+INSTANTIATE(FindCollisions, HASHTYPELIST);
 
 //-----------------------------------------------------------------------------
 // If threshHBits is 0, then this tallies the total number of
@@ -417,6 +419,7 @@ static int PrintCollisions ( HashSet<hashtype> & collisions )
     printhex(&hash, sizeof(hashtype));
     printf("\n");
   }
+  printf("\n");
   return 0;
 }
 

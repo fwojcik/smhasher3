@@ -53,6 +53,12 @@
 #include <vector>
 
 template < typename hashtype >
+unsigned int FindCollisions ( std::vector<hashtype> & hashes,
+                              HashSet<hashtype> & collisions,
+                              int maxCollisions = 1000,
+                              bool drawDiagram = false);
+
+template < typename hashtype >
 bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
                     bool testCollision = true, bool testDist = true,
                     bool testHighBits = true, bool testLowBits = true,
