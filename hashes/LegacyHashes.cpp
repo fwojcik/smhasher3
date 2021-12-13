@@ -565,13 +565,13 @@ static HashInfo g_hashes[] =
   { halfsiphash_test,     32, 0xA7A05F72, "HalfSipHash", "HalfSipHash 2-4, 32bit", GOOD, {} },
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
 #ifdef HAVE_INT64
-  { prvhash64_64mtest,    64, 0x41C04BB4, "prvhash64_64m", "prvhash64m 64bit", GOOD, {} },
-  { prvhash64_64test,     64, 0x41C04BB4, "prvhash64_64",  "prvhash64 64bit", GOOD, {} },
-  { prvhash64_128test,   128, 0x2DBC2E1E, "prvhash64_128", "prvhash64 128bit", GOOD, {} },
+  { prvhash64_64mtest,    64, 0xD37C7E74, "prvhash64_64m", "prvhash64m 64bit", GOOD, {} },
+  { prvhash64_64test,     64, 0xD37C7E74, "prvhash64_64",  "prvhash64 64bit", GOOD, {} },
+  { prvhash64_128test,   128, 0xB447480F, "prvhash64_128", "prvhash64 128bit", GOOD, {} },
   { prvhash64s_64test,    64, 0,          "prvhash64s_64", "prvhash64s 64bit", GOOD, {} }, // seed changes
   { prvhash64s_128test,  128, 0,          "prvhash64s_128","prvhash64s 128bit", GOOD, {} }, // seed compiler-specific
 #endif
-  { komihash_test,        64, 0x7D4E9C0B, "komihash",      "komihash", GOOD, {} },
+  { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
   // as in rust and swift:
   { siphash13_test,       64, 0x29C010BF, "SipHash13",   "SipHash 1-3 - SSSE3 optimized", GOOD, {} },
 #ifndef _MSC_VER
@@ -660,7 +660,7 @@ static HashInfo g_hashes[] =
   { SpookyV2_128_test,   128, 0x893CFCBE, "SpookyV2_128", "Bob Jenkins' SpookyV2, 128-bit result", GOOD, {} },
   { pengyhash_test,       64, 0x1FC2217B, "pengyhash",   "pengyhash", GOOD, {} },
   { mx3rev1hash64_test,   64, 0x4DB51E5B, "mx3-rev1",    "mx3 revision 1 64bit", GOOD, {0x10} /* !! and all & 0x10 */},
-  { mx3hash64_test,       64, 0x0,        "mx3",         "mx3 revision 3 64bit", GOOD, {} },
+  { mx3hash64_test,       64, 0x527399AD, "mx3",         "mx3 revision 2 64bit", GOOD, {} },
 #if defined(HAVE_SSE42) &&  (defined(__x86_64__) ||  defined(__aarch64__)) && !defined(_MSC_VER)
   { umash32,              32, 0x03E16CA1, "umash32",     "umash 32", GOOD, {0x90e37057} /* !! */},
   { umash32_hi,           32, 0xE29D613C, "umash32_hi",  "umash 32 hi", GOOD, {} },
