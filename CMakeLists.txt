@@ -425,7 +425,12 @@ if(AES_FOUND AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
 endif()
 
 find_package( Threads )
-#set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+if(NOT (MSVC))
+  if(NOT ("${CMAKE_THREAD_LIBS_INIT}" STREQUAL ""))
+    set(THREAD_LIBS_PREFIX "-Wl,--whole-archive")
+    set(THREAD_LIBS_SUFFIX "-Wl,--no-whole-archive")
+  endif()
+endif()
 
 if(SSE2_FOUND)
   set(SSE2_SRC hashes/hasshe2.c)
@@ -722,7 +727,7 @@ endif()
 
 target_link_libraries(SMHasher3 SMHasher3Support
                       ${HIGHWAY_LIB} ${BLAKE3_LIB} ${AHASH_C_LIB}
-                      ${CMAKE_THREAD_LIBS_INIT})
+                      ${THREAD_LIBS_PREFIX} ${CMAKE_THREAD_LIBS_INIT} ${THREAD_LIBS_SUFFIX})
 
 # add_executable( bittest bittest.cpp )
 #
