@@ -64,7 +64,7 @@ void SetAffinity ( int cpu )
   SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 }
 
-#if NCPU > 1
+#ifdef HAVE_THREADS
 void SetThreadAffinity ( std::thread &t, int cpu )
 {
   SetThreadIdealProcessor(t.native_handle(), (DWORD)cpu);
@@ -88,7 +88,7 @@ void SetAffinity ( int /*cpu*/ )
 #endif
 }
 
-#if NCPU > 1
+#ifdef HAVE_THREADS
 void SetThreadAffinity ( std::thread &t, int cpu )
 {
 #if !defined(__CYGWIN__) && !defined(__APPLE__) && !defined(__FreeBSD__)

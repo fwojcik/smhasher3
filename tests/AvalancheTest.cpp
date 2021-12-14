@@ -56,8 +56,11 @@
 
 #include "AvalancheTest.h"
 
-#if NCPU > 1
+#ifdef HAVE_THREADS
 #include <atomic>
+typedef std::atomic<int> a_int;
+#else
+typedef int a_int;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -122,13 +125,6 @@ static int maxBias ( int * counts, int buckets, int reps )
 #define AVALANCHE_FAIL 1.00
 
 //-----------------------------------------------------------------------------
-
-#if NCPU > 1
-typedef std::atomic<int> a_int ;
-#else
-typedef int a_int;
-#endif
-
 // threaded: loop over bins
 template < typename keytype, typename hashtype >
 static void calcBiasRange ( const pfHash hash, std::array<int, sizeof(keytype)*sizeof(hashtype)*8*8> &bins,
@@ -199,25 +195,25 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool drawDiagram, bool 
     r.rand_p(&keys[i],keybytes);
 
   a_int irep(0);
-#if NCPU > 1
-  std::array<std::array<int, arraysize>, NCPU> bins{};
-  static std::thread t[NCPU];
-  //printf("%d threads starting...\n", NCPU);
-  for (int i=0; i < NCPU; i++) {
-    t[i] = std::thread {calcBiasRange<keytype,hashtype>,hash,std::ref(bins[i]),std::ref(keys),std::ref(irep),reps,i,drawdots};
-  }
-  for (int i=0; i < NCPU; i++) {
-    t[i].join();
-  }
-  //printf("All %d threads ended\n", NCPU);
-  for (int i=1; i < NCPU; i++)
-    for (int b=0; b < arraysize; b++)
-      bins[0][b] += bins[i][b];
-#else
-  //std::array<std::array<int, arraysize>, 1> bins{{std::array<int, arraysize>{}}};
-  std::array<std::array<int, arraysize>, 1> bins{};
-  calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,drawdots);
+
+  std::vector<std::array<int, arraysize>> bins(g_NCPU);
+
+  if (g_NCPU == 1) {
+      calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,drawdots);
+  } else {
+#ifdef HAVE_THREADS
+      std::thread t[g_NCPU];
+      for (int i=0; i < g_NCPU; i++) {
+          t[i] = std::thread {calcBiasRange<keytype,hashtype>,hash,std::ref(bins[i]),std::ref(keys),std::ref(irep),reps,i,drawdots};
+      }
+      for (int i=0; i < g_NCPU; i++) {
+          t[i].join();
+      }
+      for (int i=1; i < g_NCPU; i++)
+          for (int b=0; b < arraysize; b++)
+              bins[0][b] += bins[i][b];
 #endif
+  }
 
   //----------
 

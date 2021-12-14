@@ -54,7 +54,7 @@
 #include "BadSeedsTest.h"
 
 #include <inttypes.h>
-#if NCPU > 1 // disable with -DNCPU=0 or 1
+#ifdef HAVE_THREADS
 #include <thread>
 #include <chrono>
 #include <atomic>
@@ -106,7 +106,7 @@ static bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
   return result;
 }
 
-#if NCPU > 1
+#ifdef HAVE_THREADS
 // For keeping track of progress printouts across threads
 static std::atomic<unsigned> secret_progress;
 static std::mutex print_mutex;
@@ -114,13 +114,13 @@ static std::mutex print_mutex;
 static unsigned secret_progress;
 #endif
 
-// Process part of a 2^32 range, split into NCPU threads
+// Process part of a 2^32 range, split into g_NCPU threads
 template< typename hashtype >
 static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
-                             const uint32_t start, const uint32_t len,
+                             const uint32_t start, const uint32_t endlow,
                              bool &result, bool &newresult )
 {
-  size_t last = hi | (start + len - 1);
+  size_t last = hi | endlow;
   const char * progress_fmt =
       (last <= UINT64_C(0xffffffff)) ?
       "%8" PRIx64 "%c"  : "%16" PRIx64 "%c";
@@ -138,15 +138,13 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
   hashes.resize(4);
   result = true;
   {
-#if NCPU > 1
+#ifdef HAVE_THREADS
     std::lock_guard<std::mutex> lock(print_mutex);
 #endif
     printf("Testing [0x%016" PRIx64 ", 0x%016" PRIx64 "] ... \n", hi | start, last);
   }
-  size_t end = (size_t)start + (size_t)len;
-  for (size_t y=start; y < end; y++) {
+  for (size_t seed = hi | start; seed < last; seed++) {
     static hashtype zero;
-    uint64_t seed = hi | y;
     /*
      * Print out progress using *one* printf() statement (for thread
      * friendliness). Add newlines periodically to make output
@@ -154,7 +152,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
      * threads.
      */
     if ((seed & UINT64_C(0x1ffffff)) == UINT64_C(0x1ffffff)) {
-#if NCPU > 1
+#ifdef HAVE_THREADS
       std::lock_guard<std::mutex> lock(print_mutex);
 #endif
       unsigned count = ++secret_progress;
@@ -172,7 +170,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
       if (h == 0 && x == 0) {
         bool known_seed = (std::find(secrets.begin(), secrets.end(), seed) != secrets.end());
         {
-#if NCPU > 1
+#ifdef HAVE_THREADS
           std::lock_guard<std::mutex> lock(print_mutex);
 #endif
           if (known_seed)
@@ -187,7 +185,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
       }
     }
     if (FindCollisions(hashes, collisions_dummy, 0, false) > 0) {
-#if NCPU > 1
+#ifdef HAVE_THREADS
       std::lock_guard<std::mutex> lock(print_mutex);
 #endif
       bool known_seed = (std::find(secrets.begin(), secrets.end(), seed) != secrets.end());
@@ -207,8 +205,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
       exit(1);
     }
   }
-  fflush(NULL);
-  //printf("\n");
+
   return;
 }
 
@@ -218,34 +215,46 @@ template< typename hashtype >
 static bool TestSecret32 ( const HashInfo* info, const uint64_t hi, bool &newresult ) {
   bool result = true;
   secret_progress = 0;
-#if NCPU > 1
-  // split into NCPU threads
-  const uint64_t len = 0x100000000UL / NCPU;
-  const uint32_t len32 = (const uint32_t)(len & 0xffffffff);
-  static std::thread t[NCPU];
-  bool *results = (bool*)calloc (NCPU, sizeof(bool));
-  bool *newresults = (bool*)calloc (NCPU, sizeof(bool));
-  printf("%d threads starting...\n", NCPU);
-  for (int i=0; i < NCPU; i++) {
-    const uint32_t start = i * len;
-    t[i] = std::thread {TestSecretRangeThread<hashtype>, info, hi, start, len32,
-                        std::ref(results[i]), std::ref(newresults[i])};
-    // pin it? moves around a lot. but the result is fair
-  }
-  std::this_thread::sleep_for(std::chrono::seconds(30));
-  for (int i=0; i < NCPU; i++) {
-    t[i].join();
-  }
-  printf("All %d threads ended\n", NCPU);
-  for (int i=0; i < NCPU; i++) {
-    result &= results[i];
-    newresult |= newresults[i];
-  }
-  free(results);
-#else
-  TestSecretRangeThread<hashtype>(info, hi, 0x0, 0xffffffff, result, newresult);
-  printf("\n");
+
+  if (g_NCPU == 1) {
+      TestSecretRangeThread<hashtype>(info, hi, 0x0, 0xffffffff, result, newresult);
+      printf("\n");
+  } else {
+#ifdef HAVE_THREADS
+      // split into g_NCPU threads
+      std::thread t[g_NCPU];
+      const uint64_t len = 0x100000000UL / g_NCPU;
+      // Can't make VLAs in C++, so have to use vectors, but can't
+      // pass a ref of a bool in a vector to a thread... :-<
+      bool * results    = new bool[g_NCPU]();
+      bool * newresults = new bool[g_NCPU]();
+
+      printf("%d threads starting...\n", g_NCPU);
+      for (int i=0; i < g_NCPU; i++) {
+          const uint32_t start = i * len;
+          const uint32_t end = (i < (g_NCPU - 1)) ? start + (len - 1) : 0xffffffff;
+          t[i] = std::thread {TestSecretRangeThread<hashtype>, info, hi, start, end,
+                              std::ref(results[i]), std::ref(newresults[i])};
+      }
+
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+
+      for (int i=0; i < g_NCPU; i++) {
+          t[i].join();
+      }
+
+      printf("All %d threads ended\n", g_NCPU);
+
+      for (int i=0; i < g_NCPU; i++) {
+          result &= results[i];
+          newresult |= newresults[i];
+      }
+
+      delete [] results;
+      delete [] newresults;
 #endif
+  }
+
   return result;
 }
 
@@ -318,7 +327,7 @@ static bool BadSeedsImpl ( HashInfo* info, bool testAll ) {
     if (newresult)
       printf("Consider adding any new bad seeds to this hash's list of secrets in main.cpp\n");
   }
-  fflush(NULL);
+
   return result;
 }
 

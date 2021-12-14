@@ -51,22 +51,18 @@
 
 #pragma once
 
-#if defined(__aarch64__) && defined(HAVE_INT64)
-// fixme: bad system call with threads (8 cpu octocore)
-# define NCPU 0
-#elif !defined NCPU
-# define NCPU 4
-#endif
-
-#if NCPU > 1
+#ifdef HAVE_THREADS
 #include <thread>
-void SetThreadAffinity ( std::thread &t, int cpu );
 # if __APPLE__
 #  include <mach/mach.h>
 #  include <mach/thread_act.h>
 # endif
-#endif
+void SetThreadAffinity ( std::thread &t, int cpu );
 void SetAffinity ( int cpu );
+extern unsigned g_NCPU;
+#else
+extern const unsigned g_NCPU;
+#endif
 
 #ifndef __x86_64__
  #if defined(__x86_64) || defined(_M_AMD64) || defined(_M_X64)
@@ -161,7 +157,7 @@ static char* strndup(char const *s, size_t n)
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/time.h>
-#if NCPU > 1
+#ifdef HAVE_THREADS
 #include <pthread.h>
 #endif
 

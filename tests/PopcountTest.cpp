@@ -73,7 +73,7 @@
 
 typedef long double moments[8];
 
-// Copy the results into NCPU ranges of 2^32
+// Copy the results into g_NCPU ranges of 2^32
 static void PopcountThread ( const struct HashInfo *info, const int inputSize,
                         const unsigned start, const unsigned end, const unsigned step,
                         moments &b)
@@ -172,7 +172,6 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
 
   printf("Generating hashes from a linear sequence of %i-bit numbers "
          "with a step size of %d ... \n", inputSize*8, step);
-  fflush(NULL);
 
   /* Notes on the ranking system.
    * Ideally, this test should report and sum all popcount values
@@ -238,48 +237,46 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
           abort();
   }
 
-#if NCPU > 1
-  // split into NCPU threads
-  const uint64_t len = 0x100000000UL / NCPU;
-  moments b[NCPU];
-  static std::thread t[NCPU];
-  printf("%d threads starting... ", NCPU);
-  fflush(NULL);
-  for (int i=0; i < NCPU; i++) {
-    const unsigned start = i * len;
-    b[i][0] = 0.; b[i][1] = 0.; b[i][2] = 0.; b[i][3] = 0.;
-    b[i][4] = 0.; b[i][5] = 0.; b[i][6] = 0.; b[i][7] = 0.;
-    //printf("thread[%d]: %d, 0x%x - 0x%x %d\n", i, inputSize, start, start + len - 1, step);
-    t[i] = std::thread {PopcountThread, info, inputSize, start, start + (len - 1), step, std::ref(b[i])};
-    // pin it? moves around a lot. but the result is fair
-  }
-  fflush(NULL);
-  std::this_thread::sleep_for(std::chrono::seconds(5));
-  for (int i=0; i < NCPU; i++) {
-    t[i].join();
-  }
-  printf(" done\n");
-  //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", 0,
-  //       b[0][0], b[0][1], b[0][2], b[0][3], b[0][4], b[0][5], b[0][6], b[0][7]);
-  for (int i=1; i < NCPU; i++) {
-    //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", i,
-    //       b[i][0], b[i][1], b[i][2], b[i][3], b[i][4], b[i][5], b[i][6], b[i][7]);
-    for (int j=0; j < 8; j++)
-      b[0][j] += b[i][j];
+  moments b[g_NCPU];
+  memset(b, 0, sizeof(b));
+
+  if (g_NCPU == 1) {
+      PopcountThread (info, inputSize, 0, 0xffffffff, step, std::ref(b[0]));
+  } else {
+#ifdef HAVE_THREADS
+      // split into g_NCPU threads
+      std::thread t[g_NCPU];
+      printf("%d threads starting... ", g_NCPU);
+
+      const uint64_t len = 0x100000000UL / (step * g_NCPU);
+      for (int i=0; i < g_NCPU; i++) {
+          const uint32_t start = i * len * step;
+          const uint32_t end = (i < (g_NCPU - 1)) ? start + (len * step - 1) : 0xffffffff;
+          //printf("thread[%d]: %d, 0x%x - 0x%x %d\n", i, inputSize, start, end, step);
+          t[i] = std::thread {PopcountThread, info, inputSize, start, end, step, std::ref(b[i])};
+      }
+
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+
+      for (int i=0; i < g_NCPU; i++) {
+          t[i].join();
+      }
+
+      printf(" done\n");
+
+      //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", 0,
+      //       b[0][0], b[0][1], b[0][2], b[0][3], b[0][4], b[0][5], b[0][6], b[0][7]);
+      for (int i=1; i < g_NCPU; i++) {
+          //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", i,
+          //       b[i][0], b[i][1], b[i][2], b[i][3], b[i][4], b[i][5], b[i][6], b[i][7]);
+          for (int j=0; j < 8; j++)
+              b[0][j] += b[i][j];
+      }
+#endif
   }
 
   long double b0h = b[0][0], b0l = b[0][1], db0h = b[0][2], db0l = b[0][3];
   long double b1h = b[0][4], b1l = b[0][5], db1h = b[0][6], db1l = b[0][7];
-
-#else
-
-  moments b = {0.,0.,0.,0.,0.,0.,0.,0.};
-  PopcountThread (info, inputSize, 0, 0xffffffff, step, b);
-
-  long double b0h = b[0], b0l = b[1], db0h = b[2], db0l = b[3];
-  long double b1h = b[4], b1l = b[5], db1h = b[6], db1l = b[7];
-
-#endif
 
   b1h  /= n;  b1l = (b1l/n  - b1h*b1h) / n;
   db1h /= n; db1l = (db1l/n - db1h*db1h) / n;
@@ -303,7 +300,6 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
 
   const char* rankstr[4] = { "FAIL !!!!", "pass", "Good !", "Great !!" };
   printf("\n  %s \n\n", rankstr[rank]);
-  fflush(NULL);
 
   return (rank > 0);
 }

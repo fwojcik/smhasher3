@@ -118,6 +118,12 @@ bool g_testPrng        = false;
 bool g_testBIC         = false;
 bool g_testBadSeeds    = false;
 
+#ifdef HAVE_THREADS
+unsigned g_NCPU        = 4;
+#else
+const unsigned g_NCPU  = 1;
+#endif
+
 struct TestOpts {
   bool         &var;
   const char*  name;
@@ -270,13 +276,7 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testAvalanche || g_testAll)
   {
-#if NCPU_not >= 4 // 2x slower
-    const bool extra = true;
-#else
-    const bool extra = g_testExtra;
-#endif
-
-    result &= AvalancheTest<hashtype>(info, g_drawDiagram, extra);
+      result &= AvalancheTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -476,7 +476,7 @@ bool testHash ( const char * name )
 void usage( void )
 {
     printf("Usage: SMHasher3 [--list][--listnames][--tests] [--verbose][--extra]\n"
-           "       [--test=Speed,...] [--seed=globalseed] hash\n");
+           "       [--ncpu=N] [--test=Speed,...] [--seed=globalseed] hash\n");
 }
 
 int main ( int argc, const char ** argv )
@@ -545,6 +545,26 @@ int main ( int argc, const char ** argv )
         }
         g_seed = seed;
         continue;
+      }
+      if (strncmp(arg,"--ncpu=", 7) == 0) {
+#ifdef HAVE_THREADS
+        errno = 0;
+        char * endptr;
+        long int Ncpu = strtol(&arg[7], &endptr, 0);
+        if ((errno != 0) || (arg[7] == '\0') || (*endptr != '\0') || (Ncpu < 1)) {
+            printf("Error parsing cpu number \"%s\"\n", &arg[7]);
+            exit(1);
+        }
+        if (Ncpu > 32) {
+            printf("WARNING: limiting to 32 threads\n");
+            Ncpu = 32;
+        }
+        g_NCPU = Ncpu;
+        continue;
+#else
+        printf("WARNING: compiled without threads; ignoring --ncpu\n");
+        continue;
+#endif
       }
       if (strcmp(arg,"--EstimateNbCollisions") == 0) {
         ReportCollisionEstimates();
