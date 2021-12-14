@@ -121,9 +121,6 @@ static int maxBias ( int * counts, int buckets, int reps )
 // cause "echoes" of the patterns in the output, which in turn can cause the
 // hash function to fail to create an even, random distribution of hash values.
 
-// Avalanche fails if a bit is biased by more than 1%
-#define AVALANCHE_FAIL 1.00
-
 //-----------------------------------------------------------------------------
 // threaded: loop over bins
 template < typename keytype, typename hashtype >
