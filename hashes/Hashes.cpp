@@ -9,6 +9,32 @@
 //#include <xmmintrin.h>
 
 // ----------------------------------------------------------------------------
+// for internal use
+#define VCODE_COUNT 3
+static XXH32_state_t vcode_states[VCODE_COUNT];
+
+void VCODE_HASH(const void * input, size_t len, unsigned idx) {
+    if (idx >= VCODE_COUNT)
+        return;
+    XXH32_update(&vcode_states[idx], input, len);
+}
+
+void VCODE_INIT(void) {
+    for (int i = 0; i < VCODE_COUNT; i++) {
+        XXH32_reset(&vcode_states[i], i);
+    }
+}
+
+extern uint32_t g_inputVCode;
+extern uint32_t g_outputVCode;
+extern uint32_t g_resultVCode;
+void VCODE_FINALIZE(void) {
+    g_inputVCode = XXH32_digest(&vcode_states[0]);
+    g_outputVCode = XXH32_digest(&vcode_states[1]);
+    g_resultVCode = XXH32_digest(&vcode_states[2]);
+}
+
+// ----------------------------------------------------------------------------
 //fake / bad hashes
 
 // objsize: 0x2f-0x0: 47

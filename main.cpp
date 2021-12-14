@@ -66,6 +66,7 @@
 #include "Stats.h"
 #include "LegacyHashes.h"
 #include "HashSanityTest.h"
+#include "VCode.h"
 
 #include "SparseKeysetTest.h"
 #include "ZeroesKeysetTest.h"
@@ -154,11 +155,26 @@ TestOpts g_testopts[] =
 };
 
 //-----------------------------------------------------------------------------
-// This is the list of all hashes that SMHasher3 can test.
+
+uint32_t g_doVCode = 0;
+uint32_t g_inputVCode = 1;
+uint32_t g_outputVCode = 1;
+uint32_t g_resultVCode = 1;
+HashInfo * g_hashUnderTest = NULL;
+
+void VCodeWrappedHash ( const void * key, int len, uint32_t seed, void * out )
+{
+  g_hashUnderTest->hash(key, len, seed, out);
+
+  // Note that the seed also counts towards the input VCode, but that
+  // was already added via Hash_Seed_init(), and so is not done here.
+  addVCodeInput(key, len);
+  addVCodeOutput(out, g_hashUnderTest->hashbits/8);
+}
+
+//-----------------------------------------------------------------------------
 
 const char* quality_str[3] = { "SKIP", "POOR", "GOOD" };
-
-//----------------------------------------------------------------------------
 
 template < typename hashtype >
 bool test ( hashfunc<hashtype> hash, HashInfo* info )
@@ -417,28 +433,9 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
       printf("-------------------------------------------------------------------------------\n");
       printf("Overall result: %s\n", result ? "pass" : "FAIL");
   }
+
   return result;
 }
-
-//-----------------------------------------------------------------------------
-
-uint32_t g_inputVCode = 1;
-uint32_t g_outputVCode = 1;
-uint32_t g_resultVCode = 1;
-
-#if 0
-HashInfo * g_hashUnderTest = NULL;
-
-void VerifyHash ( const void * key, int len, uint32_t seed, void * out )
-{
-  g_inputVCode = MurmurOAAT((const char *)key, len, g_inputVCode);
-  g_inputVCode = MurmurOAAT((const char *)&seed, sizeof(uint32_t), g_inputVCode);
-
-  g_hashUnderTest->hash(key, len, seed, out);
-
-  g_outputVCode = MurmurOAAT((const char *)out, g_hashUnderTest->hashbits/8, g_outputVCode);
-}
-#endif
 
 //-----------------------------------------------------------------------------
 
@@ -451,7 +448,7 @@ bool testHash ( const char * name )
     return false;
   }
 
-  //g_hashUnderTest = pInfo;
+  g_hashUnderTest = pInfo;
 
   if(pInfo->hashbits == 32)
       return test<uint32_t>( pInfo->hash, pInfo );
@@ -476,7 +473,7 @@ bool testHash ( const char * name )
 void usage( void )
 {
     printf("Usage: SMHasher3 [--list][--listnames][--tests] [--verbose][--extra]\n"
-           "       [--ncpu=N] [--test=Speed,...] [--seed=globalseed] hash\n");
+           "       [--ncpu=N] [--vcode] [--test=Speed,...] [--seed=globalseed] hash\n");
 }
 
 int main ( int argc, const char ** argv )
@@ -533,6 +530,11 @@ int main ( int argc, const char ** argv )
       }
       if (strcmp(arg,"--extra") == 0) {
         g_testExtra = true;
+        continue;
+      }
+      if (strcmp(arg,"--vcode") == 0) {
+        g_doVCode = 1;
+        VCODE_INIT();
         continue;
       }
       if (strncmp(arg,"--seed=", 7) == 0) {
@@ -628,6 +630,10 @@ int main ( int argc, const char ** argv )
   clock_t timeEnd = clock();
 
   printf("\n");
+
+  if (g_doVCode) {
+      VCODE_FINALIZE();
+  }
 
   FILE * outfile = g_testAll ? stdout : stderr;
   fprintf(outfile,

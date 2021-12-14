@@ -65,6 +65,7 @@
 #include "Hashes.h"
 #include "LegacyHashes.h"
 #include "HashSanityTest.h"
+#include "VCode.h"
 
 hash_state ltc_state;
 
@@ -880,6 +881,9 @@ bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint) {
   //  md5_seed_init(seed);
   //if (hash == VHASH_32 || hash == VHASH_64)
   //  VHASH_seed_init(seed);
+  if (g_doVCode) {
+      addVCodeInput(seed);
+  }
   if(hash == tabulation_32_test)
     tabulation_32_seed_init(seed);
 #if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)

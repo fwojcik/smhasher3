@@ -47,6 +47,7 @@
  */
 #include "Platform.h"
 #include "Random.h"
+#include "VCode.h"
 
 #include "HashSanityTest.h"
 
@@ -80,6 +81,10 @@ bool VerificationTest ( HashInfo* info, bool verbose )
     key[i] = (uint8_t)i;
     Hash_Seed_init (hash, 256-i);
     hash (key,i,256-i,&hashes[i*hashbytes]);
+    if (g_doVCode) {
+        addVCodeInput((uint32_t)(256-i));
+        addVCodeInput(key, i);
+    }
   }
 
   // Then hash the result array
@@ -90,6 +95,14 @@ bool VerificationTest ( HashInfo* info, bool verbose )
   // verification value
   uint32_t verification =
       (final[0] << 0) | (final[1] << 8) | (final[2] << 16) | (final[3] << 24);
+
+  if (g_doVCode) {
+      addVCodeInput(hashes, 256*hashbytes);
+      addVCodeOutput(hashes, 256*hashbytes);
+      addVCodeOutput(final, hashbytes);
+      addVCodeResult(expected);
+      addVCodeResult(verification);
+  }
 
   delete [] final;
   delete [] hashes;
