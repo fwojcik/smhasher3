@@ -628,15 +628,14 @@ int main ( int argc, const char ** argv )
   clock_t timeEnd = clock();
 
   printf("\n");
-  fflush(NULL);
-  if (g_testAll) {
-    printf("Input vcode 0x%08x, Output vcode 0x%08x, Result vcode 0x%08x\n", g_inputVCode, g_outputVCode, g_resultVCode);
-    printf("Verification value is 0x%08x - Testing took %f seconds\n", g_verify, double(timeEnd-timeBegin)/double(CLOCKS_PER_SEC));
-    printf("-------------------------------------------------------------------------------\n");
-  } else {
-    fprintf(stderr, "Input vcode 0x%08x, Output vcode 0x%08x, Result vcode 0x%08x\n", g_inputVCode, g_outputVCode, g_resultVCode);
-    fprintf(stderr, "Verification value is 0x%08x - Testing took %f seconds\n", g_verify, double(timeEnd-timeBegin)/double(CLOCKS_PER_SEC));
-  }
-    fflush(NULL);
+
+  FILE * outfile = g_testAll ? stdout : stderr;
+  fprintf(outfile,
+          "Input vcode 0x%08x, Output vcode 0x%08x, Result vcode 0x%08x\n",
+          g_inputVCode, g_outputVCode, g_resultVCode);
+  fprintf(outfile,
+          "Verification value is 0x%08x - Testing took %f seconds\n",
+          g_verify, double(timeEnd-timeBegin)/double(CLOCKS_PER_SEC));
+
   return 0;
 }
