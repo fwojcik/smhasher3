@@ -154,7 +154,7 @@ inline void fletcher2_test(const void *key, int len, uint32_t seed, void *out) {
 }
 uint64_t fletcher4(const char *key, int len, uint64_t seed);
 inline void fletcher4_test(const void *key, int len, uint32_t seed, void *out) {
-  *(uint64_t *) out = fletcher2((const char *)key, len, (uint64_t)seed);
+  *(uint64_t *) out = fletcher4((const char *)key, len, (uint64_t)seed);
 }
 uint32_t Bernstein(const char *key, int len, uint32_t seed);
 static inline bool Bernstein_bad_seeds(std::vector<uint32_t> &seeds)
