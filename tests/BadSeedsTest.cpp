@@ -202,7 +202,10 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
     }
     if (fails > 300) {
       fprintf(stderr, "Too many bad seeds, aborting\n");
-      exit(1);
+      if (g_NCPU > 1) {
+          exit(1);
+      }
+      break;
     }
   }
 
