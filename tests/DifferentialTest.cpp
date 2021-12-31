@@ -200,6 +200,7 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
 
   keytype k1,k2;
   hashtype h1,h2;
+  h1 = h2 = 0;
 
   printf("Testing %0.f up-to-%d-bit differentials in %d-bit keys -> %d bit hashes.\n",
          diffcount,diffbits,keybits,hashbits);
