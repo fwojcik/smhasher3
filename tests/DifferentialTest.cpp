@@ -46,6 +46,7 @@
  */
 #include <cstdio>
 #include <vector>
+#include <map>
 #include <algorithm>
 #include <math.h>
 
@@ -64,74 +65,39 @@
 // differential test fails.
 
 template < class keytype >
-static bool ProcessDifferentials ( std::vector<keytype> & diffs, int reps, bool dumpCollisions )
+static bool ProcessDifferentials ( std::map<keytype, uint32_t> & diffcounts, int reps, bool dumpCollisions )
 {
-  std::sort(diffs.begin(), diffs.end());
-
-  int count = 1;
+  int totalcount = 0;
   int ignore = 0;
 
   bool result = true;
 
-  if(diffs.size())
-  {
-    keytype kp = diffs[0];
+  if (diffcounts.size()) {
+      for (std::pair<keytype, uint32_t> dc : diffcounts) {
+          uint32_t count = dc.second;
 
-    for(int i = 1; i < (int)diffs.size(); i++)
-    {
-      if(diffs[i] == kp)
-      {
-        count++;
-        continue;
-      }
-      else
-      {
-        if(count > 1)
-        {
-          result = false;
+          totalcount += count;
 
-          if(dumpCollisions)
-          {
-            double pct = 100 * (double(count) / double(reps));
+          if (count == 1) {
+              ignore++;
+          } else {
+              result = false;
 
-            printbits((unsigned char*)&kp,sizeof(kp));
-            printf(" - %4.2f%%\n", pct );
+              if(dumpCollisions) {
+                  double pct = 100 * (double(count) / double(reps));
+
+                  printbits((unsigned char*)&dc.first, sizeof(keytype));
+                  printf(" - %4.2f%%\n", pct );
+              }
           }
-        }
-        else
-        {
-          ignore++;
-        }
-
-        kp = diffs[i];
-        count = 1;
       }
-    }
-
-    if(count > 1)
-    {
-      result = false;
-
-      if(dumpCollisions)
-      {
-        double pct = 100 * (double(count) / double(reps));
-
-        printbits((unsigned char*)&kp,sizeof(kp));
-        printf(" - %4.2f%%\n", pct );
-      }
-    }
-    else
-    {
-      ignore++;
-    }
   }
 
   printf("%d total collisions, of which %d single collisions were ignored",
-         (int)diffs.size(),ignore);
+         totalcount,ignore);
 
-  if(result == false)
-  {
-    printf(" !!!!!");
+  if(result == false) {
+      printf(" !!!!!");
   }
 
   printf("\n\n");
@@ -148,7 +114,7 @@ static bool ProcessDifferentials ( std::vector<keytype> & diffs, int reps, bool 
 // them.
 
 template < bool recursemore, typename keytype, typename hashtype >
-static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, hashtype & h2, int start, int bitsleft, std::vector<keytype> & diffs )
+static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, hashtype & h2, int start, int bitsleft, std::map<keytype, uint32_t> & diffcounts )
 {
   const int bits = sizeof(keytype)*8;
 
@@ -165,15 +131,15 @@ static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype 
 
     if(h1 == h2)
     {
-      diffs.push_back(k1 ^ k2);
+        ++diffcounts[k1 ^ k2];
     }
 
     if(recursemore && likely((i+1) < bits))
     {
       if (bitsleft > 1)
-        DiffTestRecurse<true>(hash,k1,k2,h1,h2,i+1,bitsleft,diffs);
+        DiffTestRecurse<true>(hash,k1,k2,h1,h2,i+1,bitsleft,diffcounts);
       else
-        DiffTestRecurse<false>(hash,k1,k2,h1,h2,i+1,bitsleft,diffs);
+        DiffTestRecurse<false>(hash,k1,k2,h1,h2,i+1,bitsleft,diffcounts);
     }
 
     //flipbit(&k2,sizeof(k2),i);
@@ -196,7 +162,7 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
 
   Rand r(100);
 
-  std::vector<keytype> diffs;
+  std::map<keytype, uint32_t> diffcounts;
 
   keytype k1,k2;
   hashtype h1,h2;
@@ -217,13 +183,13 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
 
     hash(&k1,sizeof(k1),g_seed,(uint32_t*)&h1);
 
-    DiffTestRecurse<true,keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffs);
+    DiffTestRecurse<true,keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffcounts);
   }
   printf("\n");
 
   bool result = true;
 
-  result &= ProcessDifferentials(diffs,reps,dumpCollisions);
+  result &= ProcessDifferentials(diffcounts,reps,dumpCollisions);
 
   return result;
 }
