@@ -348,7 +348,7 @@ bool DiffTest(HashInfo * info, const bool verbose, const bool extra, const bool 
     pfHash hash = info->hash;
     bool result = true;
     bool dumpCollisions = verbose;
-    int reps = (!extra && hash_is_slow) ? 100 : 1000;
+    int reps = (info->quality == SKIP) || (!extra && hash_is_slow) ? 100 : 1000;
 
     printf("[[[ Diff 'Differential' Tests ]]]\n\n");
 
