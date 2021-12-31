@@ -343,6 +343,19 @@ bool BadSeedsTest(HashInfo * info, const bool find_new_seeds) {
 
     printf("[[[ BadSeeds Tests ]]]\n\n");
 
+    /* 
+     * FIXME - With the current definition of a "bad" seed, some
+     * failures on 32-bit hashes are expected by chance. Either the
+     * bad seed test needs to change, or the pass/fail needs to be
+     * based on the count of bad seeds.
+     *
+     * For now, just don't test 32-bit hashes.
+     */
+    if (sizeof(hashtype) <= 4) {
+        printf("Skipping BadSeeds test on 32-bit hash\n\n");
+        return result;
+    }
+
     Hash_Seed_init (hash, 0);
 
     result &= BadSeedsImpl<hashtype>( info, find_new_seeds );
