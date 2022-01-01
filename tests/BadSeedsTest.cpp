@@ -93,12 +93,7 @@ static bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
         hashes.push_back(h);
     }
     if (FindCollisions(hashes, collisions_dummy, 0, false) > 0) {
-      printf("Confirmed bad seed 0x%" PRIx64 " for len %d ", secret, len);
-#if !defined __clang__ && !defined _MSC_VER
-      printf("=> hashes: ");
-      for (hashtype x : hashes) printf ("%lx ", x);
-#endif
-      printf ("\n");
+      printf("Confirmed bad seed 0x%" PRIx64 " for len %d\n", secret, len);
       TestHashList(hashes, true, true, false, false, false, true);
       result = false;
     }
@@ -271,9 +266,7 @@ static bool BadSeedsImpl ( HashInfo* info, bool testAll ) {
 #else
   const std::vector<size_t> secrets = info->secrets;
 #endif
-#if !defined __arm__ && !defined __aarch64__
-  printf("Testing %lu internal secrets:\n", (unsigned long)secrets.size());
-#endif
+  printf("Testing %u internal secrets:\n", (unsigned int)secrets.size());
   for (auto secret : secrets) {
     result &= TestSecret<hashtype>(info, secret);
     if (sizeof(hashtype) == 8 && secret <= 0xffffffff) { // check the upper hi mask also
