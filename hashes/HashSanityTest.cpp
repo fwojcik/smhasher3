@@ -82,7 +82,6 @@ bool VerificationTest ( HashInfo* info, bool verbose )
     Hash_Seed_init (hash, 256-i);
     hash (key,i,256-i,&hashes[i*hashbytes]);
     if (g_doVCode) {
-        addVCodeInput((uint32_t)(256-i));
         addVCodeInput(key, i);
     }
   }
