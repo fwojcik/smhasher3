@@ -448,7 +448,9 @@ bool testHash ( const char * name )
     return false;
   }
 
-  g_hashUnderTest = pInfo;
+  if (g_doVCode) {
+      g_hashUnderTest = pInfo;
+  }
 
   if(pInfo->hashbits == 32)
       return test<uint32_t>( pInfo->hash, pInfo );
