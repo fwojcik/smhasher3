@@ -57,6 +57,11 @@
 #include <parallel_hashmap/phmap.h>
 #include <functional>
 
+//-----------------------------------------------------------------------------
+// This is functionally a speed test, and so will not inform VCodes,
+// since that would affect results too much.
+
+//-----------------------------------------------------------------------------
 using namespace std;
 
 typedef std::unordered_map<std::string, int,

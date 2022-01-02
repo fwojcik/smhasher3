@@ -60,6 +60,10 @@
 #include <functional>
 
 //-----------------------------------------------------------------------------
+// This is functionally a speed test, and so will not inform VCodes,
+// since that would affect results too much.
+
+//-----------------------------------------------------------------------------
 // We view our timing values as a series of random variables V that has been
 // contaminated with occasional outliers due to cache misses, thread
 // preemption, etcetera. To filter out the outliers, we search for the largest
