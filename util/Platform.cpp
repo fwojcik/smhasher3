@@ -44,6 +44,8 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
+#if 0 /* FILE IS CURRENTLY UNUSED */
+
 #include "Platform.h"
 
 #include <stdio.h>
@@ -99,3 +101,5 @@ void SetThreadAffinity ( std::thread &t, int cpu )
 #endif
 
 #endif
+
+#endif /* FILE IS CURRENTLY UNUSED */

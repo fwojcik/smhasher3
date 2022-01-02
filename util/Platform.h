@@ -57,8 +57,6 @@
 #  include <mach/mach.h>
 #  include <mach/thread_act.h>
 # endif
-void SetThreadAffinity ( std::thread &t, int cpu );
-void SetAffinity ( int cpu );
 extern unsigned g_NCPU;
 #else
 extern const unsigned g_NCPU;
@@ -86,7 +84,6 @@ extern const unsigned g_NCPU;
 
 #define FORCE_INLINE	__forceinline
 #define	NEVER_INLINE  __declspec(noinline)
-#define ALIGNED(n)    __declspec(align(n))
 
 #define ROTL32(x,y)	_rotl(x,y)
 #define ROTL64(x,y)	_rotl64(x,y)
@@ -155,7 +152,6 @@ static char* strndup(char const *s, size_t n)
 
 #define	FORCE_INLINE inline __attribute__((always_inline))
 #define	NEVER_INLINE __attribute__((noinline))
-#define ALIGNED(n)   __attribute__ ((aligned(n)))
 
 #define popcount4(x) __builtin_popcount(x)
 #ifdef HAVE_BIT32
