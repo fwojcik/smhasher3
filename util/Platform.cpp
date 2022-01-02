@@ -48,12 +48,6 @@
 
 #include <stdio.h>
 
-void testRDTSC ( void )
-{
-  int64_t temp = rdtsc();
-  printf("%ld",(long)temp);
-}
-
 #if defined(_WIN32)
 
 #include <windows.h>

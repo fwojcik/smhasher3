@@ -43,6 +43,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
+#include "Timing.h"
 #include "Types.h"
 #include "Stats.h"
 #include "Random.h"
