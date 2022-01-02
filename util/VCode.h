@@ -62,3 +62,7 @@ static inline void addVCodeOutput(const uint32_t data) {
 static inline void addVCodeResult(const uint32_t data) {
     addVCodeResult(&data, sizeof(data));
 }
+
+static inline void addVCodeResult(const bool data) {
+    addVCodeResult((uint32_t)(data?1:0));
+}
