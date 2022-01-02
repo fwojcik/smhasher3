@@ -147,6 +147,8 @@ bool VerificationTest ( HashInfo* info, bool verbose )
 
 // The memory alignment of the key should not affect the hash result.
 
+// Assumes Hash_Seed_init(0) is already called.
+
 bool SanityTest ( pfHash hash, const int hashbits )
 {
   printf("Running sanity check 1      ");
@@ -160,6 +162,7 @@ bool SanityTest ( pfHash hash, const int hashbits )
   const int keymax = 256;
   const int pad = 16;
   const int buflen = keymax + pad*3;
+  const uint32_t seed = 0;
 
   uint8_t * buffer1 = new uint8_t[buflen];
   uint8_t * buffer2 = new uint8_t[buflen];
@@ -187,14 +190,14 @@ bool SanityTest ( pfHash hash, const int hashbits )
 
         memcpy(key2,key1,len);
 
-        hash (key1,len,0,hash1);
+        hash (key1,len,seed,hash1);
 
         for(int bit = 0; bit < (len * 8); bit++)
         {
           // Flip a bit, hash the key -> we should get a different result.
 
           flipbit(key2,len,bit);
-          hash(key2,len,0,hash2);
+          hash(key2,len,seed,hash2);
 
           if(memcmp(hash1,hash2,hashbytes) == 0)
             {
@@ -212,7 +215,7 @@ bool SanityTest ( pfHash hash, const int hashbits )
 
           flipbit(key2,len,bit);
 
-          hash(key2,len,0,hash2);
+          hash(key2,len,seed,hash2);
 
           if(memcmp(hash1,hash2,hashbytes) != 0)
             {
@@ -253,6 +256,8 @@ bool SanityTest ( pfHash hash, const int hashbits )
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
 
+// Assumes Hash_Seed_init(0) is already called.
+
 bool AppendedZeroesTest ( pfHash hash, const int hashbits )
 {
 //printf("Verification value 0x%08X ....... PASS\n",verification);
@@ -262,6 +267,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
   Rand r(173994);
 
   const int hashbytes = hashbits/8;
+  const uint32_t seed = 0;
 
   for(int rep = 0; rep < 100; rep++)
   {
@@ -276,7 +282,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
 
     for(int i = 0; i < 32; i++) {
       std::vector<uint8_t> h(hashbytes);
-      hash(key,32+i,0,&h[0]);
+      hash(key,32+i,seed,&h[0]);
       hashes.push_back(h);
     }
 
@@ -308,6 +314,8 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
 // Prepending zero bytes to a key should also always cause it to
 // produce a different hash value
 
+// Assumes Hash_Seed_init(0) is already called.
+
 bool PrependedZeroesTest ( pfHash hash, const int hashbits )
 {
   printf("Running PrependedZeroesTest ");
@@ -315,6 +323,7 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
   Rand r(534281);
 
   const int hashbytes = hashbits/8;
+  const uint32_t seed = 0;
 
   for(int rep = 0; rep < 100; rep++)
   {
@@ -329,7 +338,7 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
 
     for(int i = 0; i < 32; i++) {
       std::vector<uint8_t> h(hashbytes);
-      hash(key+32-i,32+i,0,&h[0]);
+      hash(key+32-i,32+i,seed,&h[0]);
       hashes.push_back(h);
     }
 
