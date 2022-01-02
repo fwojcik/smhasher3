@@ -170,6 +170,10 @@ bool SanityTest ( pfHash hash, const int hashbits )
   uint8_t * hash1 = new uint8_t[hashbytes];
   uint8_t * hash2 = new uint8_t[hashbytes];
 
+  if (g_doVCode) {
+      hash = VCodeWrappedHash;
+  }
+
   //----------
   memset(hash1, 1, hashbytes);
   memset(hash2, 2, hashbytes);
@@ -234,6 +238,9 @@ bool SanityTest ( pfHash hash, const int hashbits )
   }
 
  end_sanity:
+  if (g_doVCode) {
+      addVCodeResult(result);
+  }
   if(result == false)
   {
     printf(" FAIL  !!!!!\n");
@@ -278,12 +285,19 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
 
     r.rand_p(key,32);
 
+    if (g_doVCode) {
+        addVCodeInput(key, sizeof(key));
+    }
+
     std::vector<std::vector<uint8_t>> hashes;
 
     for(int i = 0; i < 32; i++) {
       std::vector<uint8_t> h(hashbytes);
       hash(key,32+i,seed,&h[0]);
       hashes.push_back(h);
+      if (g_doVCode) {
+          addVCodeOutput(&h[0], hashbytes);
+      }
     }
 
     // Sort in little-endian order, for human friendliness
@@ -300,6 +314,9 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
     for(int i = 1; i < 32; i++) {
         if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
             printf(" FAIL !!!!!\n");
+            if (g_doVCode) {
+                addVCodeResult(false);
+            }
             return false;
         }
     }
@@ -307,6 +324,9 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
   }
 
   printf(" PASS\n");
+  if (g_doVCode) {
+      addVCodeResult(true);
+  }
   return true;
 }
 
@@ -334,12 +354,19 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
 
     r.rand_p(key+32,32);
 
+    if (g_doVCode) {
+        addVCodeInput(key, sizeof(key));
+    }
+
     std::vector<std::vector<uint8_t>> hashes;
 
     for(int i = 0; i < 32; i++) {
       std::vector<uint8_t> h(hashbytes);
       hash(key+32-i,32+i,seed,&h[0]);
       hashes.push_back(h);
+      if (g_doVCode) {
+          addVCodeOutput(&h[0], hashbytes);
+      }
     }
 
     // Sort in little-endian order, for human friendliness
@@ -356,6 +383,9 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
     for(int i = 1; i < 32; i++) {
         if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
             printf(" FAIL !!!!!\n");
+            if (g_doVCode) {
+                addVCodeResult(false);
+            }
             return false;
         }
     }
@@ -363,5 +393,8 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
   }
 
   printf(" PASS\n");
+  if (g_doVCode) {
+      addVCodeResult(true);
+  }
   return true;
 }
