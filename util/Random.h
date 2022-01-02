@@ -133,41 +133,20 @@ struct Rand
 
   void rand_p ( void * blob, int bytes )
   {
-    uint32_t * blocks;
+    uint8_t * blocks = reinterpret_cast<uint8_t*>(blob);
     int i;
-
-#ifdef HAVE_ALIGNED_ACCESS_REQUIRED
-    // avoid ubsan, misaligned writes
-    if ((i = (uintptr_t)blob % 4)) {
-      uint8_t *pre = reinterpret_cast<uint8_t*>(blob);
-      uint32_t u = rand_u32();
-      switch (i) {
-      case 1:
-        *pre++ = u & 0xff; u >>= 8;
-      case 2:
-        *pre++ = u & 0xff; u >>= 8;
-      case 3:
-        *pre++ = u & 0xff;
-      default:
-        break;
-      }
-      blocks = reinterpret_cast<uint32_t*>(pre);
-    }
-    else
-#endif
-      blocks = reinterpret_cast<uint32_t*>(blob);
 
     while(bytes >= 4)
     {
-      *blocks = rand_u32();
-      blocks++;
+      uint32_t r = rand_u32();
+      memcpy(blocks, &r, 4);
+      blocks += 4;
       bytes -= 4;
     }
 
-    uint8_t * tail = reinterpret_cast<uint8_t*>(blocks);
     for (i = 0; i < bytes; i++)
     {
-      tail[i] = (uint8_t)rand_u32();
+      blocks[i] = (uint8_t)rand_u32();
     }
   }
 };
