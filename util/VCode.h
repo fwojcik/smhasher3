@@ -17,15 +17,21 @@
  * <https://www.gnu.org/licenses/>.
  */
 //-----------------------------------------------------------------------------
+// We want the capability to verify that every test produces the same
+// result on every platform.  To do this, we hash the results of every
+// test to produce an overall verification value for the whole test
+// suite. If two runs produce the same verification value, then every
+// test in both run produced the same results
+//-----------------------------------------------------------------------------
 extern uint32_t g_doVCode;
 
 void VCODE_INIT(void);
-void VCODE_FINALIZE(void);
-void VCODE_HASH(const void * input, size_t len, unsigned idx);
+uint32_t VCODE_FINALIZE(void);
 
 void VCodeWrappedHash ( const void * key, int len, uint32_t seed, void * out );
 
 //-----------------------------------------------------------------------------
+void VCODE_HASH(const void * input, size_t len, unsigned idx);
 
 static inline void addVCodeInput(const void * in, size_t len) {
     VCODE_HASH(in, len, 0);

@@ -71,13 +71,6 @@ uint32_t whitehole ( void )
 
 uint64_t g_seed = 0;
 
-uint32_t g_verify = 1;
-
-void MixVCode ( const void * blob, int len )
-{
-  g_verify = MurmurOAAT((const char*)blob,len,g_verify);
-}
-
 //-----------------------------------------------------------------------------
 // unused
 bool isprime ( uint32_t x )

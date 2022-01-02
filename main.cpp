@@ -633,9 +633,7 @@ int main ( int argc, const char ** argv )
 
   printf("\n");
 
-  if (g_doVCode) {
-      VCODE_FINALIZE();
-  }
+  uint32_t vcode = VCODE_FINALIZE();
 
   FILE * outfile = g_testAll ? stdout : stderr;
   fprintf(outfile,
@@ -643,7 +641,7 @@ int main ( int argc, const char ** argv )
           g_inputVCode, g_outputVCode, g_resultVCode);
   fprintf(outfile,
           "Verification value is 0x%08x - Testing took %f seconds\n",
-          g_verify, double(timeEnd-timeBegin)/double(CLOCKS_PER_SEC));
+          vcode, double(timeEnd-timeBegin)/double(CLOCKS_PER_SEC));
 
   return 0;
 }

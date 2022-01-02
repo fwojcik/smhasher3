@@ -1,6 +1,7 @@
 #define _HASHES_CPP
 #include "Hashes.h"
 #include "Random.h"
+#include "VCode.h"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -28,10 +29,21 @@ void VCODE_INIT(void) {
 extern uint32_t g_inputVCode;
 extern uint32_t g_outputVCode;
 extern uint32_t g_resultVCode;
-void VCODE_FINALIZE(void) {
+uint32_t VCODE_FINALIZE(void) {
+    if (!g_doVCode) return 1;
+
     g_inputVCode = XXH32_digest(&vcode_states[0]);
     g_outputVCode = XXH32_digest(&vcode_states[1]);
     g_resultVCode = XXH32_digest(&vcode_states[2]);
+
+    XXH32_state_t finalvcode;
+    XXH32_reset(&finalvcode, VCODE_COUNT);
+
+    XXH32_update(&finalvcode, &g_inputVCode,  sizeof(g_inputVCode));
+    XXH32_update(&finalvcode, &g_outputVCode, sizeof(g_outputVCode));
+    XXH32_update(&finalvcode, &g_resultVCode, sizeof(g_resultVCode));
+
+    return XXH32_digest(&finalvcode);
 }
 
 // ----------------------------------------------------------------------------
