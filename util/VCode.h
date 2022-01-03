@@ -28,8 +28,6 @@ extern uint32_t g_doVCode;
 void VCODE_INIT(void);
 uint32_t VCODE_FINALIZE(void);
 
-void VCodeWrappedHash ( const void * key, int len, uint32_t seed, void * out );
-
 //-----------------------------------------------------------------------------
 void VCODE_HASH(const void * input, size_t len, unsigned idx);
 

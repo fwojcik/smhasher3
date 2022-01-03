@@ -161,17 +161,6 @@ uint32_t g_doVCode = 0;
 uint32_t g_inputVCode = 1;
 uint32_t g_outputVCode = 1;
 uint32_t g_resultVCode = 1;
-HashInfo * g_hashUnderTest = NULL;
-
-void VCodeWrappedHash ( const void * key, int len, uint32_t seed, void * out )
-{
-  g_hashUnderTest->hash(key, len, seed, out);
-
-  // Note that the seed also counts towards the input VCode, but that
-  // was already added via Hash_Seed_init(), and so is not done here.
-  addVCodeInput(key, len);
-  addVCodeOutput(out, g_hashUnderTest->hashbits/8);
-}
 
 //-----------------------------------------------------------------------------
 
@@ -447,10 +436,6 @@ bool testHash ( const char * name )
   if(pInfo == NULL) {
     printf("Invalid hash '%s' specified\n", name);
     return false;
-  }
-
-  if (g_doVCode) {
-      g_hashUnderTest = pInfo;
   }
 
   if(pInfo->hashbits == 32)

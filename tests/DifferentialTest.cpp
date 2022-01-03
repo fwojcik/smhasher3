@@ -132,6 +132,8 @@ static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype 
     bitsleft--;
 
     hash(&k2,sizeof(k2),g_seed,&h2);
+    addVCodeInput(&k2, sizeof(k2));
+    addVCodeOutput(&h2, sizeof(h2));
 
     if(h1 == h2)
     {
@@ -172,12 +174,6 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
   hashtype h1,h2;
   h1 = h2 = 0;
 
-  // Because this test does not record all the hashes, and because it
-  // is not threaded, using the wrapped hash function here is easiest.
-  if (g_doVCode) {
-      hash = VCodeWrappedHash;
-  }
-
   printf("Testing %0.f up-to-%d-bit differentials in %d-bit keys -> %d bit hashes.\n",
          diffcount,diffbits,keybits,hashbits);
   printf("%d reps, %0.f total tests, expecting %2.2f random collisions",
@@ -191,7 +187,9 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
     r.rand_p(&k1,sizeof(keytype));
     k2 = k1;
 
-    hash(&k1,sizeof(k1),g_seed,(uint32_t*)&h1);
+    hash(&k1,sizeof(k1),g_seed,(void*)&h1);
+    addVCodeInput(&k1, sizeof(k1));
+    addVCodeOutput(&h1, sizeof(h1));
 
     DiffTestRecurse<true,keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffcounts);
   }
