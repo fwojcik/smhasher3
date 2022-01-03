@@ -65,8 +65,9 @@ static void Prn_gen (int nbRn, pfHash hash, std::vector<hashtype> & hashes )
 
   printf("Generating random numbers by hashing previous output - %d keys\n", nbRn);
 
-  // Since all inputs were outputs, and outputs get hashed already,
-  // just use the test parameters for the input VCode.
+  // Since hash() inputs depend upon previous outputs, we can't use
+  // that to verify cross-system consistency across hashes, so just
+  // use the test parameters for the input VCode.
   addVCodeInput(nbRn);
   addVCodeInput(sizeof(hashtype));
 

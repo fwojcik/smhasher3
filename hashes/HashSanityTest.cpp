@@ -93,7 +93,6 @@ bool VerificationTest ( HashInfo* info, bool verbose )
   uint32_t verification =
       (final[0] << 0) | (final[1] << 8) | (final[2] << 16) | (final[3] << 24);
 
-  addVCodeInput(hashes, 256*hashbytes);
   addVCodeOutput(hashes, 256*hashbytes);
   addVCodeOutput(final, hashbytes);
   addVCodeResult(expected);
@@ -186,8 +185,8 @@ bool SanityTest ( pfHash hash, const int hashbits )
 
         memcpy(key2,key1,len);
 
+        // This test can halt early, so don't add input bytes to the VCode.
         hash (key1,len,seed,hash1);
-        addVCodeInput(key1, len);
         addVCodeOutput(hash1, hashbytes);
 
         for(int bit = 0; bit < (len * 8); bit++)
@@ -278,8 +277,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
     memset(key,0,sizeof(key));
 
     r.rand_p(key,32);
-
-    addVCodeInput(key, sizeof(key));
+    // This test can halt early, so don't add input bytes to the VCode.
 
     std::vector<std::vector<uint8_t>> hashes;
 
@@ -339,8 +337,7 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
     memset(key,0,sizeof(key));
 
     r.rand_p(key+32,32);
-
-    addVCodeInput(key, sizeof(key));
+    // This test can halt early, so don't add input bytes to the VCode.
 
     std::vector<std::vector<uint8_t>> hashes;
 
