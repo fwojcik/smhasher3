@@ -123,10 +123,10 @@ static int maxBias ( int * counts, int buckets, int reps )
 
 //-----------------------------------------------------------------------------
 // threaded: loop over bins
-template < typename keytype, typename hashtype >
+template < typename hashtype >
 static void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
-                     const int keybytes, const uint8_t * keys, a_int & irepp,
-                     const int reps, const int i, const bool verbose )
+                     const int keybytes, const uint8_t * keys,
+                     a_int & irepp, const int reps, const bool verbose )
 { 
   const int keybits = keybytes * 8;
   const int hashbytes = sizeof(hashtype);
@@ -197,12 +197,12 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool drawDiagram, bool 
   }
 
   if (g_NCPU == 1) {
-      calcBiasRange<keytype,hashtype>(hash,bins[0],keybytes,&keys[0],irep,reps,0,drawdots);
+      calcBiasRange<hashtype>(hash,bins[0],keybytes,&keys[0],irep,reps,drawdots);
   } else {
 #ifdef HAVE_THREADS
       std::thread t[g_NCPU];
       for (int i=0; i < g_NCPU; i++) {
-          t[i] = std::thread {calcBiasRange<keytype,hashtype>,hash,std::ref(bins[i]),keybytes,&keys[0],std::ref(irep),reps,i,drawdots};
+          t[i] = std::thread {calcBiasRange<hashtype>,hash,std::ref(bins[i]),keybytes,&keys[0],std::ref(irep),reps,drawdots};
       }
       for (int i=0; i < g_NCPU; i++) {
           t[i].join();
