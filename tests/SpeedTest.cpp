@@ -277,18 +277,20 @@ static double TinySpeedTest ( pfHash hash, int maxkeysize, uint32_t seed, bool v
 bool SpeedTest(HashInfo * info) {
     pfHash hash = info->hash;
     bool result = true;
+    Rand r(633692);
+    const uint32_t seed = r.rand_u32();
 
     printf("[[[ Speed Tests ]]]\n\n");
 
-    Hash_Seed_init(hash, info->verification);
+    Hash_Seed_init(hash, seed);
 
-    BulkSpeedTest(hash, info->verification, true, false);
+    BulkSpeedTest(hash, seed, true, false);
     printf("\n");
 
-    BulkSpeedTest(hash, info->verification, true, true);
+    BulkSpeedTest(hash, seed, true, true);
     printf("\n");
 
-    TinySpeedTest(hash, 31, info->verification, true, true);
+    TinySpeedTest(hash, 31, seed, true, true);
     printf("\n");
 
     return result;
