@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "PRNGTest.h"
 
@@ -63,6 +64,11 @@ static void Prn_gen (int nbRn, pfHash hash, std::vector<hashtype> & hashes )
   assert(nbRn > 0);
 
   printf("Generating random numbers by hashing previous output - %d keys\n", nbRn);
+
+  // Since all inputs were outputs, and outputs get hashed already,
+  // just use the test parameters for the input VCode.
+  addVCodeInput(nbRn);
+  addVCodeInput(sizeof(hashtype));
 
   hashtype hcopy;
   memset(&hcopy, 0, sizeof(hcopy));
@@ -101,6 +107,8 @@ bool PRNGTest(HashInfo * info, const bool verbose, const bool extra) {
 
     if(!result) printf("\n*********FAIL*********\n");
     printf("\n");
+
+    addVCodeResult(result);
 
     return result;
 }

@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "ZeroesKeysetTest.h"
 
@@ -66,6 +67,8 @@ static bool ZeroKeyImpl ( pfHash hash, bool drawDiagram )
   unsigned char * nullblock = new unsigned char[keycount];
   memset(nullblock,0,keycount);
 
+  addVCodeInput(nullblock, keycount);
+
   //----------
 
   std::vector<hashtype> hashes;
@@ -81,6 +84,8 @@ static bool ZeroKeyImpl ( pfHash hash, bool drawDiagram )
   printf("\n");
 
   delete [] nullblock;
+
+  addVCodeResult(result);
 
   return result;
 }

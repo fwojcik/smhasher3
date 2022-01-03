@@ -56,6 +56,7 @@
 #include "Analyze.h"
 #include "Random.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "DifferentialTest.h"
 
@@ -95,6 +96,9 @@ static bool ProcessDifferentials ( std::map<keytype, uint32_t> & diffcounts, int
 
   printf("%d total collisions, of which %d single collisions were ignored",
          totalcount,ignore);
+
+  addVCodeResult(totalcount);
+  addVCodeResult(ignore);
 
   if(result == false) {
       printf(" !!!!!");
@@ -167,6 +171,12 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
   keytype k1,k2;
   hashtype h1,h2;
   h1 = h2 = 0;
+
+  // Because this test does not record all the hashes, and because it
+  // is not threaded, using the wrapped hash function here is easiest.
+  if (g_doVCode) {
+      hash = VCodeWrappedHash;
+  }
 
   printf("Testing %0.f up-to-%d-bit differentials in %d-bit keys -> %d bit hashes.\n",
          diffcount,diffbits,keybits,hashbits);
@@ -293,15 +303,19 @@ static bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
     for(int i = 0; i < keycount; i++)
     {
       r.rand_p(&k,sizeof(keytype));
-
       hash(&k,sizeof(keytype),g_seed,&h1);
+      addVCodeInput(&k, sizeof(keytype));
+
       flipbit(&k,sizeof(keytype),keybit);
       hash(&k,sizeof(keytype),g_seed,&h2);
+      addVCodeInput(&k, sizeof(keytype));
 
       hashes[i] = h1 ^ h2;
     }
 
     result &= TestHashList<hashtype>(hashes,drawDiagram,true,true);
+    addVCodeResult(result);
+
     printf("\n");
   }
 

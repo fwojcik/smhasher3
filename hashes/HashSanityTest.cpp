@@ -81,9 +81,7 @@ bool VerificationTest ( HashInfo* info, bool verbose )
     key[i] = (uint8_t)i;
     Hash_Seed_init (hash, 256-i);
     hash (key,i,256-i,&hashes[i*hashbytes]);
-    if (g_doVCode) {
-        addVCodeInput(key, i);
-    }
+    addVCodeInput(key, i);
   }
 
   // Then hash the result array
@@ -95,13 +93,11 @@ bool VerificationTest ( HashInfo* info, bool verbose )
   uint32_t verification =
       (final[0] << 0) | (final[1] << 8) | (final[2] << 16) | (final[3] << 24);
 
-  if (g_doVCode) {
-      addVCodeInput(hashes, 256*hashbytes);
-      addVCodeOutput(hashes, 256*hashbytes);
-      addVCodeOutput(final, hashbytes);
-      addVCodeResult(expected);
-      addVCodeResult(verification);
-  }
+  addVCodeInput(hashes, 256*hashbytes);
+  addVCodeOutput(hashes, 256*hashbytes);
+  addVCodeOutput(final, hashbytes);
+  addVCodeResult(expected);
+  addVCodeResult(verification);
 
   delete [] final;
   delete [] hashes;
@@ -170,10 +166,6 @@ bool SanityTest ( pfHash hash, const int hashbits )
   uint8_t * hash1 = new uint8_t[hashbytes];
   uint8_t * hash2 = new uint8_t[hashbytes];
 
-  if (g_doVCode) {
-      hash = VCodeWrappedHash;
-  }
-
   //----------
   memset(hash1, 1, hashbytes);
   memset(hash2, 2, hashbytes);
@@ -195,6 +187,8 @@ bool SanityTest ( pfHash hash, const int hashbits )
         memcpy(key2,key1,len);
 
         hash (key1,len,seed,hash1);
+        addVCodeInput(key1, len);
+        addVCodeOutput(hash1, hashbytes);
 
         for(int bit = 0; bit < (len * 8); bit++)
         {
@@ -202,6 +196,7 @@ bool SanityTest ( pfHash hash, const int hashbits )
 
           flipbit(key2,len,bit);
           hash(key2,len,seed,hash2);
+          addVCodeOutput(hash1, hashbytes);
 
           if(memcmp(hash1,hash2,hashbytes) == 0)
             {
@@ -238,9 +233,8 @@ bool SanityTest ( pfHash hash, const int hashbits )
   }
 
  end_sanity:
-  if (g_doVCode) {
-      addVCodeResult(result);
-  }
+  addVCodeResult(result);
+
   if(result == false)
   {
     printf(" FAIL  !!!!!\n");
@@ -285,9 +279,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
 
     r.rand_p(key,32);
 
-    if (g_doVCode) {
-        addVCodeInput(key, sizeof(key));
-    }
+    addVCodeInput(key, sizeof(key));
 
     std::vector<std::vector<uint8_t>> hashes;
 
@@ -295,9 +287,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
       std::vector<uint8_t> h(hashbytes);
       hash(key,32+i,seed,&h[0]);
       hashes.push_back(h);
-      if (g_doVCode) {
-          addVCodeOutput(&h[0], hashbytes);
-      }
+      addVCodeOutput(&h[0], hashbytes);
     }
 
     // Sort in little-endian order, for human friendliness
@@ -314,9 +304,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
     for(int i = 1; i < 32; i++) {
         if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
             printf(" FAIL !!!!!\n");
-            if (g_doVCode) {
-                addVCodeResult(false);
-            }
+            addVCodeResult(false);
             return false;
         }
     }
@@ -324,9 +312,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
   }
 
   printf(" PASS\n");
-  if (g_doVCode) {
-      addVCodeResult(true);
-  }
+  addVCodeResult(true);
   return true;
 }
 
@@ -354,9 +340,7 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
 
     r.rand_p(key+32,32);
 
-    if (g_doVCode) {
-        addVCodeInput(key, sizeof(key));
-    }
+    addVCodeInput(key, sizeof(key));
 
     std::vector<std::vector<uint8_t>> hashes;
 
@@ -364,9 +348,7 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
       std::vector<uint8_t> h(hashbytes);
       hash(key+32-i,32+i,seed,&h[0]);
       hashes.push_back(h);
-      if (g_doVCode) {
-          addVCodeOutput(&h[0], hashbytes);
-      }
+      addVCodeOutput(&h[0], hashbytes);
     }
 
     // Sort in little-endian order, for human friendliness
@@ -383,9 +365,7 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
     for(int i = 1; i < 32; i++) {
         if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
             printf(" FAIL !!!!!\n");
-            if (g_doVCode) {
-                addVCodeResult(false);
-            }
+            addVCodeResult(false);
             return false;
         }
     }
@@ -393,8 +373,6 @@ bool PrependedZeroesTest ( pfHash hash, const int hashbits )
   }
 
   printf(" PASS\n");
-  if (g_doVCode) {
-      addVCodeResult(true);
-  }
+  addVCodeResult(true);
   return true;
 }

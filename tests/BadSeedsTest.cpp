@@ -50,6 +50,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "BadSeedsTest.h"
 
@@ -65,6 +66,10 @@
 // Find bad seeds, and test against the known secrets/bad seeds.
 
 // A more thourough test for a known secret. vary keys and key len
+
+// Since these lists are expected to change somewhat, they are not
+// added to any VCode calculation.
+
 template< typename hashtype >
 static bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
   bool result = true;
@@ -252,6 +257,14 @@ static bool TestSecret32 ( const HashInfo* info, const uint64_t hi, bool &newres
       delete [] newresults;
 #endif
   }
+
+  // Since this can be threaded, just use the test parameters for the
+  // VCode input data.
+  addVCodeInput(hi);         // hi
+  addVCodeInput(0);          // lo start
+  addVCodeInput(0xffffffff); // lo end
+  // Nothing to add to VCodeOutput
+  addVCodeResult(result);
 
   return result;
 }

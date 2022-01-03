@@ -53,6 +53,7 @@
 #include "Random.h"
 #include "Instantiate.h"
 #include "Analyze.h"
+#include "VCode.h"
 
 #include "AvalancheTest.h"
 
@@ -189,6 +190,7 @@ static bool AvalancheImpl ( pfHash hash, const int keybits, const int reps, bool
   std::vector<uint8_t> keys(reps * keybytes);
   for (int i = 0; i < reps; i++)
     r.rand_p(&keys[i*keybytes],keybytes);
+  addVCodeInput(&keys[0], reps * keybytes);
 
   a_int irep(0);
 
@@ -218,6 +220,12 @@ static bool AvalancheImpl ( pfHash hash, const int keybits, const int reps, bool
 
   int bias = maxBias(&bins[0][0], arraysize, reps);
   bool result = true;
+
+  // Due to threading and memory complications, add the summed
+  // avalanche results instead of the hash values. Not ideal, but the
+  // "real" way is just too expensive.
+  addVCodeOutput(&bins[0][0], arraysize * sizeof(bins[0][0]));
+  addVCodeResult(bias);
 
   result &= ReportBias(bias, reps, arraysize, drawDiagram);
 
@@ -437,6 +445,9 @@ void BicTest2 ( pfHash hash, const int reps, bool verbose = true )
 // BIC test variant - store all intermediate data in a table, draw diagram
 // afterwards (much faster)
 
+// The choices for VCode inputs may seem strange here, but they were
+// chosen in anticipation of threading this test.
+
 template< typename keytype, typename hashtype >
 static bool BicTest3 ( pfHash hash, const int reps, bool verbose = false )
 {
@@ -468,6 +479,8 @@ static bool BicTest3 ( pfHash hash, const int reps, bool verbose = false )
     {
       r.rand_p(&key,keybytes);
       hash(&key,keybytes,g_seed,&h1);
+      addVCodeInput(&key, keybytes);
+      addVCodeInput(keybit);
       flipbit(key,keybit);
       hash(&key,keybytes,g_seed,&h2);
 
@@ -535,6 +548,12 @@ static bool BicTest3 ( pfHash hash, const int reps, bool verbose = false )
       printf("\n");
     }
   }
+
+  addVCodeOutput(&bins[0], keybits*pagesize*sizeof(bins[0]));
+  addVCodeResult((uint32_t)(maxBias * 1000.0));
+  addVCodeResult(maxK);
+  addVCodeResult(maxA);
+  addVCodeResult(maxB);
 
   printf("Max bias %f - (%3d : %3d,%3d)\n",maxBias,maxK,maxA,maxB);
 

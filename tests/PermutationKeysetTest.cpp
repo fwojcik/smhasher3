@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "PermutationKeysetTest.h"
 
@@ -70,6 +71,7 @@ static void CombinationKeygenRecurse ( uint8_t * key, int len, int maxlen,
 
     hashtype h;
     hash(key, (len+1) * blocksz, g_seed, &h);
+    addVCodeInput(key, (len+1) * blocksz);
     hashes.push_back(h);
 
     CombinationKeygenRecurse(key,len+1,maxlen,blocks,blockcount,blocksz,hash,hashes);
@@ -255,6 +257,8 @@ bool PermutedKeyTest(HashInfo * info, const bool verbose, const bool extra) {
 
         result &= curresult;
     }
+
+    addVCodeResult(result);
 
     return result;
 }

@@ -34,41 +34,28 @@ void VCodeWrappedHash ( const void * key, int len, uint32_t seed, void * out );
 void VCODE_HASH(const void * input, size_t len, unsigned idx);
 
 static inline void addVCodeInput(const void * in, size_t len) {
-    VCODE_HASH(in, len, 0);
+    if (g_doVCode) VCODE_HASH(in, len, 0);
 }
 
 static inline void addVCodeOutput(const void * in, size_t len) {
-    VCODE_HASH(in, len, 1);
+    if (g_doVCode) VCODE_HASH(in, len, 1);
 }
 
 static inline void addVCodeResult(const void * in, size_t len) {
-    VCODE_HASH(in, len, 2);
+    if (g_doVCode) VCODE_HASH(in, len, 2);
 }
 
-static inline void addVCodeInput(const uint64_t data) {
-    addVCodeInput(&data, sizeof(data));
+template < typename T >
+static inline void addVCodeInput(const T data) {
+    if (g_doVCode) addVCodeInput(&data, sizeof(data));
 }
 
-static inline void addVCodeOutput(const uint64_t data) {
-    addVCodeOutput(&data, sizeof(data));
+template < typename T >
+static inline void addVCodeOutput(const T data) {
+    if (g_doVCode) addVCodeOutput(&data, sizeof(data));
 }
 
-static inline void addVCodeResult(const uint64_t data) {
-    addVCodeResult(&data, sizeof(data));
-}
-
-static inline void addVCodeInput(const uint32_t data) {
-    addVCodeInput(&data, sizeof(data));
-}
-
-static inline void addVCodeOutput(const uint32_t data) {
-    addVCodeOutput(&data, sizeof(data));
-}
-
-static inline void addVCodeResult(const uint32_t data) {
-    addVCodeResult(&data, sizeof(data));
-}
-
-static inline void addVCodeResult(const bool data) {
-    addVCodeResult((uint32_t)(data?1:0));
+template < typename T >
+static inline void addVCodeResult(const T data) {
+    if (g_doVCode) addVCodeResult(&data, sizeof(data));
 }

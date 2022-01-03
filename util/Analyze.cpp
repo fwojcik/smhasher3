@@ -54,6 +54,7 @@
 #include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 #ifdef DEBUG
 #include "Bitvec.h"
 #endif
@@ -537,6 +538,10 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
     if(drawDiagram) printf("]\n%s", ((start + 1) == hashbits) ? "" : "[");
   }
 
+  addVCodeResult((uint32_t)worstN);
+  addVCodeResult(worstWidth);
+  addVCodeResult(worstStart);
+
   double p_value = ScalePValue(GetNormalPValue(0, 1, worstN), tests);
   int logp_value = GetLog2PValue(p_value);
   double mult = normalizeScore(worstN, worstWidth, tests);
@@ -637,13 +642,14 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
   if (testCollision)
   {
     unsigned const hashbits = sizeof(hashtype) * 8;
+    size_t const nbH = hashes.size();
     if (verbose)
       printf("Testing all collisions (     %3i-bit)", hashbits);
 
-    size_t const nbH = hashes.size();
-    int collcount = 0;
+    addVCodeOutput(&hashes[0], sizeof(hashtype) * nbH);
+
     HashSet<hashtype> collisions;
-    collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
+    int collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
 
     /*
      * Do all other compute-intensive stuff (as requested) before
@@ -756,6 +762,16 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
 
       collcounts_rev.reserve(maxBits - minBits + 1);
       CountRangedNbCollisions(revhashes, nbH, minBits, maxBits, threshBits, &collcounts_rev[0]);
+    }
+
+    addVCodeResult(collcount);
+    if (testHighBits) {
+        addVCodeResult(&collcounts_fwd[0], sizeof(collcounts_fwd[0]) *
+                collcounts_fwd.size());
+    }
+    if (testLowBits) {
+        addVCodeResult(&collcounts_rev[0], sizeof(collcounts_rev[0]) *
+                collcounts_rev.size());
     }
 
     // Report on complete collisions, now that the heavy lifting is complete

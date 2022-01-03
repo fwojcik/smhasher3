@@ -50,6 +50,7 @@
 #include "Analyze.h"
 #include "Random.h"   // for rand_p
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "CyclicKeysetTest.h"
 
@@ -99,6 +100,7 @@ static bool CyclicKeyImpl ( pfHash hash, int cycleLen, int cycleReps, const int 
     }
 
     hash(key,keyLen,g_seed,&hashes[i]);
+    addVCodeInput(key, keyLen);
   }
 
   //----------
@@ -108,6 +110,8 @@ static bool CyclicKeyImpl ( pfHash hash, int cycleLen, int cycleReps, const int 
 
   delete [] key;
   delete [] cycle;
+
+  addVCodeResult(result);
 
   return result;
 }

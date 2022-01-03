@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "SparseKeysetTest.h"
 
@@ -84,6 +85,7 @@ static void SparseKeygenRecurse ( pfHash hash, int start, int bitsleft, bool inc
     if(inclusive || (bitsleft == 1))
     {
       hash(&k, sizeof(keytype), g_seed, &h);
+      addVCodeInput(&k, sizeof(keytype));
       hashes.push_back(h);
     }
 
@@ -124,6 +126,8 @@ static bool SparseKeyImpl ( hashfunc<hashtype> hash, const int setbits, bool inc
 
   bool result = TestHashList<hashtype>(hashes,drawDiagram,testColl,testDist);
   printf("\n");
+
+  addVCodeResult(result);
 
   return result;
 }

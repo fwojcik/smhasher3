@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "PerlinNoiseTest.h"
 
@@ -79,6 +80,8 @@ static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
 
   for(uint64_t x = 0; x < xMax; x++) {
       memcpy(key, &x, inputLen);  // Note : only works with Little Endian
+      addVCodeInput(key, inputLen);
+      addVCodeInput(yMax);
       for (size_t y=0; y < yMax; y++) {
           hashtype h;
           Hash_Seed_init (hash, y);
@@ -114,6 +117,8 @@ bool PerlinNoiseTest (HashInfo * info, const bool verbose, const bool extra) {
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");
+
+    addVCodeResult(result);
 
     return result;
 }

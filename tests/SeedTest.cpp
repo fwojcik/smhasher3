@@ -49,6 +49,7 @@
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "SeedTest.h"
 
@@ -66,6 +67,9 @@ bool SeedTestImpl ( pfHash hash, int keycount, bool drawDiagram )
   const char text[64] = "The quick brown fox jumps over the lazy dog";
   const int len = (int)strlen(text);
 
+  addVCodeInput(text, len);
+  addVCodeInput(keycount);
+
   //----------
 
   std::vector<hashtype> hashes;
@@ -80,6 +84,8 @@ bool SeedTestImpl ( pfHash hash, int keycount, bool drawDiagram )
 
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
+
+  addVCodeResult(result);
 
   return result;
 }

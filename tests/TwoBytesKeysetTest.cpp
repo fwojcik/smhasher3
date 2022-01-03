@@ -50,6 +50,7 @@
 #include "Stats.h"   // for chooseK
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "TwoBytesKeysetTest.h"
 
@@ -87,6 +88,7 @@ static void TwoBytesKeygen ( int maxlen, KeyCallback & c )
         for(int valA = 1; valA <= 255; valA++)
           {
             key[byteA] = (uint8_t)valA;
+            addVCodeInput(key, keylen);
             c(key,keylen);
           }
 
@@ -107,6 +109,7 @@ static void TwoBytesKeygen ( int maxlen, KeyCallback & c )
               for(int valB = 1; valB <= 255; valB++)
                 {
                   key[byteB] = (uint8_t)valB;
+                  addVCodeInput(key, keylen);
                   c(key,keylen);
                 }
 
@@ -128,6 +131,8 @@ static bool TwoBytesTest2 ( pfHash hash, int maxlen, bool drawDiagram )
 
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
+
+  addVCodeResult(result);
 
   return result;
 }

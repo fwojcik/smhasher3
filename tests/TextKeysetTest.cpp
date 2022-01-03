@@ -50,6 +50,7 @@
 #include "Analyze.h"
 #include "Random.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "HashMapTest.h"
 
@@ -100,6 +101,7 @@ static bool TextKeyImpl ( pfHash hash, const char * prefix, const char * coreset
     }
 
     hash(key,keybytes,g_seed,&hashes[i]);
+    addVCodeInput(key, keybytes);
   }
 
   //----------
@@ -107,6 +109,9 @@ static bool TextKeyImpl ( pfHash hash, const char * prefix, const char * coreset
   printf("\n");
 
   delete [] key;
+
+  addVCodeResult(result);
+
   return result;
 }
 
@@ -148,6 +153,7 @@ static bool WordsKeyImpl ( pfHash hash, const long keycount,
     words.insert(key_str);
 
     hash(key,len,g_seed,&hashes[i]);
+    addVCodeInput(key, len);
 
 #if 0 && defined DEBUG
     uint64_t h;
@@ -160,6 +166,8 @@ static bool WordsKeyImpl ( pfHash hash, const long keycount,
   //----------
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
+
+  addVCodeResult(result);
 
   return result;
 }
@@ -188,11 +196,14 @@ static bool WordsStringImpl ( pfHash hash, std::vector<std::string> & words,
     const int len = words[i].length();
     const char *key = words[i].c_str();
     hash(key, len, g_seed, &hashes[i]);
+    addVCodeInput(key, len);
   }
 
   //----------
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
+
+  addVCodeResult(result);
 
   return result;
 }

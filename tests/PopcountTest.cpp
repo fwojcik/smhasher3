@@ -63,6 +63,7 @@
 #include "Platform.h"
 #include "Types.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "PopcountTest.h"
 
@@ -240,6 +241,13 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
   moments b[g_NCPU];
   memset(b, 0, sizeof(b));
 
+  // Because of threading, the actual inputs can't be hashed into the
+  // main thread's state, so just hash the parameters of the input data.
+  addVCodeInput(0);          // start
+  addVCodeInput(0xffffffff); // end
+  addVCodeInput(step);       // step
+  addVCodeInput(inputSize);  // size
+
   if (g_NCPU == 1) {
       PopcountThread (info, inputSize, 0, 0xffffffff, step, std::ref(b[0]));
   } else {
@@ -300,6 +308,11 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
 
   const char* rankstr[4] = { "FAIL !!!!", "pass", "Good !", "Great !!" };
   printf("\n  %s \n\n", rankstr[rank]);
+
+  // Similar threading problems for the outputs, so just hash in the
+  // summary data.
+  addVCodeOutput(&b[0][0], 8 * sizeof(b[0][0]));
+  addVCodeResult((uint32_t)(worstchisq * 1000.0));
 
   return (rank > 0);
 }

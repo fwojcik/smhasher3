@@ -50,6 +50,7 @@
 #include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
+#include "VCode.h"
 
 #include "WindowedKeysetTest.h"
 
@@ -97,6 +98,7 @@ static bool WindowedKeyImpl ( hashfunc<hashtype> hash, int windowbits,
       //key = key << minbit;
       lrot(key,minbit);
       hash(&key,sizeof(keytype),g_seed,&hashes[i]);
+      addVCodeInput(&key, sizeof(keytype));
     }
 
     printf("Window at bit %3d\n",j);
@@ -104,6 +106,7 @@ static bool WindowedKeyImpl ( hashfunc<hashtype> hash, int windowbits,
                            /* do not test high/low bits (to not clobber the screen) */
                            false, false, true);
     //printf("\n");
+    addVCodeResult(result);
   }
 
   return result;
