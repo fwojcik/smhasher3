@@ -127,7 +127,7 @@ template < typename hashtype >
 static void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
                      const int keybytes, const uint8_t * keys,
                      a_int & irepp, const int reps, const bool verbose )
-{ 
+{
   const int keybits = keybytes * 8;
   const int hashbytes = sizeof(hashtype);
 
@@ -581,41 +581,20 @@ bool AvalancheTest(HashInfo* info, const bool verbose, const bool extra) {
     printf("[[[ Avalanche Tests ]]]\n\n");
     Hash_Seed_init (hash, g_seed, 2);
 
-    result &= AvalancheImpl<hashtype> (hash,  24,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  32,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  40,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  48,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  56,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  64,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  72,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  80,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash,  96,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash, 112,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash, 128,300000,verbose,drawdots);
-    result &= AvalancheImpl<hashtype> (hash, 160,300000,verbose,drawdots);
+    std::vector<int> testBitsvec =
+        { 24, 32, 40, 48, 56, 64, 72, 80, 96, 112, 128, 160 };
+    if (info->hashbits <= 64) {
+        testBitsvec.insert(testBitsvec.end(), { 512, 1024 });
+    }
+    if (extra) {
+        testBitsvec.insert(testBitsvec.end(), { 192, 224, 256, 320, 384, 448, 512, 640,
+                                                768, 896, 1024, 1280, 1536 });
+    }
+    std::sort(testBitsvec.begin(), testBitsvec.end());
+    std::unique(testBitsvec.begin(), testBitsvec.end());
 
-    if(extra) {
-      result &= AvalancheImpl<hashtype> (hash, 192,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash, 224,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash, 256,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash, 320,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash, 384,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash, 448,300000,verbose,drawdots);
-    }
-    if (extra || info->hashbits <= 64) {
-      result &= AvalancheImpl<hashtype> (hash, 512,300000,verbose,drawdots);
-    }
-    if(extra) {
-      result &= AvalancheImpl<hashtype> (hash, 640,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash, 768,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash, 896,300000,verbose,drawdots);
-    }
-    if (extra || info->hashbits <= 64) {
-      result &= AvalancheImpl<hashtype> (hash,1024,300000,verbose,drawdots);
-    }
-    if(extra) {
-      result &= AvalancheImpl<hashtype> (hash,1280,300000,verbose,drawdots);
-      result &= AvalancheImpl<hashtype> (hash,1536,300000,verbose,drawdots);
+    for (int testBits : testBitsvec) {
+        result &= AvalancheImpl<hashtype> (hash,testBits,300000,verbose,drawdots);
     }
 
     if(!result) printf("*********FAIL*********\n");
