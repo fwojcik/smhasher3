@@ -124,7 +124,7 @@ static int maxBias ( int * counts, int buckets, int reps )
 //-----------------------------------------------------------------------------
 // threaded: loop over bins
 template < typename keytype, typename hashtype >
-static void calcBiasRange ( const pfHash hash, std::array<int, sizeof(keytype)*sizeof(hashtype)*8*8> &bins,
+static void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
                      std::vector<keytype> &keys, a_int & irepp,
                      const int reps, const int i, const bool verbose )
 {
@@ -193,7 +193,10 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool drawDiagram, bool 
 
   a_int irep(0);
 
-  std::vector<std::array<int, arraysize>> bins(g_NCPU);
+  std::vector<std::vector<int> > bins(g_NCPU);
+  for (unsigned i = 0; i < g_NCPU; i++) {
+      bins[i].resize(arraysize);
+  }
 
   if (g_NCPU == 1) {
       calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,drawdots);
