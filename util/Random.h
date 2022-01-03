@@ -114,15 +114,6 @@ struct Rand
     return (a << 32) | b;
   }
 
-  // Returns a value in the range [0, max)
-  uint32_t rand_range ( uint32_t max )
-  {
-      uint64_t r = rand_u32();
-      return (r * max) >> 32;
-
-  }
-
-
 #ifdef __SIZEOF_INT128__
   __uint128_t rand_u128 ( void ) 
   {
@@ -130,6 +121,14 @@ struct Rand
     return (a << 64) | rand_u64();
   }
 #endif
+
+  // Returns a value in the range [0, max)
+  uint32_t rand_range ( uint32_t max )
+  {
+      uint64_t r = rand_u32();
+      return (r * max) >> 32;
+
+  }
 
   void rand_p ( void * blob, int bytes )
   {
@@ -160,41 +159,5 @@ inline uint64_t rand_u64 ( void ) { return g_rand1.rand_u64(); }
 #ifdef __SIZEOF_INT128__
 inline __uint128_t rand_u128 ( void ) { return g_rand1.rand_u128(); }
 #endif
-
-inline void rand_p ( void * blob, int bytes )
-{
-  uint32_t * blocks;
-  int i;
-  // avoid ubsan, misaligned writes
-  if ((i = (uintptr_t)blob % 4)) {
-    uint8_t *pre = reinterpret_cast<uint8_t*>(blob);
-    uint32_t u = rand_u32();
-    switch (i) {
-    case 1:
-      *pre++ = u & 0xff; u >>= 8;
-    case 2:
-      *pre++ = u & 0xff; u >>= 8;
-    case 3:
-      *pre++ = u & 0xff;
-    default:
-      break;
-    }
-    blocks = reinterpret_cast<uint32_t*>(pre);
-  }
-  else
-    blocks = reinterpret_cast<uint32_t*>(blob);
-
-  while(bytes >= 4)
-  {
-    *blocks++ = rand_u32();
-    bytes -= 4;
-  }
-
-  uint8_t * tail = (uint8_t*)blocks;
-  for (i = 0; i < bytes; i++)
-  {
-    tail[i] = (uint8_t)rand_u32();
-  }
-}
 
 //-----------------------------------------------------------------------------
