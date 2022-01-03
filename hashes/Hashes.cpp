@@ -967,13 +967,10 @@ void halftime_hash_seed_init(size_t &seed)
 
       *(uint64_t*)out = h;
    }
-   static __uint128_t rand128() {
-     return rand_u128();
-   }
    void multiply_shift_seed_init_slow(uint32_t seed) {
-      srand(seed);
+      Rand r(seed);
       for (int i = 0; i < MULTIPLY_SHIFT_RANDOM_WORDS; i++) {
-         multiply_shift_random[i] = rand128();
+         multiply_shift_random[i] = r.rand_u128();
          if (!multiply_shift_random[i])
            multiply_shift_random[i]++;
          // We don't need an odd multiply, when we add the seed in the beginning
@@ -1097,14 +1094,14 @@ void halftime_hash_seed_init(size_t &seed)
       *(uint32_t*)out = (uint32_t)poly_k_mersenne(key, len_bytes, seed, 4);
    }
    void poly_mersenne_seed_init(uint32_t &seed) {
-      srand(seed);
+      Rand r(seed);
       // a has be at most 2^60, or the lazy modular reduction won't work.
-      poly_mersenne_a = rand128() % (MERSENNE_61/2);
-      poly_mersenne_b = rand128() % MERSENNE_61;
+      poly_mersenne_a = r.rand_u128() % (MERSENNE_61/2);
+      poly_mersenne_b = r.rand_u128() % MERSENNE_61;
       for (int i = 0; i < POLY_MERSENNE_MAX_K+1; i++) {
          // The random values should be at most 2^61-2, or the lazy
          // modular reduction won't work.
-         poly_mersenne_random[i] = rand128() % MERSENNE_61;
+         poly_mersenne_random[i] = r.rand_u128() % MERSENNE_61;
       }
    }
    void poly_mersenne_init() {
@@ -1121,10 +1118,11 @@ void halftime_hash_seed_init(size_t &seed)
 static uint8_t tsip_key[16];
 void tsip_init()
 {
-  uint64_t r = rand_u64();
-  memcpy(&tsip_key[0], &r, 8);
-  r = rand_u64();
-  memcpy(&tsip_key[8], &r, 8);
+  Rand r(729176);
+  uint64_t rv = r.rand_u64();
+  memcpy(&tsip_key[0], &rv, 8);
+  rv = r.rand_u64();
+  memcpy(&tsip_key[8], &rv, 8);
 }
 void tsip_test(const void *bytes, int len, uint32_t seed, void *out)
 {

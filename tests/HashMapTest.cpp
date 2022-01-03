@@ -282,7 +282,8 @@ bool HashMapTest(HashInfo * info, const bool verbose, const bool extra, const bo
 
     std::vector<std::string> words = HashMapInit(verbose);
     if (words.size()) {
-        const uint32_t seed = rand_u32();
+        Rand r(477537);
+        const uint32_t seed = r.rand_u32();
         Hash_Seed_init (hash, seed);
         result &= HashMapImpl(hash,info->hashbits,words,seed,trials,verbose);
     }
