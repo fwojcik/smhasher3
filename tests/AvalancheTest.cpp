@@ -125,15 +125,13 @@ static int maxBias ( int * counts, int buckets, int reps )
 // threaded: loop over bins
 template < typename keytype, typename hashtype >
 static void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
-                     std::vector<keytype> &keys, a_int & irepp,
+                     const int keybytes, const uint8_t * keys, a_int & irepp,
                      const int reps, const int i, const bool verbose )
-{
-  const int keybytes = sizeof(keytype);
+{ 
+  const int keybits = keybytes * 8;
   const int hashbytes = sizeof(hashtype);
 
-  const int keybits = keybytes * 8;
-
-  keytype K;
+  uint8_t K[keybytes];
   hashtype A,B;
   int irep;
 
@@ -143,16 +141,16 @@ static void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
       if(irep % (reps/10) == 0) printf(".");
     }
 
-    K = keys[irep];
-    hash(&K,keybytes,g_seed,&A);
+    memcpy(K,&keys[keybytes * irep],keybytes);
+    hash(K,keybytes,g_seed,&A);
 
     int * cursor = &bins[0];
 
     for(int iBit = 0; iBit < keybits; iBit++)
     {
-      flipbit(K,iBit);
-      hash(&K,keybytes,g_seed,&B);
-      flipbit(K,iBit);
+      flipbit(K,keybytes,iBit);
+      hash(K,keybytes,g_seed,&B);
+      flipbit(K,keybytes,iBit);
 
       B ^= A;
 
@@ -187,9 +185,9 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool drawDiagram, bool 
   printf("Testing %4d-bit keys -> %3d-bit hashes, %6d reps",
          keybits, hashbits, reps);
   //----------
-  std::vector<keytype> keys(reps);
+  std::vector<uint8_t> keys(reps * keybytes);
   for (int i = 0; i < reps; i++)
-    r.rand_p(&keys[i],keybytes);
+    r.rand_p(&keys[i*keybytes],keybytes);
 
   a_int irep(0);
 
@@ -199,12 +197,12 @@ static bool AvalancheImpl ( pfHash hash, const int reps, bool drawDiagram, bool 
   }
 
   if (g_NCPU == 1) {
-      calcBiasRange<keytype,hashtype>(hash,bins[0],keys,irep,reps,0,drawdots);
+      calcBiasRange<keytype,hashtype>(hash,bins[0],keybytes,&keys[0],irep,reps,0,drawdots);
   } else {
 #ifdef HAVE_THREADS
       std::thread t[g_NCPU];
       for (int i=0; i < g_NCPU; i++) {
-          t[i] = std::thread {calcBiasRange<keytype,hashtype>,hash,std::ref(bins[i]),std::ref(keys),std::ref(irep),reps,i,drawdots};
+          t[i] = std::thread {calcBiasRange<keytype,hashtype>,hash,std::ref(bins[i]),keybytes,&keys[0],std::ref(irep),reps,i,drawdots};
       }
       for (int i=0; i < g_NCPU; i++) {
           t[i].join();
