@@ -63,6 +63,7 @@
 #define _MAIN_CPP
 #include "Platform.h"
 #include "Types.h"
+#include "Timing.h"
 #include "Stats.h"
 #include "LegacyHashes.h"
 #include "HashSanityTest.h"
@@ -625,11 +626,11 @@ int main ( int argc, const char ** argv )
   //SetAffinity((1 << 2));
   //SelfTest();
 
-  clock_t timeBegin = clock();
+  size_t timeBegin = monotonic_clock();
 
   testHash(hashToTest);
 
-  clock_t timeEnd = clock();
+  size_t timeEnd = monotonic_clock();
 
   printf("\n");
 
@@ -641,7 +642,7 @@ int main ( int argc, const char ** argv )
           g_inputVCode, g_outputVCode, g_resultVCode);
   fprintf(outfile,
           "Verification value is 0x%08x - Testing took %f seconds\n",
-          vcode, double(timeEnd-timeBegin)/double(CLOCKS_PER_SEC));
+          vcode, double(timeEnd-timeBegin)/double(NSEC_PER_SEC));
 
   return 0;
 }

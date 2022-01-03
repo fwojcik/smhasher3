@@ -47,6 +47,8 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#define NSEC_PER_SEC 1000000000ULL
+
 //-----------------------------------------------------------------------------
 // Microsoft Visual Studio
 
@@ -61,6 +63,24 @@
 #define rdtsc()       __rdtsc()
 #define timer_start() __rdtsc()
 #define timer_end()   __rdtsc()
+
+// From portable-snippets
+FORCE_INLINE static size_t monotonic_clock(void) {
+  LARGE_INTEGER t, f;
+  size_t result;
+
+  if (QueryPerformanceCounter(&t) == 0)
+    return -12;
+
+  QueryPerformanceFrequency(&f);
+  result = t.QuadPart / f.QuadPart * NSEC_PER_SEC;
+  if (f.QuadPart > NSEC_PER_SEC) {
+      result += (t.QuadPart % f.QuadPart) / (f.QuadPart / NSEC_PER_SEC);
+  } else {
+      result += (t.QuadPart % f.QuadPart) * (NSEC_PER_SEC / f.QuadPart);
+  }
+  return result;
+}
 
 //-----------------------------------------------------------------------------
 // Other compilers
@@ -158,6 +178,21 @@ FORCE_INLINE uint64_t timer_end() {
 #else
   return rdtsc();
 #endif
+}
+
+#include <time.h>
+// From portable-snippets
+FORCE_INLINE static size_t monotonic_clock(void) {
+  struct timespec ts;
+  size_t result;
+
+  if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+    return -10;
+
+  result = ts.tv_sec * NSEC_PER_SEC;
+  result += ts.tv_nsec;
+
+  return result;
 }
 
 #endif	//	!defined(_MSC_VER)
