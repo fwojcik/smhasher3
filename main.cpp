@@ -83,6 +83,7 @@
 #include "PRNGTest.h"
 #include "AvalancheTest.h"
 #include "DifferentialTest.h"
+#include "DiffDistributionTest.h"
 #include "HashMapTest.h"
 #include "SeedTest.h"
 #include "BadSeedsTest.h"

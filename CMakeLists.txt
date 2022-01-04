@@ -117,6 +117,7 @@ add_library(
   tests/SanityTest.cpp
   tests/AvalancheTest.cpp
   tests/DifferentialTest.cpp
+  tests/DiffDistributionTest.cpp
   tests/HashMapTest.cpp
   tests/SparseKeysetTest.cpp
   tests/ZeroesKeysetTest.cpp

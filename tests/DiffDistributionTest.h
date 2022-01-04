@@ -21,6 +21,7 @@
  *
  *     Copyright (c) 2010-2012 Austin Appleby
  *     Copyright (c) 2019-2021 Reini Urban
+ *     Copyright (c) 2019      Yann Collet
  *
  *     Permission is hereby granted, free of charge, to any person
  *     obtaining a copy of this software and associated documentation
@@ -44,8 +45,8 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 //-----------------------------------------------------------------------------
-// Differential collision tests - generate a bunch of random keys,
-// see what happens to the hash value when we flip a few bits of the key.
+// Differential distribution tests - generate a bunch of random keys,
+// see what happens to the hash value when we flip a bit of the key.
 
 template < typename hashtype >
-bool DiffTest(HashInfo * info, const bool verbose, const bool extra);
+bool DiffDistTest(HashInfo * info, const bool verbose);
