@@ -1,11 +1,12 @@
 #define _HASHES_CPP
-#include "Hashes.h"
+#include "Platform.h"
+#include "Types.h"
 #include "Random.h"
 #include "VCode.h"
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
+#include "Hashes.h"
+
+#include <cassert>
 //#include <emmintrin.h>
 //#include <xmmintrin.h>
 

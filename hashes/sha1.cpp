@@ -17,6 +17,8 @@ A million repetitions of "a"
 
 #define SHA1HANDSOFF
 
+#include "Platform.h"
+
 #include "sha1.h"
 #include <stdio.h>
 #include <string.h>

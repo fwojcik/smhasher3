@@ -47,17 +47,17 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
+#include "Types.h"
 #include "Timing.h"
 #include "Stats.h"
 #include "Random.h"
 
 #include "SpeedTest.h"
 
-#include <stdio.h>   // for printf
 #include <algorithm> // for sort, min
 #include <string>
-
 #include <functional>
+#include <cassert>
 
 //-----------------------------------------------------------------------------
 // This is functionally a speed test, and so will not inform VCodes,

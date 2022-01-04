@@ -44,18 +44,18 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <cstdio>
-#include <math.h>
-#include <vector>
-
-#include "Types.h"
 #include "Platform.h"
+#include "Types.h"
 #include "Random.h"
-#include "Instantiate.h"
 #include "Analyze.h"
+#include "Instantiate.h"
 #include "VCode.h"
 
 #include "AvalancheTest.h"
+
+#include <cstdio>
+#include <cassert>
+#include <math.h>
 
 #ifdef HAVE_THREADS
 #include <atomic>

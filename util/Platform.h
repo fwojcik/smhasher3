@@ -49,8 +49,6 @@
 //-----------------------------------------------------------------------------
 // Platform-specific functions and macros
 
-#pragma once
-
 #ifdef HAVE_THREADS
 #include <thread>
 # if __APPLE__
@@ -145,7 +143,7 @@ static char* strndup(char const *s, size_t n)
 #endif
 #include <stdlib.h>
 #include <stdint.h>
-#include <sys/time.h>
+
 #ifdef HAVE_THREADS
 #include <pthread.h>
 #endif
@@ -203,20 +201,6 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #endif	//	!defined(_MSC_VER)
 
 //-----------------------------------------------------------------------------
-
-#ifdef DEBUG
-#undef assume
-#define assume(x) assert(x)
-#define verify(x) assert(x)
-#else
-#include <stdio.h>
-static void warn_if ( bool x, const char * s, const char * fn, uint64_t ln )
-{
-  if (!x)
-    printf("Statement %s is not true: %s:%d\n", s, fn, ln);
-}
-#define verify(x) warn_if(x, #x, __FILE__, __LINE__)
-#endif
 
 #ifndef __WORDSIZE
 # ifdef HAVE_BIT32

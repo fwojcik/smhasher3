@@ -44,21 +44,19 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <cstdio>
-#include <vector>
-#include <map>
-#include <algorithm>
-#include <math.h>
-
 #include "Platform.h"
 #include "Types.h"
 #include "Stats.h"    // for chooseUpToK
-#include "Analyze.h"
 #include "Random.h"
+#include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
 #include "DifferentialTest.h"
+
+#include <cstdio>
+#include <math.h>
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 // Sort through the differentials, ignoring collisions that only occured once

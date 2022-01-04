@@ -50,8 +50,6 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <vector>
-
 bool ReportBias(const int biascnt, const int coinflips, const int trials, const bool drawDiagram);
 
 template < typename hashtype >

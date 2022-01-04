@@ -44,11 +44,29 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "Bitvec.h"
+#include "Platform.h"
+#include "Types.h"
 #include "Random.h"
 
-#include <assert.h>
-#include <stdio.h>
+#include <cstdio>
+#include <algorithm>
+#include <memory>
+#include <cassert>
+
+//----------------------------------------------------------------------------
+
+#ifdef DEBUG
+#undef assume
+#define assume(x) assert(x)
+#define verify(x) assert(x)
+#else
+static void warn_if ( bool x, const char * s, const char * fn, uint64_t ln )
+{
+  if (!x)
+    printf("Statement %s is not true: %s:%d\n", s, fn, ln);
+}
+#define verify(x) warn_if(x, #x, __FILE__, __LINE__)
+#endif
 
 //----------------------------------------------------------------------------
 

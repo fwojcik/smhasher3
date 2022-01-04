@@ -50,20 +50,18 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "Platform.h"
 #include "Types.h"
 #include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
-#ifdef DEBUG
-#include "Bitvec.h"
-#endif
 
-#include <math.h>
-#include <assert.h>
+#include <cstdio>      // for printf
 #include <string.h>    // for memset
 #include <algorithm>   // for std::sort
-#include <cstdio>      // for printf
+#include <cassert>
+#include <math.h>
 
 //-----------------------------------------------------------------------------
 // If score exceeds this improbability of happening, note a failing result

@@ -1,9 +1,3 @@
-#pragma once
-
-#include "Platform.h"
-#include "Types.h"
-#include <algorithm>
-
 #include "MurmurHash1.h"
 #include "MurmurHash2.h"
 #include "MurmurHash3.h"

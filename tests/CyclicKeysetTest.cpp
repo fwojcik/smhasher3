@@ -46,9 +46,10 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "Platform.h"
 #include "Types.h"
+#include "Random.h"
 #include "Analyze.h"
-#include "Random.h"   // for rand_p
 #include "Instantiate.h"
 #include "VCode.h"
 

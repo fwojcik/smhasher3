@@ -51,8 +51,8 @@
 #include "HashMapTest.h"
 #include "Wordlist.h"
 
+#include <cstdio>
 #include <string>
-#include <vector>
 #include <unordered_map>
 #include <parallel_hashmap/phmap.h>
 #include <functional>

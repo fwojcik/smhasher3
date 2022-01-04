@@ -43,11 +43,8 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#pragma once
+#include <cstring> // For memcpy()
 
-#include "Types.h"
-
-//-----------------------------------------------------------------------------
 // Xorshift RNG based on code by George Marsaglia
 // http://en.wikipedia.org/wiki/Xorshift
 

@@ -46,6 +46,7 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "Platform.h"
 #include "Types.h"
 #include "Analyze.h"
 #include "Instantiate.h"
@@ -53,7 +54,7 @@
 
 #include "PermutationKeysetTest.h"
 
-#include <vector>
+#include <cassert>
 
 //-----------------------------------------------------------------------------
 // Keyset 'Combination' - all possible combinations of input blocks

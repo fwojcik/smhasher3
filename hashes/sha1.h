@@ -1,10 +1,6 @@
 /* public api for steve reid's public domain SHA-1 implementation */
 /* this file is in the public domain */
 
-#pragma once
-
-#include "Platform.h"
-
 struct SHA1_CTX {
   uint32_t state[5];
   uint32_t count[2];

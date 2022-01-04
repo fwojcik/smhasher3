@@ -44,17 +44,14 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#pragma once
-
-#include "Platform.h"
-#include "Bitvec.h"
-
-#include <memory.h>
+#include <cstring>
 #include <vector>
 #include <map>
 #include <set>
-#include <string>
-#include <assert.h>
+#include <memory>
+#include <algorithm>
+
+#include "Bitvec.h"
 
 //-----------------------------------------------------------------------------
 // If the optimizer detects that a value in a speed test is constant or unused,

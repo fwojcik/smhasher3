@@ -67,6 +67,8 @@
 
 #include "PopcountTest.h"
 
+#include <cassert>
+
 //-----------------------------------------------------------------------------
 // Moment Chi-Square test, measuring the probability of the
 // lowest 32 bits set over the whole key space. Not where the bits are, but how many.

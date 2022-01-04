@@ -54,7 +54,6 @@
 
 #if defined(_MSC_VER)
 
-#include <stdlib.h>
 #include <math.h>   // Has to be included before intrin.h or VC complains about 'ceil'
 #include <intrin.h> // for __rdtsc
 

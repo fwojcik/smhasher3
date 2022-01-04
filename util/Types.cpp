@@ -43,7 +43,7 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "Types.h"
+#include "Platform.h"
 #include "Random.h"
 
 #include <stdio.h>
