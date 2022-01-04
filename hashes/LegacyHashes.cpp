@@ -931,31 +931,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint) {
 }
 
 //-----------------------------------------------------------------------------
-// Self-test on startup - verify that all installed hashes work correctly.
-
-void HashSelfTestAll(bool verbose) {
-  bool pass = true;
-  for (size_t i = 0; i < sizeof(g_hashes) / sizeof(HashInfo); i++) {
-    HashInfo *info = &g_hashes[i];
-    if (verbose)
-      printf("%20s - ", info->name);
-    pass &= VerificationTest(info, verbose);
-  }
-
-  if (!pass) {
-    printf("Self-test FAILED!\n");
-    if (!verbose) {
-      for (size_t i = 0; i < sizeof(g_hashes) / sizeof(HashInfo); i++) {
-        HashInfo *info = &g_hashes[i];
-        printf("%20s - ", info->name);
-        pass &= VerificationTest(info, true);
-      }
-    }
-    exit(1);
-  }
-}
-
-//-----------------------------------------------------------------------------
 bool hash_is_very_slow(pfHash hash) {
     // known very slow hashes (typically > 500 cycle/hash)
     const struct { pfHash h; } slowhashes[] = {

@@ -68,7 +68,6 @@ void Hash_init (HashInfo* info);
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint);
 void Bad_Seed_init (pfHash hash, uint32_t &seed);
 
-void HashSelfTestAll(bool verbose);
 
 
 void md5_32(const void *key, int len, uint32_t seed, void *out);

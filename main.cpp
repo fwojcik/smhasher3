@@ -163,8 +163,35 @@ uint32_t g_outputVCode = 1;
 uint32_t g_resultVCode = 1;
 
 //-----------------------------------------------------------------------------
+// Self-test on startup - verify that all installed hashes work correctly.
 
 const char* quality_str[3] = { "SKIP", "POOR", "GOOD" };
+
+void HashSelfTestAll(bool verbose) {
+  const size_t numhashes = numHashes();
+  bool pass = true;
+
+  for (size_t i = 0; i < numhashes; i++) {
+    HashInfo * info = numHash(i);
+    if (verbose)
+      printf("%20s - ", info->name);
+    pass &= VerificationTest(info, verbose);
+  }
+
+  if (!pass) {
+    printf("Self-test FAILED!\n");
+    if (!verbose) {
+      for (size_t i = 0; i < numhashes; i++) {
+        HashInfo * info = numHash(i);
+        printf("%20s - ", info->name);
+        pass &= VerificationTest(info, true);
+      }
+    }
+    exit(1);
+  }
+}
+
+//-----------------------------------------------------------------------------
 
 template < typename hashtype >
 bool test ( pfHash hash, HashInfo* info )
