@@ -62,7 +62,7 @@
 // all possible keys with bits set in that window
 
 template < typename keytype, typename hashtype >
-static bool WindowedKeyImpl ( pfHash hash, int windowbits,
+static bool WindowedKeyImpl ( HashFn hash, int windowbits,
                        bool testCollision, bool testDistribution, bool drawDiagram )
 {
   const int keybits = sizeof(keytype) * 8;
@@ -116,8 +116,8 @@ static bool WindowedKeyImpl ( pfHash hash, int windowbits,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool WindowedKeyTest(HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool WindowedKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     bool testCollision = true;
     // Skip distribution test for these - they're too easy to
@@ -132,7 +132,7 @@ bool WindowedKeyTest(HashInfo * info, const bool verbose, const bool extra) {
 
     printf("[[[ Keyset 'Window' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     result &= WindowedKeyImpl< Blob<keybits>, hashtype >
         ( hash, windowbits, testCollision, testDistribution, verbose );

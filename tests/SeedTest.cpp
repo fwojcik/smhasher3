@@ -60,8 +60,9 @@
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 
 template < typename hashtype >
-bool SeedTestImpl ( pfHash hash, int keycount, bool drawDiagram )
+bool SeedTestImpl ( HashInfo * hinfo, int keycount, bool drawDiagram )
 {
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
   printf("Keyset 'Seed' - %d keys\n",keycount);
   assert(keycount < (1<<31));
 
@@ -77,9 +78,9 @@ bool SeedTestImpl ( pfHash hash, int keycount, bool drawDiagram )
 
   hashes.resize(keycount);
 
-  for(int i = 0; i < keycount; i++)
+  for(seed_t i = 0; i < keycount; i++)
   {
-    Hash_Seed_init (hash, i);
+    hinfo->Seed(i);
     hash(text,len,i,&hashes[i]);
   }
 
@@ -94,13 +95,12 @@ bool SeedTestImpl ( pfHash hash, int keycount, bool drawDiagram )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool SeedTest(HashInfo * info, const bool verbose) {
-    pfHash hash = info->hash;
+bool SeedTest(HashInfo * hinfo, const bool verbose) {
     bool result = true;
 
     printf("[[[ Keyset 'Seed' Tests ]]]\n\n");
 
-    result &= SeedTestImpl<hashtype>( hash, 5000000, verbose );
+    result &= SeedTestImpl<hashtype>( hinfo, 5000000, verbose );
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

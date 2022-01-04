@@ -73,7 +73,7 @@ static inline uint32_t f3mix ( uint32_t k )
 }
 
 template < typename hashtype >
-static bool CyclicKeyImpl ( pfHash hash, int cycleLen, int cycleReps, const int keycount, bool drawDiagram )
+static bool CyclicKeyImpl ( HashFn hash, int cycleLen, int cycleReps, const int keycount, bool drawDiagram )
 {
   printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n",cycleReps,cycleLen,keycount);
 
@@ -120,18 +120,18 @@ static bool CyclicKeyImpl ( pfHash hash, int cycleLen, int cycleReps, const int 
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool CyclicKeyTest(HashInfo * info, const bool verbose) {
-    pfHash hash = info->hash;
+bool CyclicKeyTest(HashInfo * hinfo, const bool verbose) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 #ifdef DEBUG
     const int reps = 2;
 #else
-    const int reps = hash_is_very_slow(hash) ? 100000 : 1000000;
+    const int reps = hinfo->isVerySlow() ? 100000 : 1000000;
 #endif
 
     printf("[[[ Keyset 'Cyclic' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+0,8,reps,verbose);
     result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+1,8,reps,verbose);

@@ -97,9 +97,9 @@ std::vector<std::string> HashMapInit(bool verbose) {
 
 //-----------------------------------------------------------------------------
 
-static double HashMapSpeedTest ( pfHash pfhash, const int hashbits,
+static double HashMapSpeedTest ( HashFn hash, const int hashbits,
                           std::vector<std::string> words,
-                          const uint32_t seed, const int trials, bool verbose )
+                          const seed_t seed, const int trials, bool verbose )
 {
   //using phmap::flat_node_hash_map;
   Rand r(82762);
@@ -107,13 +107,13 @@ static double HashMapSpeedTest ( pfHash pfhash, const int hashbits,
                   {
                     // 256 needed for hasshe2, but only size_t used
                     static char out[256] = { 0 };
-                    pfhash(key.c_str(), key.length(), seed, &out);
+                    hash(key.c_str(), key.length(), seed, &out);
                     return *(size_t*)out;
                   });
   fast_hashmap phashmap(words.size(), [=](const std::string &key)
                   {
                     static char out[256] = { 0 }; // 256 for hasshe2, but stripped to 64/32
-                    pfhash(key.c_str(), key.length(), seed, &out);
+                    hash(key.c_str(), key.length(), seed, &out);
                     return *(size_t*)out;
                   });
 
@@ -184,12 +184,14 @@ static double HashMapSpeedTest ( pfHash pfhash, const int hashbits,
 
   printf("\ngreg7mdp/parallel-hashmap\n");
   printf("Init fast HashMapTest:    ");
+#if 0
 #ifndef NDEBUG
   if ((pfhash == VHASH_32 || pfhash == VHASH_64) && !verbose)
     {
       printf("SKIP");
       return 0.;
     }
+#endif
 #endif
   fflush(NULL);
   times.reserve(trials);
@@ -247,13 +249,13 @@ static double HashMapSpeedTest ( pfHash pfhash, const int hashbits,
 
 //-----------------------------------------------------------------------------
 
-static bool HashMapImpl ( pfHash pfhash,
+static bool HashMapImpl ( HashFn hash,
                    const int hashbits, std::vector<std::string> words,
-                   const uint32_t seed, const int trials, bool verbose )
+                   const seed_t seed, const int trials, bool verbose )
 {
   double mean = 0.0;
   try {
-    mean = HashMapSpeedTest( pfhash, hashbits, words, seed, trials, verbose);
+    mean = HashMapSpeedTest( hash, hashbits, words, seed, trials, verbose);
   }
   catch (...) {
     printf(" aborted !!!!\n");
@@ -268,14 +270,14 @@ static bool HashMapImpl ( pfHash pfhash,
 
 //-----------------------------------------------------------------------------
 
-bool HashMapTest(HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool HashMapTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    const int trials = (hinfo->isVerySlow() && !extra) ? 5 : 50;
     bool result = true;
-    const int trials = (hash_is_very_slow(hash) && !extra) ? 5 : 50;
 
     printf("[[[ 'Hashmap' Speed Tests ]]]\n\n");
 
-    if (info->quality == SKIP) {
+    if (hinfo->isMock()) {
       printf("Skipping Hashmap test; it is designed for true hashes\n\n");
       return result;
     }
@@ -283,9 +285,9 @@ bool HashMapTest(HashInfo * info, const bool verbose, const bool extra) {
     std::vector<std::string> words = HashMapInit(verbose);
     if (words.size()) {
         Rand r(477537);
-        const uint32_t seed = r.rand_u32();
-        Hash_Seed_init (hash, seed);
-        result &= HashMapImpl(hash,info->hashbits,words,seed,trials,verbose);
+        const seed_t seed = r.rand_u32();
+        hinfo->Seed(seed);
+        result &= HashMapImpl(hash,hinfo->bits,words,seed,trials,verbose);
     }
 
     if(!result) printf("*********FAIL*********\n");

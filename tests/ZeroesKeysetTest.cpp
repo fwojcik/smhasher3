@@ -59,7 +59,7 @@
 // We reuse one block of empty bytes, otherwise the RAM cost is enormous.
 
 template < typename hashtype >
-static bool ZeroKeyImpl ( pfHash hash, bool drawDiagram )
+static bool ZeroKeyImpl ( HashFn hash, bool drawDiagram )
 {
   int keycount = 200*1024;
 
@@ -94,13 +94,13 @@ static bool ZeroKeyImpl ( pfHash hash, bool drawDiagram )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool ZeroKeyTest(HashInfo * info, const bool verbose) {
-    pfHash hash = info->hash;
+bool ZeroKeyTest(HashInfo * hinfo, const bool verbose) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 
     printf("[[[ Keyset 'Zeroes' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     result &= ZeroKeyImpl<hashtype>( hash, verbose );
 

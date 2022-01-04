@@ -144,7 +144,7 @@ else()
   message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
 
-target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashes
+target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashes SMHasher3Hashlib
                       ${THREAD_LIBS_PREFIX} ${CMAKE_THREAD_LIBS_INIT} ${THREAD_LIBS_SUFFIX})
 
 if(NOT (CMAKE_CROSSCOMPILING))

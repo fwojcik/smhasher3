@@ -77,12 +77,12 @@
 typedef long double moments[8];
 
 // Copy the results into g_NCPU ranges of 2^32
-static void PopcountThread ( const struct HashInfo *info, const int inputSize,
+static void PopcountThread ( HashInfo * hinfo, const int inputSize,
                         const unsigned start, const unsigned end, const unsigned step,
                         moments &b)
 {
-  pfHash const hash = info->hash;
-  uint32_t seed = g_seed;
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
+  seed_t seed = g_seed;
   long double const n = (end-(start+1)) / step;
   uint64_t previous = 0;
   long double b0h = b[0], b0l = b[1], db0h = b[2], db0l = b[3];
@@ -92,13 +92,14 @@ static void PopcountThread ( const struct HashInfo *info, const int inputSize,
   char key[INPUT_SIZE_MAX] = {0};
 #define HASH_SIZE_MAX 64
   char hbuff[HASH_SIZE_MAX] = {0};
-  int hbits = info->hashbits;
-  if (hbits > 64) hbits = 64;   // limited due to popcount8
-  Bad_Seed_init(hash, seed);
-  Hash_Seed_init(hash, seed, 1);
+  const int hbits = std::min(hinfo->bits, 64U); // limited due to popcount8
+
   assert(sizeof(unsigned) <= inputSize);
   assert(start < end);
   //assert(step > 0);
+
+  hinfo->FixupSeed(seed);
+  hinfo->Seed(seed, 1);
 
   uint64_t i = start - step;
   memcpy(key, &i, sizeof(i));
@@ -162,16 +163,15 @@ static double PopcountResults ( long double srefh, long double srefl,
   return worse;
 }
 
-static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
+static bool PopcountTestImpl ( HashInfo * hinfo, int inputSize, int step )
 {
-  const pfHash hash = info->hash;
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
   const unsigned mx = 0xffffffff;
-  assert(inputSize >= 4);
-  long double const n = 0x100000000UL / step;
-  int hbits = info->hashbits;
-  if (hbits > 64) hbits = 64;   // limited due to popcount8
+  const long double n = 0x100000000UL / step;
+  const int hbits = std::min(hinfo->bits, 64U); // limited due to popcount8
+
   assert(hbits <= HASH_SIZE_MAX*8);
-  assert(inputSize > 0);
+  assert(inputSize >= 4);
 
   printf("Generating hashes from a linear sequence of %i-bit numbers "
          "with a step size of %d ... \n", inputSize*8, step);
@@ -251,7 +251,7 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
   addVCodeInput(inputSize);  // size
 
   if (g_NCPU == 1) {
-      PopcountThread (info, inputSize, 0, 0xffffffff, step, std::ref(b[0]));
+      PopcountThread(hinfo, inputSize, 0, 0xffffffff, step, std::ref(b[0]));
   } else {
 #ifdef HAVE_THREADS
       // split into g_NCPU threads
@@ -263,7 +263,7 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
           const uint32_t start = i * len * step;
           const uint32_t end = (i < (g_NCPU - 1)) ? start + (len * step - 1) : 0xffffffff;
           //printf("thread[%d]: %d, 0x%x - 0x%x %d\n", i, inputSize, start, end, step);
-          t[i] = std::thread {PopcountThread, info, inputSize, start, end, step, std::ref(b[i])};
+          t[i] = std::thread {PopcountThread, hinfo, inputSize, start, end, step, std::ref(b[i])};
       }
 
       std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -322,17 +322,16 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool PopcountTest(HashInfo * info, const bool extra) {
-    pfHash hash = info->hash;
+bool PopcountTest(HashInfo * hinfo, const bool extra) {
+    const int step = ((hinfo->isVerySlow() || hinfo->bits > 128) && extra) ? 6 : 2;
     bool result = true;
-    const int step = ((hash_is_very_slow(hash) || info->hashbits > 128) && extra) ? 6 : 2;
 
     printf("[[[ Popcount Tests ]]]\n\n");
 
-    result &= PopcountTestImpl(info, 4, step);
+    result &= PopcountTestImpl(hinfo, 4, step);
     if (extra) {
-        result &= PopcountTestImpl(info, 8, step);
-        result &= PopcountTestImpl(info, 16, step);
+        result &= PopcountTestImpl(hinfo, 8, step);
+        result &= PopcountTestImpl(hinfo, 16, step);
     }
 
     if(!result) printf("\n*********FAIL*********\n");

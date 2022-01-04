@@ -125,7 +125,7 @@ static int maxBias ( int * counts, int buckets, int reps )
 //-----------------------------------------------------------------------------
 // threaded: loop over bins
 template < typename hashtype >
-static void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
+static void calcBiasRange ( const HashFn hash, std::vector<int> &bins,
                      const int keybytes, const uint8_t * keys,
                      a_int & irepp, const int reps, const bool verbose )
 {
@@ -171,7 +171,7 @@ static void calcBiasRange ( const pfHash hash, std::vector<int> &bins,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-static bool AvalancheImpl ( pfHash hash, const int keybits, const int reps, bool drawDiagram, bool drawdots )
+static bool AvalancheImpl ( HashFn hash, const int keybits, const int reps, bool drawDiagram, bool drawdots )
 {
   Rand r(48273);
 
@@ -238,7 +238,7 @@ static bool AvalancheImpl ( pfHash hash, const int keybits, const int reps, bool
 // not really all that useful.
 
 template< typename keytype, typename hashtype >
-void BicTest1 ( pfHash hash, const int keybit, const int reps, double & maxBias, int & maxA, int & maxB, bool verbose )
+void BicTest1 ( HashFn hash, const int keybit, const int reps, double & maxBias, int & maxA, int & maxB, bool verbose )
 {
   Rand r(11938);
 
@@ -323,7 +323,7 @@ void BicTest1 ( pfHash hash, const int keybit, const int reps, double & maxBias,
 //----------
 
 template< typename keytype, typename hashtype >
-bool BicTest1 ( pfHash hash, const int reps )
+bool BicTest1 ( HashFn hash, const int reps )
 {
   const int keybytes = sizeof(keytype);
   const int keybits = keybytes * 8;
@@ -365,7 +365,7 @@ bool BicTest1 ( pfHash hash, const int reps )
 // but slooooow
 
 template< typename keytype, typename hashtype >
-void BicTest2 ( pfHash hash, const int reps, bool verbose = true )
+void BicTest2 ( HashFn hash, const int reps, bool verbose = true )
 {
   const int keybytes = sizeof(keytype);
   const int keybits = keybytes * 8;
@@ -449,7 +449,7 @@ void BicTest2 ( pfHash hash, const int reps, bool verbose = true )
 // chosen in anticipation of threading this test.
 
 template< typename keytype, typename hashtype >
-static bool BicTest3 ( pfHash hash, const int reps, bool verbose = false )
+static bool BicTest3 ( HashFn hash, const int reps, bool verbose = false )
 {
   const int keybytes = sizeof(keytype);
   const int keybits = keybytes * 8;
@@ -565,18 +565,19 @@ static bool BicTest3 ( pfHash hash, const int reps, bool verbose = false )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool BicTest(HashInfo * info, const bool verbose) {
-    pfHash hash = info->hash;
+bool BicTest(HashInfo * hinfo, const bool verbose) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
-    bool fewerreps = (info->hashbits > 64 || hash_is_very_slow(hash)) ? true : false;
+    bool fewerreps = (hinfo->bits > 64 || hinfo->isVerySlow()) ? true : false;
 
     printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
-    Hash_Seed_init (hash, g_seed);
+
+    hinfo->Seed(g_seed);
 
     if (fewerreps) {
       result &= BicTest3<Blob<128>,hashtype>(hash,100000,verbose);
     } else {
-      const long reps = 64000000/info->hashbits;
+      const long reps = 64000000/hinfo->bits;
       //result &= BicTest<uint64_t,hashtype>(hash,2000000);
       result &= BicTest3<Blob<88>,hashtype>(hash,(int)reps,verbose);
     }
@@ -592,17 +593,18 @@ INSTANTIATE(BicTest, HASHTYPELIST);
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool AvalancheTest(HashInfo* info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool AvalancheTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     bool drawdots = true; //.......... progress dots
 
     printf("[[[ Avalanche Tests ]]]\n\n");
-    Hash_Seed_init (hash, g_seed, 2);
+
+    hinfo->Seed(g_seed, 2);
 
     std::vector<int> testBitsvec =
         { 24, 32, 40, 48, 56, 64, 72, 80, 96, 112, 128, 160 };
-    if (info->hashbits <= 64) {
+    if (hinfo->bits <= 64) {
         testBitsvec.insert(testBitsvec.end(), { 512, 1024 });
     }
     if (extra) {

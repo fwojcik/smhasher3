@@ -51,6 +51,7 @@
 #include <memory>
 #include <algorithm>
 
+#include "Hashinfo.h"
 #include "Bitvec.h"
 
 //-----------------------------------------------------------------------------
@@ -67,14 +68,20 @@ uint32_t whitehole ( void );
 // To be able to sample different statistics sets from the same hash,
 // a seed can be supplied which will be used in each test where a seed
 // is not explicitly part of that test.
-extern uint64_t g_seed;
+extern seed_t g_seed;
+
+//-----------------------------------------------------------------------------
+// Soon it will be possible to choose at runtime how each hash will
+// treat its input data in terms of endianness. For now, just hardcode
+// to native interpretation.
+static const HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_NATIVE;
 
 //-----------------------------------------------------------------------------
 typedef void (*pfHash)(const void *blob, const int len, const uint32_t seed,
                        void *out);
 
 enum HashQuality             {  SKIP,   POOR,   GOOD };
-struct HashInfo
+struct LegacyHashInfo
 {
   pfHash hash;
   int hashbits;
@@ -164,7 +171,7 @@ struct HashCallback : public KeyCallback
 {
   typedef std::vector<hashtype> hashvec;
 
-  HashCallback ( pfHash hash, hashvec & hashes ) : m_hashes(hashes), m_pfHash(hash)
+  HashCallback ( HashFn hash, hashvec & hashes ) : m_hashes(hashes), m_HashFn(hash)
   {
     m_hashes.clear();
   }
@@ -176,7 +183,7 @@ struct HashCallback : public KeyCallback
     m_hashes.resize(newsize);
 
     hashtype h;
-    m_pfHash(key, len, g_seed, &h);
+    m_HashFn(key, len, g_seed, &h);
 
     m_hashes.back() = h;
   }
@@ -187,7 +194,7 @@ struct HashCallback : public KeyCallback
   }
 
   hashvec & m_hashes;
-  pfHash m_pfHash;
+  HashFn m_HashFn;
 
   //----------
 
@@ -204,8 +211,8 @@ struct CollisionCallback : public KeyCallback
   typedef HashSet<hashtype> hashset;
   typedef CollisionMap<hashtype,ByteVec> collmap;
 
-  CollisionCallback ( pfHash hash, hashset & collisions, collmap & cmap )
-  : m_pfHash(hash),
+  CollisionCallback ( HashFn hash, hashset & collisions, collmap & cmap )
+  : m_HashFn(hash),
     m_collisions(collisions),
     m_collmap(cmap)
   {
@@ -215,7 +222,7 @@ struct CollisionCallback : public KeyCallback
   {
     hashtype h;
 
-    m_pfHash(key,len,g_seed,&h);
+    m_HashFn(key,len,g_seed,&h);
 
     if(m_collisions.count(h))
     {
@@ -225,7 +232,7 @@ struct CollisionCallback : public KeyCallback
 
   //----------
 
-  pfHash m_pfHash;
+  HashFn m_HashFn;
   hashset & m_collisions;
   collmap & m_collmap;
 

@@ -60,11 +60,11 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-size_t numHashes(void);
-HashInfo * numHash(size_t num);
-HashInfo * findHash ( const char * name );
+size_t numLegacyHashes(void);
+LegacyHashInfo * numLegacyHash(size_t num);
+LegacyHashInfo * findLegacyHash ( const char * name );
 
-void Hash_init (HashInfo* info);
+void Hash_init (LegacyHashInfo* info);
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint);
 void Bad_Seed_init (pfHash hash, uint32_t &seed);
 

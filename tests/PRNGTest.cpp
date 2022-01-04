@@ -60,7 +60,7 @@
 // Keyset 'Prng'
 
 template< typename hashtype >
-static void Prn_gen (int nbRn, pfHash hash, std::vector<hashtype> & hashes )
+static void Prn_gen (int nbRn, HashFn hash, std::vector<hashtype> & hashes )
 {
   assert(nbRn > 0);
 
@@ -87,8 +87,8 @@ static void Prn_gen (int nbRn, pfHash hash, std::vector<hashtype> & hashes )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool PRNGTest(HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool PRNGTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     bool testCollision = true;
     bool testDistribution = extra;
@@ -101,7 +101,7 @@ bool PRNGTest(HashInfo * info, const bool verbose, const bool extra) {
         return result;
     }
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     Prn_gen(32 << 20, hash, hashes);
 

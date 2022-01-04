@@ -72,7 +72,7 @@ static void printSparseKey(const void* buffer, size_t size)
 }
 
 template < typename keytype, typename hashtype >
-static void SparseKeygenRecurse ( pfHash hash, int start, int bitsleft, bool inclusive, keytype & k, std::vector<hashtype> & hashes )
+static void SparseKeygenRecurse ( HashFn hash, int start, int bitsleft, bool inclusive, keytype & k, std::vector<hashtype> & hashes )
 {
   const int nbytes = sizeof(keytype);
   const int nbits = nbytes * 8;
@@ -102,7 +102,7 @@ static void SparseKeygenRecurse ( pfHash hash, int start, int bitsleft, bool inc
 //----------
 
 template < int keybits, typename hashtype >
-static bool SparseKeyImpl ( pfHash hash, const int setbits, bool inclusive,
+static bool SparseKeyImpl ( HashFn hash, const int setbits, bool inclusive,
                      bool testColl, bool testDist, bool drawDiagram )
 {
   printf("Keyset 'Sparse' - %d-bit keys with %s %d bits set - ",keybits,
@@ -136,13 +136,13 @@ static bool SparseKeyImpl ( pfHash hash, const int setbits, bool inclusive,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool SparseKeyTest(HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool SparseKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 
     printf("[[[ Keyset 'Sparse' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     result &= SparseKeyImpl<  16,hashtype>(hash,9,true,true,true,verbose);
     result &= SparseKeyImpl<  24,hashtype>(hash,8,true,true,true,verbose);
@@ -168,7 +168,7 @@ bool SparseKeyTest(HashInfo * info, const bool verbose, const bool extra) {
         result &= SparseKeyImpl< 320,hashtype>(hash,3,true,true,true,verbose);
         result &= SparseKeyImpl< 384,hashtype>(hash,3,true,true,true,verbose);
         result &= SparseKeyImpl< 448,hashtype>(hash,3,true,true,true,verbose);
-    } else if (info->hashbits > 64) {
+    } else if (hinfo->bits > 64) {
         goto END_Sparse;
     }
     result &= SparseKeyImpl< 512,hashtype>(hash,3,true,true,true,verbose);

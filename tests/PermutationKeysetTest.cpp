@@ -62,7 +62,7 @@
 template< typename hashtype >
 static void CombinationKeygenRecurse ( uint8_t * key, int len, int maxlen,
                                 const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
-                                pfHash hash, std::vector<hashtype> & hashes )
+                                HashFn hash, std::vector<hashtype> & hashes )
 {
   if(len == maxlen) return;  // end recursion
 
@@ -80,7 +80,7 @@ static void CombinationKeygenRecurse ( uint8_t * key, int len, int maxlen,
 }
 
 template< typename hashtype >
-static bool CombinationKeyTest ( pfHash hash, int maxlen,
+static bool CombinationKeyTest ( HashFn hash, int maxlen,
                           const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
                           bool testColl, bool testDist, bool drawDiagram )
 {
@@ -233,14 +233,14 @@ const struct {
 };
 
 template < typename hashtype >
-bool PermutedKeyTest(HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool PermutedKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
-    const int default_maxlen = extra ? 23 : (info->hashbits >= 128) ? 17 : 22;
+    const int default_maxlen = extra ? 23 : (hinfo->bits >= 128) ? 17 : 22;
 
     printf("[[[ Keyset 'Permutation' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     for (auto test: keytests) {
         printf("Combination %s Tests:\n", test.desc);

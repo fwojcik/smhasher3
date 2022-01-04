@@ -122,7 +122,7 @@ static void TwoBytesKeygen ( int maxlen, KeyCallback & c )
 }
 
 template < typename hashtype >
-static bool TwoBytesTest2 ( pfHash hash, int maxlen, bool drawDiagram )
+static bool TwoBytesTest2 ( HashFn hash, int maxlen, bool drawDiagram )
 {
   std::vector<hashtype> hashes;
 
@@ -141,19 +141,23 @@ static bool TwoBytesTest2 ( pfHash hash, int maxlen, bool drawDiagram )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool TwoBytesKeyTest(HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool TwoBytesKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     int maxlen;
-    if (!extra && (info->hashbits > 32)) {
-        maxlen = hash_is_very_slow(hash) ? 8 : ((info->hashbits <= 64) ? 20 : 15);
-    } else {
+    if (extra || (hinfo->bits <= 32)) {
         maxlen = 24;
+    } else if (hinfo->isVerySlow()) {
+        maxlen = 8;
+    } else if (hinfo->bits <= 64) {
+        maxlen = 20;
+    } else {
+        maxlen = 15;
     }
 
     printf("[[[ Keyset 'TwoBytes' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     for(int len = 4; len <= maxlen; len += 4)
     {

@@ -61,17 +61,17 @@
 
 template< typename hashtype >
 static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
-        pfHash hash, bool testColl, bool testDist, bool drawDiagram)
+        HashInfo * hinfo, bool testColl, bool testDist, bool drawDiagram)
 {
   assert(0 < Ybits && Ybits < 31);
   assert(0 < Xbits && Xbits < 31);
+  assert(Xbits + Ybits < 31);
   assert(inputLen*8 > Xbits);  // enough space to run the test
 
   std::vector<hashtype> hashes;
   int const xMax = (1 << Xbits);
   int const yMax = (1 << Ybits);
-
-  assert(Xbits + Ybits < 31);
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
 
 #define INPUT_LEN_MAX 256
   assert(inputLen <= INPUT_LEN_MAX);
@@ -85,7 +85,7 @@ static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
       addVCodeInput(yMax);
       for (size_t y=0; y < yMax; y++) {
           hashtype h;
-          Hash_Seed_init (hash, y);
+          hinfo->Seed(y);
           hash(key, inputLen, y, &h);
           hashes.push_back(h);
       }
@@ -97,22 +97,19 @@ static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
 //-----------------------------------------------------------------------------
 
 template< typename hashtype >
-bool PerlinNoiseTest (HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool PerlinNoiseTest (HashInfo * hinfo, const bool verbose, const bool extra) {
     bool result = true;
     bool testCollision = true;
     bool testDistribution = extra;
 
     printf("[[[ Keyset 'PerlinNoise' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, 0);
-
-    result &= PerlinNoise<hashtype>(12, 12, 2, 1, hash, testCollision, testDistribution, verbose);
+    result &= PerlinNoise<hashtype>(12, 12, 2, 1, hinfo, testCollision, testDistribution, verbose);
     printf("\n");
     if (extra) {
-        result &= PerlinNoise<hashtype>(12, 12, 4, 1, hash, testCollision, testDistribution, verbose);
+        result &= PerlinNoise<hashtype>(12, 12, 4, 1, hinfo, testCollision, testDistribution, verbose);
         printf("\n");
-        result &= PerlinNoise<hashtype>(12, 12, 8, 1, hash, testCollision, testDistribution, verbose);
+        result &= PerlinNoise<hashtype>(12, 12, 8, 1, hinfo, testCollision, testDistribution, verbose);
         printf("\n");
     }
 

@@ -65,7 +65,7 @@
 // set of length N.
 
 template < typename hashtype >
-static bool TextKeyImpl ( pfHash hash, const char * prefix, const char * coreset, const int corelen, const char * suffix, bool drawDiagram )
+static bool TextKeyImpl ( HashFn hash, const char * prefix, const char * coreset, const int corelen, const char * suffix, bool drawDiagram )
 {
   const int prefixlen = (int)strlen(prefix);
   const int suffixlen = (int)strlen(suffix);
@@ -120,7 +120,7 @@ static bool TextKeyImpl ( pfHash hash, const char * prefix, const char * coreset
 // Keyset 'Words' - pick random chars from coreset (alnum or password chars)
 
 template < typename hashtype >
-static bool WordsKeyImpl ( pfHash hash, const long keycount,
+static bool WordsKeyImpl ( HashFn hash, const long keycount,
                     const int minlen, const int maxlen,
                     const char * coreset,
                     const char* name, bool drawDiagram )
@@ -174,7 +174,7 @@ static bool WordsKeyImpl ( pfHash hash, const long keycount,
 }
 
 template < typename hashtype >
-static bool WordsStringImpl ( pfHash hash, std::vector<std::string> & words,
+static bool WordsStringImpl ( HashFn hash, std::vector<std::string> & words,
                        bool drawDiagram )
 {
   long wordscount = words.size();
@@ -212,8 +212,8 @@ static bool WordsStringImpl ( pfHash hash, std::vector<std::string> & words,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool TextKeyTest(HashInfo * info, const bool verbose) {
-    pfHash hash = info->hash;
+bool TextKeyTest(HashInfo * hinfo, const bool verbose) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     const char * alnum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -221,7 +221,7 @@ bool TextKeyTest(HashInfo * info, const bool verbose) {
 
     printf("[[[ Keyset 'Text' Tests ]]]\n\n");
 
-    Hash_Seed_init (hash, g_seed);
+    hinfo->Seed(g_seed);
 
     result &= TextKeyImpl<hashtype>( hash, "Foo",    alnum, 4, "Bar",    verbose );
     result &= TextKeyImpl<hashtype>( hash, "FooBar", alnum, 4, "",       verbose );

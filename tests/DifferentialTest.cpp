@@ -116,7 +116,7 @@ static bool ProcessDifferentials ( std::map<keytype, uint32_t> & diffcounts, int
 // them.
 
 template < bool recursemore, typename keytype, typename hashtype >
-static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype & h1, hashtype & h2, int start, int bitsleft, std::map<keytype, uint32_t> & diffcounts )
+static void DiffTestRecurse ( HashFn hash, keytype & k1, keytype & k2, hashtype & h1, hashtype & h2, int start, int bitsleft, std::map<keytype, uint32_t> & diffcounts )
 {
   const int bits = sizeof(keytype)*8;
 
@@ -155,7 +155,7 @@ static void DiffTestRecurse ( pfHash hash, keytype & k1, keytype & k2, hashtype 
 //----------
 
 template < typename keytype, typename hashtype >
-static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisions )
+static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisions )
 {
   const int keybits = sizeof(keytype) * 8;
   const int hashbits = sizeof(hashtype) * 8;
@@ -177,7 +177,6 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
   printf("%d reps, %0.f total tests, expecting %2.2f random collisions",
          reps,testcount,expected);
 
-  Hash_Seed_init (hash, g_seed);
   for(int i = 0; i < reps; i++)
   {
     if(i % (reps/10) == 0) printf(".");
@@ -219,12 +218,12 @@ static bool DiffTestImpl ( pfHash hash, int diffbits, int reps, bool dumpCollisi
 // #TODO - put diagram drawing back on
 
 template < typename keytype, typename hashtype >
-void DiffDistTest ( pfHash hash, const int diffbits, int trials, double & worst, double & avg )
+void DiffDistTest ( HashFn hash, const int diffbits, int trials, double & worst, double & avg )
 {
   std::vector<keytype>  keys(trials);
   std::vector<hashtype> A(trials),B(trials);
 
-  Hash_Seed_init (hash, g_seed);
+  //FIXME seedHash(hash, g_seed);
   for(int i = 0; i < trials; i++)
   {
     rand_p(&keys[i],sizeof(keytype));
@@ -278,7 +277,7 @@ void DiffDistTest ( pfHash hash, const int diffbits, int trials, double & worst,
 // hash differentials
 
 template < typename keytype, typename hashtype >
-static bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
+static bool DiffDistTest2 ( HashFn hash, bool drawDiagram )
 {
   Rand r(857374);
 
@@ -291,7 +290,6 @@ static bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
 
   bool result = true;
 
-  Hash_Seed_init (hash, g_seed);
   for(int keybit = 0; keybit < keybits; keybit++)
   {
     printf("Testing bit %d - %d keys\n",keybit, keycount);
@@ -321,16 +319,18 @@ static bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
 //----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool DiffTest(HashInfo * info, const bool verbose, const bool extra) {
-    pfHash hash = info->hash;
+bool DiffTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool dumpCollisions = verbose;
     bool result = true;
 
     // Do fewer reps with slow or very bad hashes
-    bool slowhash = info->hashbits > 128 || hash_is_slow(hash);
-    int reps = (info->quality == SKIP) || (slowhash && !extra) ? 100 : 1000;
+    bool slowhash = hinfo->bits > 128 || hinfo->isSlow();
+    int reps = (hinfo->isMock() || (slowhash && !extra)) ? 100 : 1000;
 
     printf("[[[ Diff 'Differential' Tests ]]]\n\n");
+
+    hinfo->Seed(g_seed);
 
     result &= DiffTestImpl< Blob<64>,  hashtype >(hash,5,reps,dumpCollisions);
     result &= DiffTestImpl< Blob<128>, hashtype >(hash,4,reps,dumpCollisions);
@@ -345,11 +345,13 @@ bool DiffTest(HashInfo * info, const bool verbose, const bool extra) {
 INSTANTIATE(DiffTest, HASHTYPELIST);
 
 template < typename hashtype >
-bool DiffDistTest(HashInfo * info, const bool verbose) {
-    pfHash hash = info->hash;
+bool DiffDistTest(HashInfo * hinfo, const bool verbose) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 
     printf("[[[ DiffDist 'Differential Distribution' Tests ]]]\n\n");
+
+    hinfo->Seed(g_seed);
 
     result &= DiffDistTest2<uint64_t,hashtype>(hash, verbose);
 

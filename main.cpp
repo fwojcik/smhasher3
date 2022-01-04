@@ -67,6 +67,7 @@
 #include "Stats.h"
 #include "LegacyHashes.h"
 #include "HashSanityTest.h"
+#include "Hashlib.h"
 #include "VCode.h"
 
 #include "SparseKeysetTest.h"
@@ -165,26 +166,28 @@ uint32_t g_resultVCode = 1;
 //-----------------------------------------------------------------------------
 // Self-test on startup - verify that all installed hashes work correctly.
 
-const char* quality_str[3] = { "SKIP", "POOR", "GOOD" };
-
 void HashSelfTestAll(bool verbose) {
-  const size_t numhashes = numHashes();
+  const size_t numhashes = numLegacyHashes();
   bool pass = true;
 
   for (size_t i = 0; i < numhashes; i++) {
-    HashInfo * info = numHash(i);
+    LegacyHashInfo * linfo = numLegacyHash(i);
+    HashInfo * hinfo = convertLegacyHash(linfo);
     if (verbose)
-      printf("%20s - ", info->name);
-    pass &= VerificationTest(info, verbose);
+      printf("%20s - ", hinfo->name);
+    pass &= hinfo->Verify(verbose);
+    delete hinfo;
   }
 
   if (!pass) {
     printf("Self-test FAILED!\n");
     if (!verbose) {
       for (size_t i = 0; i < numhashes; i++) {
-        HashInfo * info = numHash(i);
-        printf("%20s - ", info->name);
-        pass &= VerificationTest(info, true);
+        LegacyHashInfo * linfo = numLegacyHash(i);
+        HashInfo * hinfo = convertLegacyHash(linfo);
+        printf("%20s - ", hinfo->name);
+        pass &= hinfo->Verify(true);
+        delete hinfo;
       }
     }
     exit(1);
@@ -194,8 +197,9 @@ void HashSelfTestAll(bool verbose) {
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool test ( pfHash hash, HashInfo* info )
+bool test ( HashInfo * hInfo )
 {
+  const HashFn hash = hInfo->hashFn(g_hashEndian);
   const int hashbits = sizeof(hashtype) * 8;
   bool result = true;
 
@@ -203,21 +207,17 @@ bool test ( pfHash hash, HashInfo* info )
     printf("-------------------------------------------------------------------------------\n");
   }
 
-  // eventual initializers
-  Hash_init (info);
+  hInfo->Init();
 
-  // Most hashes don't use Hash_Seed_init(), so they only get their
-  // seed through hash(), which has a uint32_t seed parameter, so
-  // there's no way of getting big seeds to them at all.
-  //
-  // XXX - This general problem will need to be addressed at
-  // some point!! For now, just limit global seeds to 32 bits.
-  if (g_seed > (1ULL << (8 * sizeof(uint32_t)))) {
-      if (!Hash_Seed_init(hash, g_seed)) {
-          printf("Specified global seed 0x%016" PRIx64 ""
-                  " is larger than the hash harness can accept\n", g_seed);
-          exit(1);
-      }
+  //-----------------------------------------------------------------------------
+  // Most legacy hashes don't use Hash_Seed_init(), so they only get
+  // their seed through hash(), which has a uint32_t seed parameter,
+  // so there's no way of getting big seeds to them at all.
+  if ((g_seed >= (1ULL << (8 * sizeof(uint32_t)))) &&
+          hInfo->isLegacy() && !hInfo->Seed(g_seed)) {
+      printf("Specified global seed 0x%016" PRIx64 ""
+              " is larger than the legacy hash harness can accept\n", g_seed);
+      exit(1);
   }
 
   //-----------------------------------------------------------------------------
@@ -235,7 +235,7 @@ bool test ( pfHash hash, HashInfo* info )
     outfile = stdout;
   else
     outfile = stderr;
-  fprintf(outfile, "--- Testing %s \"%s\" %s", info->name, info->desc, quality_str[info->quality]);
+  fprintf(outfile, "--- Testing %s \"%s\" %s", hInfo->name, hInfo->desc, hInfo->isMock() ? "MOCK" : "");
   if (g_seed != 0)
     fprintf(outfile, " seed 0x%016" PRIx64 "\n\n", g_seed);
   else
@@ -245,11 +245,11 @@ bool test ( pfHash hash, HashInfo* info )
   {
     printf("[[[ Sanity Tests ]]]\n\n");
 
-    result &= VerificationTest(info,true);
-    Hash_Seed_init (hash, 0);
-    result &= (SanityTest(hash,hashbits)          || (info->quality == SKIP));
-    result &= (AppendedZeroesTest(hash,hashbits)  || (info->quality == SKIP));
-    result &= (PrependedZeroesTest(hash,hashbits) || (info->quality == SKIP));
+    // Note that Verify() leaves the hash seeded to 0
+    result &= hInfo->Verify(true);
+    result &= (SanityTest(hash,hashbits)          || hInfo->isMock());
+    result &= (AppendedZeroesTest(hash,hashbits)  || hInfo->isMock());
+    result &= (PrependedZeroesTest(hash,hashbits) || hInfo->isMock());
     printf("\n");
   }
 
@@ -258,12 +258,12 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testSpeed || g_testAll)
   {
-      SpeedTest(info);
+      SpeedTest(hInfo);
   }
 
   if(g_testHashmap || g_testAll)
   {
-      result &= HashMapTest(info, g_drawDiagram, g_testExtra);
+      result &= HashMapTest(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -271,7 +271,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testAvalanche || g_testAll)
   {
-      result &= AvalancheTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= AvalancheTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -279,7 +279,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testSparse || g_testAll)
   {
-      result &= SparseKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= SparseKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -287,7 +287,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testPermutation || g_testAll)
   {
-      result &= PermutedKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= PermutedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -295,7 +295,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testWindow || g_testAll)
   {
-      result &= WindowedKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= WindowedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -303,7 +303,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if (g_testCyclic || g_testAll)
   {
-      result &= CyclicKeyTest<hashtype>(info, g_drawDiagram);
+      result &= CyclicKeyTest<hashtype>(hInfo, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -313,7 +313,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testTwoBytes || g_testAll)
   {
-      result &= TwoBytesKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= TwoBytesKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -321,7 +321,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testText || g_testAll)
   {
-      result &= TextKeyTest<hashtype>(info, g_drawDiagram);
+      result &= TextKeyTest<hashtype>(hInfo, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -329,7 +329,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testZeroes || g_testAll)
   {
-      result &= ZeroKeyTest<hashtype>(info, g_drawDiagram);
+      result &= ZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -337,7 +337,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testSeed || g_testAll)
   {
-      result &= SeedTest<hashtype>(info, g_drawDiagram);
+      result &= SeedTest<hashtype>(hInfo, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -345,7 +345,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testPerlinNoise || g_testAll)
   {
-      result &= PerlinNoiseTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= PerlinNoiseTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -353,7 +353,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if(g_testDiff || g_testAll)
   {
-      result &= DiffTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= DiffTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -361,7 +361,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if (g_testDiffDist || g_testAll)
   {
-      result &= DiffDistTest<hashtype>(info, g_drawDiagram);
+      result &= DiffDistTest<hashtype>(hInfo, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -370,7 +370,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if (g_testPopcount || g_testAll)
   {
-      result &= PopcountTest<hashtype>(info, g_testExtra);
+      result &= PopcountTest<hashtype>(hInfo, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -379,16 +379,16 @@ bool test ( pfHash hash, HashInfo* info )
 
   if (g_testPrng || g_testAll)
   {
-      result &= PRNGTest<hashtype>(info, g_drawDiagram, g_testExtra);
+      result &= PRNGTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
   // Bit Independence Criteria. Interesting, but doesn't tell us much about
   // collision or distribution. For >=128bit hashes, do this only with --extra
 
-  if(g_testBIC || (g_testAll && info->hashbits >= 128 && g_testExtra))
+  if(g_testBIC || (g_testAll && hInfo->bits >= 128 && g_testExtra))
   {
-    result &= BicTest<hashtype>(info, g_drawDiagram);
+    result &= BicTest<hashtype>(hInfo, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -396,7 +396,7 @@ bool test ( pfHash hash, HashInfo* info )
 
   if (g_testBadSeeds || g_testAll)
   {
-      result &= BadSeedsTest<hashtype>(info, g_testExtra);
+      result &= BadSeedsTest<hashtype>(hInfo, g_testExtra);
   }
 
   if (g_testAll) {
@@ -411,28 +411,33 @@ bool test ( pfHash hash, HashInfo* info )
 
 bool testHash ( const char * name )
 {
-  HashInfo * pInfo = findHash(name);
+  LegacyHashInfo * lpInfo = findLegacyHash(name);
 
-  if(pInfo == NULL) {
+  if(lpInfo == NULL) {
     printf("Invalid hash '%s' specified\n", name);
     return false;
   }
 
-  if(pInfo->hashbits == 32)
-      return test<uint32_t>( pInfo->hash, pInfo );
-  if(pInfo->hashbits == 64)
-      return test<uint64_t>( pInfo->hash, pInfo );
-  if(pInfo->hashbits == 128)
-      return test<uint128_t>( pInfo->hash, pInfo );
-  if(pInfo->hashbits == 160)
-      return test<Blob<160>>( pInfo->hash, pInfo );
-  if(pInfo->hashbits == 224)
-      return test<Blob<224>>( pInfo->hash, pInfo );
-  if(pInfo->hashbits == 256)
-      return test<uint256_t>( pInfo->hash, pInfo );
+  HashInfo * hInfo = convertLegacyHash(lpInfo);
+
+  if(hInfo->bits == 32)
+      return test<uint32_t>( hInfo );
+  if(hInfo->bits == 64)
+      return test<uint64_t>( hInfo );
+  if(hInfo->bits == 128)
+      return test<uint128_t>( hInfo );
+  if(hInfo->bits == 160)
+      return test<Blob<160>>( hInfo );
+  if(hInfo->bits == 224)
+      return test<Blob<224>>( hInfo );
+  if(hInfo->bits == 256)
+      return test<uint256_t>( hInfo );
 
   printf("Invalid hash bit width %d for hash '%s'",
-          pInfo->hashbits, pInfo->name);
+          hInfo->bits, hInfo->name);
+
+  delete hInfo;
+
   return false;
 }
 
@@ -470,17 +475,17 @@ int main ( int argc, const char ** argv )
         exit(0);
       }
       if (strcmp(arg,"--list") == 0) {
-        const size_t numhashes = numHashes();
+        const size_t numhashes = numLegacyHashes();
         for(size_t i = 0; i < numhashes; i++) {
-          HashInfo * h = numHash(i);
-          printf("%-16s\t\"%s\" %s\n", h->name, h->desc, quality_str[h->quality]);
+          LegacyHashInfo * h = numLegacyHash(i);
+          printf("%-16s\t\"%s\" %s\n", h->name, h->desc, h->quality == SKIP ? "MOCK" : "");
         }
         exit(0);
       }
       if (strcmp(arg,"--listnames") == 0) {
-        const size_t numhashes = numHashes();
+        const size_t numhashes = numLegacyHashes();
         for(size_t i = 0; i < numhashes; i++) {
-          HashInfo * h = numHash(i);
+          LegacyHashInfo * h = numLegacyHash(i);
           printf("%s\n", h->name);
         }
         exit(0);

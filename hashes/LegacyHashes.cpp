@@ -71,7 +71,7 @@ hash_state ltc_state;
 
 // sorted by quality and speed. the last is the list of internal secrets to be tested against bad seeds.
 // marked with !! are known bad seeds, which either hash to 0 or create collisions.
-static HashInfo g_hashes[] =
+static LegacyHashInfo g_hashes[] =
 {
   // first the bad hash funcs, failing tests:
   { DoNothingHash,        32, 0x0, "donothing32", "Do-Nothing function (measure call overhead)", SKIP, {0UL} /* !! */ },
@@ -732,20 +732,20 @@ static HashInfo g_hashes[] =
   { nmhash32x_test,       32, 0xA8580227, "nmhash32x",      "nmhash32x", GOOD, {}},
 };
 
-size_t numHashes(void) {
-    return sizeof(g_hashes) / sizeof(HashInfo);
+size_t numLegacyHashes(void) {
+    return sizeof(g_hashes) / sizeof(LegacyHashInfo);
 }
 
-HashInfo * numHash(size_t num) {
-    if (num >= numHashes()) {
+LegacyHashInfo * numLegacyHash(size_t num) {
+    if (num >= numLegacyHashes()) {
         return NULL;
     }
     return &g_hashes[num];
 }
 
-HashInfo * findHash ( const char * name )
+LegacyHashInfo * findLegacyHash ( const char * name )
 {
-  for(size_t i = 0; i < sizeof(g_hashes) / sizeof(HashInfo); i++)
+  for(size_t i = 0; i < sizeof(g_hashes) / sizeof(LegacyHashInfo); i++)
   {
     if(_stricmp(name,g_hashes[i].name) == 0)
       return &g_hashes[i];
@@ -755,7 +755,7 @@ HashInfo * findHash ( const char * name )
 }
 
 // optional hash state initializers
-void Hash_init (HashInfo* info) {
+void Hash_init (LegacyHashInfo* info) {
   if (info->hash == sha2_224_64)
     sha224_init(&ltc_state);
   //else if (info->hash == md5_128 || info->hash == md5_32)

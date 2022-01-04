@@ -52,85 +52,6 @@
 
 #include "HashSanityTest.h"
 
-#include <vector>
-
-//-----------------------------------------------------------------------------
-// This should hopefully be a thorough and uambiguous test of whether a hash
-// is correctly implemented on a given platform.
-// Note that some newer hash are self-seeded (using the randomized address of the key),
-// denoted by expected = 0.
-
-bool VerificationTest ( HashInfo* info, bool verbose )
-{
-  const pfHash hash = info->hash;
-  const int hashbits = info->hashbits;
-  const uint32_t expected = info->verification;
-  const int hashbytes = hashbits / 8;
-
-  uint8_t * key    = new uint8_t[256];
-  uint8_t * hashes = new uint8_t[hashbytes * 256];
-  uint8_t * final  = new uint8_t[hashbytes];
-
-  memset (key,0,256);
-  memset (hashes,0,hashbytes*256);
-  memset (final,0,hashbytes);
-
-  // Hash keys of the form {0}, {0,1}, {0,1,2}... up to N=255,using 256-N as
-  // the seed
-  for(int i = 0; i < 256; i++)
-  {
-    key[i] = (uint8_t)i;
-    Hash_Seed_init (hash, 256-i);
-    hash (key,i,256-i,&hashes[i*hashbytes]);
-    addVCodeInput(key, i);
-  }
-
-  // Then hash the result array
-  Hash_Seed_init (hash, 0);
-  hash (hashes,hashbytes*256,0,final);
-
-  // The first four bytes of that hash, interpreted as a little-endian integer, is our
-  // verification value
-  uint32_t verification =
-      (final[0] << 0) | (final[1] << 8) | (final[2] << 16) | (final[3] << 24);
-
-  addVCodeOutput(hashes, 256*hashbytes);
-  addVCodeOutput(final, hashbytes);
-  addVCodeResult(expected);
-  addVCodeResult(verification);
-
-  delete [] final;
-  delete [] hashes;
-  delete [] key;
-
-  //----------
-
-  if (expected != verification) {
-    if (!expected) {
-      if (verbose)
-        printf("Verification value 0x%08X ........ SKIP (self- or unseeded)\n",
-               verification);
-      return true;
-    } else {
-      if (verbose)
-        printf("Verification value 0x%08X ........ FAIL! (Expected 0x%08x)\n",
-               verification, expected);
-      return false;
-    }
-  } else {
-    if (!expected) {
-      if (verbose)
-        printf("Verification value 0x%08X ........ INSECURE (should not be 0)\n",
-               verification);
-      return true;
-    } else {
-      if (verbose)
-        printf("Verification value 0x%08X ........ PASS\n", verification);
-    }
-    return true;
-  }
-}
-
 //----------------------------------------------------------------------------
 // Basic sanity checks -
 
@@ -143,9 +64,9 @@ bool VerificationTest ( HashInfo* info, bool verbose )
 
 // The memory alignment of the key should not affect the hash result.
 
-// Assumes Hash_Seed_init(0) is already called.
+// Assumes hash is already seeded to 0.
 
-bool SanityTest ( pfHash hash, const int hashbits )
+bool SanityTest ( HashFn hash, const int hashbits )
 {
   printf("Running sanity check 1      ");
 
@@ -158,7 +79,7 @@ bool SanityTest ( pfHash hash, const int hashbits )
   const int keymax = 256;
   const int pad = 16;
   const int buflen = keymax + pad*3;
-  const uint32_t seed = 0;
+  const seed_t seed = 0;
 
   uint8_t * buffer1 = new uint8_t[buflen];
   uint8_t * buffer2 = new uint8_t[buflen];
@@ -257,9 +178,9 @@ bool SanityTest ( pfHash hash, const int hashbits )
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
 
-// Assumes Hash_Seed_init(0) is already called.
+// Assumes hash is already seeded to 0.
 
-bool AppendedZeroesTest ( pfHash hash, const int hashbits )
+bool AppendedZeroesTest ( HashFn hash, const int hashbits )
 {
 //printf("Verification value 0x%08X ....... PASS\n",verification);
 //printf("Running sanity check 1     ");
@@ -268,7 +189,7 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
   Rand r(173994);
 
   const int hashbytes = hashbits/8;
-  const uint32_t seed = 0;
+  const seed_t seed = 0;
 
   for(int rep = 0; rep < 100; rep++)
   {
@@ -319,16 +240,16 @@ bool AppendedZeroesTest ( pfHash hash, const int hashbits )
 // Prepending zero bytes to a key should also always cause it to
 // produce a different hash value
 
-// Assumes Hash_Seed_init(0) is already called.
+// Assumes hash is already seeded to 0.
 
-bool PrependedZeroesTest ( pfHash hash, const int hashbits )
+bool PrependedZeroesTest ( HashFn hash, const int hashbits )
 {
   printf("Running PrependedZeroesTest ");
 
   Rand r(534281);
 
   const int hashbytes = hashbits/8;
-  const uint32_t seed = 0;
+  const seed_t seed = 0;
 
   for(int rep = 0; rep < 100; rep++)
   {

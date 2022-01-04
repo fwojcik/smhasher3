@@ -71,15 +71,13 @@
 // added to any VCode calculation.
 
 template< typename hashtype >
-static bool TestSecret ( const HashInfo* info, const uint64_t secret ) {
+static bool TestSecret ( const HashInfo * hinfo, const seed_t secret ) {
   bool result = true;
   static hashtype zero;
-  pfHash hash = info->hash;
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
   uint8_t key[128];
   HashSet<hashtype> collisions_dummy;
-  // Currently *only* seeds going through Hash_Seed_init() can be
-  // wider than 32 bits!!
-  if (!Hash_Seed_init (hash, secret) && (secret > UINT64_C(0xffffffff)))
+  if (!hinfo->Seed(secret) && (secret > UINT64_C(0xffffffff)))
       return true;
   printf("0x%" PRIx64 "  ", secret);
   for (int len : std::vector<int> {1,2,4,8,12,16,32,64,128}) {
@@ -116,22 +114,18 @@ static unsigned secret_progress;
 
 // Process part of a 2^32 range, split into g_NCPU threads
 template< typename hashtype >
-static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
+static void TestSecretRangeThread ( const HashInfo * hinfo, const uint64_t hi,
                              const uint32_t start, const uint32_t endlow,
                              bool &result, bool &newresult )
 {
-  size_t last = hi | endlow;
+  seed_t last = hi | endlow;
   const char * progress_fmt =
       (last <= UINT64_C(0xffffffff)) ?
       "%8" PRIx64 "%c"  : "%16" PRIx64 "%c";
   const uint64_t progress_nl_every =
       (last <= UINT64_C(0xffffffff)) ? 8 : 4;
-#ifdef HAVE_INT64
-  const std::vector<uint64_t> secrets = info->secrets;
-#else
-  const std::vector<size_t> secrets = info->secrets;
-#endif
-  pfHash hash = info->hash;
+  const std::vector<seed_t> & secrets = hinfo->badseeds;
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
   std::vector<hashtype> hashes;
   HashSet<hashtype> collisions_dummy;
   int fails = 0;
@@ -143,7 +137,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
 #endif
     printf("Testing [0x%016" PRIx64 ", 0x%016" PRIx64 "] ... \n", hi | start, last);
   }
-  for (size_t seed = hi | start; seed < last; seed++) {
+  for (seed_t seed = hi | start; seed < last; seed++) {
     static hashtype zero;
     /*
      * Print out progress using *one* printf() statement (for thread
@@ -160,7 +154,7 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
       printf (progress_fmt, seed, spacer);
     }
     hashes.clear();
-    Hash_Seed_init (hash, seed, 1);
+    hinfo->Seed(seed, 1);
     for (int x : std::vector<int> {0,32,127,255}) {
       hashtype h;
       uint8_t key[64]; // for crc32_pclmul, otherwie we would need only 16 byte
@@ -215,12 +209,12 @@ static void TestSecretRangeThread ( const HashInfo* info, const uint64_t hi,
 // Test the full 2^32 range [hi + 0, hi + 0xffffffff], the hi part
 // If no new bad seed is found, then newresult must be left unchanged.
 template< typename hashtype >
-static bool TestSecret32 ( const HashInfo* info, const uint64_t hi, bool &newresult ) {
+static bool TestSecret32 ( const HashInfo * hinfo, const uint64_t hi, bool &newresult ) {
   bool result = true;
   secret_progress = 0;
 
   if (g_NCPU == 1) {
-      TestSecretRangeThread<hashtype>(info, hi, 0x0, 0xffffffff, result, newresult);
+      TestSecretRangeThread<hashtype>(hinfo, hi, 0x0, 0xffffffff, result, newresult);
       printf("\n");
   } else {
 #ifdef HAVE_THREADS
@@ -236,7 +230,7 @@ static bool TestSecret32 ( const HashInfo* info, const uint64_t hi, bool &newres
       for (int i=0; i < g_NCPU; i++) {
           const uint32_t start = i * len;
           const uint32_t end = (i < (g_NCPU - 1)) ? start + (len - 1) : 0xffffffff;
-          t[i] = std::thread {TestSecretRangeThread<hashtype>, info, hi, start, end,
+          t[i] = std::thread {TestSecretRangeThread<hashtype>, hinfo, hi, start, end,
                               std::ref(results[i]), std::ref(newresults[i])};
       }
 
@@ -270,49 +264,42 @@ static bool TestSecret32 ( const HashInfo* info, const uint64_t hi, bool &newres
 }
 
 template< typename hashtype >
-static bool BadSeedsImpl ( HashInfo* info, bool testAll ) {
+static bool BadSeedsImpl ( HashInfo * hinfo, bool testAll ) {
   bool result = true;
   bool newresult = false;
   bool have_lower = false;
-#ifdef HAVE_INT64
-  const std::vector<uint64_t> secrets = info->secrets;
-#else
-  const std::vector<size_t> secrets = info->secrets;
-#endif
+  const std::vector<seed_t> & secrets = hinfo->badseeds;
+
   printf("Testing %u internal secrets:\n", (unsigned int)secrets.size());
   for (auto secret : secrets) {
-    result &= TestSecret<hashtype>(info, secret);
+    result &= TestSecret<hashtype>(hinfo, secret);
     if (sizeof(hashtype) == 8 && secret <= 0xffffffff) { // check the upper hi mask also
       uint64_t s = secret << 32;
       have_lower = true;
-      result &= TestSecret<hashtype>(info, s);
+      result &= TestSecret<hashtype>(hinfo, s);
     }
   }
   if (!secrets.size())
-    result &= TestSecret<hashtype>(info, 0x0);
+    result &= TestSecret<hashtype>(hinfo, 0x0);
   if (getenv("SEED")) {
     const char *s = getenv("SEED");
-    size_t seed = strtol(s, NULL, 0);
+    seed_t seed = strtol(s, NULL, 0);
     printf("\nTesting SEED=0x%" PRIx64 " ", seed);
     //if (*s && s[1] && *s == '0' && s[1] == 'x')
     //  seed = strtol(&s[2], NULL, 16);
     if (seed || secrets.size())
-      result &= TestSecret<hashtype>(info, seed);
+      result &= TestSecret<hashtype>(hinfo, seed);
   }
   if (result)
     printf("PASS\n");
-  if (testAll == false ||
-          ((info->quality == SKIP) &&
-                  (strncmp(info->name, "aes", 3) != 0)))
+  if (!testAll || (hinfo->isMock() && (strncmp(hinfo->name, "aes", 3) != 0)))
     return result;
 
   // many days with >= 64 bit hashes
   printf("Testing the first 0xffffffff seeds ...\n");
-  result &= TestSecret32<hashtype>(info, UINT64_C(0x0), newresult);
+  result &= TestSecret32<hashtype>(hinfo, UINT64_C(0x0), newresult);
 #ifdef HAVE_INT64
-  // Currently *only* seeds going through Hash_Seed_init() can be
-  // wider than 32 bits!!
-  if (Hash_Seed_init(info->hash, 0)) {
+  if (hinfo->Seed(0)) {
     if (sizeof(hashtype) > 4) { // and the upper half 32bit range
       if (have_lower) {
         for (auto secret : secrets) {
@@ -320,13 +307,13 @@ static bool BadSeedsImpl ( HashInfo* info, bool testAll ) {
             uint64_t s = secret;
             s = s << 32;
             printf("Suspect the 0x%" PRIx64 " seeds ...\n", s);
-            result &= TestSecret32<hashtype>(info, s, newresult);
+            result &= TestSecret32<hashtype>(hinfo, s, newresult);
           }
         }
       }
     }
     printf("And the last 0xffffffff00000000 seeds ...\n");
-    result &= TestSecret32<hashtype>(info, UINT64_C(0xffffffff00000000), newresult);
+    result &= TestSecret32<hashtype>(hinfo, UINT64_C(0xffffffff00000000), newresult);
   }
 #endif
   if (result)
@@ -343,8 +330,8 @@ static bool BadSeedsImpl ( HashInfo* info, bool testAll ) {
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool BadSeedsTest(HashInfo * info, const bool find_new_seeds) {
-    pfHash hash = info->hash;
+bool BadSeedsTest(HashInfo * hinfo, const bool find_new_seeds) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 
     printf("[[[ BadSeeds Tests ]]]\n\n");
@@ -362,9 +349,9 @@ bool BadSeedsTest(HashInfo * info, const bool find_new_seeds) {
         return result;
     }
 
-    Hash_Seed_init (hash, 0);
+    hinfo->Seed(0);
 
-    result &= BadSeedsImpl<hashtype>( info, find_new_seeds );
+    result &= BadSeedsImpl<hashtype>( hinfo, find_new_seeds );
 
     if(!result) printf("\n*********FAIL*********\n");
     printf("\n");

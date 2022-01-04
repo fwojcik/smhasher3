@@ -569,6 +569,14 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
 
 add_library(
+  SMHasher3Hashlib STATIC
+#
+  Hashlib.cpp
+  Hashrefs.cpp
+#
+)
+
+add_library(
   SMHasher3Hashes STATIC
 #
   LegacyHashes.cpp
