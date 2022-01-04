@@ -21,6 +21,7 @@
  *
  *     Copyright (c) 2010-2012 Austin Appleby
  *     Copyright (c) 2019-2021 Reini Urban
+ *     Copyright (c) 2020      Yann Collet
  *
  *     Permission is hereby granted, free of charge, to any person
  *     obtaining a copy of this software and associated documentation
@@ -45,4 +46,4 @@
  */
 
 template < typename hashtype >
-bool AvalancheTest(HashInfo * info, const bool verbose, const bool extra);
+bool BicTest(HashInfo * info, const bool verbose);

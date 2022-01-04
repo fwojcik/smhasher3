@@ -116,6 +116,7 @@ add_library(
 #
   tests/SanityTest.cpp
   tests/AvalancheTest.cpp
+  tests/BitIndependenceTest.cpp
   tests/DifferentialTest.cpp
   tests/DiffDistributionTest.cpp
   tests/HashMapTest.cpp

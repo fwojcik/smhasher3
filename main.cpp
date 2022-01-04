@@ -82,6 +82,7 @@
 #include "PopcountTest.h"
 #include "PRNGTest.h"
 #include "AvalancheTest.h"
+#include "BitIndependenceTest.h" // aka BIC
 #include "DifferentialTest.h"
 #include "DiffDistributionTest.h"
 #include "HashMapTest.h"
