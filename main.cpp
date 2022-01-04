@@ -172,6 +172,8 @@ void HashSelfTestAll(bool verbose) {
   const size_t numhashes = numLegacyHashes();
   bool pass = true;
 
+  pass &= verifyAllHashes(verbose);
+
   for (size_t i = 0; i < numhashes; i++) {
     LegacyHashInfo * linfo = numLegacyHash(i);
     HashInfo * hinfo = convertLegacyHash(linfo);
@@ -184,6 +186,7 @@ void HashSelfTestAll(bool verbose) {
   if (!pass) {
     printf("Self-test FAILED!\n");
     if (!verbose) {
+      verifyAllHashes(true);
       for (size_t i = 0; i < numhashes; i++) {
         LegacyHashInfo * linfo = numLegacyHash(i);
         HashInfo * hinfo = convertLegacyHash(linfo);
@@ -413,14 +416,18 @@ bool test ( const HashInfo * hInfo )
 
 bool testHash ( const char * name )
 {
-  LegacyHashInfo * lpInfo = findLegacyHash(name);
+  LegacyHashInfo * lhInfo = NULL;
+  const HashInfo * hInfo;
 
-  if(lpInfo == NULL) {
-    printf("Invalid hash '%s' specified\n", name);
-    return false;
+  if ((hInfo = findHash(name)) == NULL) {
+      if((lhInfo = findLegacyHash(name)) == NULL) {
+          printf("Invalid hash '%s' specified\n", name);
+          return false;
+      }
+      // This technically leaks, but all the legacy stuff will be gone
+      // soon enough.
+      hInfo = convertLegacyHash(lhInfo);
   }
-
-  HashInfo * hInfo = convertLegacyHash(lpInfo);
 
   if(hInfo->bits == 32)
       return test<uint32_t>( hInfo );
@@ -437,8 +444,6 @@ bool testHash ( const char * name )
 
   printf("Invalid hash bit width %d for hash '%s'",
           hInfo->bits, hInfo->name);
-
-  delete hInfo;
 
   return false;
 }
@@ -477,6 +482,7 @@ int main ( int argc, const char ** argv )
         exit(0);
       }
       if (strcmp(arg,"--list") == 0) {
+        listHashes(false);
         const size_t numhashes = numLegacyHashes();
         for(size_t i = 0; i < numhashes; i++) {
           LegacyHashInfo * h = numLegacyHash(i);
@@ -485,6 +491,7 @@ int main ( int argc, const char ** argv )
         exit(0);
       }
       if (strcmp(arg,"--listnames") == 0) {
+        listHashes(true);
         const size_t numhashes = numLegacyHashes();
         for(size_t i = 0; i < numhashes; i++) {
           LegacyHashInfo * h = numLegacyHash(i);
