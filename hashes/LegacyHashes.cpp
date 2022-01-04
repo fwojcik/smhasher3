@@ -64,7 +64,6 @@
 #include "Types.h"
 #include "Hashes.h"
 #include "LegacyHashes.h"
-#include "HashSanityTest.h"
 #include "VCode.h"
 
 hash_state ltc_state;

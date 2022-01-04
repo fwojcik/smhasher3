@@ -66,10 +66,10 @@
 #include "Timing.h"
 #include "Stats.h"
 #include "LegacyHashes.h"
-#include "HashSanityTest.h"
 #include "Hashlib.h"
 #include "VCode.h"
 
+#include "SanityTest.h"
 #include "SparseKeysetTest.h"
 #include "ZeroesKeysetTest.h"
 #include "WindowedKeysetTest.h"

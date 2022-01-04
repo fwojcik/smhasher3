@@ -114,6 +114,7 @@ add_library(
   util/Stats.cpp
   util/Types.cpp
 #
+  tests/SanityTest.cpp
   tests/AvalancheTest.cpp
   tests/DifferentialTest.cpp
   tests/HashMapTest.cpp

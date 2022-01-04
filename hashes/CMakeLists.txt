@@ -580,7 +580,6 @@ add_library(
   SMHasher3Hashes STATIC
 #
   LegacyHashes.cpp
-  HashSanityTest.cpp
 #
   ${HIGHWAY_SRC}
   ${SSE2_SRC}

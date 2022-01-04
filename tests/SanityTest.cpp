@@ -50,7 +50,7 @@
 #include "Random.h"
 #include "VCode.h"
 
-#include "HashSanityTest.h"
+#include "SanityTest.h"
 
 //----------------------------------------------------------------------------
 // Basic sanity checks -
