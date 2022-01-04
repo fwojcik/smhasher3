@@ -80,7 +80,7 @@ static void CombinationKeygenRecurse ( uint8_t * key, int len, int maxlen,
 }
 
 template< typename hashtype >
-static bool CombinationKeyTest ( hashfunc<hashtype> hash, int maxlen,
+static bool CombinationKeyTest ( pfHash hash, int maxlen,
                           const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
                           bool testColl, bool testDist, bool drawDiagram )
 {

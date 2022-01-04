@@ -62,7 +62,7 @@
 // all possible keys with bits set in that window
 
 template < typename keytype, typename hashtype >
-static bool WindowedKeyImpl ( hashfunc<hashtype> hash, int windowbits,
+static bool WindowedKeyImpl ( pfHash hash, int windowbits,
                        bool testCollision, bool testDistribution, bool drawDiagram )
 {
   const int keybits = sizeof(keytype) * 8;

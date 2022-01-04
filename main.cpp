@@ -167,7 +167,7 @@ uint32_t g_resultVCode = 1;
 const char* quality_str[3] = { "SKIP", "POOR", "GOOD" };
 
 template < typename hashtype >
-bool test ( hashfunc<hashtype> hash, HashInfo* info )
+bool test ( pfHash hash, HashInfo* info )
 {
   const int hashbits = sizeof(hashtype) * 8;
   bool result = true;

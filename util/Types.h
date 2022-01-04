@@ -110,42 +110,6 @@ struct HashSet : public std::set<hashtype>
 };
 
 //-----------------------------------------------------------------------------
-
-template < class T >
-class hashfunc
-{
-public:
-
-  hashfunc ( pfHash h ) : m_hash(h)
-  {
-  }
-
-  inline void operator () ( const void * key, const int len, const uint32_t seed, uint32_t * out )
-  {
-    m_hash(key,len,seed,out);
-  }
-
-  inline operator pfHash ( void ) const
-  {
-    return m_hash;
-  }
-
-  inline T operator () ( const void * key, const int len, const uint32_t seed )
-  {
-    T result;
-    m_hash(key,len,seed,(unsigned*)&result);
-    return result;
-  }
-  inline T operator () ( const void * key, const int len, const uint64_t seed )
-  {
-    T result;
-    m_hash(key,len,seed,(unsigned*)&result);
-    return result;
-  }
-
-  pfHash m_hash;
-};
-
 // hash_combine. The magic number 0x9e3779b9 is derived from the inverse golden ratio.
 // phi = (1+sqrt(5))/2; 2^32 / phi => 2654435769.497230
 template <typename T>

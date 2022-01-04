@@ -102,7 +102,7 @@ static void SparseKeygenRecurse ( pfHash hash, int start, int bitsleft, bool inc
 //----------
 
 template < int keybits, typename hashtype >
-static bool SparseKeyImpl ( hashfunc<hashtype> hash, const int setbits, bool inclusive,
+static bool SparseKeyImpl ( pfHash hash, const int setbits, bool inclusive,
                      bool testColl, bool testDist, bool drawDiagram )
 {
   printf("Keyset 'Sparse' - %d-bit keys with %s %d bits set - ",keybits,
