@@ -60,7 +60,7 @@
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 
 template < typename hashtype >
-bool SeedTestImpl(const HashInfo * hinfo, int keycount, bool drawDiagram) {
+static bool SeedTestImpl(const HashInfo * hinfo, int keycount, bool drawDiagram) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   printf("Keyset 'Seed' - %d keys\n",keycount);
   assert(keycount < (1<<31));
