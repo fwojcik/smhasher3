@@ -46,4 +46,4 @@
  */
 
 template < typename hashtype >
-bool BicTest(HashInfo * info, const bool verbose);
+bool BicTest(const HashInfo * info, const bool verbose);

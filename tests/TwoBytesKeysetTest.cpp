@@ -141,7 +141,7 @@ static bool TwoBytesTest2 ( HashFn hash, int maxlen, bool drawDiagram )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool TwoBytesKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+bool TwoBytesKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     int maxlen;

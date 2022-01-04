@@ -77,7 +77,7 @@
 typedef long double moments[8];
 
 // Copy the results into g_NCPU ranges of 2^32
-static void PopcountThread ( HashInfo * hinfo, const int inputSize,
+static void PopcountThread(const HashInfo * hinfo, const int inputSize,
                         const unsigned start, const unsigned end, const unsigned step,
                         moments &b)
 {
@@ -163,8 +163,7 @@ static double PopcountResults ( long double srefh, long double srefl,
   return worse;
 }
 
-static bool PopcountTestImpl ( HashInfo * hinfo, int inputSize, int step )
-{
+static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const unsigned mx = 0xffffffff;
   const long double n = 0x100000000UL / step;
@@ -322,7 +321,7 @@ static bool PopcountTestImpl ( HashInfo * hinfo, int inputSize, int step )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool PopcountTest(HashInfo * hinfo, const bool extra) {
+bool PopcountTest(const HashInfo * hinfo, const bool extra) {
     const int step = ((hinfo->isVerySlow() || hinfo->bits > 128) && extra) ? 6 : 2;
     bool result = true;
 

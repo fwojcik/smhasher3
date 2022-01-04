@@ -233,10 +233,10 @@ const struct {
 };
 
 template < typename hashtype >
-bool PermutedKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    bool result = true;
     const int default_maxlen = extra ? 23 : (hinfo->bits >= 128) ? 17 : 22;
+    bool result = true;
 
     printf("[[[ Keyset 'Permutation' Tests ]]]\n\n");
 

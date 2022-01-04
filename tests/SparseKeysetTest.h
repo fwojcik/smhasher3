@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool SparseKeyTest(HashInfo * info, const bool verbose, const bool extra);
+bool SparseKeyTest(const HashInfo * info, const bool verbose, const bool extra);

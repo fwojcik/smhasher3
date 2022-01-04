@@ -60,8 +60,7 @@
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 
 template < typename hashtype >
-bool SeedTestImpl ( HashInfo * hinfo, int keycount, bool drawDiagram )
-{
+bool SeedTestImpl(const HashInfo * hinfo, int keycount, bool drawDiagram) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   printf("Keyset 'Seed' - %d keys\n",keycount);
   assert(keycount < (1<<31));
@@ -95,7 +94,7 @@ bool SeedTestImpl ( HashInfo * hinfo, int keycount, bool drawDiagram )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool SeedTest(HashInfo * hinfo, const bool verbose) {
+bool SeedTest(const HashInfo * hinfo, const bool verbose) {
     bool result = true;
 
     printf("[[[ Keyset 'Seed' Tests ]]]\n\n");

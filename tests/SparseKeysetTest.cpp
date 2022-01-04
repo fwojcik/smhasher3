@@ -136,7 +136,7 @@ static bool SparseKeyImpl ( HashFn hash, const int setbits, bool inclusive,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool SparseKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+bool SparseKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 

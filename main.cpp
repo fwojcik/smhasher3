@@ -199,7 +199,7 @@ void HashSelfTestAll(bool verbose) {
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool test ( HashInfo * hInfo )
+bool test ( const HashInfo * hInfo )
 {
   const HashFn hash = hInfo->hashFn(g_hashEndian);
   const int hashbits = sizeof(hashtype) * 8;

@@ -62,4 +62,4 @@
  */
 
 template < typename hashtype >
-bool PopcountTest(HashInfo * info, const bool extra);
+bool PopcountTest(const HashInfo * info, const bool extra);

@@ -43,4 +43,4 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-bool SpeedTest(HashInfo * info);
+bool SpeedTest(const HashInfo * info);

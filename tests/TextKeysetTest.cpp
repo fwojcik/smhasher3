@@ -212,12 +212,12 @@ static bool WordsStringImpl ( HashFn hash, std::vector<std::string> & words,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool TextKeyTest(HashInfo * hinfo, const bool verbose) {
+bool TextKeyTest(const HashInfo * hinfo, const bool verbose) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    bool result = true;
     const char * alnum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
                                  ".,!?:;-+=()<>/|\"'@#$%&*_^";
+    bool result = true;
 
     printf("[[[ Keyset 'Text' Tests ]]]\n\n");
 

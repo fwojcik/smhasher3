@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool BadSeedsTest(HashInfo * info, const bool find_new_seeds);
+bool BadSeedsTest(const HashInfo * info, const bool find_new_seeds);

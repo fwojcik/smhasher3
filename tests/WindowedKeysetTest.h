@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool WindowedKeyTest(HashInfo * info, const bool verbose, const bool extra);
+bool WindowedKeyTest(const HashInfo * info, const bool verbose, const bool extra);

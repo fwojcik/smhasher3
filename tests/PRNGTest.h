@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool PRNGTest(HashInfo * info, const bool verbose, const bool extra);
+bool PRNGTest(const HashInfo * info, const bool verbose, const bool extra);

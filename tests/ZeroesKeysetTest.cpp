@@ -94,7 +94,7 @@ static bool ZeroKeyImpl ( HashFn hash, bool drawDiagram )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool ZeroKeyTest(HashInfo * hinfo, const bool verbose) {
+bool ZeroKeyTest(const HashInfo * hinfo, const bool verbose) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 

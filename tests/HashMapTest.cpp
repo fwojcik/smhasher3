@@ -270,7 +270,7 @@ static bool HashMapImpl ( HashFn hash,
 
 //-----------------------------------------------------------------------------
 
-bool HashMapTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+bool HashMapTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     const int trials = (hinfo->isVerySlow() && !extra) ? 5 : 50;
     bool result = true;

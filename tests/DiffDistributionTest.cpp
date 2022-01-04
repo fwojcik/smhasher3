@@ -103,7 +103,7 @@ static bool DiffDistTest2 ( HashFn hash, bool drawDiagram )
 //----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool DiffDistTest(HashInfo * hinfo, const bool verbose) {
+bool DiffDistTest(const HashInfo * hinfo, const bool verbose) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 

@@ -49,4 +49,4 @@
 // see what happens to the hash value when we flip a bit of the key.
 
 template < typename hashtype >
-bool DiffDistTest(HashInfo * info, const bool verbose);
+bool DiffDistTest(const HashInfo * info, const bool verbose);

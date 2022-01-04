@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool PermutedKeyTest(HashInfo * info, const bool verbose, const bool extra);
+bool PermutedKeyTest(const HashInfo * info, const bool verbose, const bool extra);

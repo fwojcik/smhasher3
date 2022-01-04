@@ -274,7 +274,7 @@ static double TinySpeedTest ( HashFn hash, int maxkeysize, seed_t seed, bool ver
 
 //-----------------------------------------------------------------------------
 
-bool SpeedTest(HashInfo * hinfo) {
+bool SpeedTest(const HashInfo * hinfo) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     Rand r(633692);

@@ -201,7 +201,7 @@ static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisi
 //----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool DiffTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+bool DiffTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool dumpCollisions = verbose;
     bool result = true;

@@ -233,7 +233,7 @@ static bool AvalancheImpl ( HashFn hash, const int keybits, const int reps, bool
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool AvalancheTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+bool AvalancheTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     bool drawdots = true; //.......... progress dots

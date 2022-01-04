@@ -61,7 +61,7 @@
 
 template< typename hashtype >
 static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
-        HashInfo * hinfo, bool testColl, bool testDist, bool drawDiagram)
+        const HashInfo * hinfo, bool testColl, bool testDist, bool drawDiagram)
 {
   assert(0 < Ybits && Ybits < 31);
   assert(0 < Xbits && Xbits < 31);
@@ -97,7 +97,7 @@ static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
 //-----------------------------------------------------------------------------
 
 template< typename hashtype >
-bool PerlinNoiseTest (HashInfo * hinfo, const bool verbose, const bool extra) {
+bool PerlinNoiseTest (const HashInfo * hinfo, const bool verbose, const bool extra) {
     bool result = true;
     bool testCollision = true;
     bool testDistribution = extra;

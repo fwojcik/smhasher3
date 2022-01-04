@@ -48,4 +48,4 @@
 // see what happens to the hash value when we flip a few bits of the key.
 
 template < typename hashtype >
-bool DiffTest(HashInfo * info, const bool verbose, const bool extra);
+bool DiffTest(const HashInfo * info, const bool verbose, const bool extra);

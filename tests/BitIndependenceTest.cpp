@@ -180,7 +180,7 @@ static bool BicTest3 ( HashFn hash, const int reps, bool verbose = false )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool BicTest(HashInfo * hinfo, const bool verbose) {
+bool BicTest(const HashInfo * hinfo, const bool verbose) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     bool fewerreps = (hinfo->bits > 64 || hinfo->isVerySlow()) ? true : false;

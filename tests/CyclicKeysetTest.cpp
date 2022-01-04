@@ -120,7 +120,7 @@ static bool CyclicKeyImpl ( HashFn hash, int cycleLen, int cycleReps, const int 
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool CyclicKeyTest(HashInfo * hinfo, const bool verbose) {
+bool CyclicKeyTest(const HashInfo * hinfo, const bool verbose) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 #ifdef DEBUG

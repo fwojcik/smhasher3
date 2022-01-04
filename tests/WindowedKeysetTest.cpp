@@ -116,7 +116,7 @@ static bool WindowedKeyImpl ( HashFn hash, int windowbits,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool WindowedKeyTest(HashInfo * hinfo, const bool verbose, const bool extra) {
+bool WindowedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     bool testCollision = true;

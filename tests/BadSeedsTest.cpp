@@ -71,7 +71,7 @@
 // added to any VCode calculation.
 
 template< typename hashtype >
-static bool TestSecret ( const HashInfo * hinfo, const seed_t secret ) {
+static bool TestSecret(const HashInfo * hinfo, const seed_t secret) {
   bool result = true;
   static hashtype zero;
   const HashFn hash = hinfo->hashFn(g_hashEndian);
@@ -114,9 +114,9 @@ static unsigned secret_progress;
 
 // Process part of a 2^32 range, split into g_NCPU threads
 template< typename hashtype >
-static void TestSecretRangeThread ( const HashInfo * hinfo, const uint64_t hi,
+static void TestSecretRangeThread(const HashInfo * hinfo, const uint64_t hi,
                              const uint32_t start, const uint32_t endlow,
-                             bool &result, bool &newresult )
+                             bool &result, bool &newresult)
 {
   seed_t last = hi | endlow;
   const char * progress_fmt =
@@ -209,7 +209,7 @@ static void TestSecretRangeThread ( const HashInfo * hinfo, const uint64_t hi,
 // Test the full 2^32 range [hi + 0, hi + 0xffffffff], the hi part
 // If no new bad seed is found, then newresult must be left unchanged.
 template< typename hashtype >
-static bool TestSecret32 ( const HashInfo * hinfo, const uint64_t hi, bool &newresult ) {
+static bool TestSecret32(const HashInfo * hinfo, const uint64_t hi, bool &newresult) {
   bool result = true;
   secret_progress = 0;
 
@@ -264,7 +264,7 @@ static bool TestSecret32 ( const HashInfo * hinfo, const uint64_t hi, bool &newr
 }
 
 template< typename hashtype >
-static bool BadSeedsImpl ( HashInfo * hinfo, bool testAll ) {
+static bool BadSeedsImpl(const HashInfo * hinfo, bool testAll) {
   bool result = true;
   bool newresult = false;
   bool have_lower = false;
@@ -330,7 +330,7 @@ static bool BadSeedsImpl ( HashInfo * hinfo, bool testAll ) {
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool BadSeedsTest(HashInfo * hinfo, const bool find_new_seeds) {
+bool BadSeedsTest(const HashInfo * hinfo, const bool find_new_seeds) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
 

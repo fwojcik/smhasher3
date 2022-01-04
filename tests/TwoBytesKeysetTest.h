@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool TwoBytesKeyTest(HashInfo * info, const bool verbose, const bool extra);
+bool TwoBytesKeyTest(const HashInfo * info, const bool verbose, const bool extra);
