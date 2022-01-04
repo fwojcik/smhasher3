@@ -51,7 +51,6 @@ static inline bool sumhash_bad_seeds(std::vector<uint32_t> &seeds)
 void sumhash(const void *key, int len, uint32_t seed, void *out);
 void sumhash32(const void *key, int len, uint32_t seed, void *out);
 
-void DoNothingHash(const void *key, int len, uint32_t seed, void *out);
 void NoopOAATReadHash(const void *key, int len, uint32_t seed, void *out);
 void crc32(const void *key, int len, uint32_t seed, void *out);
 static inline bool crc32c_bad_seeds(std::vector<uint32_t> &seeds)

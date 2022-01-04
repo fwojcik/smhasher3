@@ -104,12 +104,6 @@ sumhash32(const void *key, int len, uint32_t seed, void *out)
   *(uint32_t *) out = h;
 }
 
-// objsize: 0x50d-0x500: 13
-void
-DoNothingHash(const void *, int, uint32_t, void *)
-{
-}
-
 // objsize: 0x53f-0x510: 47
 void
 NoopOAATReadHash(const void *key, int len, uint32_t seed, void *out)

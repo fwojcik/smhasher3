@@ -21,6 +21,6 @@
 #include "Hashlib.h"
 
 unsigned refs() {
-    //USE_FAMILY(donothing);
-  return 0;
+    USE_FAMILY(donothing);
+    return 0;
 }

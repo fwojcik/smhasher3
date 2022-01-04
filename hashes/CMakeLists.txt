@@ -574,6 +574,7 @@ add_library(
   Hashlib.cpp
   Hashrefs.cpp
 #
+  donothing.cpp
 )
 
 add_library(
