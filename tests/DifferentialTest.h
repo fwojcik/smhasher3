@@ -48,7 +48,7 @@
 // see what happens to the hash value when we flip a few bits of the key.
 
 template < typename hashtype >
-extern bool DiffTest(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
+extern bool DiffTest(HashInfo * info, const bool verbose, const bool extra);
 
 template < typename hashtype >
 extern bool DiffDistTest(HashInfo * info, const bool verbose);

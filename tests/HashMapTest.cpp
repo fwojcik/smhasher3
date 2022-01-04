@@ -268,10 +268,10 @@ static bool HashMapImpl ( pfHash pfhash,
 
 //-----------------------------------------------------------------------------
 
-bool HashMapTest(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow) {
+bool HashMapTest(HashInfo * info, const bool verbose, const bool extra) {
     pfHash hash = info->hash;
     bool result = true;
-    const int trials = (hash_is_slow && !extra) ? 5 : 50;
+    const int trials = (hash_is_very_slow(hash) && !extra) ? 5 : 50;
 
     printf("[[[ 'Hashmap' Speed Tests ]]]\n\n");
 

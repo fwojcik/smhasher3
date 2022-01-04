@@ -88,6 +88,8 @@ struct HashInfo
   const std::vector<uint64_t> secrets;
 };
 
+bool hash_is_slow(pfHash hash);
+bool hash_is_very_slow(pfHash hash);
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
 void Bad_Seed_init (pfHash hash, uint32_t &seed);
 

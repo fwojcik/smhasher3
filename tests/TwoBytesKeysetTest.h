@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool TwoBytesKeyTest(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow);
+bool TwoBytesKeyTest(HashInfo * info, const bool verbose, const bool extra);

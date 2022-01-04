@@ -48,4 +48,4 @@
  */
 
 template < typename hashtype >
-bool CyclicKeyTest(HashInfo * info, const bool verbose, const bool hash_is_slow);
+bool CyclicKeyTest(HashInfo * info, const bool verbose);

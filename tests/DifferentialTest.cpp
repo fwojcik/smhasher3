@@ -323,11 +323,14 @@ static bool DiffDistTest2 ( pfHash hash, bool drawDiagram )
 //----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool DiffTest(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow) {
+bool DiffTest(HashInfo * info, const bool verbose, const bool extra) {
     pfHash hash = info->hash;
-    bool result = true;
     bool dumpCollisions = verbose;
-    int reps = (info->quality == SKIP) || (!extra && hash_is_slow) ? 100 : 1000;
+    bool result = true;
+
+    // Do fewer reps with slow or very bad hashes
+    bool slowhash = info->hashbits > 128 || hash_is_slow(hash);
+    int reps = (info->quality == SKIP) || (slowhash && !extra) ? 100 : 1000;
 
     printf("[[[ Diff 'Differential' Tests ]]]\n\n");
 

@@ -954,3 +954,68 @@ void HashSelfTestAll(bool verbose) {
     exit(1);
   }
 }
+
+//-----------------------------------------------------------------------------
+bool hash_is_very_slow(pfHash hash) {
+    // known very slow hashes (typically > 500 cycle/hash)
+    const struct { pfHash h; } slowhashes[] = {
+        { md5_32                   },
+        { md5_64                   },
+        { md5_128                  },
+        { sha1_32                  },
+        { sha1_64                  },
+        { sha1_160                 },
+        { sha2_224                 },
+        { sha2_224_64              },
+        { sha2_256                 },
+        { sha2_256_64              },
+        { rmd128                   },
+        { rmd160                   },
+        { rmd256                   },
+        { blake2s128_test          },
+        { blake2s160_test          },
+        { blake2s224_test          },
+        { blake2s256_test          },
+        { blake2s256_64            },
+        { blake2b160_test          },
+        { blake2b224_test          },
+        { blake2b256_test          },
+        { blake2b256_64            },
+        { sha3_256                 },
+        { sha3_256_64              },
+        { tifuhash_64              },
+        { floppsyhash_64           },
+        { beamsplitter_64          },
+    };
+
+    for (int i=0; i<sizeof(slowhashes)/sizeof(slowhashes[0]); i++) {
+        if (slowhashes[i].h == hash) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool hash_is_slow(pfHash hash) {
+    if (hash_is_very_slow(hash)) {
+        return true;
+    }
+
+    // known somewhat slow hashes
+    const struct { pfHash h; } slowhashes[] = {
+        { o1hash_test                 },
+        { halftime_hash_style64_test  },
+        { halftime_hash_style128_test },
+        { halftime_hash_style256_test },
+        { halftime_hash_style512_test },
+    };
+
+    for (int i=0; i<sizeof(slowhashes)/sizeof(slowhashes[0]); i++) {
+        if (slowhashes[i].h == hash) {
+            return true;
+        }
+    }
+
+    return false;
+}

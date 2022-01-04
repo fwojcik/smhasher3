@@ -565,10 +565,10 @@ static bool BicTest3 ( pfHash hash, const int reps, bool verbose = false )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool BicTest(HashInfo * info, const bool verbose, const bool hash_is_slow) {
+bool BicTest(HashInfo * info, const bool verbose) {
     pfHash hash = info->hash;
     bool result = true;
-    bool fewerreps = (info->hashbits > 64 || hash_is_slow) ? true : false;
+    bool fewerreps = (info->hashbits > 64 || hash_is_very_slow(hash)) ? true : false;
 
     printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
     Hash_Seed_init (hash, g_seed);

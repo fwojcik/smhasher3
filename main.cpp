@@ -234,47 +234,9 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
       SpeedTest(info);
   }
 
-  // known slow hashes (typically > 500 cycle/hash)
-  const struct { pfHash h; } slowhashes[] = {
-     { md5_32                   },
-     { md5_64                   },
-     { md5_128                  },
-     { sha1_32                  },
-     { sha1_64                  },
-     { sha1_160                 },
-     { sha2_224                 },
-     { sha2_224_64              },
-     { sha2_256                 },
-     { sha2_256_64              },
-     { rmd128                   },
-     { rmd160                   },
-     { rmd256                   },
-     { blake2s128_test          },
-     { blake2s160_test          },
-     { blake2s224_test          },
-     { blake2s256_test          },
-     { blake2s256_64            },
-     { blake2b160_test          },
-     { blake2b224_test          },
-     { blake2b256_test          },
-     { blake2b256_64            },
-     { sha3_256                 },
-     { sha3_256_64              },
-     { tifuhash_64              },
-     { floppsyhash_64           },
-     { beamsplitter_64          },
-    };
-  bool hash_is_slow = false;
-  for (int i=0; i<sizeof(slowhashes)/sizeof(slowhashes[0]); i++) {
-      if (slowhashes[i].h == hash) {
-          hash_is_slow = true;
-          break;
-      }
-  }
-
   if(g_testHashmap || g_testAll)
   {
-      result &= HashMapTest(info, g_drawDiagram, g_testExtra, hash_is_slow);
+      result &= HashMapTest(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -314,7 +276,7 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testCyclic || g_testAll)
   {
-      result &= CyclicKeyTest<hashtype>(info, g_drawDiagram, hash_is_slow);
+      result &= CyclicKeyTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------
@@ -324,7 +286,7 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testTwoBytes || g_testAll)
   {
-      result &= TwoBytesKeyTest<hashtype>(info, g_drawDiagram, g_testExtra, hash_is_slow);
+      result &= TwoBytesKeyTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -361,19 +323,10 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
 
   //-----------------------------------------------------------------------------
   // Differential tests
-  // less reps with slow or very bad hashes
 
   if(g_testDiff || g_testAll)
   {
-      bool slow =
-          hash_is_slow                        ||
-          info->hashbits > 128                ||
-          hash == o1hash_test                 ||
-          hash == halftime_hash_style64_test  ||
-          hash == halftime_hash_style128_test ||
-          hash == halftime_hash_style256_test ||
-          hash == halftime_hash_style512_test;
-      result &= DiffTest<hashtype>(info, g_drawDiagram, g_testExtra, slow);
+      result &= DiffTest<hashtype>(info, g_drawDiagram, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -390,7 +343,7 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if (g_testPopcount || g_testAll)
   {
-      result &= PopcountTest<hashtype>(info, g_testExtra, hash_is_slow);
+      result &= PopcountTest<hashtype>(info, g_testExtra);
   }
 
   //-----------------------------------------------------------------------------
@@ -408,7 +361,7 @@ bool test ( hashfunc<hashtype> hash, HashInfo* info )
 
   if(g_testBIC || (g_testAll && info->hashbits >= 128 && g_testExtra))
   {
-    result &= BicTest<hashtype>(info, g_drawDiagram, hash_is_slow);
+    result &= BicTest<hashtype>(info, g_drawDiagram);
   }
 
   //-----------------------------------------------------------------------------

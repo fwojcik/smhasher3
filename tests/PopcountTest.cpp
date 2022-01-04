@@ -320,10 +320,10 @@ static bool PopcountTestImpl ( struct HashInfo *info, int inputSize, int step )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool PopcountTest(HashInfo * info, const bool extra, const bool hash_is_slow) {
+bool PopcountTest(HashInfo * info, const bool extra) {
     pfHash hash = info->hash;
     bool result = true;
-    const int step = ((hash_is_slow || info->hashbits > 128) && extra) ? 6 : 2;
+    const int step = ((hash_is_very_slow(hash) || info->hashbits > 128) && extra) ? 6 : 2;
 
     printf("[[[ Popcount Tests ]]]\n\n");
 

@@ -140,12 +140,12 @@ static bool TwoBytesTest2 ( pfHash hash, int maxlen, bool drawDiagram )
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool TwoBytesKeyTest(HashInfo * info, const bool verbose, const bool extra, const bool hash_is_slow) {
+bool TwoBytesKeyTest(HashInfo * info, const bool verbose, const bool extra) {
     pfHash hash = info->hash;
     bool result = true;
     int maxlen;
     if (!extra && (info->hashbits > 32)) {
-        maxlen = hash_is_slow ? 8 : ((info->hashbits <= 64) ? 20 : 15);
+        maxlen = hash_is_very_slow(hash) ? 8 : ((info->hashbits <= 64) ? 20 : 15);
     } else {
         maxlen = 24;
     }

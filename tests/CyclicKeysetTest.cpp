@@ -119,13 +119,13 @@ static bool CyclicKeyImpl ( pfHash hash, int cycleLen, int cycleReps, const int 
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool CyclicKeyTest(HashInfo * info, const bool verbose, const bool hash_is_slow) {
+bool CyclicKeyTest(HashInfo * info, const bool verbose) {
     pfHash hash = info->hash;
     bool result = true;
 #ifdef DEBUG
     const int reps = 2;
 #else
-    const int reps = hash_is_slow ? 100000 : 1000000;
+    const int reps = hash_is_very_slow(hash) ? 100000 : 1000000;
 #endif
 
     printf("[[[ Keyset 'Cyclic' Tests ]]]\n\n");

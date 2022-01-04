@@ -62,4 +62,4 @@
  */
 
 template < typename hashtype >
-bool PopcountTest(HashInfo * info, const bool extra, const bool hash_is_slow);
+bool PopcountTest(HashInfo * info, const bool extra);

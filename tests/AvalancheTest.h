@@ -48,4 +48,4 @@ template < typename hashtype >
 extern bool AvalancheTest(HashInfo * info, const bool verbose, const bool extra);
 
 template < typename hashtype >
-extern bool BicTest(HashInfo * info, const bool longtest, const bool verbose);
+extern bool BicTest(HashInfo * info, const bool verbose);
