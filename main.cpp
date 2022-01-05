@@ -204,7 +204,6 @@ void HashSelfTestAll(bool verbose) {
 template < typename hashtype >
 bool test ( const HashInfo * hInfo )
 {
-  const HashFn hash = hInfo->hashFn(g_hashEndian);
   const int hashbits = sizeof(hashtype) * 8;
   bool result = true;
 
@@ -252,9 +251,9 @@ bool test ( const HashInfo * hInfo )
 
     // Note that Verify() leaves the hash seeded to 0
     result &= hInfo->Verify(true);
-    result &= (SanityTest(hash,hashbits)          || hInfo->isMock());
-    result &= (AppendedZeroesTest(hash,hashbits)  || hInfo->isMock());
-    result &= (PrependedZeroesTest(hash,hashbits) || hInfo->isMock());
+    result &= (SanityTest(hInfo)          || hInfo->isMock());
+    result &= (AppendedZeroesTest(hInfo)  || hInfo->isMock());
+    result &= (PrependedZeroesTest(hInfo) || hInfo->isMock());
     printf("\n");
   }
 

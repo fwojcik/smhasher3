@@ -46,6 +46,6 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-bool SanityTest         ( HashFn hash, const int hashbits );
-bool AppendedZeroesTest ( HashFn hash, const int hashbits );
-bool PrependedZeroesTest( HashFn hash, const int hashbits );
+bool SanityTest         (const HashInfo * hinfo);
+bool AppendedZeroesTest (const HashInfo * hinfo);
+bool PrependedZeroesTest(const HashInfo * hinfo);

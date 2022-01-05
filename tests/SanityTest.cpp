@@ -66,15 +66,12 @@
 
 // Assumes hash is already seeded to 0.
 
-bool SanityTest ( HashFn hash, const int hashbits )
-{
-  printf("Running sanity check 1      ");
-
+bool SanityTest (const HashInfo * hinfo) {
   Rand r(883743);
-
   bool result = true;
 
-  const int hashbytes = hashbits/8;
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
+  const int hashbytes = hinfo->bits / 8;
   const int reps = 10;
   const int keymax = 256;
   const int pad = 16;
@@ -88,6 +85,8 @@ bool SanityTest ( HashFn hash, const int hashbits )
   uint8_t * hash2 = new uint8_t[hashbytes];
 
   //----------
+  printf("Running sanity check 1      ");
+
   memset(hash1, 1, hashbytes);
   memset(hash2, 2, hashbytes);
 
@@ -180,16 +179,14 @@ bool SanityTest ( HashFn hash, const int hashbits )
 
 // Assumes hash is already seeded to 0.
 
-bool AppendedZeroesTest ( HashFn hash, const int hashbits )
-{
-//printf("Verification value 0x%08X ....... PASS\n",verification);
-//printf("Running sanity check 1     ");
-  printf("Running AppendedZeroesTest  ");
-
+bool AppendedZeroesTest (const HashInfo * hinfo) {
   Rand r(173994);
 
-  const int hashbytes = hashbits/8;
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
+  const int hashbytes = hinfo->bits / 8;
   const seed_t seed = 0;
+
+  printf("Running AppendedZeroesTest  ");
 
   for(int rep = 0; rep < 100; rep++)
   {
@@ -242,14 +239,14 @@ bool AppendedZeroesTest ( HashFn hash, const int hashbits )
 
 // Assumes hash is already seeded to 0.
 
-bool PrependedZeroesTest ( HashFn hash, const int hashbits )
-{
-  printf("Running PrependedZeroesTest ");
-
+bool PrependedZeroesTest (const HashInfo * hinfo) {
   Rand r(534281);
 
-  const int hashbytes = hashbits/8;
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
+  const int hashbytes = hinfo->bits / 8;
   const seed_t seed = 0;
+
+  printf("Running PrependedZeroesTest ");
 
   for(int rep = 0; rep < 100; rep++)
   {
