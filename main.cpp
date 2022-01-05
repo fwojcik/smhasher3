@@ -98,67 +98,136 @@
 //-----------------------------------------------------------------------------
 // Configuration.
 
-bool g_drawDiagram     = false;
-bool g_testAll         = true;
-bool g_testExtra       = false; // excessive torture tests: Sparse, Avalanche, DiffDist, scan all seeds
-bool g_testVerifyAll   = false;
-
-bool g_testSanity      = false;
-bool g_testSpeed       = false;
-bool g_testHashmap     = false;
-bool g_testAvalanche   = false;
-bool g_testSparse      = false;
-bool g_testPermutation = false;
-bool g_testWindow      = false;
-bool g_testCyclic      = false;
-bool g_testTwoBytes    = false;
-bool g_testText        = false;
-bool g_testZeroes      = false;
-bool g_testSeed        = false;
-bool g_testPerlinNoise = false;
-bool g_testDiff        = false;
-bool g_testDiffDist    = false;
-bool g_testPopcount    = false;
-bool g_testPrng        = false;
-bool g_testBIC         = false;
-bool g_testBadSeeds    = false;
-
 #ifdef HAVE_THREADS
 unsigned g_NCPU        = 4;
 #else
 const unsigned g_NCPU  = 1;
 #endif
 
+static bool g_drawDiagram = false;
+
+// excessive torture tests: Sparse, Avalanche, DiffDist, scan all seeds
+static bool g_testExtra   = false;
+
+static bool g_testAll;
+static bool g_testVerifyAll;
+static bool g_testSanity;
+static bool g_testSpeed;
+static bool g_testHashmap;
+static bool g_testAvalanche;
+static bool g_testSparse;
+static bool g_testPermutation;
+static bool g_testWindow;
+static bool g_testCyclic;
+static bool g_testTwoBytes;
+static bool g_testText;
+static bool g_testZeroes;
+static bool g_testSeed;
+static bool g_testPerlinNoise;
+static bool g_testDiff;
+static bool g_testDiffDist;
+static bool g_testPopcount;
+static bool g_testPrng;
+static bool g_testBIC;
+static bool g_testBadSeeds;
+
 struct TestOpts {
   bool         &var;
+  bool         defaultvalue; // What "All" sets the test to
   const char*  name;
 };
-TestOpts g_testopts[] =
+static TestOpts g_testopts[] =
 {
-  { g_testAll,          "All" },
-  { g_testVerifyAll,    "VerifyAll" },
-  { g_testSanity,       "Sanity" },
-  { g_testSpeed,        "Speed" },
-  { g_testHashmap,      "Hashmap" },
-  { g_testAvalanche,    "Avalanche" },
-  { g_testSparse,       "Sparse" },
-  { g_testPermutation,  "Permutation" },
-  { g_testWindow,       "Window" },
-  { g_testCyclic,       "Cyclic" },
-  { g_testTwoBytes,     "TwoBytes" },
-  { g_testText,	        "Text" },
-  { g_testZeroes,       "Zeroes" },
-  { g_testSeed,	        "Seed" },
-  { g_testPerlinNoise,	"PerlinNoise" },
-  { g_testDiff,         "Diff" },
-  { g_testDiffDist,     "DiffDist" },
-  { g_testBIC, 	        "BIC" },
-  { g_testPopcount,     "Popcount" },
-  { g_testPrng,         "Prng" },
-  { g_testBadSeeds,     "BadSeeds" },
+  { g_testAll,           true,    "All" },
+  { g_testVerifyAll,    false,    "VerifyAll" },
+  { g_testSanity,        true,    "Sanity" },
+  { g_testSpeed,         true,    "Speed" },
+  { g_testHashmap,       true,    "Hashmap" },
+  { g_testAvalanche,     true,    "Avalanche" },
+  { g_testSparse,        true,    "Sparse" },
+  { g_testPermutation,   true,    "Permutation" },
+  { g_testWindow,        true,    "Window" },
+  { g_testCyclic,        true,    "Cyclic" },
+  { g_testTwoBytes,      true,    "TwoBytes" },
+  { g_testText,          true,    "Text" },
+  { g_testZeroes,        true,    "Zeroes" },
+  { g_testSeed,          true,    "Seed" },
+  { g_testPerlinNoise,   true,    "PerlinNoise" },
+  { g_testDiff,          true,    "Diff" },
+  { g_testDiffDist,      true,    "DiffDist" },
+  { g_testPopcount,      true,    "Popcount" },
+  { g_testPrng,          true,    "Prng" },
+  { g_testBIC,          false,    "BIC" },
+  { g_testBadSeeds,      true,    "BadSeeds" },
 };
 
+static void set_default_tests(bool enable) {
+    for (size_t i = 0; i < sizeof(g_testopts) / sizeof(TestOpts); i++) {
+        if (enable) {
+            g_testopts[i].var = g_testopts[i].defaultvalue;
+        } else if (g_testopts[i].defaultvalue) {
+            g_testopts[i].var = false;
+        }
+    }
+}
+
+static void parse_tests(const char * str, bool enable_tests) {
+    while (*str != '\0') {
+        size_t len;
+        const char *p = strchr(str, ',');
+        if (p == NULL) {
+            len = strlen(str);
+        } else {
+            len = p - str;
+        }
+
+        bool found = false;
+        for (size_t i = 0; i < sizeof(g_testopts) / sizeof(TestOpts); i++) {
+            const char * testname = g_testopts[i].name;
+            // Allow the user to specify test names by case-agnostic
+            // unique prefix.
+            if (strncasecmp(str, testname, len) == 0) {
+                if (found) {
+                    printf("Ambiguous test name: --%stest=%*s\n",
+                            enable_tests ? "" : "no", len, str);
+                    goto error;
+                }
+                //printf("%sabling test %s\n", enable_tests ? "en" : "dis", testname);
+                g_testopts[i].var = enable_tests;
+                if (&g_testopts[i].var == &g_testAll) {
+                    set_default_tests(enable_tests);
+                }
+                found = true;
+                if (testname[len] == '\0') {
+                    //printf("Exact match\n");
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            printf("Invalid option: --test=%*s\n", len, str);
+            goto error;
+        }
+        if (p == NULL) {
+            break;
+        }
+        str += len + 1;
+    }
+
+    return;
+
+ error:
+    printf("Valid tests: --test=%s", g_testopts[0].name);
+    for(size_t i = 1; i < sizeof(g_testopts) / sizeof(TestOpts); i++) {
+        printf(",%s", g_testopts[i].name);
+    }
+    printf(" \n");
+    exit(1);
+}
+
 //-----------------------------------------------------------------------------
+// VCodes allow easy comparison of test results and hash inputs and outputs
+// across SMHasher3 runs, hashes (of the same width), and systems.
 
 uint32_t g_doVCode = 0;
 uint32_t g_inputVCode = 1;
@@ -242,7 +311,7 @@ bool test ( const HashInfo * hInfo )
   else
     fprintf(outfile, "\n\n");
 
-  if(g_testSanity || g_testAll)
+  if(g_testSanity)
   {
     printf("[[[ Sanity Tests ]]]\n\n");
 
@@ -257,12 +326,12 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Speed tests
 
-  if(g_testSpeed || g_testAll)
+  if(g_testSpeed)
   {
       SpeedTest(hInfo);
   }
 
-  if(g_testHashmap || g_testAll)
+  if(g_testHashmap)
   {
       result &= HashMapTest(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -270,7 +339,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Avalanche tests
 
-  if(g_testAvalanche || g_testAll)
+  if(g_testAvalanche)
   {
       result &= AvalancheTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -278,7 +347,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'Sparse' - keys with all bits 0 except a few
 
-  if(g_testSparse || g_testAll)
+  if(g_testSparse)
   {
       result &= SparseKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -286,7 +355,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'Permutation' - all possible combinations of a set of blocks
 
-  if(g_testPermutation || g_testAll)
+  if(g_testPermutation)
   {
       result &= PermutedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -294,7 +363,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'Window'
 
-  if(g_testWindow || g_testAll)
+  if(g_testWindow)
   {
       result &= WindowedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -302,7 +371,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'Cyclic' - keys of the form "abcdabcdabcd..."
 
-  if (g_testCyclic || g_testAll)
+  if (g_testCyclic)
   {
       result &= CyclicKeyTest<hashtype>(hInfo, g_drawDiagram);
   }
@@ -312,7 +381,7 @@ bool test ( const HashInfo * hInfo )
   // With --extra this generates some huge keysets,
   // 128-bit tests will take ~1.3 gigs of RAM.
 
-  if(g_testTwoBytes || g_testAll)
+  if(g_testTwoBytes)
   {
       result &= TwoBytesKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -320,7 +389,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'Text'
 
-  if(g_testText || g_testAll)
+  if(g_testText)
   {
       result &= TextKeyTest<hashtype>(hInfo, g_drawDiagram);
   }
@@ -328,7 +397,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'Zeroes'
 
-  if(g_testZeroes || g_testAll)
+  if(g_testZeroes)
   {
       result &= ZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
   }
@@ -336,7 +405,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'Seed'
 
-  if(g_testSeed || g_testAll)
+  if(g_testSeed)
   {
       result &= SeedTest<hashtype>(hInfo, g_drawDiagram);
   }
@@ -344,7 +413,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Keyset 'PerlinNoise'
 
-  if(g_testPerlinNoise || g_testAll)
+  if(g_testPerlinNoise)
   {
       result &= PerlinNoiseTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -352,7 +421,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Differential tests
 
-  if(g_testDiff || g_testAll)
+  if(g_testDiff)
   {
       result &= DiffTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -360,7 +429,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Differential-distribution tests
 
-  if (g_testDiffDist || g_testAll)
+  if (g_testDiffDist)
   {
       result &= DiffDistTest<hashtype>(hInfo, g_drawDiagram);
   }
@@ -369,7 +438,7 @@ bool test ( const HashInfo * hInfo )
   // Measuring the distribution of the population count of the
   // lowest 32 bits set over the whole key space.
 
-  if (g_testPopcount || g_testAll)
+  if (g_testPopcount)
   {
       result &= PopcountTest<hashtype>(hInfo, g_testExtra);
   }
@@ -378,7 +447,7 @@ bool test ( const HashInfo * hInfo )
   // Test the hash function as a PRNG by repeatedly feeding its output
   // back into the hash to get the next random number.
 
-  if (g_testPrng || g_testAll)
+  if (g_testPrng)
   {
       result &= PRNGTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
   }
@@ -387,7 +456,10 @@ bool test ( const HashInfo * hInfo )
   // Bit Independence Criteria. Interesting, but doesn't tell us much about
   // collision or distribution. For >=128bit hashes, do this only with --extra
 
-  if(g_testBIC || (g_testAll && hInfo->bits >= 128 && g_testExtra))
+  if (g_testAll && g_testExtra && hInfo->bits >= 128) {
+      g_testBIC = true;
+  }
+  if(g_testBIC)
   {
     result &= BicTest<hashtype>(hInfo, g_drawDiagram);
   }
@@ -395,7 +467,7 @@ bool test ( const HashInfo * hInfo )
   //-----------------------------------------------------------------------------
   // Test for known or unknown seed values which give bad/suspect hash values.
 
-  if (g_testBadSeeds || g_testAll)
+  if (g_testBadSeeds)
   {
       result &= BadSeedsTest<hashtype>(hInfo, g_testExtra);
   }
@@ -449,7 +521,7 @@ bool testHash ( const char * name )
 void usage( void )
 {
     printf("Usage: SMHasher3 [--list][--listnames][--tests] [--verbose][--extra]\n"
-           "       [--ncpu=N] [--vcode] [--test=Speed,...] [--seed=globalseed] hash\n");
+           "       [--ncpu=N] [--vcode] [--[no]test=Speed,...] [--seed=globalseed] hash\n");
 }
 
 int main ( int argc, const char ** argv )
@@ -461,6 +533,8 @@ int main ( int argc, const char ** argv )
     printf("Runtime endian detection failed! Cannot continue\n");
     exit(1);
   }
+
+  set_default_tests(true);
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(_X86_64_)
   const char * defaulthash = "xxh3";
@@ -555,43 +629,14 @@ int main ( int argc, const char ** argv )
         ReportCollisionEstimates();
         exit(0);
       }
-      /* default: --test=All. comma seperated list of options */
       if (strncmp(arg,"--test=", 6) == 0) {
-        char *opt = (char *)&arg[7];
-        char *rest = opt;
-        char *p;
-        bool found = false;
-        bool need_opt_free = false;
-        g_testAll = false;
-        do {
-          if ((p = strchr(rest, ','))) {
-            opt = strndup(rest, p-rest);
-            need_opt_free = true;
-            rest = p+1;
-          } else {
-            need_opt_free = false;
-            opt = rest;
-          }
-          for (size_t i = 0; i < sizeof(g_testopts) / sizeof(TestOpts); i++) {
-            if (strcmp(opt, g_testopts[i].name) == 0) {
-              g_testopts[i].var = true; found = true; break;
-            }
-          }
-          if (!found) {
-            printf("Invalid option: --test=%s\n", opt);
-            printf("Valid tests: --test=%s", g_testopts[0].name);
-            for(size_t i = 1; i < sizeof(g_testopts) / sizeof(TestOpts); i++) {
-              printf(",%s", g_testopts[i].name);
-            }
-            printf(" \n");
-            if (need_opt_free)
-              free(opt);
-            exit(1);
-          }
-          if (need_opt_free)
-            free(opt);
-        } while (p);
-        continue;
+          g_testAll = false; // If a list of tests is given, only test those
+          parse_tests(&arg[7], true);
+          continue;
+      }
+      if (strncmp(arg,"--notest=", 8) == 0) {
+          parse_tests(&arg[9], false);
+          continue;
       }
       // invalid command
       printf("Invalid command \n");
