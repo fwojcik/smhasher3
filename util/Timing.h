@@ -86,9 +86,7 @@ FORCE_INLINE static size_t monotonic_clock(void) {
 
 #else	//	!defined(_MSC_VER)
 
-#if defined (__i386__) || defined (__x86_64__)
 #include <sys/time.h>
-#endif
 
 FORCE_INLINE uint64_t timeofday() {
   struct timeval tv;
