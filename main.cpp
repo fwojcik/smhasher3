@@ -316,7 +316,7 @@ static bool test ( const HashInfo * hInfo )
     printf("[[[ Sanity Tests ]]]\n\n");
 
     // Note that Verify() leaves the hash seeded to 0
-    result &= hInfo->Verify(g_hashEndian, true);
+    result &= hInfo->Verify(g_hashEndian, true, false);
     result &= (SanityTest(hInfo)          || hInfo->isMock());
     result &= (AppendedZeroesTest(hInfo)  || hInfo->isMock());
     result &= (PrependedZeroesTest(hInfo) || hInfo->isMock());

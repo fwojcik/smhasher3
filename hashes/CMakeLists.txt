@@ -572,6 +572,7 @@ add_library(
   SMHasher3Hashlib STATIC
 #
   Hashlib.cpp
+  Hashinfo.cpp
   Hashrefs.cpp
 #
   donothing.cpp

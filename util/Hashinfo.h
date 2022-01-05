@@ -125,11 +125,11 @@ class HashInfo {
 
     // The hash will be seeded with a value of 0 before this fn returns
     bool VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian,
-            bool verbose) const;
+            bool verbose, bool prefix) const;
 
     FORCE_INLINE bool Verify(enum HashInfo::endianness endian,
-            bool verbose) const {
-        return VerifyImpl(this, endian, verbose);
+            bool verbose, bool prefix = true) const {
+        return VerifyImpl(this, endian, verbose, prefix);
     }
 
     FORCE_INLINE HashFn hashFn(enum HashInfo::endianness endian) const {
