@@ -62,12 +62,16 @@ HashMapOrder defaultSort(HashMap & map) {
     return hashes;
 }
 
+// FIXME Verify hinfo is all filled out.
 unsigned register_hash(const HashInfo * hinfo) {
   if (strcmp(hinfo->family, "LEGACY") == 0) return 0;
   std::string name = hinfo->name;
   std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+  name.resize(std::min((int)name.length(), 20));
+
   if (hashMap().find(name) != hashMap().end()) {
-    printf("Hash names must be unique; \"%s\" was added multiple times.\n", hinfo->name);
+    printf("Hash names must be unique.\n");
+    printf("\"%s\" (\"%s\") was added multiple times.\n", hinfo->name, name);
     printf("Note that hash names are using a case-insensitive comparison.\n");
     exit(1);
   }
@@ -77,6 +81,9 @@ unsigned register_hash(const HashInfo * hinfo) {
 
 const HashInfo * findHash(const char * name) {
   std::string n = name;
+  std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+  n.resize(std::min((int)n.length(), 20));
+
   const auto it = hashMap().find(n);
   if (it == hashMap().end()) {
     return NULL;
