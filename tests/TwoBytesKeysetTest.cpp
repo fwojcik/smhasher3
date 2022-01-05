@@ -58,8 +58,8 @@
 //-----------------------------------------------------------------------------
 // Keyset 'TwoBytes' - generate all keys up to length N with two non-zero bytes
 
-static void TwoBytesKeygen ( int maxlen, KeyCallback & c )
-{
+template< typename hashtype >
+static void TwoBytesKeygen(int maxlen, HashFn hash, std::vector<hashtype> & hashes) {
   //----------
   // Compute # of keys
 
@@ -75,8 +75,6 @@ static void TwoBytesKeygen ( int maxlen, KeyCallback & c )
 
   printf("Keyset 'TwoBytes' - up-to-%d-byte keys - %d keys\n", maxlen, keycount);
 
-  c.reserve(keycount);
-
   //----------
   // Add all keys with one non-zero byte
 
@@ -88,9 +86,11 @@ static void TwoBytesKeygen ( int maxlen, KeyCallback & c )
       {
         for(int valA = 1; valA <= 255; valA++)
           {
+            hashtype h;
             key[byteA] = (uint8_t)valA;
+            hash(key,keylen,g_seed,&h);
             addVCodeInput(key, keylen);
-            c(key,keylen);
+            hashes.push_back(h);
           }
 
         key[byteA] = 0;
@@ -109,9 +109,11 @@ static void TwoBytesKeygen ( int maxlen, KeyCallback & c )
 
               for(int valB = 1; valB <= 255; valB++)
                 {
-                  key[byteB] = (uint8_t)valB;
-                  addVCodeInput(key, keylen);
-                  c(key,keylen);
+                    hashtype h;
+                    key[byteB] = (uint8_t)valB;
+                    hash(key,keylen,g_seed,&h);
+                    addVCodeInput(key, keylen);
+                    hashes.push_back(h);
                 }
 
               key[byteB] = 0;
@@ -126,9 +128,7 @@ static bool TwoBytesTest2 ( HashFn hash, int maxlen, bool drawDiagram )
 {
   std::vector<hashtype> hashes;
 
-  HashCallback<hashtype> c(hash,hashes);
-
-  TwoBytesKeygen(maxlen,c);
+  TwoBytesKeygen(maxlen,hash,hashes);
 
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");

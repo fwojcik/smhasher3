@@ -97,20 +97,6 @@ bool hash_is_very_slow(pfHash hash);
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
 void Bad_Seed_init (pfHash hash, uint32_t &seed);
 
-struct ByteVec : public std::vector<uint8_t>
-{
-  ByteVec ( const void * key, int len )
-  {
-    resize(len);
-    memcpy(&front(),key,len);
-  }
-};
-
-template< typename hashtype, typename keytype >
-struct CollisionMap : public std::map< hashtype, std::vector<keytype> >
-{
-};
-
 template< typename hashtype >
 struct HashSet : public std::set<hashtype>
 {
@@ -136,110 +122,6 @@ inline void hash_combine (std::uint64_t& seed, const T& val)
 {
     seed ^= std::hash<T>{}(val) + 0x9e3779b97f4a7c15LLU + (seed<<12) + (seed>>4);
 }
-
-//-----------------------------------------------------------------------------
-// Key-processing callback objects. Simplifies keyset testing a bit.
-
-struct KeyCallback
-{
-  KeyCallback() : m_count(0)
-  {
-  }
-
-  virtual ~KeyCallback()
-  {
-  }
-
-  virtual void operator() ( const void * key, int len )
-  {
-    m_count++;
-  }
-
-  virtual void reserve ( int keycount )
-  {
-  };
-
-  int m_count;
-};
-
-//----------
-
-static void printKey(const void* key, size_t len);
-
-template<typename hashtype>
-struct HashCallback : public KeyCallback
-{
-  typedef std::vector<hashtype> hashvec;
-
-  HashCallback ( HashFn hash, hashvec & hashes ) : m_hashes(hashes), m_HashFn(hash)
-  {
-    m_hashes.clear();
-  }
-
-  virtual void operator () ( const void * key, int len )
-  {
-    size_t newsize = m_hashes.size() + 1;
-
-    m_hashes.resize(newsize);
-
-    hashtype h;
-    m_HashFn(key, len, g_seed, &h);
-
-    m_hashes.back() = h;
-  }
-
-  virtual void reserve ( int keycount )
-  {
-    m_hashes.reserve(keycount);
-  }
-
-  hashvec & m_hashes;
-  HashFn m_HashFn;
-
-  //----------
-
-private:
-
-  HashCallback & operator = ( const HashCallback & );
-};
-
-//----------
-
-template<typename hashtype>
-struct CollisionCallback : public KeyCallback
-{
-  typedef HashSet<hashtype> hashset;
-  typedef CollisionMap<hashtype,ByteVec> collmap;
-
-  CollisionCallback ( HashFn hash, hashset & collisions, collmap & cmap )
-  : m_HashFn(hash),
-    m_collisions(collisions),
-    m_collmap(cmap)
-  {
-  }
-
-  virtual void operator () ( const void * key, int len )
-  {
-    hashtype h;
-
-    m_HashFn(key,len,g_seed,&h);
-
-    if(m_collisions.count(h))
-    {
-      m_collmap[h].push_back( ByteVec(key,len) );
-    }
-  }
-
-  //----------
-
-  HashFn m_HashFn;
-  hashset & m_collisions;
-  collmap & m_collmap;
-
-private:
-
-  CollisionCallback & operator = ( const CollisionCallback & c );
-};
 
 //-----------------------------------------------------------------------------
 

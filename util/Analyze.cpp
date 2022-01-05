@@ -777,12 +777,6 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     if(!result && drawDiagram)
     {
       PrintCollisions(collisions);
-      //printf("Mapping collisions\n");
-      //CollisionMap<uint128_t,ByteVec> cmap;
-      //CollisionCallback<uint128_t> c2(hash,collisions,cmap);
-      ////TwoBytesKeygen(20,c2);
-      //printf("Dumping collisions\n");
-      //DumpCollisionMap(cmap);
     }
 
     if (testHighBits || testLowBits)
