@@ -116,7 +116,7 @@ bool SanityTest (const HashInfo * hinfo) {
 
           flipbit(key2,len,bit);
           hash(key2,len,seed,hash2);
-          addVCodeOutput(hash1, hashbytes);
+          addVCodeOutput(hash2, hashbytes);
 
           if(memcmp(hash1,hash2,hashbytes) == 0)
             {
