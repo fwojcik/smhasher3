@@ -65,6 +65,12 @@ void     blackhole ( uint32_t x );
 uint32_t whitehole ( void );
 
 //-----------------------------------------------------------------------------
+template< typename hashtype >
+struct HashSet : public std::set<hashtype>
+{
+};
+
+//-----------------------------------------------------------------------------
 // To be able to sample different statistics sets from the same hash,
 // a seed can be supplied which will be used in each test where a seed
 // is not explicitly part of that test.
@@ -96,32 +102,6 @@ bool hash_is_slow(pfHash hash);
 bool hash_is_very_slow(pfHash hash);
 bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
 void Bad_Seed_init (pfHash hash, uint32_t &seed);
-
-template< typename hashtype >
-struct HashSet : public std::set<hashtype>
-{
-};
-
-//-----------------------------------------------------------------------------
-// hash_combine. The magic number 0x9e3779b9 is derived from the inverse golden ratio.
-// phi = (1+sqrt(5))/2; 2^32 / phi => 2654435769.497230
-template <typename T>
-inline void hash_combine (std::uint16_t& seed, const T& val)
-{
-    seed ^= std::hash<T>{}(val) + 0x9e37U + (seed<<3) + (seed>>1);
-}
-
-template <typename T>
-inline void hash_combine (std::uint32_t& seed, const T& val)
-{
-    seed ^= std::hash<T>{}(val) + 0x9e3779b9U + (seed<<6) + (seed>>2);
-}
-
-template <typename T>
-inline void hash_combine (std::uint64_t& seed, const T& val)
-{
-    seed ^= std::hash<T>{}(val) + 0x9e3779b97f4a7c15LLU + (seed<<12) + (seed>>4);
-}
 
 //-----------------------------------------------------------------------------
 
