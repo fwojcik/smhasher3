@@ -237,7 +237,7 @@ uint32_t g_resultVCode = 1;
 //-----------------------------------------------------------------------------
 // Self-test on startup - verify that all installed hashes work correctly.
 
-void HashSelfTestAll(bool verbose) {
+static void HashSelfTestAll(bool verbose) {
   const size_t numhashes = numLegacyHashes();
   bool pass = true;
 
@@ -268,7 +268,7 @@ void HashSelfTestAll(bool verbose) {
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-bool test ( const HashInfo * hInfo )
+static bool test ( const HashInfo * hInfo )
 {
   const int hashbits = sizeof(hashtype) * 8;
   bool result = true;
@@ -482,8 +482,7 @@ bool test ( const HashInfo * hInfo )
 
 //-----------------------------------------------------------------------------
 
-bool testHash ( const char * name )
-{
+static bool testHash(const char * name) {
   LegacyHashInfo * lhInfo = NULL;
   const HashInfo * hInfo;
 
@@ -518,7 +517,7 @@ bool testHash ( const char * name )
 
 //-----------------------------------------------------------------------------
 
-void usage( void )
+static void usage( void )
 {
     printf("Usage: SMHasher3 [--list][--listnames][--tests] [--verbose][--extra]\n"
            "       [--ncpu=N] [--vcode] [--[no]test=Speed,...] [--seed=globalseed] hash\n");
