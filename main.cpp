@@ -192,12 +192,19 @@ static void parse_tests(const char * str, bool enable_tests) {
                             enable_tests ? "" : "no", len, str);
                     goto error;
                 }
+                found = true;
                 //printf("%sabling test %s\n", enable_tests ? "en" : "dis", testname);
                 g_testopts[i].var = enable_tests;
+                // If "All" tests are being enabled or disabled, then
+                // adjust the individual test variables as
+                // instructed. Otherwise, if an "All" test is being
+                // specifically disabled, then don't consider "All"
+                // tests as being run.
                 if (&g_testopts[i].var == &g_testAll) {
                     set_default_tests(enable_tests);
+                } else if (!enable_tests && g_testopts[i].defaultvalue) {
+                    g_testAll = false;
                 }
-                found = true;
                 if (testname[len] == '\0') {
                     //printf("Exact match\n");
                     break;
@@ -629,7 +636,9 @@ int main ( int argc, const char ** argv )
         exit(0);
       }
       if (strncmp(arg,"--test=", 6) == 0) {
-          g_testAll = false; // If a list of tests is given, only test those
+          // If a list of tests is given, only test those
+          g_testAll = false;
+          set_default_tests(false);
           parse_tests(&arg[7], true);
           continue;
       }
