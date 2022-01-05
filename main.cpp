@@ -457,6 +457,11 @@ int main ( int argc, const char ** argv )
   setbuf(stdout, NULL); // Unbuffer stdout always
   setbuf(stderr, NULL); // Unbuffer stderr always
 
+  if (!isLE() && !isBE()) {
+    printf("Runtime endian detection failed! Cannot continue\n");
+    exit(1);
+  }
+
 #if defined(__x86_64__) || defined(_M_X64) || defined(_X86_64_)
   const char * defaulthash = "xxh3";
 #else
