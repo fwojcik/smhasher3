@@ -177,9 +177,7 @@ void HashSelfTestAll(bool verbose) {
   for (size_t i = 0; i < numhashes; i++) {
     LegacyHashInfo * linfo = numLegacyHash(i);
     HashInfo * hinfo = convertLegacyHash(linfo);
-    if (verbose)
-      printf("%20s - ", hinfo->name);
-    pass &= hinfo->Verify(verbose);
+    pass &= hinfo->Verify(HashInfo::ENDIAN_NATIVE, verbose);
     delete hinfo;
   }
 
@@ -190,8 +188,7 @@ void HashSelfTestAll(bool verbose) {
       for (size_t i = 0; i < numhashes; i++) {
         LegacyHashInfo * linfo = numLegacyHash(i);
         HashInfo * hinfo = convertLegacyHash(linfo);
-        printf("%20s - ", hinfo->name);
-        pass &= hinfo->Verify(true);
+        pass &= hinfo->Verify(HashInfo::ENDIAN_NATIVE, true);
         delete hinfo;
       }
     }
@@ -250,7 +247,7 @@ bool test ( const HashInfo * hInfo )
     printf("[[[ Sanity Tests ]]]\n\n");
 
     // Note that Verify() leaves the hash seeded to 0
-    result &= hInfo->Verify(true);
+    result &= hInfo->Verify(g_hashEndian, true);
     result &= (SanityTest(hInfo)          || hInfo->isMock());
     result &= (AppendedZeroesTest(hInfo)  || hInfo->isMock());
     result &= (PrependedZeroesTest(hInfo) || hInfo->isMock());

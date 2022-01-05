@@ -106,11 +106,15 @@ void listHashes(bool nameonly) {
 bool verifyAllHashes(bool verbose) {
     bool result = true;
     for (const HashInfo * h : defaultSort(hashMap())) {
-        if (verbose) {
-            printf("%20s - ", h->name);
+        if (isLE()) {
+            result &= h->Verify(HashInfo::ENDIAN_NATIVE, verbose);
         }
-        result &= h->Verify(verbose);
+        result &= h->Verify(HashInfo::ENDIAN_BYTESWAPPED, verbose);
+        if (!isLE()) {
+            result &= h->Verify(HashInfo::ENDIAN_NATIVE, verbose);
+        }
     }
+    printf("\n");
     return result;
 }
 
@@ -118,79 +122,84 @@ bool verifyAllHashes(bool verbose) {
 // This should hopefully be a thorough and uambiguous test of whether a hash
 // is correctly implemented on a given platform.
 
-// This function MUST seed the hash with a value of 0 before returning.
-
-// TODO: Add verification values for LE and BE.
-
-bool VerifyHashImpl(const HashInfo * hinfo, bool verbose) {
-  const HashFn hash = hinfo->hashFn(HashInfo::ENDIAN_NATIVE);
-  const int hashbits = hinfo->bits;
-  const uint32_t expected = hinfo->verification;
-  const int hashbytes = hashbits / 8;
+static uint32_t calcVerification(const HashInfo * hinfo, enum HashInfo::endianness bswap) {
+  const HashFn hash = hinfo->hashFn(bswap);
+  const uint32_t hashbits = hinfo->bits;
+  const uint32_t hashbytes = hashbits / 8;
 
   uint8_t * key    = new uint8_t[256];
   uint8_t * hashes = new uint8_t[hashbytes * 256];
   uint8_t * final  = new uint8_t[hashbytes];
 
-  memset (key,0,256);
-  memset (hashes,0,hashbytes*256);
-  memset (final,0,hashbytes);
+  memset(key,0,256);
+  memset(hashes,0,hashbytes*256);
+  memset(final,0,hashbytes);
 
-  // Hash keys of the form {0}, {0,1}, {0,1,2}... up to N=255,using 256-N as
-  // the seed
-  for(int i = 0; i < 256; i++)
-  {
+  // Hash keys of the form {0}, {0,1}, {0,1,2}... up to N=255, using
+  // 256-N as the seed
+  for(int i = 0; i < 256; i++) {
     seed_t seed = 256 - i;
     hinfo->Seed(seed);
     key[i] = (uint8_t)i;
-    hash (key,i,seed,&hashes[i*hashbytes]);
+    hash(key,i,seed,&hashes[i*hashbytes]);
     addVCodeInput(key, i);
   }
 
   // Then hash the result array
   hinfo->Seed(0);
-  hash (hashes,hashbytes*256,0,final);
-
-  // The first four bytes of that hash, interpreted as a little-endian integer, is our
-  // verification value
-  uint32_t verification =
-      (final[0] << 0) | (final[1] << 8) | (final[2] << 16) | (final[3] << 24);
-
+  hash(hashes,hashbytes*256,0,final);
   addVCodeOutput(hashes, 256*hashbytes);
   addVCodeOutput(final, hashbytes);
-  addVCodeResult(expected);
+
+  // The first four bytes of that hash, interpreted as a little-endian
+  // integer, is our verification value
+  uint32_t verification =
+      (final[0] << 0) | (final[1] << 8) | (final[2] << 16) | (final[3] << 24);
   addVCodeResult(verification);
 
   delete [] final;
   delete [] hashes;
   delete [] key;
 
-  //----------
+  return verification;
+}
 
-  if (expected != verification) {
-    if (!expected) {
-      if (verbose)
-        printf("Verification value 0x%08X ........ SKIP (self- or unseeded)\n",
-               verification);
-      return true;
+static bool compareVerification(uint32_t expected, uint32_t actual,
+         const char * endstr, const char * name, bool verbose) {
+    const char * result_str;
+    bool result = true;
+
+    if (expected == actual) {
+        result_str = (actual != 0) ? "PASS\n" : "INSECURE (should not be 0)\n";
+    } else if (expected == 0) {
+        result_str = "SKIP (unverifiable)\n";
     } else {
-      if (verbose)
-        printf("Verification value 0x%08X ........ FAIL! (Expected 0x%08x)\n",
-               verification, expected);
-      return false;
+        result_str = "FAIL! (Expected 0x%08x)\n";
+        result = false;
     }
-  } else {
-    if (!expected) {
-      if (verbose)
-        printf("Verification value 0x%08X ........ INSECURE (should not be 0)\n",
-               verification);
-      return true;
-    } else {
-      if (verbose)
-        printf("Verification value 0x%08X ........ PASS\n", verification);
+
+    if (verbose) {
+        printf("%20s - Verification value %2s 0x%08X ........ ", name, endstr, actual);
+        printf(result_str, expected);
     }
-    return true;
-  }
+
+    return result;
+}
+
+// This function MUST seed the hash with a value of 0 before returning.
+bool HashInfo::VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian,
+        bool verbose) const {
+  bool result = true;
+
+  const bool wantLE = isLE() ^ (endian == HashInfo::ENDIAN_BYTESWAPPED);
+  const uint32_t actual = calcVerification(hinfo, endian);
+  const uint32_t expected = wantLE ?
+      hinfo->verification_LE : hinfo->verification_BE;
+
+  result &= compareVerification(expected, actual, wantLE ? "LE" : "BE",
+          hinfo->name, verbose);
+
+  return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -219,29 +228,34 @@ seed_t legacyHashSeedfix(const seed_t seed) {
 HashInfo * convertLegacyHash(LegacyHashInfo * linfo) {
     HashInfo * hinfo     = new HashInfo(linfo->name, "LEGACY");
 
-    hinfo->desc          = linfo->desc;
-    hinfo->bits          = linfo->hashbits;
-    hinfo->verification  = linfo->verification;
-    hinfo->badseeds      = linfo->secrets;
+    hinfo->desc            = linfo->desc;
+    hinfo->bits            = linfo->hashbits;
+    hinfo->badseeds        = linfo->secrets;
 
-    hinfo->hash_flags    = FLAG_HASH_LEGACY;
+    hinfo->hash_flags      = FLAG_HASH_LEGACY;
     if (linfo->quality == SKIP) {
         hinfo->hash_flags |= FLAG_HASH_MOCK;
     }
-    hinfo->impl_flags    = 0;
+    hinfo->impl_flags      = 0;
     if (hash_is_very_slow(linfo->hash)) {
         hinfo->impl_flags |= FLAG_IMPL_VERY_SLOW;
     } else if (hash_is_slow(linfo->hash)) {
         hinfo->impl_flags |= FLAG_IMPL_SLOW;
     }
 
-    hinfo->hashfn_native = legacyHashFnWrapper;
-    hinfo->hashfn_bswap  = NULL;
-    hinfo->initfn        = legacyHashInit;
-    hinfo->seedfixfn     = NULL;
-    hinfo->seedfn        = legacyHashSeed;
+    hinfo->initfn          = legacyHashInit;
+    hinfo->seedfixfn       = NULL;
+    hinfo->seedfn          = legacyHashSeed;
 
-    legacyHash           = linfo;
+    hinfo->hashfn_native   = legacyHashFnWrapper;
+    hinfo->hashfn_bswap    = NULL;
+    hinfo->verification_LE = linfo->verification;
+    hinfo->verification_BE = 0;
+    if (isBE()) {
+        std::swap(hinfo->verification_LE, hinfo->verification_BE);
+    }
+
+    legacyHash             = linfo;
 
     return hinfo;
 }

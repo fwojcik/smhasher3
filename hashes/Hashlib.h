@@ -38,3 +38,17 @@ HashInfo * convertLegacyHash(LegacyHashInfo * linfo);
 #define USE_FAMILY(N)                                       \
     extern unsigned CONCAT(N,_ref);                         \
     CONCAT(N,_ref) = 1
+
+static FORCE_INLINE bool isLE(void) {
+    uint32_t value = 0xb000000e;
+    const void *      addr  = static_cast<const void *>(&value);
+    const uint8_t *   lsb   = static_cast<const uint8_t *>(addr);
+    return ((*lsb) == 0x0e);
+}
+
+static FORCE_INLINE bool isBE(void) {
+    uint32_t value = 0xb000000e;
+    const void *      addr  = static_cast<const void *>(&value);
+    const uint8_t *   lsb   = static_cast<const uint8_t *>(addr);
+    return ((*lsb) == 0xb0);
+}

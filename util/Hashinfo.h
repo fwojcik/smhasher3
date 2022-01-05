@@ -94,7 +94,6 @@ typedef void      (*HashFn)(const void * in, const size_t len, const seed_t seed
 
 class HashInfo;
 unsigned register_hash(const HashInfo * hinfo);
-bool VerifyHashImpl(const HashInfo * hinfo, bool verbose);
 
 class HashInfo {
   public:
@@ -104,7 +103,8 @@ class HashInfo {
     uint64_t hash_flags;
     uint64_t impl_flags;
     uint32_t bits;
-    uint32_t verification;
+    uint32_t verification_LE;
+    uint32_t verification_BE;
     HashInitFn initfn;
     HashSeedfixFn seedfixfn;
     HashSeedFn seedfn;
@@ -118,8 +118,23 @@ class HashInfo {
         hashfn_native(NULL), hashfn_bswap(NULL)
     { register_hash(this); }
 
-    bool Verify(bool verbose) const {
-        return VerifyHashImpl(this, verbose);
+    enum endianness : uint32_t {
+        ENDIAN_NATIVE,
+        ENDIAN_BYTESWAPPED
+    };
+
+    // The hash will be seeded with a value of 0 before this fn returns
+    bool VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian,
+            bool verbose) const;
+
+    FORCE_INLINE bool Verify(enum HashInfo::endianness endian,
+            bool verbose) const {
+        return VerifyImpl(this, endian, verbose);
+    }
+
+    FORCE_INLINE HashFn hashFn(enum HashInfo::endianness endian) const {
+        return (endian == HashInfo::ENDIAN_NATIVE) ?
+                hashfn_native : hashfn_bswap;
     }
 
     FORCE_INLINE void Init(void) const {
@@ -155,15 +170,5 @@ class HashInfo {
 
     FORCE_INLINE bool isVerySlow(void) const {
         return !!(impl_flags & FLAG_IMPL_VERY_SLOW);
-    }
-
-    enum endianness {
-        ENDIAN_NATIVE,
-        ENDIAN_BYTESWAPPED
-    };
-
-    FORCE_INLINE HashFn hashFn(enum HashInfo::endianness endian) const {
-        return (endian == HashInfo::ENDIAN_NATIVE) ?
-                hashfn_native : hashfn_bswap;
     }
 };

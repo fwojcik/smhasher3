@@ -38,7 +38,8 @@ REGISTER_HASH(donothing32,
   $.hash_flags = FLAG_HASH_MOCK,
   $.impl_flags = FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
-  $.verification = 0x0,
+  $.verification_LE = 0x0,
+  $.verification_BE = 0x0,
   $.hashfn_native = DoNothingHash,
   $.hashfn_bswap = DoNothingHash
 );
@@ -48,7 +49,8 @@ REGISTER_HASH(donothing64,
   $.hash_flags = FLAG_HASH_MOCK,
   $.impl_flags = FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
-  $.verification = 0x0,
+  $.verification_LE = 0x0,
+  $.verification_BE = 0x0,
   $.hashfn_native = DoNothingHash,
   $.hashfn_bswap = DoNothingHash
 );
@@ -58,7 +60,8 @@ REGISTER_HASH(donothing128,
   $.hash_flags = FLAG_HASH_MOCK,
   $.impl_flags = FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
-  $.verification = 0x0,
+  $.verification_LE = 0x0,
+  $.verification_BE = 0x0,
   $.hashfn_native = DoNothingHash,
   $.hashfn_bswap = DoNothingHash
 );
