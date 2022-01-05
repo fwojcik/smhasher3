@@ -193,7 +193,7 @@ T MultiplyAdd(const T & summand, const T & factor1, const T & factor2) {
 
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 template <>
-u128 MultiplyAdd(u128 summand, u128 factor1, u128 factor2) {
+u128 MultiplyAdd(const u128 & summand, const u128 & factor1, const u128 & factor2) {
   return vmlal_u32(summand, vmovn_u64(factor1), vmovn_u64(factor2));
 }
 #endif
