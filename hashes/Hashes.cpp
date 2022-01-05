@@ -21,10 +21,15 @@ void VCODE_HASH(const void * input, size_t len, unsigned idx) {
     XXH32_update(&vcode_states[idx], input, len);
 }
 
+static uint32_t VCODE_MASK = 0x0;
+
 void VCODE_INIT(void) {
     for (int i = 0; i < VCODE_COUNT; i++) {
         XXH32_reset(&vcode_states[i], i);
     }
+    // This sets VCODE_MASK such that VCODE_FINALIZE() will report a
+    // vcode of 0x00000001 if no testing was done.
+    VCODE_MASK = VCODE_FINALIZE() ^ 0x1;
 }
 
 extern uint32_t g_inputVCode;
@@ -44,7 +49,7 @@ uint32_t VCODE_FINALIZE(void) {
     XXH32_update(&finalvcode, &g_outputVCode, sizeof(g_outputVCode));
     XXH32_update(&finalvcode, &g_resultVCode, sizeof(g_resultVCode));
 
-    return XXH32_digest(&finalvcode);
+    return VCODE_MASK ^ XXH32_digest(&finalvcode);
 }
 
 // ----------------------------------------------------------------------------
