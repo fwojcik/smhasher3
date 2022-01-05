@@ -512,7 +512,11 @@ static void radixsort( T * begin, T * end )
 //-----------------------------------------------------------------------------
 static const size_t    SORT_CUTOFF  = 60;
 
+#if 0
 #define expectp(x, p)  __builtin_expect_with_probability(!!(x), 1, (p))
+#else
+#define expectp(x, p) (x)
+#endif
 
 // This is an in-place MSB radix sort that recursively sorts each
 // block, sometimes known as an "American Flag Sort". Testing shows
