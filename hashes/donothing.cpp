@@ -28,7 +28,7 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-static void DoNothingHash(const void * in, const size_t len, const seed_t seed, void * out) {
+void DoNothingHash(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 REGISTER_FAMILY(donothing);
