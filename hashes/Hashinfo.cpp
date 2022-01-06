@@ -125,6 +125,12 @@ seed_t excludeBadseeds(const HashInfo * hinfo, const seed_t seed) {
     return newseed;
 }
 
+// Utility function for hashes to easily specify that the seed value
+// should not be 0.
+seed_t excludeZeroSeed(const HashInfo * hinfo, const seed_t seed) {
+    return (seed == 0) ? 1 : seed;
+}
+
 //-----------------------------------------------------------------------------
 // This is ugly, but it will be gone soon-ish.
 LegacyHashInfo * legacyHash;

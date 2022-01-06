@@ -96,6 +96,7 @@ typedef void      (*HashFn)(const void * in, const size_t len, const seed_t seed
 
 unsigned register_hash(const HashInfo * hinfo);
 seed_t excludeBadseeds(const HashInfo * hinfo, const seed_t seed);
+seed_t excludeZeroSeed(const HashInfo * hinfo, const seed_t seed);
 
 class HashInfo {
   public:
