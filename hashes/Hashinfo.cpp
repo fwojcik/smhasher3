@@ -113,6 +113,19 @@ bool HashInfo::VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endi
 }
 
 //-----------------------------------------------------------------------------
+// Utility function for hashes to easily specify that any seeds in
+// their badseed set should be excluded when their FixupSeed() method
+// is called.
+seed_t excludeBadseeds(const HashInfo * hinfo, const seed_t seed) {
+    seed_t newseed = seed;
+    auto endp = hinfo->badseeds.end();
+    while (hinfo->badseeds.find(newseed) != endp) {
+        newseed++;
+    }
+    return newseed;
+}
+
+//-----------------------------------------------------------------------------
 // This is ugly, but it will be gone soon-ish.
 LegacyHashInfo * legacyHash;
 
