@@ -576,6 +576,7 @@ add_library(
   Hashrefs.cpp
 #
   donothing.cpp
+  donothingOAAT.cpp
 )
 
 add_library(

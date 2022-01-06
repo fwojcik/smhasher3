@@ -109,20 +109,6 @@ sumhash32(const void *key, int len, uint32_t seed, void *out)
   *(uint32_t *) out = h;
 }
 
-// objsize: 0x53f-0x510: 47
-void
-NoopOAATReadHash(const void *key, int len, uint32_t seed, void *out)
-{
-  uint32_t	 h = seed;
-  const uint8_t *data = (const uint8_t *)key;
-  const uint8_t *const end = &data[len];
-
-  while (data < end) {
-    h = *data++;
-  }
-  *(uint32_t *) out = h;
-}
-
 //-----------------------------------------------------------------------------
 //One - byte - at - a - time hash based on Murmur 's mix
 

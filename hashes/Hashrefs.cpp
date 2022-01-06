@@ -22,5 +22,6 @@
 
 unsigned refs() {
     USE_FAMILY(donothing);
+    USE_FAMILY(donothingOAAT);
     return 0;
 }
