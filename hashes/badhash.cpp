@@ -49,7 +49,8 @@ REGISTER_FAMILY(badhash);
 REGISTER_HASH(badhash,
   $.desc = "very simple XOR shift",
   $.hash_flags = FLAG_HASH_MOCK,
-  $.impl_flags = FLAG_IMPL_LICENSE_MIT,
+  $.impl_flags = FLAG_IMPL_SANITY_FAILS     |
+                 FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0xAB432E23,
   $.verification_BE = 0x241F49BE,
