@@ -41,7 +41,8 @@ REGISTER_HASH(donothing32,
   $.verification_LE = 0x0,
   $.verification_BE = 0x0,
   $.hashfn_native = DoNothingHash,
-  $.hashfn_bswap = DoNothingHash
+  $.hashfn_bswap = DoNothingHash,
+  $.sort_order = 0
 );
 
 REGISTER_HASH(donothing64,
@@ -52,7 +53,8 @@ REGISTER_HASH(donothing64,
   $.verification_LE = 0x0,
   $.verification_BE = 0x0,
   $.hashfn_native = DoNothingHash,
-  $.hashfn_bswap = DoNothingHash
+  $.hashfn_bswap = DoNothingHash,
+  $.sort_order = 0
 );
 
 REGISTER_HASH(donothing128,
@@ -63,5 +65,6 @@ REGISTER_HASH(donothing128,
   $.verification_LE = 0x0,
   $.verification_BE = 0x0,
   $.hashfn_native = DoNothingHash,
-  $.hashfn_bswap = DoNothingHash
+  $.hashfn_bswap = DoNothingHash,
+  $.sort_order = 0
 );

@@ -56,5 +56,6 @@ REGISTER_HASH(badhash,
   $.hashfn_native = BadHash<false>,
   $.hashfn_bswap = BadHash<true>,
   $.seedfixfn = excludeBadseeds,
-  $.badseeds = { 0 }
+  $.badseeds = { 0 },
+  $.sort_order = 20
 );
