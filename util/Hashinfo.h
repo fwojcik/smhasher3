@@ -87,12 +87,13 @@ typedef enum : uint64_t {
 typedef std::conditional<sizeof(uintptr_t) <= sizeof(uint64_t),
   uint64_t, uintptr_t>::type seed_t;
 
+class HashInfo;
+
 typedef void      (*HashInitFn)(void);
-typedef seed_t    (*HashSeedfixFn)(const seed_t seed);
+typedef seed_t    (*HashSeedfixFn)(const HashInfo * hinfo, const seed_t seed);
 typedef uintptr_t (*HashSeedFn)(const seed_t seed, const size_t hint);
 typedef void      (*HashFn)(const void * in, const size_t len, const seed_t seed, void * out);
 
-class HashInfo;
 unsigned register_hash(const HashInfo * hinfo);
 
 class HashInfo {
@@ -152,7 +153,7 @@ class HashInfo {
 
     FORCE_INLINE void FixupSeed(seed_t & seed) const {
         if (seedfixfn != NULL) {
-            seed = seedfixfn(seed);
+            seed = seedfixfn(this, seed);
         }
     }
 
