@@ -66,6 +66,16 @@
 
 // Assumes hash is already seeded to 0.
 
+static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t sentinel) {
+    for (size_t i = 0; i < len; i++) {
+        if (buf[i] != sentinel) {
+            printf(" %d: 0x%02X != 0x%02X: ", i, buf[i], sentinel);
+            return false;
+        }
+    }
+    return true;
+}
+
 bool SanityTest (const HashInfo * hinfo) {
   Rand r(883743);
   bool result = true;
@@ -81,14 +91,87 @@ bool SanityTest (const HashInfo * hinfo) {
   uint8_t * buffer1 = new uint8_t[buflen];
   uint8_t * buffer2 = new uint8_t[buflen];
 
-  uint8_t * hash1 = new uint8_t[hashbytes];
-  uint8_t * hash2 = new uint8_t[hashbytes];
+  uint8_t * hash1 = new uint8_t[buflen];
+  uint8_t * hash2 = new uint8_t[buflen];
+  uint8_t * hash3 = new uint8_t[hashbytes];
+  uint8_t * hash4 = new uint8_t[hashbytes];
 
   //----------
+  // Test that the hash written is equal to the length promised, and
+  // that hashing the same thing gives the same result.
+
   printf("Running sanity check 1      ");
 
-  memset(hash1, 1, hashbytes);
-  memset(hash2, 2, hashbytes);
+  // These sentinels MUST be different values
+  const uint8_t sentinel1 = 0x5c;
+  const uint8_t sentinel2 = 0x36;
+
+  memset(hash1, sentinel1, buflen);
+  memset(hash2, sentinel2, buflen);
+
+  for(int irep = 0; irep < reps; irep++)
+  {
+    if(irep % (reps/10) == 0) printf(".");
+
+    for(int len = 0; len <= keymax; len++)
+    {
+      r.rand_p(buffer1,buflen);
+      memcpy(buffer2,buffer1,buflen);
+
+      // This test can halt early, so don't add input bytes to the VCode.
+      hash(buffer1,len,seed,hash1);
+      addVCodeOutput(hash1, hashbytes);
+
+      // See if input data changed
+      if (memcmp(buffer1,buffer2,buflen) != 0) {
+          printf(" hash altered input buffer:");
+          result = false;
+          goto end_sanity;
+      }
+
+      // See if hash overflowed output buffer
+      if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes, sentinel1)) {
+          printf(" hash overflowed input buffer (pass 1):");
+          result = false;
+          goto end_sanity;
+      }
+
+      hash(buffer1,len,seed,hash2);
+
+      // See if hash overflowed output buffer again
+      if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes, sentinel2)) {
+          printf(" hash overflowed input buffer (pass 2):");
+          result = false;
+          goto end_sanity;
+      }
+
+      // See if the hashes match, and if not then characterize the failure
+      if (memcmp(hash1, hash2, hashbytes) != 0) {
+          result = false;
+          for (int i = 0; i < hashbytes; i++) {
+              if (hash1[i] == hash2[i]) { continue; }
+              if ((hash1[i] == sentinel1) && (hash2[i] == sentinel2)) {
+                  printf(" output byte %d unchanged:", i);
+              } else {
+                  printf(" output byte %d inconsistent (0x%02X != 0x%02X):",
+                          i, hash1[i], hash2[i]);
+              }
+              goto end_sanity;
+          }
+      }
+
+    }
+  }
+
+  printf(" PASS\n");
+
+  //----------
+  // Test that changing any input bit changes at least one output bit,
+  // that changing bits outside the input does not change the output,
+  // and that hashing the same thing gives the same result, even if
+  // it's at a different alignment.
+
+  printf("Running sanity check 2      ");
 
   for(int irep = 0; irep < reps; irep++)
   {
@@ -107,25 +190,19 @@ bool SanityTest (const HashInfo * hinfo) {
         memcpy(key2,key1,len);
 
         // This test can halt early, so don't add input bytes to the VCode.
-        hash (key1,len,seed,hash1);
-        addVCodeOutput(hash1, hashbytes);
+        hash (key1,len,seed,hash3);
+        addVCodeOutput(hash3, hashbytes);
 
         for(int bit = 0; bit < (len * 8); bit++)
         {
           // Flip a bit, hash the key -> we should get a different result.
 
           flipbit(key2,len,bit);
-          hash(key2,len,seed,hash2);
-          addVCodeOutput(hash2, hashbytes);
+          hash(key2,len,seed,hash4);
+          addVCodeOutput(hash4, hashbytes);
 
-          if(memcmp(hash1,hash2,hashbytes) == 0)
-            {
-              for(int i=0; i < hashbytes; i++){
-                if (hash1[i] == hash2[i]) {
-                  printf(" %d: 0x%02X == 0x%02X ", i, hash1[i], hash2[i]);
-                  break;
-                }
-              }
+          if(memcmp(hash3,hash4,hashbytes) == 0) {
+              printf(" flipped bit %d, got identical output:", bit);
               result = false;
               goto end_sanity;
             }
@@ -133,19 +210,36 @@ bool SanityTest (const HashInfo * hinfo) {
           // Flip it back, hash again -> we should get the original result.
 
           flipbit(key2,len,bit);
+          hash(key2,len,seed,hash4);
 
-          hash(key2,len,seed,hash2);
-
-          if(memcmp(hash1,hash2,hashbytes) != 0)
-            {
+          if(memcmp(hash3,hash4,hashbytes) != 0) {
               for(int i=0; i < hashbytes; i++){
-                if (hash1[i] != hash2[i]) {
-                  printf(" %d: 0x%02X != 0x%02X ", i, hash1[i], hash2[i]);
+                if (hash3[i] != hash4[i]) {
+                  printf(" %d: 0x%02X != 0x%02X: output byte inconsistent:", i, hash3[i], hash4[i]);
                   break;
                 }
               }
               result = false;
               goto end_sanity;
+          }
+        }
+
+        // Try altering every byte in buffer2 that isn't a key byte,
+        // and make sure the hash doesn't change, to try catching
+        // hashes that depend on out-of-bounds key bytes.
+        //
+        // I don't know how to catch hashes that merely read
+        // out-of-bounds key bytes, but doing that isn't necessarily
+        // an error or even unsafe; see:
+        // https://stackoverflow.com/questions/37800739/is-it-safe-to-read-past-the-end-of-a-buffer-within-the-same-page-on-x86-and-x64
+        for(uint8_t * ptr = &buffer2[0]; ptr < &buffer2[buflen]; ptr++) {
+            if ((ptr >= &key2[0]) && (ptr < &key2[len])) { continue; }
+            *ptr ^= 0xFF;
+            hash(key2,len,seed,hash4);
+            if(memcmp(hash3,hash4,hashbytes) != 0) {
+                printf(" changing non-key byte altered hash: ");
+                result = false;
+                goto end_sanity;
             }
         }
       }
@@ -169,6 +263,8 @@ bool SanityTest (const HashInfo * hinfo) {
 
   delete [] hash1;
   delete [] hash2;
+  delete [] hash3;
+  delete [] hash4;
 
   return result;
 }
