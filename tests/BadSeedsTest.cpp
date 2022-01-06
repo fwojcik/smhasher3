@@ -124,7 +124,7 @@ static void TestSecretRangeThread(const HashInfo * hinfo, const uint64_t hi,
       "%8" PRIx64 "%c"  : "%16" PRIx64 "%c";
   const uint64_t progress_nl_every =
       (last <= UINT64_C(0xffffffff)) ? 8 : 4;
-  const std::vector<seed_t> & secrets = hinfo->badseeds;
+  const std::set<seed_t> & secrets = hinfo->badseeds;
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   std::vector<hashtype> hashes;
   HashSet<hashtype> collisions_dummy;
@@ -268,7 +268,7 @@ static bool BadSeedsImpl(const HashInfo * hinfo, bool testAll) {
   bool result = true;
   bool newresult = false;
   bool have_lower = false;
-  const std::vector<seed_t> & secrets = hinfo->badseeds;
+  const std::set<seed_t> & secrets = hinfo->badseeds;
 
   printf("Testing %u internal secrets:\n", (unsigned int)secrets.size());
   for (auto secret : secrets) {

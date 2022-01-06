@@ -140,7 +140,7 @@ HashInfo * convertLegacyHash(LegacyHashInfo * linfo) {
 
     hinfo->desc            = linfo->desc;
     hinfo->bits            = linfo->hashbits;
-    hinfo->badseeds        = linfo->secrets;
+    hinfo->badseeds        = std::set<seed_t>(linfo->secrets.begin(), linfo->secrets.end());
 
     hinfo->hash_flags      = FLAG_HASH_LEGACY;
     if (linfo->quality == SKIP) {

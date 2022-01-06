@@ -110,7 +110,7 @@ class HashInfo {
     HashSeedFn seedfn;
     HashFn hashfn_native;
     HashFn hashfn_bswap;
-    std::vector<seed_t> badseeds;
+    std::set<seed_t> badseeds;
 
     HashInfo(const char * n, const char * f) :
         name(n), family(f), desc(""),
