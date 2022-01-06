@@ -579,6 +579,8 @@ add_library(
   donothingOAAT.cpp
   badhash.cpp
   sumhash.cpp
+#
+  md5.cpp
 )
 
 add_library(
@@ -609,7 +611,6 @@ add_library(
   crc.cpp
   Hashes.cpp
   lookup3.cpp
-  md5.cpp
   MurmurHash1.cpp
   MurmurHash2.cpp
   MurmurHash3.cpp

@@ -100,9 +100,6 @@ static LegacyHashInfo g_hashes[] =
     { 0xb13dea7c9c324e51ULL, 0x75f17d6b3588f843ULL } },
 #endif
   { crc32,                32, 0x3719DB20, "crc32",       "CRC-32 soft", POOR, {} },
-  { md5_128,             128, 0xF263F96F, "md5-128",     "MD5", POOR, {} },
-  { md5_64,               64, 0x12F0BA8E, "md5-64",      "MD5, bits 32-95", POOR, {} },
-  { md5_32,               32, 0xF3DFF19F, "md5-32",      "MD5, bits 32-63", POOR, {} },
 #ifdef _MSC_VER /* truncated long to 32 */
 #  define SHA1_VERIF            0xED2F35E4
 #  define SHA1_32_VERIF         0x00000000
@@ -750,8 +747,6 @@ LegacyHashInfo * findLegacyHash ( const char * name )
 void Hash_init (LegacyHashInfo* info) {
   if (info->hash == sha2_224_64)
     sha224_init(&ltc_state);
-  //else if (info->hash == md5_128 || info->hash == md5_32)
-  //  md5_init();
 #if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
   else if ((info->hash == aesrng32)  ||
            (info->hash == aesrng64)  ||
@@ -872,8 +867,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint) {
 
   uint32_t seed32 = seed;
 
-  //if (hash == md5_128 || hash == md5_32)
-  //  md5_seed_init(seed);
   //if (hash == VHASH_32 || hash == VHASH_64)
   //  VHASH_seed_init(seed);
   if(hash == tabulation_32_test)
@@ -926,9 +919,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint) {
 bool hash_is_very_slow(pfHash hash) {
     // known very slow hashes (typically > 500 cycle/hash)
     const struct { pfHash h; } slowhashes[] = {
-        { md5_32                   },
-        { md5_64                   },
-        { md5_128                  },
         { sha1_32                  },
         { sha1_64                  },
         { sha1_160                 },
