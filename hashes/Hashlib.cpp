@@ -77,6 +77,7 @@ unsigned register_hash(const HashInfo * hinfo) {
   if (strcmp(hinfo->family, "LEGACY") == 0) return 0;
   std::string name = hinfo->name;
   std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+  std::replace(name.begin(), name.end(), '_', '-');
   name.resize(std::min((int)name.length(), 20));
 
   if (hashMap().find(name) != hashMap().end()) {
