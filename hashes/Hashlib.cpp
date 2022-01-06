@@ -44,6 +44,13 @@ HashMap& hashMap() {
   return *map;
 }
 
+
+// The sort_order field is intended to be used for people adding
+// hashes which should appear inside their family in
+// other-than-alphabetical order.
+//
+// This is overloaded for mock hashes to also override the sorting for
+// _family name_, which is not something general users should do.
 HashMapOrder defaultSort(HashMap & map) {
     HashMapOrder hashes;
     hashes.reserve(map.size());
@@ -54,8 +61,11 @@ HashMapOrder defaultSort(HashMap & map) {
             [](const HashInfo * a, const HashInfo * b) {
                 int r;
                 if (a->isMock() != b->isMock())               return a->isMock();
+                if (a->isMock() && (a->sort_order != b->sort_order))
+                                                              return (a->sort_order < b->sort_order);
                 if ((r = strcmp(a->family, b->family)) != 0)  return (r < 0);
                 if (a->bits != b->bits)                       return (a->bits < b->bits);
+                if (a->sort_order != b->sort_order)           return (a->sort_order < b->sort_order);
                 if ((r = strcmp(a->name, b->name)) != 0)      return (r < 0);
                 return false;
             });

@@ -104,6 +104,7 @@ class HashInfo {
     const char * desc;
     uint64_t hash_flags;
     uint64_t impl_flags;
+    uint32_t sort_order;
     uint32_t bits;
     uint32_t verification_LE;
     uint32_t verification_BE;
