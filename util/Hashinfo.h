@@ -35,11 +35,12 @@
     FLAG_EXPAND(IMPL_SLOW)                             \
     FLAG_EXPAND(IMPL_VERY_SLOW)                        \
     FLAG_EXPAND(IMPL_READ_PAST_EOB)                    \
+    FLAG_EXPAND(IMPL_READ_UNALIGNED)                   \
     FLAG_EXPAND(IMPL_INCREMENTAL)                      \
     FLAG_EXPAND(IMPL_INCREMENTAL_DIFFERENT)            \
-    FLAG_EXPAND(IMPL_32BIT)                            \
     FLAG_EXPAND(IMPL_64BIT)                            \
     FLAG_EXPAND(IMPL_128BIT)                           \
+    FLAG_EXPAND(IMPL_MULTIPLY)                         \
     FLAG_EXPAND(IMPL_MULTIPLY_64_64)                   \
     FLAG_EXPAND(IMPL_MULTIPLY_64_128)                  \
     FLAG_EXPAND(IMPL_ROTATE)                           \
