@@ -20,6 +20,7 @@
     FLAG_EXPAND(HASH_LEGACY)                           \
     FLAG_EXPAND(HASH_MOCK)                             \
     FLAG_EXPAND(HASH_CRYPTOGRAPHIC)                    \
+    FLAG_EXPAND(HASH_CRYPTOGRAPHIC_WEAK)               \
     FLAG_EXPAND(HASH_CRC_BASED)                        \
     FLAG_EXPAND(HASH_SHA_BASED)                        \
     FLAG_EXPAND(HASH_AES_BASED)                        \
@@ -28,10 +29,11 @@
     FLAG_EXPAND(HASH_SMALL_SEED)                       \
     FLAG_EXPAND(HASH_NO_SEED)                          \
     FLAG_EXPAND(HASH_SYSTEM_SPECIFIC)                  \
+    FLAG_EXPAND(HASH_ENDIAN_INDEPENDENT)               \
     FLAG_EXPAND(HASH_FLOATING_POINT)
 
 #define IMPL_FLAGS                                     \
-    FLAG_EXPAND(IMPL_SANITY_PASSES)                    \
+    FLAG_EXPAND(IMPL_SANITY_FAILS)                     \
     FLAG_EXPAND(IMPL_SLOW)                             \
     FLAG_EXPAND(IMPL_VERY_SLOW)                        \
     FLAG_EXPAND(IMPL_READ_PAST_EOB)                    \
@@ -57,6 +59,8 @@
     FLAG_EXPAND(IMPL_AVX2_REQUIRED)                    \
     FLAG_EXPAND(IMPL_NEON)                             \
     FLAG_EXPAND(IMPL_THUMB)                            \
+    FLAG_EXPAND(IMPL_CANONICAL_LE)                     \
+    FLAG_EXPAND(IMPL_CANONICAL_BE)                     \
     FLAG_EXPAND(IMPL_LICENSE_PUBLIC_DOMAIN)            \
     FLAG_EXPAND(IMPL_LICENSE_BSD)                      \
     FLAG_EXPAND(IMPL_LICENSE_MIT)                      \
