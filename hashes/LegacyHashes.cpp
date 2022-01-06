@@ -73,8 +73,6 @@ hash_state ltc_state;
 static LegacyHashInfo g_hashes[] =
 {
   // first the bad hash funcs, failing tests:
-  { sumhash,     	  32, 0x0000A9AC, "sumhash", 	 "sum all bytes", SKIP, {0UL} /* !! */ },
-  { sumhash32,     	  32, 0x3D6DC280, "sumhash32",   "sum all 32bit words", SKIP, {0x9e3779b97f4a7c15} },
 #if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
   { aesrng32,         32, 0x0, "aesrng32",  "32-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
   { aesrng64,         64, 0x0, "aesrng64",  "64-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
@@ -819,7 +817,7 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
           )
     wyhash32_seed_init(seed);
   // zero-seed hashes:
-  else if (!seed && (hash == sumhash || hash == fletcher2_test ||
+  else if (!seed && (hash == fletcher2_test ||
                      hash == fletcher4_test || hash == Bernstein_test || hash == sdbm_test ||
                      hash == JenkinsOOAT_test || hash == JenkinsOOAT_perl_test ||
                      hash == SuperFastHash_test || hash == MurmurOAAT_test ||

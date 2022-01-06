@@ -55,43 +55,6 @@ uint32_t VCODE_FINALIZE(void) {
 // ----------------------------------------------------------------------------
 //fake / bad hashes
 
-// objsize: 0x19b-0x30: 363
-void
-sumhash(const void *key, int len, uint32_t seed, void *out)
-{
-  uint32_t	 h = seed;
-  const uint8_t *data = (const uint8_t *)key;
-  const uint8_t *const end = &data[len];
-
-  while (data < end) {
-    h += *data++;
-  }
-
-  *(uint32_t *) out = h;
-}
-
-// objsize: 0x4ff-0x1a0: 863
-void
-sumhash32(const void *key, int len, uint32_t seed, void *out)
-{
-  uint32_t	  h = seed;
-  const uint32_t *data = (const uint32_t *)key;
-  const uint32_t *const end = &data[len/4];
-
-  while (data < end) {
-    h += *data++;
-  }
-  if (len & 3) {
-    uint8_t *dc = (uint8_t*)data; //byte stepper
-    const uint8_t *const endc = &((const uint8_t*)key)[len];
-    while (dc < endc) {
-      h += *dc++ * UINT64_C(11400714819323198485);
-    }
-  }
-
-  *(uint32_t *) out = h;
-}
-
 //-----------------------------------------------------------------------------
 //One - byte - at - a - time hash based on Murmur 's mix
 

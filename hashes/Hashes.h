@@ -37,14 +37,6 @@
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
 
-static inline bool sumhash_bad_seeds(std::vector<uint32_t> &seeds)
-{
-  seeds = std::vector<uint32_t> { UINT32_C(0) };
-  return true;
-}
-void sumhash(const void *key, int len, uint32_t seed, void *out);
-void sumhash32(const void *key, int len, uint32_t seed, void *out);
-
 void crc32(const void *key, int len, uint32_t seed, void *out);
 static inline bool crc32c_bad_seeds(std::vector<uint32_t> &seeds)
 {
