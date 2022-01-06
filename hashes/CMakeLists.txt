@@ -577,6 +577,7 @@ add_library(
 #
   donothing.cpp
   donothingOAAT.cpp
+  badhash.cpp
 )
 
 add_library(

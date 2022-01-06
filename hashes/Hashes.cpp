@@ -55,23 +55,6 @@ uint32_t VCODE_FINALIZE(void) {
 // ----------------------------------------------------------------------------
 //fake / bad hashes
 
-// objsize: 0x2f-0x0: 47
-void
-BadHash(const void *key, int len, uint32_t seed, void *out)
-{
-  uint32_t	  h = seed;
-  const uint8_t  *data = (const uint8_t *)key;
-  const uint8_t *const end = &data[len];
-
-  while (data < end) {
-    h ^= h >> 3;
-    h ^= h << 5;
-    h ^= *data++;
-  }
-
-  *(uint32_t *) out = h;
-}
-
 // objsize: 0x19b-0x30: 363
 void
 sumhash(const void *key, int len, uint32_t seed, void *out)
