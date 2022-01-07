@@ -295,10 +295,8 @@ static FORCE_INLINE void seed_md5(md5_context * ctx, const seed_t seed) {
     const uint32_t seedhi = (seed >> 32) & 0xFFFFFFFF;
     ctx->state[0] ^= seedlo;
     ctx->state[1] ^= seedhi;
-#ifdef NOT_YET
     ctx->state[2] += seedlo;
     ctx->state[3] += seedhi;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -339,13 +337,8 @@ REGISTER_HASH(md5_32,
                  FLAG_IMPL_ROTATE               |
                  FLAG_IMPL_VERY_SLOW,
   $.bits = 32,
-#ifdef NOT_YET
   $.verification_LE = 0x4003D7EE,
   $.verification_BE = 0x53A2E981,
-#else
-  $.verification_LE = 0xF3DFF19F,
-  $.verification_BE = 0x6CC1DCA8,
-#endif
   $.hashfn_native = MD5<32,false>,
   $.hashfn_bswap = MD5<32,true>
 );
@@ -361,13 +354,8 @@ REGISTER_HASH(md5_64,
                  FLAG_IMPL_ROTATE               |
                  FLAG_IMPL_VERY_SLOW,
   $.bits = 64,
-#ifdef NOT_YET
   $.verification_LE = 0xF2E011D4,
   $.verification_BE = 0xDE2E1FAD,
-#else
-  $.verification_LE = 0x12F0BA8E,
-  $.verification_BE = 0x9484101A,
-#endif
   $.hashfn_native = MD5<64,false>,
   $.hashfn_bswap = MD5<64,true>
 );
@@ -383,13 +371,8 @@ REGISTER_HASH(md5,
                  FLAG_IMPL_ROTATE               |
                  FLAG_IMPL_VERY_SLOW,
   $.bits = 128,
-#ifdef NOT_YET
   $.verification_LE = 0x1363415D,
   $.verification_BE = 0x242A18E0,
-#else
-  $.verification_LE = 0xF263F96F,
-  $.verification_BE = 0x5460C3B6,
-#endif
   $.hashfn_native = MD5<128,false>,
   $.hashfn_bswap = MD5<128,true>
 );
