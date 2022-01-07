@@ -104,6 +104,15 @@ seed_t excludeBadseeds(const HashInfo * hinfo, const seed_t seed);
 seed_t excludeZeroSeed(const HashInfo * hinfo, const seed_t seed);
 
 class HashInfo {
+  private:
+    char * _fixup_name(const char * in) {
+        // Since dashes can't be in C/C++ identifiers, but humans want them
+        // in names, replace underscores with dashes.
+        char * out = strdup(in);
+        std::replace(&out[0], &out[strlen(out)], '_', '-');
+        return out;
+    }
+
   public:
     const char * family;
     const char * name;
@@ -122,10 +131,14 @@ class HashInfo {
     std::set<seed_t> badseeds;
 
     HashInfo(const char * n, const char * f) :
-        name(n), family(f), desc(""),
+        name(_fixup_name(n)), family(f), desc(""),
         initfn(NULL), seedfixfn(NULL), seedfn(NULL),
         hashfn_native(NULL), hashfn_bswap(NULL)
     { register_hash(this); }
+
+    ~HashInfo() {
+        free((char *)name);
+    }
 
     enum endianness : uint32_t {
         ENDIAN_NATIVE,
