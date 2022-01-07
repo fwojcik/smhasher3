@@ -15,12 +15,6 @@ project(SMHasher3Hashes C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include(TestBigEndian)
-test_big_endian(IS_BIG_ENDIAN)
-if(IS_BIG_ENDIAN)
-  add_definitions(-DBIG_ENDIAN)
-endif()
-
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE
       "Release"
