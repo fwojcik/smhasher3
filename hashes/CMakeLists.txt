@@ -463,7 +463,7 @@ endif(AES_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel"))
 
 if(SHA_FOUND)
   # todo: arm, power
-  set(SHA_SRC SHA-Intrinsics/sha1-x86.c SHA-Intrinsics/sha256-x86.c)
+  set(SHA_SRC SHA-Intrinsics/sha256-x86.c)
 endif(SHA_FOUND)
 
 if(SSE42_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel") AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
