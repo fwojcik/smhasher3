@@ -49,7 +49,8 @@ void sumhash32(const void * in, const size_t len, const seed_t seed, void * out)
     uint32_t h                  = seed;
 
     while (data < end) {
-        uint32_t d = *data++;
+        uint32_t d;
+        memcpy(&d, data++, 4);
         h += COND_BSWAP(d, bswap);
     }
 
@@ -71,8 +72,7 @@ REGISTER_HASH(sumhash8,
   $.desc = "sum all 8-bit bytes",
   $.hash_flags = FLAG_HASH_MOCK,
   $.impl_flags = FLAG_IMPL_LICENSE_MIT      |
-                 FLAG_IMPL_SANITY_FAILS     |
-                 FLAG_IMPL_READ_UNALIGNED,
+                 FLAG_IMPL_SANITY_FAILS     ,
   $.bits = 32,
   $.verification_LE = 0x0000A9AC,
   $.verification_BE = 0xACA90000,
@@ -88,7 +88,6 @@ REGISTER_HASH(sumhash32,
   $.hash_flags = FLAG_HASH_MOCK,
   $.impl_flags = FLAG_IMPL_LICENSE_MIT      |
                  FLAG_IMPL_SANITY_FAILS     |
-                 FLAG_IMPL_READ_UNALIGNED   |
                  FLAG_IMPL_MULTIPLY,
   $.bits = 32,
   $.verification_LE = 0x3D6DC280,
