@@ -28,8 +28,8 @@
 // This should hopefully be a thorough and uambiguous test of whether a hash
 // is correctly implemented on a given platform.
 
-static uint32_t calcVerification(const HashInfo * hinfo, enum HashInfo::endianness bswap) {
-  const HashFn hash = hinfo->hashFn(bswap);
+static uint32_t calcVerification(const HashInfo * hinfo, enum HashInfo::endianness end) {
+  const HashFn hash = hinfo->hashFn(end);
   const uint32_t hashbits = hinfo->bits;
   const uint32_t hashbytes = hashbits / 8;
 
@@ -101,7 +101,7 @@ bool HashInfo::VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endi
         bool verbose, bool prefix) const {
   bool result = true;
 
-  const bool wantLE = isLE() ^ (endian == HashInfo::ENDIAN_BYTESWAPPED);
+  const bool wantLE = isBE() ^ _is_native(endian);
   const uint32_t actual = calcVerification(hinfo, endian);
   const uint32_t expected = wantLE ?
       hinfo->verification_LE : hinfo->verification_BE;

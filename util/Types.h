@@ -77,10 +77,8 @@ struct HashSet : public std::set<hashtype>
 extern seed_t g_seed;
 
 //-----------------------------------------------------------------------------
-// Soon it will be possible to choose at runtime how each hash will
-// treat its input data in terms of endianness. For now, just hardcode
-// to native interpretation.
-static const HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_NATIVE;
+// The user can select which endian-ness of the hash implementation to test
+extern HashInfo::endianness g_hashEndian;
 
 //-----------------------------------------------------------------------------
 typedef void (*pfHash)(const void *blob, const int len, const uint32_t seed,

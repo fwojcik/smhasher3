@@ -96,14 +96,25 @@
 #include <errno.h>
 
 //-----------------------------------------------------------------------------
-// Configuration.
-
+// Globally-visible configuration
 #ifdef HAVE_THREADS
 unsigned g_NCPU        = 4;
 #else
 const unsigned g_NCPU  = 1;
 #endif
 
+HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_NATIVE;
+
+//--------
+// VCodes allow easy comparison of test results and hash inputs and outputs
+// across SMHasher3 runs, hashes (of the same width), and systems.
+uint32_t g_doVCode = 0;
+uint32_t g_inputVCode = 1;
+uint32_t g_outputVCode = 1;
+uint32_t g_resultVCode = 1;
+
+//-----------------------------------------------------------------------------
+// Locally-visible configuration
 static bool g_drawDiagram = false;
 
 // excessive torture tests: Sparse, Avalanche, DiffDist, scan all seeds
@@ -232,14 +243,18 @@ static void parse_tests(const char * str, bool enable_tests) {
     exit(1);
 }
 
-//-----------------------------------------------------------------------------
-// VCodes allow easy comparison of test results and hash inputs and outputs
-// across SMHasher3 runs, hashes (of the same width), and systems.
-
-uint32_t g_doVCode = 0;
-uint32_t g_inputVCode = 1;
-uint32_t g_outputVCode = 1;
-uint32_t g_resultVCode = 1;
+static void usage(void);
+static HashInfo::endianness parse_endian(const char * str) {
+    if (!strcmp(str, "native"))     { return HashInfo::ENDIAN_NATIVE; }
+    if (!strcmp(str, "nonnative"))  { return HashInfo::ENDIAN_BYTESWAPPED; }
+    if (!strcmp(str, "default"))    { return HashInfo::ENDIAN_DEFAULT; }
+    if (!strcmp(str, "nondefault")) { return HashInfo::ENDIAN_NONDEFAULT; }
+    if (!strcmp(str, "big"))        { return HashInfo::ENDIAN_BIG; }
+    if (!strcmp(str, "little"))     { return HashInfo::ENDIAN_LITTLE; }
+    printf("Unknown endian option: %s\n", str);
+    usage();
+    exit(1);
+}
 
 //-----------------------------------------------------------------------------
 // Self-test on startup - verify that all installed hashes work correctly.
@@ -526,8 +541,12 @@ static bool testHash(const char * name) {
 
 static void usage( void )
 {
-    printf("Usage: SMHasher3 [--list][--listnames][--tests] [--verbose][--extra]\n"
-           "       [--ncpu=N] [--vcode] [--[no]test=Speed,...] [--seed=globalseed] hash\n");
+    printf("Usage: SMHasher3 [--[no]test=<testname>[,...]] [--extra] [--seed=<globalseed>]\n"
+           "                 [--endian=default|nondefault|native|nonnative|big|little]\n"
+           "                 [--verbose] [--vcode] [--ncpu=N] [<hashname>]\n"
+           "\n"
+           "       SMHasher3 [--list]|[--listnames]|[--tests]\n"
+           );
 }
 
 int main ( int argc, const char ** argv )
@@ -600,6 +619,10 @@ int main ( int argc, const char ** argv )
         VCODE_INIT();
         continue;
       }
+      if (strncmp(arg,"--endian=", 9) == 0) {
+        g_hashEndian = parse_endian(&arg[10]);
+        continue;
+      }
       if (strncmp(arg,"--seed=", 7) == 0) {
         errno = 0;
         char * endptr;
@@ -631,10 +654,6 @@ int main ( int argc, const char ** argv )
         continue;
 #endif
       }
-      if (strcmp(arg,"--EstimateNbCollisions") == 0) {
-        ReportCollisionEstimates();
-        exit(0);
-      }
       if (strncmp(arg,"--test=", 6) == 0) {
           // If a list of tests is given, only test those
           g_testAll = false;
@@ -645,6 +664,10 @@ int main ( int argc, const char ** argv )
       if (strncmp(arg,"--notest=", 8) == 0) {
           parse_tests(&arg[9], false);
           continue;
+      }
+      if (strcmp(arg,"--EstimateNbCollisions") == 0) {
+        ReportCollisionEstimates();
+        exit(0);
       }
       // invalid command
       printf("Invalid command \n");

@@ -104,6 +104,16 @@ seed_t excludeBadseeds(const HashInfo * hinfo, const seed_t seed);
 seed_t excludeZeroSeed(const HashInfo * hinfo, const seed_t seed);
 
 class HashInfo {
+  public:
+    enum endianness : uint32_t {
+        ENDIAN_DEFAULT,
+        ENDIAN_NONDEFAULT,
+        ENDIAN_NATIVE,
+        ENDIAN_BYTESWAPPED,
+        ENDIAN_LITTLE,
+        ENDIAN_BIG
+    };
+
   private:
     char * _fixup_name(const char * in) {
         // Since dashes can't be in C/C++ identifiers, but humans want them
@@ -111,6 +121,28 @@ class HashInfo {
         char * out = strdup(in);
         std::replace(&out[0], &out[strlen(out)], '_', '-');
         return out;
+    }
+
+    bool _is_native(enum endianness e) const {
+        bool is_native = true;
+        switch(e) {
+        case ENDIAN_NATIVE     : is_native = true; break;
+        case ENDIAN_BYTESWAPPED: is_native = false; break;
+        case ENDIAN_LITTLE     : is_native = isLE(); break;
+        case ENDIAN_BIG        : is_native = isBE(); break;
+        case ENDIAN_DEFAULT    :
+        case ENDIAN_NONDEFAULT :
+            if (hash_flags & FLAG_HASH_ENDIAN_INDEPENDENT) {
+                if (impl_flags & FLAG_IMPL_CANONICAL_LE) {
+                    is_native = isLE();
+                } else if (impl_flags & FLAG_IMPL_CANONICAL_BE) {
+                    is_native = isBE();
+                }
+            }
+            if (e == ENDIAN_NONDEFAULT) { is_native = !is_native; }
+            break;
+        }
+        return is_native;
     }
 
   public:
@@ -140,11 +172,6 @@ class HashInfo {
         free((char *)name);
     }
 
-    enum endianness : uint32_t {
-        ENDIAN_NATIVE,
-        ENDIAN_BYTESWAPPED
-    };
-
     // The hash will be seeded with a value of 0 before this fn returns
     bool VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian,
             bool verbose, bool prefix) const;
@@ -155,8 +182,7 @@ class HashInfo {
     }
 
     FORCE_INLINE HashFn hashFn(enum HashInfo::endianness endian) const {
-        return (endian == HashInfo::ENDIAN_NATIVE) ?
-                hashfn_native : hashfn_bswap;
+        return _is_native(endian) ? hashfn_native : hashfn_bswap;
     }
 
     FORCE_INLINE void Init(void) const {
