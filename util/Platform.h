@@ -209,3 +209,17 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #  define __WORDSIZE 64
 # endif
 #endif
+
+static FORCE_INLINE bool isLE(void) {
+    uint32_t value = 0xb000000e;
+    const void *      addr  = static_cast<const void *>(&value);
+    const uint8_t *   lsb   = static_cast<const uint8_t *>(addr);
+    return ((*lsb) == 0x0e);
+}
+
+static FORCE_INLINE bool isBE(void) {
+    uint32_t value = 0xb000000e;
+    const void *      addr  = static_cast<const void *>(&value);
+    const uint8_t *   lsb   = static_cast<const uint8_t *>(addr);
+    return ((*lsb) == 0xb0);
+}
