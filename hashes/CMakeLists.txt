@@ -581,6 +581,7 @@ add_library(
   sumhash.cpp
 #
   md5.cpp
+  sha1.cpp
 )
 
 add_library(
@@ -614,7 +615,6 @@ add_library(
   MurmurHash1.cpp
   MurmurHash2.cpp
   MurmurHash3.cpp
-  sha1.cpp
   Spooky.cpp
   SpookyTest.cpp
   SpookyV2.cpp

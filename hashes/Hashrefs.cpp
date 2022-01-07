@@ -26,5 +26,6 @@ unsigned refs() {
     USE_FAMILY(badhash);
     USE_FAMILY(sumhash);
     USE_FAMILY(md5);
+    USE_FAMILY(sha1);
     return 0;
 }

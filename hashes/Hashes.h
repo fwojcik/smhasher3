@@ -696,34 +696,6 @@ inline void seahash32low (const void *key, int len, uint32_t seed, void *out) {
 //----------
 // Cryptographic hashes
 
-#include "sha1.h"
-inline void sha1_160(const void *key, int len, uint32_t seed, void *out) {
-  SHA1_CTX context;
-
-  SHA1_Init(&context);
-  context.state[0] ^= seed;
-  SHA1_Update(&context, (uint8_t*)key, len);
-  SHA1_Final(&context, SHA1_DIGEST_SIZE, (uint8_t*)out);
-}
-
-inline void sha1_32(const void *key, int len, uint32_t seed, void *out) {
-  SHA1_CTX context;
-
-  SHA1_Init(&context);
-  context.state[0] ^= seed;
-  SHA1_Update(&context, (uint8_t *)key, len);
-  SHA1_Final(&context, 4, (uint8_t *)out);
-}
-
-inline void sha1_64(const void *key, int len, uint32_t seed, void *out) {
-  SHA1_CTX context;
-
-  SHA1_Init(&context);
-  context.state[0] ^= seed;
-  SHA1_Update(&context, (uint8_t *)key, len);
-  SHA1_Final(&context, 8, (uint8_t *)out);
-}
-
 #include "tomcrypt.h"
 
 extern hash_state ltc_state;
@@ -922,62 +894,8 @@ inline void MeowHash32_test(const void *key, int len, unsigned seed, void *out) 
 #endif
 
 #if defined(HAVE_SHANI) && defined(__x86_64__)
-extern "C" void sha1_process_x86(uint32_t *state, const uint8_t *data, uint32_t length);
 extern "C" void sha256_process_x86(uint32_t *state, const uint8_t *data, uint32_t length);
 
-// Note: improved native SHA functions with seed.
-// These functions need to be padded to 64byte blocks, so its trivial to create max
-// 64 collisions for each key.
-inline void sha1ni(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize: 0x2c1 + this (0x408bac - 0x408a90) = 989
-  uint32_t state[5] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0};
-  state[0] ^= seed;
-  if (len < 64) {
-    uint8_t padded[64];
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, 64-len);
-    state[0] += len;
-    sha1_process_x86(state, (const uint8_t*)padded, 64);
-  } else if (len % 64) {
-    uint32_t lenpadded = len + (64 - len % 64);
-    uint8_t *padded = (uint8_t*)malloc (lenpadded);
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, lenpadded-len);
-    state[0] += len;
-    sha1_process_x86(state, (const uint8_t*)padded, lenpadded);
-    free (padded);
-  } else {
-    sha1_process_x86(state, (const uint8_t*)key, (uint32_t)len);
-  }
-  memcpy(out, state, 20);
-}
-// Note: improved native SHA functions with seed and len encoded into the seed, to prevent Zeroes.
-// These functions need to be padded to 64byte blocks, so it would be trivial to create max
-// 64 collisions for each key.
-inline void sha1ni_32(const void *key, int len, uint32_t seed, void *out)
-{
-  uint32_t state[5] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0};
-  state[0] ^= seed;
-  if (len < 64) {
-    uint8_t padded[64];
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, 64-len);
-    state[0] += len;
-    sha1_process_x86(state, (const uint8_t*)padded, 64);
-  } else if (len % 64) {
-    uint32_t lenpadded = len + (64 - len % 64);
-    uint8_t *padded = (uint8_t*)malloc (lenpadded);
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, lenpadded-len);
-    state[0] += len;
-    sha1_process_x86(state, (const uint8_t*)padded, lenpadded);
-    free (padded);
-  } else {
-    sha1_process_x86(state, (const uint8_t*)key, (uint32_t)len);
-  }
-  *(uint32_t *)out = *(uint32_t *)state;
-}
 inline void sha2ni_256(const void *key, int len, uint32_t seed, void *out)
 {
   // objsize: 0x2f1 + this (0x4095c0-0x408820) = 4241

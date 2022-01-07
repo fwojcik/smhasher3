@@ -100,18 +100,6 @@ static LegacyHashInfo g_hashes[] =
     { 0xb13dea7c9c324e51ULL, 0x75f17d6b3588f843ULL } },
 #endif
   { crc32,                32, 0x3719DB20, "crc32",       "CRC-32 soft", POOR, {} },
-#ifdef _MSC_VER /* truncated long to 32 */
-#  define SHA1_VERIF            0xED2F35E4
-#  define SHA1_32_VERIF         0x00000000
-#  define SHA1_64_VERIF         0x00000000
-#else
-#  define SHA1_VERIF            0x6AF411D8
-#  define SHA1_32_VERIF         0x995397D5
-#  define SHA1_64_VERIF         0xB3122757
-#endif
-  { sha1_160,            160, SHA1_VERIF,   "sha1-160",  "SHA1", POOR},
-  { sha1_64,              64, SHA1_32_VERIF,"sha1-64",   "SHA1, low 64 bits", POOR},
-  { sha1_32,              32, SHA1_64_VERIF,"sha1-32",   "SHA1, low 32 bits", POOR},
 
   // totally broken seed mixin
   { sha2_224,            224, 0x407AA518, "sha2-224",     "SHA2-224", GOOD, {0xc1059ed8} /* >100 bad seeds */ },
@@ -119,9 +107,6 @@ static LegacyHashInfo g_hashes[] =
   { sha2_256,            256, 0xEBDA2FB1, "sha2-256",     "SHA2-256", POOR, {0x6a09e667} },
   { sha2_256_64,          64, 0xC1C4FA72, "sha2-256_64",  "SHA2-256, low 64 bits", POOR, {0x6a09e667} },
 #if defined(HAVE_SHANI) && defined(__x86_64__)
-  { sha1ni,              160, 0x375755A4, "sha1ni",       "SHA1_NI (amd64 HW SHA ext)", POOR, {0x67452301} },
-  { sha1ni_32,            32, 0xE70686CC, "sha1ni_32",    "hardened SHA1_NI (amd64 HW SHA ext), low 32 bits", GOOD,
-    {0x67452301} },
   { sha2ni_256,          256, 0x4E3BB25E, "sha2ni-256",   "SHA2_NI-256 (amd64 HW SHA ext)", POOR, {0x6a09e667} },
   { sha2ni_256_64,        64, 0xF938E80E, "sha2ni-256_64","hardened SHA2_NI-256 (amd64 HW SHA ext), low 64 bits", POOR, {0x6a09e667} },
 #endif
@@ -919,9 +904,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint) {
 bool hash_is_very_slow(pfHash hash) {
     // known very slow hashes (typically > 500 cycle/hash)
     const struct { pfHash h; } slowhashes[] = {
-        { sha1_32                  },
-        { sha1_64                  },
-        { sha1_160                 },
         { sha2_224                 },
         { sha2_224_64              },
         { sha2_256                 },
