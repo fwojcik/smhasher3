@@ -94,7 +94,7 @@ typedef std::conditional<sizeof(uintptr_t) <= sizeof(uint64_t),
 
 class HashInfo;
 
-typedef void      (*HashInitFn)(void);
+typedef bool      (*HashInitFn)(void);
 typedef seed_t    (*HashSeedfixFn)(const HashInfo * hinfo, const seed_t seed);
 typedef uintptr_t (*HashSeedFn)(const seed_t seed, const size_t hint);
 typedef void      (*HashFn)(const void * in, const size_t len, const seed_t seed, void * out);
@@ -185,10 +185,11 @@ class HashInfo {
         return _is_native(endian) ? hashfn_native : hashfn_bswap;
     }
 
-    FORCE_INLINE void Init(void) const {
+    FORCE_INLINE bool Init(void) const {
         if (initfn != NULL) {
-            initfn();
+            return initfn();
         }
+        return true;
     }
 
     FORCE_INLINE bool Seed(seed_t seed, uint64_t hint = 0) const {

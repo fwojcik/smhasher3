@@ -299,7 +299,10 @@ static bool test ( const HashInfo * hInfo )
     printf("-------------------------------------------------------------------------------\n");
   }
 
-  hInfo->Init();
+  if (!hInfo->Init()) {
+      printf("Hash initialization failed! Cannot continue.\n");
+      exit(1);
+  }
 
   //-----------------------------------------------------------------------------
   // Most legacy hashes don't use Hash_Seed_init(), so they only get

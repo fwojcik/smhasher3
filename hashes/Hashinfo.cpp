@@ -151,8 +151,9 @@ void legacyHashFnWrapper(const void * in, const size_t len, const seed_t seed, v
     return legacyHash->hash(in, len, (uint32_t)seed, out);
 }
 
-void legacyHashInit(void) {
+bool legacyHashInit(void) {
     Hash_init(legacyHash);
+    return true;
 }
 
 uintptr_t legacyHashSeed(const seed_t seed, const size_t hint) {

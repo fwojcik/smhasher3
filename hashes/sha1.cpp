@@ -353,11 +353,11 @@ static bool SHA1_Selftest(void) {
   return true;
 }
 
-void init(void) {
+bool init(void) {
   if (isBE()) {
-      SHA1_Selftest<false>();
+      return SHA1_Selftest<false>();
   } else {
-      SHA1_Selftest<true>();
+      return SHA1_Selftest<true>();
   }
 }
 
