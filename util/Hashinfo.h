@@ -212,6 +212,10 @@ class HashInfo {
         return !!(hash_flags & FLAG_HASH_LEGACY);
     }
 
+    FORCE_INLINE bool isEndianDefined(void) const {
+        return !!(hash_flags & FLAG_HASH_ENDIAN_INDEPENDENT);
+    }
+
     FORCE_INLINE bool isSlow(void) const {
         return !!(impl_flags & (FLAG_IMPL_SLOW | FLAG_IMPL_VERY_SLOW));
     }

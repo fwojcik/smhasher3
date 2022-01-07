@@ -122,15 +122,17 @@ void listHashes(bool nameonly) {
 
 bool verifyAllHashes(bool verbose) {
     bool result = true;
-    // Always verify little-endian first, and always verify NATIVE
-    // regardless of isBE() and isLE() results.
     for (const HashInfo * h : defaultSort(hashMap())) {
-        if (isBE()) {
-            result &= h->Verify(HashInfo::ENDIAN_BYTESWAPPED, verbose);
-        }
-        result &= h->Verify(HashInfo::ENDIAN_NATIVE, verbose);
-        if (isLE()) {
-            result &= h->Verify(HashInfo::ENDIAN_BYTESWAPPED, verbose);
+        if (h->isEndianDefined()) {
+            // Verify the hash the canonical way first, and then the
+            // other way.
+            result &= h->Verify(HashInfo::ENDIAN_DEFAULT, verbose);
+            result &= h->Verify(HashInfo::ENDIAN_NONDEFAULT, verbose);
+        } else {
+            // Always verify little-endian first, just for consistency
+            // for humans looking at the results.
+            result &= h->Verify(HashInfo::ENDIAN_LITTLE, verbose);
+            result &= h->Verify(HashInfo::ENDIAN_BIG, verbose);
         }
     }
     printf("\n");
