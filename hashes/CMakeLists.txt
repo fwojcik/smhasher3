@@ -15,23 +15,12 @@ project(SMHasher3Hashes C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 11)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE
-      "Release"
-      CACHE STRING "Choose the type of build, options are: Debug Release
-  RelWithDebInfo MinSizeRel Asan." FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
-set(CMAKE_C_FLAGS_DEBUG "-DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
-set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
-
-include(CheckTypeSize)
-check_type_size(__int64 __INT64)
-check_type_size(int64_t INT64_T)
-check_type_size(__uint128_t __UINT128_T)
+########################################
+# General system detection
+########################################
 
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+
 if ((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
     OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "i586")
@@ -43,8 +32,137 @@ if ((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
 elseif ((CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
     OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
   set(PROCESSOR_FAMILY "Arm")
-  add_definitions(-DHAVE_NEON)
 endif()
+
+########################################
+# Compiler flags (optimization, debug, etc.)
+########################################
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release"
+      CACHE STRING
+          "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel Asan." FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
+set(CMAKE_C_FLAGS_DEBUG "-DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
+
+if(MSVC)
+  # using Visual Studio C++, already the default with VS17
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
+else()
+  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+  set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+  if(CMAKE_COMPILER_IS_GNUCC
+     OR (CMAKE_C_COMPILER_ID STREQUAL AppleClang)
+     OR (CMAKE_C_COMPILER_ID STREQUAL Clang)
+     OR (CMAKE_C_COMPILER_ID STREQUAL Intel))
+    set(CMAKE_CXX_FLAGS_DEBUG
+        "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined -DHAVE_ASAN -DHAVE_UBSAN"
+    )
+    set(CMAKE_LINKER_FLAGS_DEBUG
+        "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined"
+    )
+    if(NOT CMAKE_CROSSCOMPILING)
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    endif()
+  endif()
+endif()
+
+########################################
+# Assembler flags
+########################################
+
+if(PROCESSOR_FAMILY STREQUAL "Intel")
+ if(CMAKE_COMPILER_IS_GNUCC)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CMAKE_ASM_FLAGS "${CFLAGS} -m64")
+  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(CMAKE_ASM_FLAGS "${CFLAGS} -m32")
+  endif()
+ elseif((CMAKE_C_COMPILER_ID STREQUAL AppleClang) OR (CMAKE_C_COMPILER_ID
+                                                     STREQUAL Clang))
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CMAKE_ASM_FLAGS "${CFLAGS} -arch x86_64")
+  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(CMAKE_ASM_FLAGS "${CFLAGS} -arch i386")
+  endif()
+ endif()
+endif()
+
+########################################
+# AddressSanitize
+########################################
+
+set(CMAKE_C_FLAGS_ASAN
+    "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -DHAVE_ASAN"
+    CACHE STRING "Flags used by the C compiler during AddressSanitizer builds."
+          FORCE)
+set(CMAKE_CXX_FLAGS_ASAN
+    "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -DHAVE_ASAN"
+    CACHE STRING
+          "Flags used by the C++ compiler during AddressSanitizer builds."
+          FORCE)
+
+########################################
+# New platform detection things
+########################################
+
+include(CheckCXXCompilerFlag)
+include(CheckIncludeFileCXX)
+set(CMAKE_REQUIRED_QUIET true)
+
+check_include_file_cxx("arm_acle.h" RESULT_VAR)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_ARM_ACLE)
+  message(STATUS "ARM ACLE available")
+endif()
+
+set(HASHSRCDIR ${CMAKE_SOURCE_DIR}/hashes/detect)
+
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sha1.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_SHA_X86_64)
+  message(STATUS "x86_64 SHA-1 intrinsics available")
+endif()
+
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/arm_neon_sha1.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_SHA_ARM)
+  message(STATUS "ARM SHA-1 intrinsics available")
+endif()
+
+########################################
+# Legacy type size detection things
+########################################
+
+include(CheckTypeSize)
+check_type_size(__int64 __INT64)
+check_type_size(int64_t INT64_T)
+check_type_size(__uint128_t __UINT128_T)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  add_definitions(-DHAVE_BIT32)
+endif()
+if(HAVE_INT64_T)
+  add_definitions(-DHAVE_INT64)
+elseif(HAVE__INT64)
+  add_definitions(-DHAVE_INT64)
+endif()
+if(HAVE___UINT128_T)
+  add_definitions(-DHAVE_INT128)
+endif()
+
+########################################
+# Legacy API detection things
+########################################
 
 # TODO: rather parse `$CC -march=native -dM -E - <<< ''` [GH #10]
 if(NOT CMAKE_CROSSCOMPILING)
@@ -160,62 +278,6 @@ if(NOT CMAKE_CROSSCOMPILING)
   endif()
 endif(NOT CMAKE_CROSSCOMPILING)
 
-if(PROCESSOR_FAMILY STREQUAL "Intel")
- if(CMAKE_COMPILER_IS_GNUCC)
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -m64")
-  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -m32")
-  endif()
- elseif((CMAKE_C_COMPILER_ID STREQUAL AppleClang) OR (CMAKE_C_COMPILER_ID
-                                                     STREQUAL Clang))
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -arch x86_64")
-  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -arch i386")
-  endif()
- endif()
-endif()
-
-# AddressSanitize
-set(CMAKE_C_FLAGS_ASAN
-    "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -DHAVE_ASAN"
-    CACHE STRING "Flags used by the C compiler during AddressSanitizer builds."
-          FORCE)
-set(CMAKE_CXX_FLAGS_ASAN
-    "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -DHAVE_ASAN"
-    CACHE STRING
-          "Flags used by the C++ compiler during AddressSanitizer builds."
-          FORCE)
-
-if(MSVC)
-  # using Visual Studio C++, already the default with VS17
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
-else()
-  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-  set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG")
-  set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
-  set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-  if(CMAKE_COMPILER_IS_GNUCC
-     OR (CMAKE_C_COMPILER_ID STREQUAL AppleClang)
-     OR (CMAKE_C_COMPILER_ID STREQUAL Clang)
-     OR (CMAKE_C_COMPILER_ID STREQUAL Intel))
-    set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined -DHAVE_ASAN -DHAVE_UBSAN"
-    )
-    set(CMAKE_LINKER_FLAGS_DEBUG
-        "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined"
-    )
-    set_source_files_properties(blake3/blake3.c PROPERTIES COMPILE_FLAGS "-std=c99")
-    if(NOT CMAKE_CROSSCOMPILING)
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-    endif()
-  endif()
-endif()
-
 if(SSE2_TRUE)
   set(SSE2_FOUND
       true
@@ -296,6 +358,10 @@ else(AVX512VL_TRUE)
   message(STATUS "AVX512VL not available")
 endif(AVX512VL_TRUE)
 
+if(PROCESSOR_FAMILY STREQUAL "Arm")
+  add_definitions(-DHAVE_NEON)
+endif()
+
 if(CMAKE_CROSSCOMPILING)
   if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     set(SSE2_FOUND true)
@@ -324,17 +390,6 @@ endif()
 if(CLMUL_FOUND)
   add_definitions(-DHAVE_CLMUL)
 endif(CLMUL_FOUND)
-if(HAVE___UINT128_T)
-  add_definitions(-DHAVE_INT128)
-endif()
-if(HAVE_INT64_T)
-  add_definitions(-DHAVE_INT64)
-elseif(HAVE__INT64)
-  add_definitions(-DHAVE_INT64)
-endif()
-if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  add_definitions(-DHAVE_BIT32)
-endif()
 
 # probe for HAVE_ALIGNED_ACCESS_REQUIRED
 if(NOT CMAKE_CROSSCOMPILING)
@@ -396,6 +451,20 @@ else()
   message(STATUS "Assuming aligned access is required, as on arm with -maligned-access or sparc")
 endif(NOT CMAKE_CROSSCOMPILING)
 
+########################################
+# Legacy src inclusion based on platform
+########################################
+
+if(NOT MSVC)
+  if(CMAKE_COMPILER_IS_GNUCC
+     OR (CMAKE_C_COMPILER_ID STREQUAL AppleClang)
+     OR (CMAKE_C_COMPILER_ID STREQUAL Clang)
+     OR (CMAKE_C_COMPILER_ID STREQUAL Intel))
+
+    set_source_files_properties(blake3/blake3.c PROPERTIES COMPILE_FLAGS "-std=c99")
+  endif()
+endif()
+
 if(AES_FOUND AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
   set(SSE4_OBJ ${FALKHASH_OBJ})
 endif()
@@ -403,6 +472,7 @@ endif()
 if(SSE2_FOUND)
   set(SSE2_SRC hasshe2.c)
 endif()
+
 if(SSE42_FOUND)
   # MSVC CL 14.16.27023 32bit crashes, 14.28.29910 works fine.
   if (MSVC AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND (MSVC_VERSION LESS 1928))
@@ -479,27 +549,6 @@ else(NOT MSVC)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest")
 endif(NOT MSVC)
 
-find_library(HIGHWAY highwayhash)
-if(HIGHWAY
-   AND (NOT(CMAKE_CROSSCOMPILING)))
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(HIGHWAY_SRC HighwayHash.cpp)
-    set(HIGHWAY_LIB highwayhash)
-    add_definitions(-DHAVE_HIGHWAYHASH)
-  endif()
-endif()
-
-# rust staticlib: https://github.com/tkaitchuck/aHash/ smhasher/ahash-cbindings/install.sh
-find_library(AHASH_C ahash_c
-             HINTS /usr/local/lib)
-if(AHASH_C
-   AND (NOT(CMAKE_CROSSCOMPILING)))
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(AHASH_C_LIB ahash_c)
-    add_definitions(-DHAVE_AHASH_C)
-  endif()
-endif()
-
 if(SSE42_FOUND AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
   find_library(BLAKE3 blake3)
   # if (BLAKE3)
@@ -558,6 +607,35 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
   #HAVE_SSE42
   unset(PMPML_SRC)
 endif()
+
+########################################
+# Find additional hash libraries
+########################################
+
+find_library(HIGHWAY highwayhash)
+if(HIGHWAY
+   AND (NOT(CMAKE_CROSSCOMPILING)))
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(HIGHWAY_SRC HighwayHash.cpp)
+    set(HIGHWAY_LIB highwayhash)
+    add_definitions(-DHAVE_HIGHWAYHASH)
+  endif()
+endif()
+
+# rust staticlib: https://github.com/tkaitchuck/aHash/ smhasher/ahash-cbindings/install.sh
+find_library(AHASH_C ahash_c
+             HINTS /usr/local/lib)
+if(AHASH_C
+   AND (NOT(CMAKE_CROSSCOMPILING)))
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(AHASH_C_LIB ahash_c)
+    add_definitions(-DHAVE_AHASH_C)
+  endif()
+endif()
+
+########################################
+# Build all the hashes
+########################################
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_SOURCE_DIR}/util")

@@ -32,8 +32,6 @@ check_type_size(__int64 __INT64)
 check_type_size(int64_t INT64_T)
 check_type_size(__uint128_t __UINT128_T)
 
-message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
-
 # AddressSanitize
 set(CMAKE_C_FLAGS_ASAN
     "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -DHAVE_ASAN"
