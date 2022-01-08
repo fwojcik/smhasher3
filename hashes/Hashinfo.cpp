@@ -45,14 +45,14 @@ static uint32_t calcVerification(const HashInfo * hinfo, enum HashInfo::endianne
   // 256-N as the seed
   for(int i = 0; i < 256; i++) {
     seed_t seed = 256 - i;
-    hinfo->Seed(seed);
+    hinfo->Seed(seed, 1);
     key[i] = (uint8_t)i;
     hash(key,i,seed,&hashes[i*hashbytes]);
     addVCodeInput(key, i);
   }
 
   // Then hash the result array
-  hinfo->Seed(0);
+  hinfo->Seed(0, 1);
   hash(hashes,hashbytes*256,0,final);
   addVCodeOutput(hashes, 256*hashbytes);
   addVCodeOutput(final, hashbytes);
