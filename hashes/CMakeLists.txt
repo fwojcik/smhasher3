@@ -127,6 +127,12 @@ endif()
 
 set(HASHSRCDIR ${CMAKE_SOURCE_DIR}/hashes/detect)
 
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_aes.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_AES_X86_64)
+  message(STATUS "x86_64 AES intrinsics available")
+endif()
+
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sha1.cpp)
 if(RESULT_VAR)
   add_definitions(-DNEW_HAVE_SHA_X86_64)
