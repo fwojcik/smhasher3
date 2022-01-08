@@ -657,6 +657,7 @@ add_library(
   donothingOAAT.cpp
   badhash.cpp
   sumhash.cpp
+  aesrng.cpp
 #
   md5.cpp
   sha1.cpp
@@ -728,6 +729,5 @@ add_library(
   rijndael-alg-fst.c
   pengyhash.c
   pearson_hash/pearsonb.c
-  aesrng.cpp
 # wyhash_condom.c
 )

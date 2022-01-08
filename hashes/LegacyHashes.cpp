@@ -72,16 +72,6 @@ hash_state ltc_state;
 // marked with !! are known bad seeds, which either hash to 0 or create collisions.
 static LegacyHashInfo g_hashes[] =
 {
-  // first the bad hash funcs, failing tests:
-#if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
-  { aesrng32,         32, 0x0, "aesrng32",  "32-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
-  { aesrng64,         64, 0x0, "aesrng64",  "64-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
-  { aesrng128,       128, 0x0, "aesrng128", "128-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
-  { aesrng160,       160, 0x0, "aesrng160", "160-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
-  { aesrng224,       224, 0x0, "aesrng224", "224-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
-  { aesrng256,       256, 0x0, "aesrng256", "256-bit RNG using AES in CTR mode; not a hash", SKIP, {} },
-#endif
-
  // here start the real hashes. first the problematic ones:
 #ifdef HAVE_BIT32
  #define FIBONACCI_VERIF      0x09952480
@@ -732,15 +722,6 @@ LegacyHashInfo * findLegacyHash ( const char * name )
 void Hash_init (LegacyHashInfo* info) {
   if (info->hash == sha2_224_64)
     sha224_init(&ltc_state);
-#if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
-  else if ((info->hash == aesrng32)  ||
-           (info->hash == aesrng64)  ||
-           (info->hash == aesrng128) ||
-           (info->hash == aesrng160) ||
-           (info->hash == aesrng224) ||
-           (info->hash == aesrng256))
-      aesrng_init(g_seed);
-#endif
   else if (info->hash == rmd128)
     rmd128_init(&ltc_state);
   else if(info->hash == tabulation_32_test)
@@ -844,10 +825,7 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
 }
 
 // Optional hash seed initializer, for expensive seeding.
-// The hint parameter should be ignored completely by all real hash
-// functions. Currently, it is only for aesrng*() so that it can act
-// consistently regardless of threading.
-bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint) {
+bool Hash_Seed_init (pfHash hash, size_t seed) {
   addVCodeInput(seed);
 
   uint32_t seed32 = seed;
@@ -856,15 +834,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint) {
   //  VHASH_seed_init(seed);
   if(hash == tabulation_32_test)
     tabulation_32_seed_init(seed);
-#if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
-  else if ((hash == aesrng32)  ||
-           (hash == aesrng64)  ||
-           (hash == aesrng128) ||
-           (hash == aesrng160) ||
-           (hash == aesrng224) ||
-           (hash == aesrng256))
-      aesrng_seed(seed, hint);
-#endif
 #ifdef __SIZEOF_INT128__
   else if(hash == multiply_shift || hash == pair_multiply_shift)
     multiply_shift_seed_init(seed32);

@@ -22,20 +22,18 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-#if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
+#include "Platform.h"
+#include "Types.h"
+#include "Hashlib.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <wmmintrin.h>
 #include <assert.h>
 
-#include <algorithm>
+#if defined(NEW_HAVE_AES_X86_64)
+#include <immintrin.h>
 
 // ------------------------------------------------------------
 // This is bog-standard AES encryption and key expansion
-static inline void encrypt(const uint8_t * in, uint8_t * out,  __m128i * round_keys) {
+static inline void AES_encrypt(const uint8_t * in, uint8_t * out,  __m128i * round_keys) {
     __m128i tmp;
     tmp = _mm_loadu_si128((const __m128i*)in);
     tmp = _mm_xor_si128(tmp, round_keys[0]);
@@ -62,7 +60,7 @@ static inline __m128i expand_key_helper( __m128i prev_rkey, __m128i assist ) {
 
 #define MKASSIST(x, y) x, _mm_aeskeygenassist_si128(x, y)
 
-static void expand_key(__m128i * round_keys) {
+static void AES_expand_key(__m128i * round_keys) {
     round_keys[1] = expand_key_helper(MKASSIST(round_keys[0], 0x01));
     round_keys[2] = expand_key_helper(MKASSIST(round_keys[1], 0x02));
     round_keys[3] = expand_key_helper(MKASSIST(round_keys[2], 0x04));
@@ -85,9 +83,20 @@ static thread_local __m128i ctr, oldctr;
 static const __m128i incr = _mm_set_epi64x(-1ULL,1ULL);
 static __m128i round_keys[11]; // only modified on main thread
 
+/* K1 is golden ratio - 1, K2 is sqrt(3) - 1 */
+#define K1 0x9E3779B97F4A7C15ULL
+#define K2 0xBB67AE8584CAA73BULL
+bool aesrng_init(void) {
+    uint64_t seed = g_seed;
+    round_keys[0] = _mm_set_epi64x(seed + K1, seed + K2);
+    AES_expand_key(round_keys);
+    ctr = incr;
+    return true;
+}
+
 static uint64_t rnd64(void) {
     __m128i result;
-    encrypt((const uint8_t *)&ctr, (uint8_t *)&result, round_keys);
+    AES_encrypt((const uint8_t *)&ctr, (uint8_t *)&result, round_keys);
     ctr = _mm_add_epi64(ctr, incr);
     return _mm_cvtsi128_si64x(result);
 }
@@ -99,15 +108,6 @@ static void rng_ffwd(int ffwd) {
 
 static void rng_setctr(uint64_t stream, uint64_t seq) {
     ctr = _mm_set_epi64x(stream, seq);
-}
-
-/* K1 is golden ratio - 1, K2 is sqrt(3) - 1 */
-#define K1 0x9E3779B97F4A7C15ULL
-#define K2 0xBB67AE8584CAA73BULL
-void aesrng_init(uint64_t seed) {
-    round_keys[0] = _mm_set_epi64x(seed + K1, seed + K2);
-    expand_key(round_keys);
-    ctr = incr;
 }
 
 // This variable is _not_ thread-local
@@ -135,13 +135,14 @@ static int hash_mode;
 // thread's results should be unaffected if threading is enabled or
 // disabled, or if the possibly-threaded tests are skipped, and the
 // per-thread results should be unaffected by the number of threads.
-void aesrng_seed(uint64_t seed, uint64_t hint) {
+uintptr_t aesrng_seed(const uint64_t hint) {
     if (hash_mode == hint) {
         oldctr = ctr;
     } else {
         hash_mode = hint;
         ctr = oldctr;
     }
+    return 0;
 }
 
 // This makes the RNG depend on the data to "hash". It is only used
@@ -168,7 +169,7 @@ static void rng_keyseq(const void * key, int len, uint64_t seed) {
 }
 
 template < int nbytes >
-static void rng_impl( void * out ) {
+static void rng_impl(void * out) {
     assert((nbytes >= 0) && (nbytes <= 39));
     uint8_t * result = (uint8_t *)out;
     if (nbytes >= 8) {
@@ -197,40 +198,129 @@ static void rng_impl( void * out ) {
     }
 }
 
-void aesrng32(const void *key, int len, uint32_t seed, void *out) {
+template < uint32_t hashbits >
+void aesrng(const void * in, const size_t len, const seed_t seed, void * out) {
     if (hash_mode != 0)
-      rng_keyseq(key, len, seed);
-    rng_impl<4>(out);
+      rng_keyseq(in, len, seed);
+    rng_impl<(hashbits >> 3)>(out);
 }
 
-void aesrng64(const void *key, int len, uint32_t seed, void *out) {
-    if (hash_mode != 0)
-      rng_keyseq(key, len, seed);
-    rng_impl<8>(out);
-}
+REGISTER_FAMILY(aesrng);
 
-void aesrng128(const void *key, int len, uint32_t seed, void *out) {
-    if (hash_mode != 0)
-      rng_keyseq(key, len, seed);
-    rng_impl<16>(out);
-}
+REGISTER_HASH(aesrng32,
+  $.desc = "32-bit RNG using AES in CTR mode; not a hash",
+  $.hash_flags = FLAG_HASH_MOCK                |
+                 FLAG_HASH_AES_BASED           |
+                 FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
+                 FLAG_IMPL_SEED_WITH_HINT      |
+                 FLAG_IMPL_CANONICAL_LE        |
+                 FLAG_IMPL_LICENSE_MIT,
+  $.bits = 32,
+  $.verification_LE = 0x85A358F5,
+  $.verification_BE = 0x85A358F5,
+  $.hashfn_native = aesrng<32>,
+  $.hashfn_bswap = aesrng<32>,
+  $.initfn = aesrng_init,
+  $.seedfn = aesrng_seed,
+  $.sort_order = 50
+);
 
-void aesrng160(const void *key, int len, uint32_t seed, void *out) {
-    if (hash_mode != 0)
-      rng_keyseq(key, len, seed);
-    rng_impl<20>(out);
-}
+REGISTER_HASH(aesrng64,
+  $.desc = "64-bit RNG using AES in CTR mode; not a hash",
+  $.hash_flags = FLAG_HASH_MOCK                |
+                 FLAG_HASH_AES_BASED           |
+                 FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
+                 FLAG_IMPL_SEED_WITH_HINT      |
+                 FLAG_IMPL_CANONICAL_LE        |
+                 FLAG_IMPL_LICENSE_MIT,
+  $.bits = 64,
+  $.verification_LE = 0x8FB53C27,
+  $.verification_BE = 0x8FB53C27,
+  $.hashfn_native = aesrng<64>,
+  $.hashfn_bswap = aesrng<64>,
+  $.initfn = aesrng_init,
+  $.seedfn = aesrng_seed,
+  $.sort_order = 50
+);
 
-void aesrng224(const void *key, int len, uint32_t seed, void *out) {
-    if (hash_mode != 0)
-      rng_keyseq(key, len, seed);
-    rng_impl<28>(out);
-}
+REGISTER_HASH(aesrng128,
+  $.desc = "128-bit RNG using AES in CTR mode; not a hash",
+  $.hash_flags = FLAG_HASH_MOCK                |
+                 FLAG_HASH_AES_BASED           |
+                 FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
+                 FLAG_IMPL_SEED_WITH_HINT      |
+                 FLAG_IMPL_CANONICAL_LE        |
+                 FLAG_IMPL_LICENSE_MIT,
+  $.bits = 128,
+  $.verification_LE = 0x6F00ADF7,
+  $.verification_BE = 0x6F00ADF7,
+  $.hashfn_native = aesrng<128>,
+  $.hashfn_bswap = aesrng<128>,
+  $.initfn = aesrng_init,
+  $.seedfn = aesrng_seed,
+  $.sort_order = 50
+);
 
-void aesrng256(const void *key, int len, uint32_t seed, void *out) {
-    if (hash_mode != 0)
-      rng_keyseq(key, len, seed);
-    rng_impl<32>(out);
-}
+REGISTER_HASH(aesrng160,
+  $.desc = "160-bit RNG using AES in CTR mode; not a hash",
+  $.hash_flags = FLAG_HASH_MOCK                |
+                 FLAG_HASH_AES_BASED           |
+                 FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
+                 FLAG_IMPL_SEED_WITH_HINT      |
+                 FLAG_IMPL_CANONICAL_LE        |
+                 FLAG_IMPL_LICENSE_MIT,
+  $.bits = 160,
+  $.verification_LE = 0x839B61CD,
+  $.verification_BE = 0x839B61CD,
+  $.hashfn_native = aesrng<160>,
+  $.hashfn_bswap = aesrng<160>,
+  $.initfn = aesrng_init,
+  $.seedfn = aesrng_seed,
+  $.sort_order = 50
+);
 
+REGISTER_HASH(aesrng224,
+  $.desc = "224-bit RNG using AES in CTR mode; not a hash",
+  $.hash_flags = FLAG_HASH_MOCK                |
+                 FLAG_HASH_AES_BASED           |
+                 FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
+                 FLAG_IMPL_SEED_WITH_HINT      |
+                 FLAG_IMPL_CANONICAL_LE        |
+                 FLAG_IMPL_LICENSE_MIT,
+  $.bits = 224,
+  $.verification_LE = 0x0DFEDBCB,
+  $.verification_BE = 0x0DFEDBCB,
+  $.hashfn_native = aesrng<224>,
+  $.hashfn_bswap = aesrng<224>,
+  $.initfn = aesrng_init,
+  $.seedfn = aesrng_seed,
+  $.sort_order = 50
+);
+
+REGISTER_HASH(aesrng256,
+  $.desc = "256-bit RNG using AES in CTR mode; not a hash",
+  $.hash_flags = FLAG_HASH_MOCK                |
+                 FLAG_HASH_AES_BASED           |
+                 FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
+                 FLAG_IMPL_SEED_WITH_HINT      |
+                 FLAG_IMPL_CANONICAL_LE        |
+                 FLAG_IMPL_LICENSE_MIT,
+  $.bits = 256,
+  $.verification_LE = 0x07FACA17,
+  $.verification_BE = 0x07FACA17,
+  $.hashfn_native = aesrng<256>,
+  $.hashfn_bswap = aesrng<256>,
+  $.initfn = aesrng_init,
+  $.seedfn = aesrng_seed,
+  $.sort_order = 50
+);
+
+#else
+REGISTER_FAMILY(aesrng);
 #endif

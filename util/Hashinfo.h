@@ -61,6 +61,7 @@
     FLAG_EXPAND(IMPL_THUMB)                            \
     FLAG_EXPAND(IMPL_CANONICAL_LE)                     \
     FLAG_EXPAND(IMPL_CANONICAL_BE)                     \
+    FLAG_EXPAND(IMPL_SEED_WITH_HINT)                   \
     FLAG_EXPAND(IMPL_LICENSE_PUBLIC_DOMAIN)            \
     FLAG_EXPAND(IMPL_LICENSE_BSD)                      \
     FLAG_EXPAND(IMPL_LICENSE_MIT)                      \
@@ -96,7 +97,7 @@ class HashInfo;
 
 typedef bool      (*HashInitFn)(void);
 typedef seed_t    (*HashSeedfixFn)(const HashInfo * hinfo, const seed_t seed);
-typedef uintptr_t (*HashSeedFn)(const seed_t seed, const size_t hint);
+typedef uintptr_t (*HashSeedFn)(const seed_t seed);
 typedef void      (*HashFn)(const void * in, const size_t len, const seed_t seed, void * out);
 
 unsigned register_hash(const HashInfo * hinfo);
@@ -193,8 +194,10 @@ class HashInfo {
     }
 
     FORCE_INLINE bool Seed(seed_t seed, uint64_t hint = 0) const {
-        if (seedfn != NULL) {
-            return !!(seedfn(seed, hint));
+        if (impl_flags & FLAG_IMPL_SEED_WITH_HINT) {
+            return !!(seedfn(hint));
+        } else if (seedfn != NULL) {
+            return !!(seedfn(seed));
         }
         return true;
     }

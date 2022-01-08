@@ -98,7 +98,7 @@ struct LegacyHashInfo
 
 bool hash_is_slow(pfHash hash);
 bool hash_is_very_slow(pfHash hash);
-bool Hash_Seed_init (pfHash hash, size_t seed, size_t hint = 0);
+bool Hash_Seed_init (pfHash hash, size_t seed);
 void Bad_Seed_init (pfHash hash, uint32_t &seed);
 
 //-----------------------------------------------------------------------------

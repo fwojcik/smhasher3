@@ -155,8 +155,8 @@ bool legacyHashInit(void) {
     return true;
 }
 
-uintptr_t legacyHashSeed(const seed_t seed, const size_t hint) {
-    bool exists = Hash_Seed_init(legacyHash->hash, seed, hint);
+uintptr_t legacyHashSeed(const seed_t seed) {
+    bool exists = Hash_Seed_init(legacyHash->hash, seed);
     return exists ? 1 : 0;
 }
 
