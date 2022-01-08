@@ -100,6 +100,8 @@ bool SanityTest (const HashInfo * hinfo) {
   // Test that the hash written is equal to the length promised, and
   // that hashing the same thing gives the same result.
 
+  hinfo->Seed(seed);
+
   printf("Running sanity check 1      ");
 
   // These sentinels MUST be different values

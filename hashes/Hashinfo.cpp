@@ -108,7 +108,6 @@ static const char * endianstr(enum HashInfo::endianness e) {
     return NULL; /* unreachable */
 }
 
-// This function MUST seed the hash with a value of 0 before returning.
 bool HashInfo::VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian,
         bool verbose, bool prefix) const {
   bool result = true;

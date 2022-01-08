@@ -257,7 +257,7 @@ static HashInfo::endianness parse_endian(const char * str) {
 }
 
 //-----------------------------------------------------------------------------
-// Self-test on startup - verify that all installed hashes work correctly.
+// Self-test - verify that all installed hashes work correctly.
 
 static void HashSelfTestAll(bool verbose) {
   const size_t numhashes = numLegacyHashes();
@@ -340,7 +340,6 @@ static bool test ( const HashInfo * hInfo )
   {
     printf("[[[ Sanity Tests ]]]\n\n");
 
-    // Note that Verify() leaves the hash seeded to 0
     result &= hInfo->Verify(g_hashEndian, true, false);
     result &= (SanityTest(hInfo)          || hInfo->isMock());
     result &= (AppendedZeroesTest(hInfo)  || hInfo->isMock());
