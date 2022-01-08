@@ -7,7 +7,7 @@ typedef UINT32 uint32_t;
 typedef UINT8 uint8_t;
 #else
 # include <stdint.h>
-# include <x86intrin.h>
+# include <immintrin.h>
 #endif
 uint32_t state[5];
 int main(void) {
