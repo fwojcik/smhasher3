@@ -30,5 +30,6 @@ unsigned refs() {
     USE_FAMILY(md5);
     USE_FAMILY(sha1);
 
+    USE_FAMILY(aesnihash);
     return 0;
 }

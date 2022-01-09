@@ -470,10 +470,6 @@ static LegacyHashInfo g_hashes[] =
 #endif
   { CityHash64noSeed_test, 64, 0x63FC6063, "City64noSeed","Google CityHash64 without seed (default version, misses one final avalanche)", POOR, {} },
   { CityHash64_test,      64, 0x25A20825, "City64",       "Google CityHash64WithSeed (old)", POOR, {} },
-#if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
-  { aesnihash_test,       64, 0xA68E0D42, "aesnihash",    "majek's seeded aesnihash with aesenc, 64-bit for x64", POOR,
-    {0x70736575} },
-#endif
 #if defined(HAVE_SSE2) && defined(__x86_64__) && !defined(_WIN32)
   { falkhash_test_cxx,    64, 0x2F99B071, "falkhash",    "falkhash.asm with aesenc, 64-bit for x64", POOR, {} },
 #endif

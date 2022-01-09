@@ -661,6 +661,8 @@ add_library(
 #
   md5.cpp
   sha1.cpp
+#
+  aesnihash.cpp
 )
 
 add_library(

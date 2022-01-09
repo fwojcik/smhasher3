@@ -1018,17 +1018,6 @@ inline void blake3_64 ( const void * key, int len, unsigned seed, void * out )
 // objsize: 452010-45251e: 1294 (BEBB4185)
 #include "discohash.h"
 
-#if defined(HAVE_SSE2) && defined(HAVE_AESNI) && !defined(_MSC_VER)
-/* https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a plus seed */
-/* objsize: 41f530-41f6cb: 1209 */
-uint64_t aesnihash(uint8_t *in, unsigned long src_sz, uint32_t seed);
-inline void aesnihash_test ( const void * key, int len, unsigned seed, void * out )
-{
-  uint64_t result = aesnihash ((uint8_t *)key, (unsigned long)len, (uint32_t)seed);
-  *(uint64_t *)out = result;
-}
-#endif
-
 #ifdef HAVE_INT64
 // https://github.com/avaneev/prvhash
 #include "prvhash/prvhash64.h"
