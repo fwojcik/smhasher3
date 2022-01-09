@@ -29,5 +29,7 @@ unsigned refs() {
     USE_FAMILY(sha1);
 
     USE_FAMILY(aesnihash);
+    USE_FAMILY(fnv);
+
     return 0;
 }

@@ -80,47 +80,6 @@ void CityHashCrc128_test(const void *key, int len, uint32_t seed, void *out);
 void falkhash_test_cxx(const void *key, int len, uint32_t seed, void *out);
 #endif
 
-size_t fibonacci(const char *key, int len, uint32_t seed);
-inline void fibonacci_test(const void *key, int len, uint32_t seed, void *out) {
-  *(size_t *)out = fibonacci((const char *)key, len, seed);
-}
-size_t FNV2(const char *key, int len, size_t seed);
-inline void FNV2_test(const void *key, int len, uint32_t seed, void *out) {
-  *(size_t *)out = FNV2((const char *)key, len, (size_t)seed);
-}
-uint32_t FNV32a(const void *key, int len, uint32_t seed);
-static inline bool FNV32a_bad_seeds(std::vector<uint32_t> &seeds)
-{
-  seeds = std::vector<uint32_t> { UINT32_C(0x811c9dc5) };
-  return true;
-}
-inline void FNV32a_test(const void *key, int len, uint32_t seed, void *out) {
-  *(uint32_t *)out = FNV32a((const char *)key, len, seed);
-}
-uint32_t FNV32a_YoshimitsuTRIAD(const char *key, int len, uint32_t seed);
-static inline bool FNV32a_YT_bad_seeds(std::vector<uint32_t> &seeds)
-{
-  seeds = std::vector<uint32_t> { UINT32_C(0x811c9dc5) };
-  return true;
-}
-inline void FNV32a_YT_test(const void *key, int len, uint32_t seed, void *out) {
-  *(uint32_t *)out = FNV32a_YoshimitsuTRIAD((const char *)key, len, seed);
-}
-#ifdef HAVE_INT64
-uint32_t FNV1A_Totenschiff(const char *key, int len, uint32_t seed);
-inline void FNV1A_Totenschiff_test(const void *key, int len, uint32_t seed,
-                                   void *out) {
-  *(uint32_t *)out = FNV1A_Totenschiff((const char *)key, len, seed);
-}
-uint32_t FNV1A_Pippip_Yurii(const char *key, int wrdlen, uint32_t seed);
-inline void FNV1A_PY_test(const void *key, int len, uint32_t seed, void *out) {
-  *(uint32_t *)out = FNV1A_Pippip_Yurii((const char *)key, len, seed);
-}
-#endif
-uint64_t FNV64a(const char *key, int len, uint64_t seed);
-inline void FNV64a_test(const void *key, int len, uint32_t seed, void *out) {
-  *(uint64_t *)out = FNV64a((const char *)key, len, (uint64_t)seed);
-}
 static inline bool fletcher_bad_seeds(std::vector<uint64_t> &seeds)
 {
   seeds = std::vector<uint64_t> { UINT64_C(0) };

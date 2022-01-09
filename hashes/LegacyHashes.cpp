@@ -73,13 +73,6 @@ hash_state ltc_state;
 static LegacyHashInfo g_hashes[] =
 {
  // here start the real hashes. first the problematic ones:
-#ifdef HAVE_BIT32
- #define FIBONACCI_VERIF      0x09952480
- #define FNV2_VERIF           0x739801C5
-#else
- #define FIBONACCI_VERIF      0xFE3BD380
- #define FNV2_VERIF           0x1967C625
-#endif
 
 #ifdef __SIZEOF_INT128__
   // M. Dietzfelbinger, T. Hagerup, J. Katajainen, and M. Penttonen. A reliable randomized
@@ -206,25 +199,10 @@ static LegacyHashInfo g_hashes[] =
   // elf64 or macho64 only
   { fhtw_test,            64, 0x0,        "fhtw",        "fhtw asm", POOR, {} },
 #endif
-  { fibonacci_test, __WORDSIZE, FIBONACCI_VERIF, "fibonacci",   "wordwise Fibonacci", POOR,
-    {0x0, 0xffffffff00000000ULL} /* !! all keys ending with 0x0000_0000 */ },
 #ifndef HAVE_ALIGNED_ACCESS_REQUIRED
   { khash32_test,         32, 0x99B3FFCD, "k-hash32",    "K-Hash mixer, 32-bit", POOR, {0,1,2,3,5,0x40000001} /*... !!*/},
   { khash64_test,         64, 0xAB5518A1, "k-hash64",    "K-Hash mixer, 64-bit", POOR, {0,1,2,3,4,5} /*...!!*/},
 #endif
-  { FNV32a_test,          32, 0xE3CBBE91, "FNV1a",       "Fowler-Noll-Vo hash, 32-bit", POOR,
-    {0x811c9dc5} /* !! */ },
-#ifdef HAVE_INT64
-  { FNV1A_Totenschiff_test,32,0x95D95ACF, "FNV1A_Totenschiff",  "FNV1A_Totenschiff_v1 64-bit sanmayce", POOR,
-    {0x811c9dc5} },
-  { FNV1A_PY_test,        32, 0xE79AE3E4, "FNV1A_Pippip_Yurii", "FNV1A-Pippip_Yurii 32-bit sanmayce", POOR,
-    {0x811c9dc5} },
-  { FNV32a_YT_test,       32, 0xD8AFFD71, "FNV1a_YT",    "FNV1a-YoshimitsuTRIAD 32-bit sanmayce", POOR,
-    {0x811c9dc5, 0x23d4a49d} /* !! */ },
-  { FNV64a_test,          64, 0x103455FC, "FNV64",       "Fowler-Noll-Vo hash, 64-bit", POOR,
-    {0x811c9dc5, 0xcbf29ce4, 0x84222325, 0xcbf29ce484222325} /* TODO */},
-#endif
-  { FNV2_test,    __WORDSIZE, FNV2_VERIF, "FNV2",        "wordwise FNV", POOR, {} },
   { fletcher2_test,       64, 0x890767C0, "fletcher2",   "fletcher2 ZFS", POOR, {0UL} /* !! */ },
   { fletcher4_test,       64, 0x47660EB7, "fletcher4",   "fletcher4 ZFS", POOR, {0UL} /* !! */ },
   { Bernstein_test,       32, 0xBDB4B640, "bernstein",   "Bernstein, 32-bit", POOR, {0UL} /* !! */ },

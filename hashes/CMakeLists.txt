@@ -661,6 +661,7 @@ add_library(
   sha1.cpp
 #
   aesnihash.cpp
+  fnv.cpp
 )
 
 add_library(
