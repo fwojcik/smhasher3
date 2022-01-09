@@ -82,7 +82,7 @@ unsigned register_hash(const HashInfo * hinfo) {
 
   if (hashMap().find(name) != hashMap().end()) {
     printf("Hash names must be unique.\n");
-    printf("\"%s\" (\"%s\") was added multiple times.\n", hinfo->name, name);
+    printf("\"%s\" (\"%s\") was added multiple times.\n", hinfo->name, name.c_str());
     printf("Note that hash names are using a case-insensitive comparison.\n");
     exit(1);
   }
