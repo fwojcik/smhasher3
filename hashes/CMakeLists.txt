@@ -654,7 +654,6 @@ add_library(
   Hashrefs.cpp
 #
   donothing.cpp
-  donothingOAAT.cpp
   badhash.cpp
   aesrng.cpp
 #
