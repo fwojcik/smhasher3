@@ -58,3 +58,36 @@ static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
     }
     return value;
 }
+
+//-----------------------------------------------------------------------------
+// 32-bit integer manipulation functions. These move data in
+// alignment-safe ways, with optional byte swapping.
+template < bool bswap >
+static FORCE_INLINE uint64_t GET_U64(const uint8_t * b, const uint32_t i) {
+    uint64_t n;
+    memcpy(&n, &b[i], 8);
+    n = COND_BSWAP(n, bswap);
+    return n;
+}
+
+template < bool bswap >
+static FORCE_INLINE uint32_t GET_U32(const uint8_t * b, const uint32_t i) {
+    uint32_t n;
+    memcpy(&n, &b[i], 4);
+    n = COND_BSWAP(n, bswap);
+    return n;
+}
+
+template < bool bswap >
+static FORCE_INLINE uint16_t GET_U16(const uint8_t * b, const uint32_t i) {
+    uint16_t n;
+    memcpy(&n, &b[i], 2);
+    n = COND_BSWAP(n, bswap);
+    return n;
+}
+
+template < bool bswap >
+static FORCE_INLINE void PUT_U32(uint32_t n, uint8_t * b, const uint32_t i) {
+    n = COND_BSWAP(n, bswap);
+    memcpy(&b[i], &n, 4);
+}

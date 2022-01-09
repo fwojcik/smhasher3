@@ -49,23 +49,6 @@
 #include "Hashlib.h"
 
 //-----------------------------------------------------------------------------
-// 32-bit integer manipulation functions. These move data in
-// alignment-safe ways, with optional byte swapping.
-template < bool bswap >
-static FORCE_INLINE uint32_t GET_U32(const uint8_t * b, const uint32_t i) {
-    uint32_t n;
-    memcpy(&n, &b[i], 4);
-    n = COND_BSWAP(n, bswap);
-    return n;
-}
-
-template < bool bswap >
-static FORCE_INLINE void PUT_U32(uint32_t n, uint8_t * b, const uint32_t i) {
-    n = COND_BSWAP(n, bswap);
-    memcpy(&b[i], &n, 4);
-}
-
-//-----------------------------------------------------------------------------
 // Raw MD5 implementation
 typedef struct {
     uint32_t total[2];     /*!< number of bytes processed  */
@@ -328,14 +311,17 @@ REGISTER_FAMILY(md5);
 
 REGISTER_HASH(md5_32,
   $.desc = "MD5, bits 32-63",
-  $.hash_flags = FLAG_HASH_CRYPTOGRAPHIC        |
-                 FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
-                 FLAG_HASH_ENDIAN_INDEPENDENT   |
-                 FLAG_HASH_NO_SEED,
-  $.impl_flags = FLAG_IMPL_LICENSE_GPL3         |
-                 FLAG_IMPL_CANONICAL_LE         |
-                 FLAG_IMPL_ROTATE               |
-                 FLAG_IMPL_VERY_SLOW,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
+        FLAG_HASH_ENDIAN_INDEPENDENT   |
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_GPL3         |
+        FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_ROTATE               |
+        FLAG_IMPL_INCREMENTAL          |
+        FLAG_IMPL_VERY_SLOW,
   $.bits = 32,
   $.verification_LE = 0x4003D7EE,
   $.verification_BE = 0x53A2E981,
@@ -345,14 +331,17 @@ REGISTER_HASH(md5_32,
 
 REGISTER_HASH(md5_64,
   $.desc = "MD5, bits 32-95",
-  $.hash_flags = FLAG_HASH_CRYPTOGRAPHIC        |
-                 FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
-                 FLAG_HASH_ENDIAN_INDEPENDENT   |
-                 FLAG_HASH_NO_SEED,
-  $.impl_flags = FLAG_IMPL_LICENSE_GPL3         |
-                 FLAG_IMPL_CANONICAL_LE         |
-                 FLAG_IMPL_ROTATE               |
-                 FLAG_IMPL_VERY_SLOW,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
+        FLAG_HASH_ENDIAN_INDEPENDENT   |
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_GPL3         |
+        FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_ROTATE               |
+        FLAG_IMPL_INCREMENTAL          |
+        FLAG_IMPL_VERY_SLOW,
   $.bits = 64,
   $.verification_LE = 0xF2E011D4,
   $.verification_BE = 0xDE2E1FAD,
@@ -362,14 +351,17 @@ REGISTER_HASH(md5_64,
 
 REGISTER_HASH(md5,
   $.desc = "MD5",
-  $.hash_flags = FLAG_HASH_CRYPTOGRAPHIC        |
-                 FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
-                 FLAG_HASH_ENDIAN_INDEPENDENT   |
-                 FLAG_HASH_NO_SEED,
-  $.impl_flags = FLAG_IMPL_LICENSE_GPL3         |
-                 FLAG_IMPL_CANONICAL_LE         |
-                 FLAG_IMPL_ROTATE               |
-                 FLAG_IMPL_VERY_SLOW,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
+        FLAG_HASH_ENDIAN_INDEPENDENT   |
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_GPL3         |
+        FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_ROTATE               |
+        FLAG_IMPL_INCREMENTAL          |
+        FLAG_IMPL_VERY_SLOW,
   $.bits = 128,
   $.verification_LE = 0x1363415D,
   $.verification_BE = 0x242A18E0,

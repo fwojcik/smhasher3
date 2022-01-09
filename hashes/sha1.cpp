@@ -52,23 +52,6 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// 32-bit integer manipulation functions. These move data in
-// alignment-safe ways, with optional byte swapping.
-template < bool bswap >
-static FORCE_INLINE uint32_t GET_U32(const uint8_t * b, const uint32_t i) {
-    uint32_t n;
-    memcpy(&n, &b[i], 4);
-    n = COND_BSWAP(n, bswap);
-    return n;
-}
-
-template < bool bswap >
-static FORCE_INLINE void PUT_U32(uint32_t n, uint8_t * b, const uint32_t i) {
-    n = COND_BSWAP(n, bswap);
-    memcpy(&b[i], &n, 4);
-}
-
-//-----------------------------------------------------------------------------
 // Raw SHA-1 implementation
 typedef struct {
     uint32_t state[5];
@@ -753,14 +736,17 @@ REGISTER_FAMILY(sha1);
 
 REGISTER_HASH(sha1_32,
   $.desc = "SHA-1, bits 0-31",
-  $.hash_flags = FLAG_HASH_CRYPTOGRAPHIC        |
-                 FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
-                 FLAG_HASH_ENDIAN_INDEPENDENT   |
-                 FLAG_HASH_NO_SEED,
-  $.impl_flags = FLAG_IMPL_LICENSE_MIT          |
-                 FLAG_IMPL_CANONICAL_BE         |
-                 FLAG_IMPL_ROTATE               |
-                 FLAG_IMPL_VERY_SLOW,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
+        FLAG_HASH_ENDIAN_INDEPENDENT   |
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_MIT          |
+        FLAG_IMPL_CANONICAL_BE         |
+        FLAG_IMPL_ROTATE               |
+        FLAG_IMPL_INCREMENTAL          |
+        FLAG_IMPL_VERY_SLOW,
   $.bits = 32,
   $.verification_LE = 0xF0E4D9E9,
   $.verification_BE = 0xE00EF4D6,
@@ -771,14 +757,17 @@ REGISTER_HASH(sha1_32,
 
 REGISTER_HASH(sha1_64,
   $.desc = "SHA-1, bits 0-63",
-  $.hash_flags = FLAG_HASH_CRYPTOGRAPHIC        |
-                 FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
-                 FLAG_HASH_ENDIAN_INDEPENDENT   |
-                 FLAG_HASH_NO_SEED,
-  $.impl_flags = FLAG_IMPL_LICENSE_MIT          |
-                 FLAG_IMPL_CANONICAL_BE         |
-                 FLAG_IMPL_ROTATE               |
-                 FLAG_IMPL_VERY_SLOW,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
+        FLAG_HASH_ENDIAN_INDEPENDENT   |
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_MIT          |
+        FLAG_IMPL_CANONICAL_BE         |
+        FLAG_IMPL_ROTATE               |
+        FLAG_IMPL_INCREMENTAL          |
+        FLAG_IMPL_VERY_SLOW,
   $.bits = 64,
   $.verification_LE = 0x36801ECB,
   $.verification_BE = 0xFC26F4C7,
@@ -789,14 +778,17 @@ REGISTER_HASH(sha1_64,
 
 REGISTER_HASH(sha1,
   $.desc = "SHA-1",
-  $.hash_flags = FLAG_HASH_CRYPTOGRAPHIC        |
-                 FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
-                 FLAG_HASH_ENDIAN_INDEPENDENT   |
-                 FLAG_HASH_NO_SEED,
-  $.impl_flags = FLAG_IMPL_LICENSE_MIT          |
-                 FLAG_IMPL_CANONICAL_BE         |
-                 FLAG_IMPL_ROTATE               |
-                 FLAG_IMPL_VERY_SLOW,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
+        FLAG_HASH_ENDIAN_INDEPENDENT   |
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_MIT          |
+        FLAG_IMPL_CANONICAL_BE         |
+        FLAG_IMPL_ROTATE               |
+        FLAG_IMPL_INCREMENTAL          |
+        FLAG_IMPL_VERY_SLOW,
   $.bits = 128,
   $.verification_LE = 0xE444A591,
   $.verification_BE = 0x35E00C29,
