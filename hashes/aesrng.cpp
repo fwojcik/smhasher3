@@ -1,4 +1,5 @@
 /*
+ * AES(CTR-mode)-based strong RNG
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  *
  * Permission is hereby granted, free of charge, to any person
@@ -209,13 +210,15 @@ REGISTER_FAMILY(aesrng);
 
 REGISTER_HASH(aesrng32,
   $.desc = "32-bit RNG using AES in CTR mode; not a hash",
-  $.hash_flags = FLAG_HASH_MOCK                |
-                 FLAG_HASH_AES_BASED           |
-                 FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
-                 FLAG_IMPL_SEED_WITH_HINT      |
-                 FLAG_IMPL_CANONICAL_LE        |
-                 FLAG_IMPL_LICENSE_MIT,
+  $.hash_flags =
+        FLAG_HASH_MOCK                |
+        FLAG_HASH_AES_BASED           |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS        |
+        FLAG_IMPL_SEED_WITH_HINT      |
+        FLAG_IMPL_CANONICAL_LE        |
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x85A358F5,
   $.verification_BE = 0x85A358F5,
@@ -228,13 +231,15 @@ REGISTER_HASH(aesrng32,
 
 REGISTER_HASH(aesrng64,
   $.desc = "64-bit RNG using AES in CTR mode; not a hash",
-  $.hash_flags = FLAG_HASH_MOCK                |
-                 FLAG_HASH_AES_BASED           |
-                 FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
-                 FLAG_IMPL_SEED_WITH_HINT      |
-                 FLAG_IMPL_CANONICAL_LE        |
-                 FLAG_IMPL_LICENSE_MIT,
+  $.hash_flags =
+        FLAG_HASH_MOCK                |
+        FLAG_HASH_AES_BASED           |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS        |
+        FLAG_IMPL_SEED_WITH_HINT      |
+        FLAG_IMPL_CANONICAL_LE        |
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x8FB53C27,
   $.verification_BE = 0x8FB53C27,
@@ -247,13 +252,15 @@ REGISTER_HASH(aesrng64,
 
 REGISTER_HASH(aesrng128,
   $.desc = "128-bit RNG using AES in CTR mode; not a hash",
-  $.hash_flags = FLAG_HASH_MOCK                |
-                 FLAG_HASH_AES_BASED           |
-                 FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
-                 FLAG_IMPL_SEED_WITH_HINT      |
-                 FLAG_IMPL_CANONICAL_LE        |
-                 FLAG_IMPL_LICENSE_MIT,
+  $.hash_flags =
+        FLAG_HASH_MOCK                |
+        FLAG_HASH_AES_BASED           |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS        |
+        FLAG_IMPL_SEED_WITH_HINT      |
+        FLAG_IMPL_CANONICAL_LE        |
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x6F00ADF7,
   $.verification_BE = 0x6F00ADF7,
@@ -266,13 +273,15 @@ REGISTER_HASH(aesrng128,
 
 REGISTER_HASH(aesrng160,
   $.desc = "160-bit RNG using AES in CTR mode; not a hash",
-  $.hash_flags = FLAG_HASH_MOCK                |
-                 FLAG_HASH_AES_BASED           |
-                 FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
-                 FLAG_IMPL_SEED_WITH_HINT      |
-                 FLAG_IMPL_CANONICAL_LE        |
-                 FLAG_IMPL_LICENSE_MIT,
+  $.hash_flags =
+        FLAG_HASH_MOCK                |
+        FLAG_HASH_AES_BASED           |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS        |
+        FLAG_IMPL_SEED_WITH_HINT      |
+        FLAG_IMPL_CANONICAL_LE        |
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 160,
   $.verification_LE = 0x839B61CD,
   $.verification_BE = 0x839B61CD,
@@ -285,13 +294,15 @@ REGISTER_HASH(aesrng160,
 
 REGISTER_HASH(aesrng224,
   $.desc = "224-bit RNG using AES in CTR mode; not a hash",
-  $.hash_flags = FLAG_HASH_MOCK                |
-                 FLAG_HASH_AES_BASED           |
-                 FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
-                 FLAG_IMPL_SEED_WITH_HINT      |
-                 FLAG_IMPL_CANONICAL_LE        |
-                 FLAG_IMPL_LICENSE_MIT,
+  $.hash_flags =
+        FLAG_HASH_MOCK                |
+        FLAG_HASH_AES_BASED           |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS        |
+        FLAG_IMPL_SEED_WITH_HINT      |
+        FLAG_IMPL_CANONICAL_LE        |
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 224,
   $.verification_LE = 0x0DFEDBCB,
   $.verification_BE = 0x0DFEDBCB,
@@ -304,13 +315,15 @@ REGISTER_HASH(aesrng224,
 
 REGISTER_HASH(aesrng256,
   $.desc = "256-bit RNG using AES in CTR mode; not a hash",
-  $.hash_flags = FLAG_HASH_MOCK                |
-                 FLAG_HASH_AES_BASED           |
-                 FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags = FLAG_IMPL_SANITY_FAILS        |
-                 FLAG_IMPL_SEED_WITH_HINT      |
-                 FLAG_IMPL_CANONICAL_LE        |
-                 FLAG_IMPL_LICENSE_MIT,
+  $.hash_flags =
+        FLAG_HASH_MOCK                |
+        FLAG_HASH_AES_BASED           |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS        |
+        FLAG_IMPL_SEED_WITH_HINT      |
+        FLAG_IMPL_CANONICAL_LE        |
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 256,
   $.verification_LE = 0x07FACA17,
   $.verification_BE = 0x07FACA17,

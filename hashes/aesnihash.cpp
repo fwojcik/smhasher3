@@ -87,9 +87,11 @@ REGISTER_FAMILY(aesnihash);
 
 REGISTER_HASH(aesnihash,
   $.desc = "majek's aesnihash",
-  $.hash_flags = FLAG_HASH_NO_SEED        |
-                 FLAG_HASH_AES_BASED,
-  $.impl_flags = FLAG_IMPL_LICENSE_BSD,
+  $.hash_flags =
+        FLAG_HASH_NO_SEED        |
+        FLAG_HASH_AES_BASED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_BSD,
   $.bits = 64,
   $.verification_LE = 0xA68E0D42,
   $.verification_BE = 0x2918A889,

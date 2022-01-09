@@ -1,5 +1,5 @@
 /*
- * BadHash
+ * BadHash and other simple, bad mock hashes
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (c) 2014-2021 Reini Urban
  *
@@ -86,9 +86,11 @@ REGISTER_FAMILY(badhash);
 
 REGISTER_HASH(badhash,
   $.desc = "very simple XOR shift",
-  $.hash_flags = FLAG_HASH_MOCK,
-  $.impl_flags = FLAG_IMPL_SANITY_FAILS     |
-                 FLAG_IMPL_LICENSE_MIT,
+  $.hash_flags =
+        FLAG_HASH_MOCK,
+  $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS     |
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0xAB432E23,
   $.verification_BE = 0x241F49BE,
@@ -101,9 +103,11 @@ REGISTER_HASH(badhash,
 
 REGISTER_HASH(sumhash8,
   $.desc = "sum all 8-bit bytes",
-  $.hash_flags = FLAG_HASH_MOCK,
-  $.impl_flags = FLAG_IMPL_LICENSE_MIT      |
-                 FLAG_IMPL_SANITY_FAILS     ,
+  $.hash_flags =
+        FLAG_HASH_MOCK,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_MIT      |
+        FLAG_IMPL_SANITY_FAILS     ,
   $.bits = 32,
   $.verification_LE = 0x0000A9AC,
   $.verification_BE = 0xACA90000,
@@ -116,10 +120,12 @@ REGISTER_HASH(sumhash8,
 
 REGISTER_HASH(sumhash32,
   $.desc = "sum all 32-bit words",
-  $.hash_flags = FLAG_HASH_MOCK,
-  $.impl_flags = FLAG_IMPL_LICENSE_MIT      |
-                 FLAG_IMPL_SANITY_FAILS     |
-                 FLAG_IMPL_MULTIPLY,
+  $.hash_flags =
+        FLAG_HASH_MOCK,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_MIT      |
+        FLAG_IMPL_SANITY_FAILS     |
+        FLAG_IMPL_MULTIPLY,
   $.bits = 32,
   $.verification_LE = 0x3D6DC280,
   $.verification_BE = 0x00A10D9E,
