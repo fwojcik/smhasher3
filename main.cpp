@@ -520,18 +520,20 @@ static bool testHash(const char * name) {
       hInfo = convertLegacyHash(lhInfo);
   }
 
+  // If you extend these statements by adding a new bitcount/type, you
+  // need to adjust HASHTYPELIST in util/Instantiate.h also.
   if(hInfo->bits == 32)
       return test<uint32_t>( hInfo );
   if(hInfo->bits == 64)
       return test<uint64_t>( hInfo );
   if(hInfo->bits == 128)
-      return test<uint128_t>( hInfo );
+      return test<Blob<128>>( hInfo );
   if(hInfo->bits == 160)
       return test<Blob<160>>( hInfo );
   if(hInfo->bits == 224)
       return test<Blob<224>>( hInfo );
   if(hInfo->bits == 256)
-      return test<uint256_t>( hInfo );
+      return test<Blob<256>>( hInfo );
 
   printf("Invalid hash bit width %d for hash '%s'",
           hInfo->bits, hInfo->name);

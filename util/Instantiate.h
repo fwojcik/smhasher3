@@ -18,7 +18,7 @@
  */
 #include <tuple>
 
-#define HASHTYPELIST uint32_t, uint64_t, uint128_t, Blob<160>, Blob<224>, uint256_t
+#define HASHTYPELIST uint32_t, uint64_t, Blob<128>, Blob<160>, Blob<224>, Blob<256>
 
 #define INSTANTIATE(FN, TYPELIST)                               \
     template < typename ... Types>                              \
