@@ -656,7 +656,6 @@ add_library(
   donothing.cpp
   donothingOAAT.cpp
   badhash.cpp
-  sumhash.cpp
   aesrng.cpp
 #
   md5.cpp

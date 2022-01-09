@@ -24,7 +24,6 @@ unsigned refs() {
     USE_FAMILY(donothing);
     USE_FAMILY(donothingOAAT);
     USE_FAMILY(badhash);
-    USE_FAMILY(sumhash);
     USE_FAMILY(aesrng);
 
     USE_FAMILY(md5);

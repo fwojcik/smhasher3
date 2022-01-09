@@ -44,6 +44,44 @@ void BadHash(const void * in, const size_t len, const seed_t seed, void * out) {
     memcpy(out, &h, sizeof(h));
 }
 
+template < bool bswap >
+void sumhash8(const void * in, const size_t len, const seed_t seed, void * out) {
+    const uint8_t *       data = (const uint8_t *)in;
+    const uint8_t * const end  = &data[len];
+    uint32_t h                 = seed;
+
+    while (data < end) {
+        h += *data++;
+    }
+
+    h = COND_BSWAP(h, bswap);
+    memcpy(out, &h, sizeof(h));
+}
+
+template < bool bswap >
+void sumhash32(const void * in, const size_t len, const seed_t seed, void * out) {
+    const uint32_t *       data = (const uint32_t *)in;
+    const uint32_t * const end  = &data[len/4];
+    uint32_t h                  = seed;
+
+    while (data < end) {
+        uint32_t d;
+        memcpy(&d, data++, 4);
+        h += COND_BSWAP(d, bswap);
+    }
+
+    if (len & 3) {
+        uint8_t * dc = (uint8_t*)data; //byte stepper
+        const uint8_t * const endc = &((const uint8_t*)in)[len];
+        while (dc < endc) {
+            h += *dc++ * UINT64_C(11400714819323198485);
+        }
+    }
+
+    h = COND_BSWAP(h, bswap);
+    memcpy(out, &h, sizeof(h));
+}
+
 REGISTER_FAMILY(badhash);
 
 REGISTER_HASH(badhash,
@@ -59,4 +97,35 @@ REGISTER_HASH(badhash,
   $.seedfixfn = excludeBadseeds,
   $.badseeds = { 0 },
   $.sort_order = 20
+);
+
+REGISTER_HASH(sumhash8,
+  $.desc = "sum all 8-bit bytes",
+  $.hash_flags = FLAG_HASH_MOCK,
+  $.impl_flags = FLAG_IMPL_LICENSE_MIT      |
+                 FLAG_IMPL_SANITY_FAILS     ,
+  $.bits = 32,
+  $.verification_LE = 0x0000A9AC,
+  $.verification_BE = 0xACA90000,
+  $.hashfn_native = sumhash8<false>,
+  $.hashfn_bswap = sumhash8<true>,
+  $.seedfixfn = excludeBadseeds,
+  $.badseeds = { 0 },
+  $.sort_order = 30
+);
+
+REGISTER_HASH(sumhash32,
+  $.desc = "sum all 32-bit words",
+  $.hash_flags = FLAG_HASH_MOCK,
+  $.impl_flags = FLAG_IMPL_LICENSE_MIT      |
+                 FLAG_IMPL_SANITY_FAILS     |
+                 FLAG_IMPL_MULTIPLY,
+  $.bits = 32,
+  $.verification_LE = 0x3D6DC280,
+  $.verification_BE = 0x00A10D9E,
+  $.hashfn_native = sumhash32<false>,
+  $.hashfn_bswap = sumhash32<true>,
+  $.seedfixfn = excludeZeroSeed,
+  $.badseeds = { 0x9e3779b97f4a7c15 },
+  $.sort_order = 31
 );
