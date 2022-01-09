@@ -1,5 +1,5 @@
 /*
- * DoNothing hash
+ * aes-based hash from mmuniq
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (c) 2015-2021 Reini Urban
  * Copyright (c) 2015-2017 Cloudflare, Inc. All rights reserved.
