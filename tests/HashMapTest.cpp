@@ -56,6 +56,7 @@
 #include <unordered_map>
 #include <parallel_hashmap/phmap.h>
 #include <functional>
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 // This is functionally a speed test, and so will not inform VCodes,
@@ -83,6 +84,10 @@ std::vector<std::string> HashMapInit(bool verbose) {
   {
       const char * end = (const char *)rawmemchr(ptr, '\n');
       std::string str (ptr, end - ptr);
+      wordvec.push_back(str);
+      std::transform(str.begin(), str.begin()+1, str.begin(), ::toupper);
+      wordvec.push_back(str);
+      std::transform(str.begin(), str.end(), str.begin(), ::toupper);
       wordvec.push_back(str);
       sum += end - ptr;
       ptr = end + 1;
