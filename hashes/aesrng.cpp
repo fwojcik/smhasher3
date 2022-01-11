@@ -102,7 +102,7 @@ static uint64_t rnd64(void) {
     return _mm_cvtsi128_si64x(result);
 }
 
-static void rng_ffwd(int ffwd) {
+static void rng_ffwd(int64_t ffwd) {
     __m128i ctrfwd = _mm_set_epi64x(-ffwd, ffwd);
     ctr = _mm_add_epi64(ctr, ctrfwd);
 }
@@ -112,7 +112,7 @@ static void rng_setctr(uint64_t stream, uint64_t seq) {
 }
 
 // This variable is _not_ thread-local
-static int hash_mode;
+static uint64_t hash_mode;
 // These complications are intended to make this "hash" return the
 // same results if threading is enabled or not. It makes the following
 // assumptions about the rest of the code:
@@ -155,7 +155,7 @@ uintptr_t aesrng_seed(const uint64_t hint) {
 // Hash_mode 2 is for Avalanche, which is very hard to fool in a
 // consistent way, so we have some magic knowledge of how it calls us.
 static thread_local uint64_t callcount;
-static void rng_keyseq(const void * key, int len, uint64_t seed) {
+static void rng_keyseq(const void * key, size_t len, uint64_t seed) {
     if (hash_mode == 2)
         if (callcount-- != 0)
             return;
@@ -169,7 +169,7 @@ static void rng_keyseq(const void * key, int len, uint64_t seed) {
     rng_setctr(s, seed);
 }
 
-template < int nbytes >
+template < uint32_t nbytes >
 static void rng_impl(void * out) {
     assert((nbytes >= 0) && (nbytes <= 39));
     uint8_t * result = (uint8_t *)out;

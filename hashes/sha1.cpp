@@ -602,7 +602,7 @@ static void SHA1_Update(SHA1_CTX * context, const uint8_t * data, const size_t l
 
 /* Add padding and return len bytes of the message digest. */
 template < bool bswap >
-static void SHA1_Final(SHA1_CTX * context, unsigned digest_words, uint8_t * digest) {
+static void SHA1_Final(SHA1_CTX * context, uint32_t digest_words, uint8_t * digest) {
   uint32_t i;
   uint8_t finalcount[8];
   uint8_t c;

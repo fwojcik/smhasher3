@@ -204,10 +204,11 @@ static void md5_process(md5_context * ctx, uint8_t data[64]) {
  * MD5 process buffer
  */
 template < bool bswap >
-static void md5_update(md5_context *ctx, uint8_t *input, int ilen) {
+static void md5_update(md5_context * ctx, uint8_t * input, size_t ilen) {
     uint32_t fill, left;
 
-    if (ilen <= 0) { return; }
+    if (ilen == 0)                    { return; }
+    if (ilen >= UINT32_C(0xffffffff)) { return; }
 
     left = ctx->total[0] & 0x3F;
     fill = 64 - left;

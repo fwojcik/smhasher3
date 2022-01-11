@@ -65,7 +65,7 @@ static void FNV1a(const void * in, const size_t len, const seed_t seed, void * o
     hashT h = (hashT)seed;
 
     h ^= C1;
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         h ^= data[i];
         h *= C2;
     }

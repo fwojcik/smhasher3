@@ -121,7 +121,7 @@ void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, void * 
     // We use the length as the first character.
     uint64_t h = len;
 
-    for (int i = 0; i < len/4; i++, buf += 4) {
+    for (size_t i = 0; i < len/4; i++, buf += 4) {
         // Partial modular reduction. Since each round adds 32 bits, and this
         // subtracts (up to) 61 bits, we make sure to never overflow.
         h = mult_combine61(h, a, GET_U32<bswap>(buf, 0));
