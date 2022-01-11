@@ -133,36 +133,12 @@ static LegacyHashInfo g_hashes[] =
   // too fragile
 #ifdef __SIZEOF_INT128__
 #ifdef __FreeBSD__
-#  define POLY1_VERIF   0xFECCC371
-#  define POLY2_VERIF   0xA31DD921
-#  define POLY3_VERIF   0x26F7EDA0
-#  define POLY4_VERIF   0x8EE270BD
 #  define TABUL_VERIF   0x0534C36E
 #elif defined __apple_build_version__ && defined __clang__
-#  define POLY1_VERIF   0xE389931F
-#  define POLY2_VERIF   0x458D056D
-#  define POLY3_VERIF   0x208145CC
-#  define POLY4_VERIF   0xE798712E
 #  define TABUL_VERIF   0x91618263
-#elif defined DEBUG
-#  define POLY1_VERIF   0x9E4BA93D
-#  define POLY2_VERIF   0x5CB4CB25
-#  define POLY3_VERIF   0x3C87C852
-#  define POLY4_VERIF   0xFF88BAF6
-#  define TABUL_VERIF   0xB49C607C
 #else
-#  define POLY1_VERIF   0x64706572
-#  define POLY2_VERIF   0xE8906EDF
-#  define POLY3_VERIF   0xF2A7E178
-#  define POLY4_VERIF   0xD4E89421
 #  define TABUL_VERIF   0xB49C607C
 #endif
-  // Thomas Dybdahl Ahle, Jakob Tejs Bæk Knudsen, and Mikkel Thorup
-  // "The Power of Hashing with Mersenne Primes".
-  { poly_1_mersenne,      32, 0, "poly_1_mersenne", "Degree 1 Hashing mod 2^61-1", POOR, {} },
-  { poly_2_mersenne,      32, 0, "poly_2_mersenne", "Degree 2 Hashing mod 2^61-1", GOOD, {0x60e8512c} /* !! */},
-  { poly_3_mersenne,      32, 0, "poly_3_mersenne", "Degree 3 Hashing mod 2^61-1", GOOD, {0x3d25f745} /* !! */},
-  { poly_4_mersenne,      32, 0, "poly_4_mersenne", "Degree 4 Hashing mod 2^61-1", GOOD, {} },
   { tabulation_test,      64, TABUL_VERIF, "tabulation",      "64-bit Tabulation with Multiply-Shift Mixer", GOOD, {} },
 #endif
 #if defined(_MSC_VER) /* truncated long to 32 */
@@ -688,11 +664,6 @@ void Hash_init (LegacyHashInfo* info) {
   else if(info->hash == multiply_shift ||
           info->hash == pair_multiply_shift)
     multiply_shift_init();
-  else if(info->hash == poly_1_mersenne ||
-          info->hash == poly_2_mersenne ||
-          info->hash == poly_3_mersenne ||
-          info->hash == poly_4_mersenne)
-    poly_mersenne_init();
   else if(info->hash == tabulation_test)
     tabulation_init();
 #endif
@@ -772,9 +743,6 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
 #ifdef __SIZEOF_INT128__
   else if(hash == multiply_shift)
     multiply_shift_seed_init(seed);
-  else if((hash == poly_2_mersenne && seed == 0x60e8512c) ||
-          (hash == poly_3_mersenne && seed == 0x3d25f745))
-    seed++;
 #endif
 #if defined(__SSE4_2__) && defined(__x86_64__)
   else if (hash == clhash_test && seed == 0x0)
@@ -795,12 +763,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
 #ifdef __SIZEOF_INT128__
   else if(hash == multiply_shift || hash == pair_multiply_shift)
     multiply_shift_seed_init(seed32);
-  else if(/*hash == poly_0_mersenne || */
-          hash == poly_1_mersenne ||
-          hash == poly_2_mersenne ||
-          hash == poly_3_mersenne ||
-          hash == poly_4_mersenne)
-    poly_mersenne_seed_init(seed32);
   else if(hash == tabulation_test)
     tabulation_seed_init(seed);
 #endif

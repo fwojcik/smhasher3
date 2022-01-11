@@ -662,10 +662,11 @@ add_library(
 #
   md5.cpp
   sha1.cpp
+  crc.cpp
 #
   aesnihash.cpp
   fnv.cpp
-  crc.cpp
+  poly_mersenne.cpp
 )
 
 add_library(

@@ -462,14 +462,6 @@ void halftime_hash_seed_init(size_t &seed);
    bool multiply_shift_bad_seeds(std::vector<uint64_t> &seeds);
    void multiply_shift (const void * key, int len, uint32_t seed, void * out);
    void pair_multiply_shift (const void *key, int len, uint32_t seed, void *out);
-   void poly_mersenne_init();
-   void poly_mersenne_seed_init(uint32_t &seed);
-   // insecure: hashes cancel itself out, as with CRC
-   // void poly_0_mersenne (const void* key, int len, uint32_t seed, void* out);
-   void poly_1_mersenne (const void* key, int len, uint32_t seed, void* out);
-   void poly_2_mersenne (const void* key, int len, uint32_t seed, void* out);
-   void poly_3_mersenne (const void* key, int len, uint32_t seed, void* out);
-   void poly_4_mersenne (const void* key, int len, uint32_t seed, void* out);
 #endif
 
 #ifdef __SIZEOF_INT128__
