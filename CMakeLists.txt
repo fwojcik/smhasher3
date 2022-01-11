@@ -28,11 +28,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
 
-include(CheckTypeSize)
-check_type_size(__int64 __INT64)
-check_type_size(int64_t INT64_T)
-check_type_size(__uint128_t __UINT128_T)
-
 # AddressSanitize
 set(CMAKE_C_FLAGS_ASAN
     "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -DHAVE_ASAN"
@@ -69,18 +64,6 @@ else()
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     endif()
   endif()
-endif()
-
-if(HAVE___UINT128_T)
-  add_definitions(-DHAVE_INT128)
-endif()
-if(HAVE_INT64_T)
-  add_definitions(-DHAVE_INT64)
-elseif(HAVE__INT64)
-  add_definitions(-DHAVE_INT64)
-endif()
-if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  add_definitions(-DHAVE_BIT32)
 endif()
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
