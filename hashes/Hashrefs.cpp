@@ -27,6 +27,7 @@ unsigned refs() {
 
     USE_FAMILY(md5);
     USE_FAMILY(sha1);
+    USE_FAMILY(crc);
 
     USE_FAMILY(aesnihash);
     USE_FAMILY(fnv);

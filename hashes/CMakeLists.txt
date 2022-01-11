@@ -127,6 +127,16 @@ endif()
 
 set(HASHSRCDIR ${CMAKE_SOURCE_DIR}/hashes/detect)
 
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_crc.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_CRC32C_X86_64)
+  message(STATUS "x86_64 CRC-32C intrinsics available")
+  if (MSVC AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND (MSVC_VERSION LESS 1928))
+    add_definitions(-DHAVE_BROKEN_MSVC_CRC32C_HW)
+    message(WARNING "MSVC version too old; CRC-32C intrinsics broken")
+  endif()
+endif()
+
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_aes.cpp)
 if(RESULT_VAR)
   add_definitions(-DNEW_HAVE_AES_X86_64)
@@ -481,11 +491,6 @@ endif()
 
 if(SSE42_FOUND)
   # MSVC CL 14.16.27023 32bit crashes, 14.28.29910 works fine.
-  if (MSVC AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND (MSVC_VERSION LESS 1928))
-    add_definitions(-DHAVE_BROKEN_MSVC_CRC32C_HW)
-  else()
-    set(SSE4_SRC "crc32_hw.c")
-  endif()
   # 64bit only:
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     # enable_language(ASM-NASM) set(CMAKE_ASM_FLAGS "-f elf64") # or
@@ -494,9 +499,6 @@ if(SSE42_FOUND)
     if(NOT MSVC)
       list(APPEND X86_64ONLY_SRC metrohash/metrohash64crc.cpp
            metrohash/metrohash128crc.cpp)
-    endif()
-    if(NOT (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64") AND NOT MSVC)
-      list(APPEND X86_64ONLY_SRC crc32_hw1.c)
     endif()
   else()
     message(STATUS "32bit only: CMAKE_SIZEOF_VOID_P=${CMAKE_SIZEOF_VOID_P}")
@@ -662,6 +664,7 @@ add_library(
 #
   aesnihash.cpp
   fnv.cpp
+  crc.cpp
 )
 
 add_library(
@@ -689,7 +692,6 @@ add_library(
   chaskey.c
   CityTest.cpp
   City.cpp
-  crc.cpp
   Hashes.cpp
   lookup3.cpp
   MurmurHash1.cpp

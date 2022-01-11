@@ -37,13 +37,6 @@
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
 
-void crc32(const void *key, int len, uint32_t seed, void *out);
-static inline bool crc32c_bad_seeds(std::vector<uint32_t> &seeds)
-{
-  seeds = std::vector<uint32_t> { UINT32_C(0x111c2232) };
-  return true;
-}
-
 void aesrng_init(uint64_t seed);
 void aesrng_seed(uint64_t seed, uint64_t hint = 0);
 void aesrng32(const void *key, int len, uint32_t seed, void *out);
@@ -59,19 +52,6 @@ void aesrng256(const void *key, int len, uint32_t seed, void *out);
 void hasshe2_test(const void *key, int len, uint32_t seed, void *out);
 #endif
 #if defined(HAVE_SSE42)
-// This falls into a MSVC CL 14.16.27023 32bit compiler bug. 14.28.29910 works fine.
-# ifndef HAVE_BROKEN_MSVC_CRC32C_HW
-void crc32c_hw_test(const void *key, int len, uint32_t seed, void *out);
-void crc64c_hw_test(const void *key, int len, uint32_t seed, void *out);
-# endif
-# if defined(__SSE4_2__) && (defined(__i686__) || defined(_M_IX86) || defined(__x86_64__))
-void crc32c_hw1_test(const void *key, int len, uint32_t seed, void *out);
-# endif
-static inline bool crc64c_bad_seeds(std::vector<uint64_t> &seeds)
-{
-  seeds = std::vector<uint64_t> { UINT64_C(0) };
-  return true;
-}
 void CityHashCrc64_test(const void *key, int len, uint32_t seed, void *out);
 void CityHashCrc128_test(const void *key, int len, uint32_t seed, void *out);
 #endif
