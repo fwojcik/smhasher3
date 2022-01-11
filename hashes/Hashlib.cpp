@@ -123,7 +123,9 @@ void listHashes(bool nameonly) {
 bool verifyAllHashes(bool verbose) {
     bool result = true;
     for (const HashInfo * h : defaultSort(hashMap())) {
-        if (h->isEndianDefined()) {
+        if (!h->Init()) {
+            result = false;
+        } else if (h->isEndianDefined()) {
             // Verify the hash the canonical way first, and then the
             // other way.
             result &= h->Verify(HashInfo::ENDIAN_DEFAULT, verbose);

@@ -268,7 +268,7 @@ static void HashSelfTestAll(bool verbose) {
   for (size_t i = 0; i < numhashes; i++) {
     LegacyHashInfo * linfo = numLegacyHash(i);
     HashInfo * hinfo = convertLegacyHash(linfo);
-    pass &= hinfo->Verify(HashInfo::ENDIAN_NATIVE, verbose);
+    pass &= (hinfo->Init() && hinfo->Verify(HashInfo::ENDIAN_NATIVE, verbose));
     delete hinfo;
   }
 
