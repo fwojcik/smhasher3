@@ -624,7 +624,7 @@ int main ( int argc, const char ** argv )
         continue;
       }
       if (strncmp(arg,"--endian=", 9) == 0) {
-        g_hashEndian = parse_endian(&arg[10]);
+        g_hashEndian = parse_endian(&arg[9]);
         continue;
       }
       if (strncmp(arg,"--seed=", 7) == 0) {
