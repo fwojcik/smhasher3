@@ -193,13 +193,14 @@ class HashInfo {
         return true;
     }
 
+    // Returns true iff seeding was done
     FORCE_INLINE bool Seed(seed_t seed, uint64_t hint = 0) const {
         if (impl_flags & FLAG_IMPL_SEED_WITH_HINT) {
             return !!(seedfn(hint));
         } else if (seedfn != NULL) {
             return !!(seedfn(seed));
         }
-        return true;
+        return false;
     }
 
     FORCE_INLINE void FixupSeed(seed_t & seed) const {
@@ -214,6 +215,10 @@ class HashInfo {
 
     FORCE_INLINE bool isLegacy(void) const {
         return !!(hash_flags & FLAG_HASH_LEGACY);
+    }
+
+    FORCE_INLINE bool is32BitSeed(void) const {
+        return !!(hash_flags & FLAG_HASH_SMALL_SEED);
     }
 
     FORCE_INLINE bool isEndianDefined(void) const {
