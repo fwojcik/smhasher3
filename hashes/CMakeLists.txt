@@ -668,6 +668,7 @@ add_library(
   fnv.cpp
   poly_mersenne.cpp
   discohash.cpp
+  beamsplitter.cpp
 )
 
 add_library(
@@ -709,7 +710,6 @@ add_library(
   tifuhash.cpp
   floppsyhash.cpp
   fasthash.cpp
-  beamsplitter.cpp
   xxhash.c
   metrohash/metrohash64.cpp
   metrohash/metrohash128.cpp
