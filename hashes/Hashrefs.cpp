@@ -32,6 +32,7 @@ unsigned refs() {
     USE_FAMILY(aesnihash);
     USE_FAMILY(fnv);
     USE_FAMILY(poly_mersenne);
+    USE_FAMILY(discohash);
 
     return 0;
 }
