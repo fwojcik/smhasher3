@@ -254,14 +254,14 @@ static thread_local uint64_t * state = (uint64_t *)buf;
 
 //--------
 // State mix function
-FORCE_INLINE uint8_t ROTR8(uint8_t v, int n) {
+static FORCE_INLINE uint8_t ROTR8(uint8_t v, int n) {
     n = n & 7U;
     if (n)
         v = (v >> n) | (v << (8-n));
     return v;
 }
 
-FORCE_INLINE void mix(const uint32_t A) {
+static FORCE_INLINE void mix(const uint32_t A) {
       const uint32_t B = A+1;
       const uint32_t iv = state[A] & 1023;
       const uint64_t M = T[iv];
@@ -277,7 +277,7 @@ FORCE_INLINE void mix(const uint32_t A) {
 //---------
 // Hash round function
 template < bool bswap >
-FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
+static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
     uint32_t index = 0;
     uint32_t sindex = 0;
 

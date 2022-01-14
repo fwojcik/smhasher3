@@ -50,14 +50,14 @@ static thread_local uint64_t * ds   = (uint64_t *)disco_buf;
 
 //--------
 // State mix function
-FORCE_INLINE uint8_t ROTR8(uint8_t v, int n) {
+static FORCE_INLINE uint8_t ROTR8(uint8_t v, int n) {
     n = n & 7U;
     if (n)
         v = (v >> n) | (v << (8-n));
     return v;
 }
 
-FORCE_INLINE void mix(const uint32_t A) {
+static FORCE_INLINE void mix(const uint32_t A) {
       const uint32_t B = A+1;
       ds[A] *= P;
       ds[A] = ROTR64(ds[A], 23);
@@ -82,7 +82,7 @@ FORCE_INLINE void mix(const uint32_t A) {
 // The oldver parameter "fixes" a possibly-unintentional behavior
 // change, details of which are below.
 template < bool bswap, bool reread, bool oldver >
-FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
+static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
     uint32_t index;
     uint32_t sindex = 0;
     uint32_t Len = len >> 3;
