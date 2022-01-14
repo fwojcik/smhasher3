@@ -91,3 +91,9 @@ static FORCE_INLINE void PUT_U32(uint32_t n, uint8_t * b, const uint32_t i) {
     n = COND_BSWAP(n, bswap);
     memcpy(&b[i], &n, 4);
 }
+
+template < bool bswap >
+static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
+    n = COND_BSWAP(n, bswap);
+    memcpy(&b[i], &n, 8);
+}
