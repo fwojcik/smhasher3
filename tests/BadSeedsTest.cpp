@@ -300,8 +300,9 @@ static bool BadSeedsImpl(const HashInfo * hinfo, bool testAll) {
   printf("Testing the first 0xffffffff seeds ...\n");
   result &= TestSecret32<hashtype>(hinfo, UINT64_C(0x0), newresult);
 #ifdef HAVE_INT64
-  if (hinfo->Seed(0)) {
-    if (sizeof(hashtype) > 4) { // and the upper half 32bit range
+  // and the upper half 32bit range
+  if (!hinfo->is32BitSeed() || hinfo->Seed(0)) {
+    if (sizeof(hashtype) > 4) {
       if (have_lower) {
         for (auto secret : secrets) {
           if (secret <= 0xffffffff) {
@@ -337,7 +338,7 @@ bool BadSeedsTest(const HashInfo * hinfo, const bool find_new_seeds) {
 
     printf("[[[ BadSeeds Tests ]]]\n\n");
 
-    /* 
+    /*
      * FIXME - With the current definition of a "bad" seed, some
      * failures on 32-bit hashes are expected by chance. Either the
      * bad seed test needs to change, or the pass/fail needs to be
