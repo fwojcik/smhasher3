@@ -137,7 +137,8 @@ static void TestSecretRangeThread(const HashInfo * hinfo, const uint64_t hi,
 #endif
     printf("Testing [0x%016" PRIx64 ", 0x%016" PRIx64 "] ... \n", hi | start, last);
   }
-  for (seed_t seed = hi | start; seed < last; seed++) {
+  seed_t seed = (hi | start);
+  do {
     static hashtype zero;
     /*
      * Print out progress using *one* printf() statement (for thread
@@ -201,7 +202,7 @@ static void TestSecretRangeThread(const HashInfo * hinfo, const uint64_t hi,
       }
       break;
     }
-  }
+  } while (seed++ != last);
 
   return;
 }
