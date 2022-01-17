@@ -34,6 +34,9 @@ unsigned refs() {
     USE_FAMILY(poly_mersenne);
     USE_FAMILY(discohash);
     USE_FAMILY(beamsplitter);
+    USE_FAMILY(murmur1);
+    USE_FAMILY(murmur2);
+    USE_FAMILY(murmur3);
 
     return 0;
 }

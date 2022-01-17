@@ -669,6 +669,9 @@ add_library(
   poly_mersenne.cpp
   discohash.cpp
   beamsplitter.cpp
+  murmurhash1.cpp
+  murmurhash2.cpp
+  murmurhash3.cpp
 )
 
 add_library(
@@ -698,15 +701,11 @@ add_library(
   City.cpp
   Hashes.cpp
   lookup3.cpp
-  MurmurHash1.cpp
-  MurmurHash2.cpp
-  MurmurHash3.cpp
   Spooky.cpp
   SpookyTest.cpp
   SpookyV2.cpp
   SpookyTestV2.cpp
   SuperFastHash.cpp
-  PMurHash.c
   tifuhash.cpp
   floppsyhash.cpp
   fasthash.cpp

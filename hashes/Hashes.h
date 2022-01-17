@@ -1,8 +1,3 @@
-#include "MurmurHash1.h"
-#include "MurmurHash2.h"
-#include "MurmurHash3.h"
-#include "PMurHash.h"
-
 #define XXH_INLINE_ALL
 #include "xxhash.h"
 
@@ -171,10 +166,6 @@ void SpookyV2_128_test    ( const void * key, int len, uint32_t seed, void * out
 // Used internally as C++
 uint32_t MurmurOAAT ( const char * key, int len, uint32_t seed );
 
-// MurmurHash2
-void MurmurHash2_test      ( const void * key, int len, uint32_t seed, void * out );
-void MurmurHash2A_test     ( const void * key, int len, uint32_t seed, void * out );
-
 void siphash_test          ( const void * key, int len, uint32_t seed, void * out );
 void siphash13_test        ( const void * key, int len, uint32_t seed, void * out );
 void halfsiphash_test      ( const void * key, int len, uint32_t seed, void * out );
@@ -186,42 +177,6 @@ chaskey_test(const void *input, int len, uint32_t seed, void *out)
   uint64_t lseed = (uint64_t)seed;
   chaskey_c (input, len, lseed, out);
 }
-
-//-----------------------------------------------------------------------------
-// Test harnesses for Murmur1/2
-
-inline void MurmurHash1_test ( const void * key, int len, uint32_t seed, void * out )
-{
-  *(uint32_t*)out = MurmurHash1(key,len,seed);
-}
-
-inline void MurmurHash2_test ( const void * key, int len, uint32_t seed, void * out )
-{
-  *(uint32_t*)out = MurmurHash2(key,len,seed);
-}
-
-inline void MurmurHash2A_test ( const void * key, int len, uint32_t seed, void * out )
-{
-  *(uint32_t*)out = MurmurHash2A(key,len,seed);
-}
-
-#if __WORDSIZE >= 64
-inline void MurmurHash64A_test ( const void * key, int len, uint32_t seed, void * out )
-{
-  *(uint64_t*)out = MurmurHash64A(key,len,seed);
-}
-#endif
-#ifdef HAVE_INT64
-// 2^32 bad seeds for Murmur2C
-static void MurmurHash64B_seed_init(uint32_t &seed) {
-  if ((seed & 0x10) == 0x10)
-    seed++;
-}
-inline void MurmurHash64B_test ( const void * key, int len, uint32_t seed, void * out )
-{
-  *(uint64_t*)out = MurmurHash64B(key,len,seed);
-}
-#endif
 
 inline void jodyhash32_test( const void * key, int len, uint32_t seed, void * out ) {
   *(uint32_t*)out = jody_block_hash32((const jodyhash32_t *)key, (jodyhash32_t) seed, (size_t) len);
