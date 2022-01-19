@@ -103,14 +103,14 @@ const HashInfo * findHash(const char * name) {
 
 void listHashes(bool nameonly) {
     if (!nameonly) {
-        printf("%-20s %4s %-50s %4s\n",
+        printf("%-25s %4s  %-50s %4s\n",
             "Name", "Bits", "Description", "Type");
-        printf("%-20s %4s %-50s %4s\n",
+        printf("%-25s %4s  %-50s %4s\n",
             "----", "----", "-----------", "----");
     }
     for (const HashInfo * h : defaultSort(hashMap())) {
         if (!nameonly) {
-            printf("%-20s %4d %-50s %4s\n",
+            printf("%-25s %4d  %-50s %4s\n",
                 h->name, h->bits, h->desc,
                 (h->hash_flags & FLAG_HASH_MOCK) ? "MOCK" : "");
         } else {

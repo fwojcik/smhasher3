@@ -87,7 +87,7 @@ static bool compareVerification(uint32_t expected, uint32_t actual,
 
     if (verbose) {
         if (prefix) {
-            printf("%20s - ", name);
+            printf("%25s - ", name);
         }
         printf("Verification value %2s 0x%08X ..... ", endstr, actual);
         printf(result_str, expected);
