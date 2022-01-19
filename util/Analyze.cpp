@@ -690,7 +690,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       if (EstimateNbCollisions(nbH, hundredCollBits) >= 100)
         nbBitsvec.push_back(hundredCollBits);
       std::sort(nbBitsvec.rbegin(), nbBitsvec.rend());
-      std::unique(nbBitsvec.rbegin(), nbBitsvec.rend());
+      nbBitsvec.erase(std::unique(nbBitsvec.begin(), nbBitsvec.end()), nbBitsvec.end());
     }
 
     /*
@@ -736,7 +736,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       combinedBitsvec.insert(combinedBitsvec.begin(), nbBitsvec.begin(),   nbBitsvec.end());
       combinedBitsvec.insert(combinedBitsvec.begin(), testBitsvec.begin(), testBitsvec.end());
       std::sort(combinedBitsvec.rbegin(), combinedBitsvec.rend());
-      std::unique(combinedBitsvec.rbegin(), combinedBitsvec.rend());
+      combinedBitsvec.erase(std::unique(combinedBitsvec.begin(), combinedBitsvec.end()), combinedBitsvec.end());
       ComputeCollBitBounds(combinedBitsvec, hashbits, nbH, minBits, maxBits, threshBits);
     }
 

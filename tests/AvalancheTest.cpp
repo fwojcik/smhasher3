@@ -252,7 +252,7 @@ bool AvalancheTest(const HashInfo * hinfo, const bool verbose, const bool extra)
                                                 768, 896, 1024, 1280, 1536 });
     }
     std::sort(testBitsvec.begin(), testBitsvec.end());
-    std::unique(testBitsvec.begin(), testBitsvec.end());
+    testBitsvec.erase(std::unique(testBitsvec.begin(), testBitsvec.end()), testBitsvec.end());
 
     for (int testBits : testBitsvec) {
         result &= AvalancheImpl<hashtype> (hash,testBits,300000,verbose,drawdots);
