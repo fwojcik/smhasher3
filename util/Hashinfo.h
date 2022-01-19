@@ -193,14 +193,16 @@ class HashInfo {
         return true;
     }
 
-    // Returns true iff seeding was done
+    // Returns true if seeding was done
     FORCE_INLINE bool Seed(seed_t seed, uint64_t hint = 0) const {
         if (impl_flags & FLAG_IMPL_SEED_WITH_HINT) {
             return !!(seedfn(hint));
         } else if (seedfn != NULL) {
             return !!(seedfn(seed));
+        } else if (isLegacy()) {
+            return false;
         }
-        return false;
+        return true;
     }
 
     FORCE_INLINE void FixupSeed(seed_t & seed) const {
