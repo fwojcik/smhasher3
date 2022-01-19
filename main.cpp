@@ -144,32 +144,33 @@ static bool g_testBadSeeds;
 
 struct TestOpts {
   bool         &var;
-  bool         defaultvalue; // What "All" sets the test to
+  bool         defaultvalue;  // What "All" sets the test to
+  bool         testspeedonly; // If true, then disabling test doesn't affect "All" testing
   const char*  name;
 };
 static TestOpts g_testopts[] =
 {
-  { g_testAll,           true,    "All" },
-  { g_testVerifyAll,    false,    "VerifyAll" },
-  { g_testSanity,        true,    "Sanity" },
-  { g_testSpeed,         true,    "Speed" },
-  { g_testHashmap,       true,    "Hashmap" },
-  { g_testAvalanche,     true,    "Avalanche" },
-  { g_testSparse,        true,    "Sparse" },
-  { g_testPermutation,   true,    "Permutation" },
-  { g_testWindow,        true,    "Window" },
-  { g_testCyclic,        true,    "Cyclic" },
-  { g_testTwoBytes,      true,    "TwoBytes" },
-  { g_testText,          true,    "Text" },
-  { g_testZeroes,        true,    "Zeroes" },
-  { g_testSeed,          true,    "Seed" },
-  { g_testPerlinNoise,   true,    "PerlinNoise" },
-  { g_testDiff,          true,    "Diff" },
-  { g_testDiffDist,      true,    "DiffDist" },
-  { g_testPopcount,      true,    "Popcount" },
-  { g_testPrng,          true,    "Prng" },
-  { g_testBIC,          false,    "BIC" },
-  { g_testBadSeeds,      true,    "BadSeeds" },
+  { g_testAll,           true,     false,    "All" },
+  { g_testVerifyAll,    false,     false,    "VerifyAll" },
+  { g_testSanity,        true,     false,    "Sanity" },
+  { g_testSpeed,         true,      true,    "Speed" },
+  { g_testHashmap,       true,      true,    "Hashmap" },
+  { g_testAvalanche,     true,     false,    "Avalanche" },
+  { g_testSparse,        true,     false,    "Sparse" },
+  { g_testPermutation,   true,     false,    "Permutation" },
+  { g_testWindow,        true,     false,    "Window" },
+  { g_testCyclic,        true,     false,    "Cyclic" },
+  { g_testTwoBytes,      true,     false,    "TwoBytes" },
+  { g_testText,          true,     false,    "Text" },
+  { g_testZeroes,        true,     false,    "Zeroes" },
+  { g_testSeed,          true,     false,    "Seed" },
+  { g_testPerlinNoise,   true,     false,    "PerlinNoise" },
+  { g_testDiff,          true,     false,    "Diff" },
+  { g_testDiffDist,      true,     false,    "DiffDist" },
+  { g_testPopcount,      true,     false,    "Popcount" },
+  { g_testPrng,          true,     false,    "Prng" },
+  { g_testBIC,          false,     false,    "BIC" },
+  { g_testBadSeeds,      true,     false,    "BadSeeds" },
 };
 
 static void set_default_tests(bool enable) {
@@ -208,12 +209,15 @@ static void parse_tests(const char * str, bool enable_tests) {
                 g_testopts[i].var = enable_tests;
                 // If "All" tests are being enabled or disabled, then
                 // adjust the individual test variables as
-                // instructed. Otherwise, if an "All" test is being
+                // instructed. Otherwise, if a material "All" test
+                // (not just a speed-testing test) is being
                 // specifically disabled, then don't consider "All"
                 // tests as being run.
                 if (&g_testopts[i].var == &g_testAll) {
                     set_default_tests(enable_tests);
-                } else if (!enable_tests && g_testopts[i].defaultvalue) {
+                } else if (!enable_tests                 &&
+                        g_testopts[i].defaultvalue       &&
+                        !g_testopts[i].testspeedonly) {
                     g_testAll = false;
                 }
                 if (testname[len] == '\0') {
