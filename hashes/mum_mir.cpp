@@ -105,15 +105,15 @@ static inline uint64_t _mum(uint64_t v, uint64_t p) {
 /* Here are different primes randomly generated with the equal
    probability of their bit values.  They are used to randomize input
    values.  */
-static uint64_t _mum_hash_step_prime = 0x2e0bb864e9ea7df5ULL;
-static uint64_t _mum_key_step_prime = 0xcdb32970830fcaa1ULL;
-static uint64_t _mum_block_start_prime = 0xc42b5e2e6480b23bULL;
-static uint64_t _mum_unroll_prime = 0x7b51ec3d22f7096fULL;
-static uint64_t _mum_tail_prime = 0xaf47d47c99b1461bULL;
-static uint64_t _mum_finish_prime1 = 0xa9a7ae7ceff79f3fULL;
-static uint64_t _mum_finish_prime2 = 0xaf47d47c99b1461bULL;
+static const uint64_t _mum_hash_step_prime = 0x2e0bb864e9ea7df5ULL;
+static const uint64_t _mum_key_step_prime = 0xcdb32970830fcaa1ULL;
+static const uint64_t _mum_block_start_prime = 0xc42b5e2e6480b23bULL;
+static const uint64_t _mum_unroll_prime = 0x7b51ec3d22f7096fULL;
+static const uint64_t _mum_tail_prime = 0xaf47d47c99b1461bULL;
+static const uint64_t _mum_finish_prime1 = 0xa9a7ae7ceff79f3fULL;
+static const uint64_t _mum_finish_prime2 = 0xaf47d47c99b1461bULL;
 
-static uint64_t _mum_primes [] = {
+static const uint64_t _mum_primes [] = {
   0X9ebdcae10d981691, 0X32b9b9b97a27ac7d, 0X29b5584d83d35bbd, 0X4b04e0e61401255f,
   0X25e8f7b1f1c9d027, 0X80d4c8c000f3e881, 0Xbd1255431904b9dd, 0X8a3bd4485eee6d81,
   0X3bc721b2aad05197, 0X71b1a19b907d6e33, 0X525e6c1084a8534b, 0X9e4c2cd340c1299f,
