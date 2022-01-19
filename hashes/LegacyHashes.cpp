@@ -297,38 +297,6 @@ static LegacyHashInfo g_hashes[] =
 #ifdef HAVE_HIGHWAYHASH
   { HighwayHash64_test,   64, 0x0,        "HighwayHash64", "Google HighwayHash (portable with dylib overhead)", GOOD, {} },
 #endif
-#if defined __aarch64__
- #define MUM_VERIF            0x280B2CC6
- #define MUMLOW_VERIF         0xB13E0239
-#elif defined(__GNUC__) && UINT_MAX != ULONG_MAX
- #define MUM_VERIF            0x3EEAE2D4
- #define MUMLOW_VERIF         0x520263F5
-#else
- #define MUM_VERIF            0xA973C6C0
- #define MUMLOW_VERIF         0x7F898826
-#endif
-  { mum_hash_test,        64, MUM_VERIF,  "MUM",         "github.com/vnmakarov/mum-hash", POOR,
-    {0x0} /* !! and many more. too many */ },
-  { mum_low_test,         32, MUMLOW_VERIF,"MUMlow",     "github.com/vnmakarov/mum-hash", GOOD,
-    {0x11fb062a, 0x3ca9411b, 0x3edd9a7d, 0x41f18860, 0x691457ba} /* !! */ },
-#if defined(__GNUC__) && UINT_MAX != ULONG_MAX
- #define MIR_VERIF            0x00A393C8
- #define MIRLOW_VERIF         0xE320CE68
-#else
- #define MIR_VERIF            0x422A66FC
- #define MIRLOW_VERIF         0xD50D1F09
-#endif
-#ifdef HAVE_INT64
-  // improved MUM
-  { mirhash_test,         64, MIR_VERIF,    "mirhash",            "mirhash", GOOD,
-    {0x0, 0x5e74c778, 0xa521f17b, 0xe0ab70e3} /* 2^36 !! (plus all hi ranges) */ },
-  { mirhash32low,         32, MIRLOW_VERIF, "mirhash32low",       "mirhash - lower 32bit", POOR,
-    {0x0, 0x5e74c778, 0xa521f17b, 0xe0ab70e3 } /* !! */ },
-  { mirhashstrict_test,   64, 0x422A66FC,   "mirhashstrict",      "mirhashstrict (portable, 64-bit, little-endian)", GOOD,
-    {0x7fcc747f} /* tested ok */ },
-  { mirhashstrict32low,   32, 0xD50D1F09,   "mirhashstrict32low", "mirhashstrict - lower 32bit", POOR,
-    {0x7fcc747f} /* !! */ },
-#endif
   { CityHash64_low_test,  32, 0xCC5BC861, "City64low",   "Google CityHash64WithSeed (low 32-bits)", GOOD, {} },
 #if defined(__SSE4_2__) && defined(__x86_64__)
   { CityHash128_test,    128, 0x6531F54E, "City128",     "Google CityHash128WithSeed (old)", GOOD, {} },
@@ -528,12 +496,6 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
     wyhash_seed_init(seedl);
     seed = seedl;
   }
-  else if(hash == mirhash_test)
-    mirhash_seed_init(seed);
-  else if(hash == mirhash32low)
-    mirhash32_seed_init(seed);
-  else if(hash == mirhashstrict32low && seed == 0x7fcc747f)
-    seed++;
 #endif
 #ifdef __SIZEOF_INT128__
   else if(hash == multiply_shift)

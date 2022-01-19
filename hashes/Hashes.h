@@ -290,21 +290,6 @@ inline void ahash64_test ( const void * key, int len, uint32_t seed, void * out 
 
 #endif
 
-// objsize 0-778: 1912
-void mum_hash_test(const void * key, int len, uint32_t seed, void * out);
-static inline bool mum_hash_bad_seeds(std::vector<uint64_t> &seeds)
-{
-  seeds = std::vector<uint64_t> { UINT64_C(0) };
-  return true;
-}
-
-inline void mum_low_test ( const void * key, int len, uint32_t seed, void * out ) {
-  uint64_t result;
-  mum_hash_test(key, len, seed, &result);
-  *(uint32_t*)out = (uint32_t)result;
-}
-
-
 //-----------------------------------------------------------------------------
 
 #define T1HA0_RUNTIME_SELECT 0
@@ -502,63 +487,6 @@ inline void wyhash32_test (const void * key, int len, uint32_t seed, void * out)
 inline void o1hash_test (const void * key, int len, uint32_t seed, void * out) {
   *(uint64_t*)out = o1hash(key, (uint64_t)len);
 }
-
-//https://github.com/vnmakarov/mir/blob/master/mir-hash.h
-#include "mir-hash.h"
-static inline bool mirhash_bad_seeds(std::vector<uint64_t> &seeds)
-{
-  seeds = std::vector<uint64_t> { 0x0, 0x5e74c778, 0xa521f17b, 0xe0ab70e3 };
-  // plus all 64bit variants << 32 !!
-  return true;
-}
-inline void mirhash_test (const void * key, int len, uint32_t seed, void * out) {
-  // objsize 2950-2da8: 1112
-  *(uint64_t*)out = mir_hash(key, (uint64_t)len, (uint64_t)seed);
-}
-static inline bool mirhash32_bad_seeds(std::vector<uint32_t> &seeds)
-{
-  seeds = std::vector<uint32_t> { 0x0, 0x5e74c778, 0xa521f17b, 0xe0ab70e3 };
-  return true;
-}
-inline void mirhash32low (const void * key, int len, uint32_t seed, void * out) {
-  *(uint32_t*)out = 0xFFFFFFFF & mir_hash(key, (uint64_t)len, (uint64_t)seed);
-}
-inline void mirhashstrict_test (const void * key, int len, uint32_t seed, void * out) {
-  // objsize 2950-2da8: 1112
-  *(uint64_t*)out = mir_hash_strict(key, (uint64_t)len, (uint64_t)seed);
-}
-static inline bool mirhashstrict32low_bad_seeds(std::vector<uint32_t> &seeds)
-{
-  seeds = std::vector<uint32_t> { 0x7fcc747f };
-  return true;
-}
-inline void mirhashstrict32low (const void * key, int len, uint32_t seed, void * out) {
-  *(uint32_t*)out = 0xFFFFFFFF & mir_hash_strict(key, (uint64_t)len, (uint64_t)seed);
-}
-static void mirhash_seed_init(uint32_t &seed)
-{
-  // reject bad seeds
-  std::vector<uint64_t> bad_seeds;
-  mirhash_bad_seeds(bad_seeds);
-  for (uint64_t s : bad_seeds) {
-    if (s == seed) {
-      seed++; break;
-    }
-    // also all hi ranges
-    if ((s << 32) & seed) {
-      seed++; break;
-    }
-  }
-}
-static void mirhash32_seed_init(uint32_t &seed)
-{
-  // reject bad seeds
-  std::vector<uint32_t> bad_seeds;
-  mirhash32_bad_seeds(bad_seeds);
-  while (std::find(bad_seeds.begin(), bad_seeds.end(), (uint32_t)seed) != bad_seeds.end())
-    seed++;
-}
-
 
 //TODO MSVC
 #ifndef _MSC_VER

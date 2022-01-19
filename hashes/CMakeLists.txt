@@ -672,6 +672,7 @@ add_library(
   murmurhash1.cpp
   murmurhash2.cpp
   murmurhash3.cpp
+  mum_mir.cpp
 )
 
 add_library(
@@ -716,7 +717,6 @@ add_library(
   opt_cmetrohash64_1.c
   farmhash.cc
   FarmTest.cc
-  mum.cc
   jody_hash32.c
   jody_hash64.c
   blake2b.c

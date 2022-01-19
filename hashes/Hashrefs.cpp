@@ -37,6 +37,7 @@ unsigned refs() {
     USE_FAMILY(murmur1);
     USE_FAMILY(murmur2);
     USE_FAMILY(murmur3);
+    USE_FAMILY(mum_mir);
 
     return 0;
 }
