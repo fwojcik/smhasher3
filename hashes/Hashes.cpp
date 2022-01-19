@@ -573,6 +573,10 @@ void halftime_hash_seed_init(size_t &seed)
 // Thorup "High Speed Hashing for Integers and Strings" 2018
 // https://arxiv.org/pdf/1504.06804.pdf
 //
+static inline uint8_t  take08(const uint8_t *p){ uint8_t  v; memcpy(&v, p, 1); return v; }
+static inline uint16_t take16(const uint8_t *p){ uint16_t v; memcpy(&v, p, 2); return v; }
+static inline uint32_t take32(const uint8_t *p){ uint32_t v; memcpy(&v, p, 4); return v; }
+static inline uint64_t take64(const uint8_t *p){ uint64_t v; memcpy(&v, p, 8); return v; }
 #ifdef __SIZEOF_INT128__
    const static int MULTIPLY_SHIFT_RANDOM_WORDS = 1<<8;
    static __uint128_t multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS];

@@ -130,27 +130,6 @@ static LegacyHashInfo g_hashes[] =
   { hasshe2_test,        256, 0xF5D39DFE, "hasshe2",     "SSE2 hasshe2, 256-bit", POOR, {} },
 #endif
 
-  // too fragile
-#ifdef __SIZEOF_INT128__
-#ifdef __FreeBSD__
-#  define TABUL_VERIF   0x0534C36E
-#elif defined __apple_build_version__ && defined __clang__
-#  define TABUL_VERIF   0x91618263
-#else
-#  define TABUL_VERIF   0xB49C607C
-#endif
-  { tabulation_test,      64, TABUL_VERIF, "tabulation",      "64-bit Tabulation with Multiply-Shift Mixer", GOOD, {} },
-#endif
-#if defined(_MSC_VER) /* truncated long to 32 */
-#  define TABUL32_VERIF   0x3C3B7BDD
-#elif defined __FreeBSD__
-#  define TABUL32_VERIF   0x4D28A619
-#elif defined __apple_build_version__ && defined __clang__
-#  define TABUL32_VERIF   0x2C8EDFFE
-#else
-#  define TABUL32_VERIF   0x335F64EA
-#endif
-  { tabulation_32_test,   32, TABUL32_VERIF, "tabulation32",    "32-bit Tabulation with Multiply-Shift Mixer", POOR, {} },
   // 32bit crashes
 #ifdef HAVE_INT64
   { o1hash_test,          64, 0x85051E87, "o1hash",       "o(1)hash unseeded, from wyhash", POOR, {0x0} /* !! */ },
@@ -433,14 +412,10 @@ void Hash_init (LegacyHashInfo* info) {
     sha224_init(&ltc_state);
   else if (info->hash == rmd128)
     rmd128_init(&ltc_state);
-  else if(info->hash == tabulation_32_test)
-    tabulation_32_init();
 #ifdef __SIZEOF_INT128__
   else if(info->hash == multiply_shift ||
           info->hash == pair_multiply_shift)
     multiply_shift_init();
-  else if(info->hash == tabulation_test)
-    tabulation_init();
 #endif
 #if defined(HAVE_SSE42) && defined(__x86_64__)
   else if(info->hash == clhash_test)
@@ -515,13 +490,11 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
 
   //if (hash == VHASH_32 || hash == VHASH_64)
   //  VHASH_seed_init(seed);
-  if(hash == tabulation_32_test)
-    tabulation_32_seed_init(seed);
+  if (0)
+      seed32 = seed32;
 #ifdef __SIZEOF_INT128__
   else if(hash == multiply_shift || hash == pair_multiply_shift)
     multiply_shift_seed_init(seed32);
-  else if(hash == tabulation_test)
-    tabulation_seed_init(seed);
 #endif
 #if defined(HAVE_SSE42) && defined(__x86_64__)
   else if (hash == clhash_test)

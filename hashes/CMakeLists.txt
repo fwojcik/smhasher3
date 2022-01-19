@@ -673,6 +673,7 @@ add_library(
   murmurhash2.cpp
   murmurhash3.cpp
   mum_mir.cpp
+  tabulation.cpp
 )
 
 add_library(

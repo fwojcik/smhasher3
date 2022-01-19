@@ -27,8 +27,6 @@
 
 #include "vmac.h"
 
-#include "tabulation.h"
-
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
 
@@ -403,27 +401,6 @@ void halftime_hash_seed_init(size_t &seed);
    void multiply_shift (const void * key, int len, uint32_t seed, void * out);
    void pair_multiply_shift (const void *key, int len, uint32_t seed, void *out);
 #endif
-
-#ifdef __SIZEOF_INT128__
-   inline void tabulation_init() {
-     size_t seed = 2;
-     tabulation_seed_init(seed);
-   }
-   // insecure: hashes cancel itself out, as with poly_X and CRC
-   // objsize: 40b780 - 40b9aa: 554
-   inline void tabulation_test (const void * key, int len, uint32_t seed, void * out) {
-      *(uint64_t*)out = tabulation_hash(key, len, seed);
-   }
-#endif
-
-inline void tabulation_32_init() {
-  size_t seed = 0;
-  tabulation_32_seed_init(seed);
-}
-// objsize: 40b9b0 - 40bd00: 848
-inline void tabulation_32_test (const void * key, int len, uint32_t seed, void * out) {
-   *(uint32_t*)out = tabulation_32_hash(key, len, seed);
-}
 
 void HighwayHash_init();
 // objsize 20-a12: 2546
