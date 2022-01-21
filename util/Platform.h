@@ -202,6 +202,8 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 
 //-----------------------------------------------------------------------------
 
+#include <cstdio>
+
 #ifdef HAVE_INT128
 typedef unsigned __int128 uint128_t;
 typedef          __int128 int128_t;

@@ -193,8 +193,3 @@ FORCE_INLINE static size_t monotonic_clock(void) {
 }
 
 #endif	//	!defined(_MSC_VER)
-
-static void testRDTSC ( void ) {
-  int64_t temp = rdtsc();
-  printf("%ld",(long)temp);
-}
