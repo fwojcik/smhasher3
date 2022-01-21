@@ -367,19 +367,6 @@ static LegacyHashInfo g_hashes[] =
     {0x47ebda34}},
   { xxh128low_test,       64, 0x54D1CC70, "xxh128low",   "xxHash v3, 128-bit, low 64-bits part", GOOD,
     {0x47ebda34}},
-#ifdef HAVE_BIT32
-  { wyhash32_test,        32, 0x09DE8066, "wyhash32",       "wyhash v3 (32-bit native)", GOOD,
-    { 0x429dacdd, 0xd637dbf3 } /* !! */ },
-#else
-  { wyhash32low,          32, 0x7DB3559D, "wyhash32low",    "wyhash v3 lower 32bit", GOOD,
-    { 0x429dacdd, 0xd637dbf3 } /* !! */ },
-#endif
-#ifdef HAVE_INT64
-  { wyhash_test,          64, 0x67031D43, "wyhash",         "wyhash v3 (64-bit)", GOOD,
-    // all seeds with those lower bits
-    { 0x14cc886e, 0x1bf4ed84, 0x14cc886e14cc886eULL} /* !! 2^33 bad seeds, but easy to check */ },
-  //{ wyhash_condom_test,   64, 0x7C62138D, "wyhash_condom",  "wyhash v3 condom 2 (64-bit)", GOOD, { } },
-#endif
   { nmhash32_test,        32, 0x12A30553, "nmhash32",       "nmhash32", GOOD, {}},
   { nmhash32x_test,       32, 0xA8580227, "nmhash32x",      "nmhash32x", GOOD, {}},
 };
@@ -448,16 +435,8 @@ void Hash_init (LegacyHashInfo* info) {
 // Needed for hashed with a few bad seeds, to reject this seed and generate a new one.
 // (GH #99)
 void Bad_Seed_init (pfHash hash, uint32_t &seed) {
-  if(hash ==
-#ifdef HAVE_BIT32
-          wyhash32_test
-#else
-          wyhash32low
-#endif
-          )
-    wyhash32_seed_init(seed);
   // zero-seed hashes:
-  else if (!seed && (hash == fletcher2_test ||
+  if (!seed && (hash == fletcher2_test ||
                      hash == fletcher4_test || hash == Bernstein_test || hash == sdbm_test ||
                      hash == JenkinsOOAT_test || hash == JenkinsOOAT_perl_test ||
                      hash == SuperFastHash_test || hash == MurmurOAAT_test ||
@@ -465,13 +444,6 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
     seed++;
   else if (hash == Crap8_test && (seed == 0x83d2e73b || seed == 0x97e1cc59))
     seed++;
-#ifdef HAVE_INT64
-  else if(hash == wyhash_test) {
-    size_t seedl = seed;
-    wyhash_seed_init(seedl);
-    seed = seedl;
-  }
-#endif
 #ifdef __SIZEOF_INT128__
   else if(hash == multiply_shift)
     multiply_shift_seed_init(seed);

@@ -683,6 +683,7 @@ add_library(
   murmurhash3.cpp
   mum_mir.cpp
   tabulation.cpp
+  wyhash.cpp
 )
 
 add_library(
@@ -743,5 +744,4 @@ add_library(
   rijndael-alg-fst.c
   pengyhash.c
   pearson_hash/pearsonb.c
-# wyhash_condom.c
 )

@@ -192,6 +192,7 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #define ROTR64(x,y)	rotr64(x,y)
 
 #define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 /* Should work for gcc, clang, and icc at least */
 #define assume(x) do { if (!(x)) __builtin_unreachable(); } while (0)
 

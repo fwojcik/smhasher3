@@ -572,7 +572,7 @@ int main ( int argc, const char ** argv )
 #if defined(__x86_64__) || defined(_M_X64) || defined(_X86_64_)
   const char * defaulthash = "xxh3";
 #else
-  const char * defaulthash = "wyhash";
+  const char * defaulthash = "wyhash-32";
 #endif
   const char * hashToTest = defaulthash;
 

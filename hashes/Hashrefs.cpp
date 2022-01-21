@@ -39,6 +39,7 @@ unsigned refs() {
     USE_FAMILY(murmur3);
     USE_FAMILY(mum_mir);
     USE_FAMILY(tabulation);
+    USE_FAMILY(wyhash);
 
     return 0;
 }
