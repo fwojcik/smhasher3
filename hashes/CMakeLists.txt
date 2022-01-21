@@ -115,9 +115,16 @@ set(CMAKE_CXX_FLAGS_ASAN
 # New platform detection things
 ########################################
 
+include(CheckTypeSize)
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
 set(CMAKE_REQUIRED_QUIET true)
+
+check_type_size(__int128 __INT128)
+if(HAVE___INT128)
+  add_definitions(-DHAVE_INT128)
+  message(STATUS "128-bit integers available")
+endif()
 
 check_include_file_cxx("arm_acle.h" RESULT_VAR)
 if(RESULT_VAR)
@@ -159,10 +166,8 @@ endif()
 # Legacy type size detection things
 ########################################
 
-include(CheckTypeSize)
 check_type_size(__int64 __INT64)
 check_type_size(int64_t INT64_T)
-check_type_size(__int128 __INT128)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
   add_definitions(-DHAVE_BIT32)
@@ -171,10 +176,6 @@ if(HAVE_INT64_T)
   add_definitions(-DHAVE_INT64)
 elseif(HAVE__INT64)
   add_definitions(-DHAVE_INT64)
-endif()
-if(HAVE___INT128)
-  add_definitions(-DHAVE_INT128)
-  message(STATUS "128-bit integers available")
 endif()
 
 ########################################
