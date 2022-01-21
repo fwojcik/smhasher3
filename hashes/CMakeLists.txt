@@ -134,6 +134,14 @@ endif()
 
 set(HASHSRCDIR ${CMAKE_SOURCE_DIR}/hashes/detect)
 
+if(MSVC)
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_umul128.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_UMUL128)
+  message(STATUS "x86_64 MSVC 128-bit multiply intrinsic available")
+endif()
+endif()
+
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_crc.cpp)
 if(RESULT_VAR)
   add_definitions(-DNEW_HAVE_CRC32C_X86_64)
