@@ -40,6 +40,7 @@ unsigned refs() {
     USE_FAMILY(mum_mir);
     USE_FAMILY(tabulation);
     USE_FAMILY(wyhash);
+    USE_FAMILY(PMP_mutilinear);
 
     return 0;
 }

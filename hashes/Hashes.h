@@ -741,13 +741,6 @@ inline void blake3_64 ( const void * key, int len, unsigned seed, void * out )
 }
 #endif
 
-//64 objsize: a50-f69: 1305
-//32 objsize: 1680-1abc: 1084
-
-#ifndef DEBUG
-#include "PMP_Multilinear_test.h"
-#endif
-
 #ifdef HAVE_INT64
 // https://github.com/avaneev/prvhash
 #include "prvhash/prvhash64.h"

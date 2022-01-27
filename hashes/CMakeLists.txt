@@ -610,20 +610,8 @@ set_source_files_properties(
     ${ASCON_SRC}
     PROPERTIES COMPILE_FLAGS "-Iasconhashv12 -DASCON_INLINE_MODE")
 
-if(NOT (CMAKE_BUILD_TYPE STREQUAL "Debug"))
-  # PMP breaks Debug build
-  if(NOT (CMAKE_BUILD_TYPE STREQUAL "asan"))
-    set(PMPML_SRC PMP_Multilinear.cpp PMP_Multilinear_64.cpp
-                  PMP_Multilinear_test.cpp)
-  endif()
-endif()
 if(CMAKE_CROSSCOMPILING)
-  unset(PMPML_SRC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCROSSCOMPILING")
-endif()
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-  #HAVE_SSE42
-  unset(PMPML_SRC)
 endif()
 
 ########################################
@@ -684,6 +672,7 @@ add_library(
   mum_mir.cpp
   tabulation.cpp
   wyhash.cpp
+  pmp_multilinear.cpp
 )
 
 add_library(
@@ -703,7 +692,6 @@ add_library(
   # ${BEAGLE_SRC}
   ${NOTMSVC_SRC}
   ${X86_64ONLY_SRC}
-  ${PMPML_SRC}
   ${BLAKE3_SRC}
   ${ASCON_SRC}
   ${UMASH_SRC}
