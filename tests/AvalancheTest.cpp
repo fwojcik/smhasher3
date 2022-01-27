@@ -244,6 +244,7 @@ bool AvalancheTest(const HashInfo * hinfo, const bool verbose, const bool extra)
 
     std::vector<int> testBitsvec =
         { 24, 32, 40, 48, 56, 64, 72, 80, 96, 112, 128, 160 };
+    testBitsvec.reserve(50); // Workaround for GCC bug 100366
     if (hinfo->bits <= 64) {
         testBitsvec.insert(testBitsvec.end(), { 512, 1024 });
     }

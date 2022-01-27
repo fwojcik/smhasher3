@@ -736,6 +736,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     if (testHighBits || testLowBits)
     {
       std::vector<int> combinedBitsvec;
+      combinedBitsvec.reserve(200); // Workaround for GCC bug 100366
       combinedBitsvec.insert(combinedBitsvec.begin(), nbBitsvec.begin(),   nbBitsvec.end());
       combinedBitsvec.insert(combinedBitsvec.begin(), testBitsvec.begin(), testBitsvec.end());
       std::sort(combinedBitsvec.rbegin(), combinedBitsvec.rend());
