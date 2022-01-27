@@ -318,10 +318,13 @@ static void CountRangedNbCollisions ( std::vector<hashtype> & hashes, size_t con
 
   const int collbins = maxHBits - minHBits + 1;
   const int maxcollbins = (threshHBits == 0) ? 0 : threshHBits - minHBits + 1;
-  int prevcoll[maxcollbins] = { 0 };
-  int maxcoll[maxcollbins] = { 0 };
+  int prevcoll[maxcollbins];
+  int maxcoll[maxcollbins];
 
   memset(collcounts, 0, sizeof(collcounts[0])*collbins);
+  memset(prevcoll, 0, sizeof(prevcoll[0])*maxcollbins);
+  memset(maxcoll, 0, sizeof(maxcoll[0])*maxcollbins);
+
   for (size_t hnb = 1; hnb < nbH; hnb++)
   {
     hashtype hdiff = hashes[hnb-1] ^ hashes[hnb];
