@@ -11,7 +11,7 @@ if(POLICY CMP0066) # honor per-config flags in try_compile() source-file
   cmake_policy(SET CMP0066 NEW) # since 3.7
 endif()
 
-project(SMHasher3Hashes C CXX ASM)
+project(SMHasher3Hashes C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -74,27 +74,6 @@ else()
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     endif()
   endif()
-endif()
-
-########################################
-# Assembler flags
-########################################
-
-if(PROCESSOR_FAMILY STREQUAL "Intel")
- if(CMAKE_COMPILER_IS_GNUCC)
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -m64")
-  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -m32")
-  endif()
- elseif((CMAKE_C_COMPILER_ID STREQUAL AppleClang) OR (CMAKE_C_COMPILER_ID
-                                                     STREQUAL Clang))
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -arch x86_64")
-  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(CMAKE_ASM_FLAGS "${CFLAGS} -arch i386")
-  endif()
- endif()
 endif()
 
 ########################################
@@ -487,8 +466,6 @@ if(SSE42_FOUND)
   # MSVC CL 14.16.27023 32bit crashes, 14.28.29910 works fine.
   # 64bit only:
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    # enable_language(ASM-NASM) set(CMAKE_ASM_FLAGS "-f elf64") # or
-    # macho64/win64
     set(X86_64ONLY_SRC farmhash-c.c farmhash-c-test.cc clhash.c)
     if(NOT MSVC)
       list(APPEND X86_64ONLY_SRC metrohash/metrohash64crc.cpp
