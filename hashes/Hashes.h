@@ -49,10 +49,6 @@ void CityHashCrc64_test(const void *key, int len, uint32_t seed, void *out);
 void CityHashCrc128_test(const void *key, int len, uint32_t seed, void *out);
 #endif
 
-#if defined(HAVE_CLMUL) && !defined(_MSC_VER)
-void falkhash_test_cxx(const void *key, int len, uint32_t seed, void *out);
-#endif
-
 static inline bool fletcher_bad_seeds(std::vector<uint64_t> &seeds)
 {
   seeds = std::vector<uint64_t> { UINT64_C(0) };

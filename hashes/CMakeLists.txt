@@ -201,7 +201,6 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(COMPARE EQUAL "sse2" "${SSE_THERE}" SSE2_TRUE)
     string(REGEX REPLACE "^.*(sse4_2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "sse4_2" "${SSE_THERE}" SSE42_TRUE)
-    set(FALKHASH_OBJ falkhash-elf64.o)
     string(REGEX REPLACE "^.*(aes).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "aes" "${AES_THERE}" AES_TRUE)
     string(REGEX REPLACE "^.*(pclmulqdq).*$" "\\1" CLMUL_THERE ${CPUINFO})
@@ -221,7 +220,6 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(COMPARE EQUAL "SSE2" "${SSE_THERE}" SSE2_TRUE)
     string(REGEX REPLACE "^.*(SSE4.2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "SSE4.2" "${SSE_THERE}" SSE42_TRUE)
-    set(FALKHASH_OBJ falkhash-macho64.o)
     string(REGEX REPLACE "^.*(AES).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "AES" "${AES_THERE}" AES_TRUE)
     string(REGEX REPLACE "^.*(SHA).*$" "\\1" SHA_THERE ${CPUINFO})
@@ -238,7 +236,6 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(COMPARE EQUAL "SSE2" "${SSE_THERE}" SSE2_TRUE)
     string(REGEX REPLACE "^.*(SSE4.2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "SSE4.2" "${SSE_THERE}" SSE42_TRUE)
-    set(FALKHASH_OBJ falkhash-elf64.o)
     string(REGEX REPLACE "^.*(AES).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "AES" "${AES_THERE}" AES_TRUE)
     string(REGEX REPLACE "^.*(PCLMULQDQ).*$" "\\1" CLMUL_THERE ${CPUINFO})
@@ -482,10 +479,6 @@ if(NOT MSVC)
   endif()
 endif()
 
-if(AES_FOUND AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
-  set(SSE4_OBJ ${FALKHASH_OBJ})
-endif()
-
 if(SSE2_FOUND)
   set(SSE2_SRC hasshe2.c)
 endif()
@@ -664,6 +657,7 @@ add_library(
   tabulation.cpp
   wyhash.cpp
   pmp_multilinear.cpp
+  falkhash.cpp
 )
 
 add_library(

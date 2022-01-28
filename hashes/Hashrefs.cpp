@@ -41,6 +41,7 @@ unsigned refs() {
     USE_FAMILY(tabulation);
     USE_FAMILY(wyhash);
     USE_FAMILY(PMP_mutilinear);
+    USE_FAMILY(falkhash);
 
     return 0;
 }
