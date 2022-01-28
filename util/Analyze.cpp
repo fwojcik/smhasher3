@@ -86,6 +86,7 @@ bool ReportBias(const int worstbiascnt, const int coinflips, const int trials, c
   int logp_value = GetLog2PValue(p_value);
   bool result = true;
 
+  recordLog2PValue(logp_value);
   if (drawDiagram)
     printf(" worst bias is %f%% (%6d) (p<%8.6e) (^%2d)", ratio*200.0, worstbiascnt, p_value, logp_value);
   else
@@ -193,6 +194,7 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
     // and deltas and exact p-values add visual noise and variable line
     // widths and possibly field counts, they are now only printed out
     // in --verbose mode.
+    recordLog2PValue(logp_value);
     if (drawDiagram)
       printf("(%+i) (p<%8.6f) (^%2d)",  collcount - (int)round(expected), p_value, logp_value);
     else
@@ -420,6 +422,7 @@ static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, in
   double p_value = ScalePValue(maxPValue, maxBits - minBits + 1);
   int logp_value = GetLog2PValue(p_value);
 
+  recordLog2PValue(logp_value);
   if (drawDiagram)
     printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
   else
@@ -554,6 +557,7 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
       printf("Worst bias is the %2d-bit window at bit %3d - %.3fx             ",
               worstWidth, worstStart, mult);
 
+  recordLog2PValue(logp_value);
   if (drawDiagram)
     printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
   else
@@ -815,6 +819,16 @@ INSTANTIATE(TestHashList, HASHTYPELIST);
 
 //----------------------------------------------------------------------------
 
+extern uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE+2];
+void recordLog2PValue(uint32_t log_pvalue) {
+  if (log_pvalue <= COUNT_MAX_PVALUE) {
+    g_log2pValueCounts[log_pvalue]++;
+  } else {
+    g_log2pValueCounts[COUNT_MAX_PVALUE+1]++;
+  }
+}
+
+//----------------------------------------------------------------------------
 #if 0
 // Bytepair test - generate 16-bit indices from all possible non-overlapping
 // 8-bit sections of the hash value, check distribution on all of them.

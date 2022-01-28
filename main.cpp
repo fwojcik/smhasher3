@@ -67,6 +67,7 @@
 #include "Stats.h"
 #include "LegacyHashes.h"
 #include "Hashlib.h"
+#include "Analyze.h"
 #include "VCode.h"
 
 #include "SanityTest.h"
@@ -112,6 +113,10 @@ uint32_t g_doVCode = 0;
 uint32_t g_inputVCode = 1;
 uint32_t g_outputVCode = 1;
 uint32_t g_resultVCode = 1;
+
+//--------
+// Overall log2-p-value statistics
+uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE+2];
 
 //-----------------------------------------------------------------------------
 // Locally-visible configuration
@@ -289,6 +294,27 @@ static void HashSelfTestAll(bool verbose) {
     }
     exit(1);
   }
+}
+
+//-----------------------------------------------------------------------------
+void print_pvaluecounts(void) {
+  printf("Log2(p-value) summary:");
+  for (uint32_t lo = 0; lo <= (COUNT_MAX_PVALUE+1); lo += 10) {
+    printf("\n\t %2d%c", lo, (lo == (COUNT_MAX_PVALUE+1)) ? '+' : ' ');
+    for (uint32_t i = 1; i < 10; i++) {
+      printf("  %2d%c", lo+i, ((lo+i) == (COUNT_MAX_PVALUE+1)) ? '+' : ' ');
+    }
+    printf("\n\t----");
+    for (uint32_t i = 1; i < 10; i++) {
+      printf(" ----");
+    }
+    printf("\n\t%4d", g_log2pValueCounts[lo+0]);
+    for (uint32_t i = 1; i < 10; i++) {
+      printf(" %4d", g_log2pValueCounts[lo+i]);
+    }
+    printf("\n");
+  }
+  printf("\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -501,8 +527,10 @@ static bool test ( const HashInfo * hInfo )
   }
 
   if (g_testAll) {
-      printf("-------------------------------------------------------------------------------\n");
-      printf("Overall result: %s\n", result ? "pass" : "FAIL");
+    printf("-------------------------------------------------------------------------------\n");
+    print_pvaluecounts();
+    printf("-------------------------------------------------------------------------------\n");
+    printf("Overall result: %s\n", result ? "pass" : "FAIL");
   }
 
   return result;

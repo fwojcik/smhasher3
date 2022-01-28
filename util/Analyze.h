@@ -63,3 +63,6 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
                     bool testCollision = true, bool testDist = true,
                     bool testHighBits = true, bool testLowBits = true,
                     bool verbose = true );
+
+#define COUNT_MAX_PVALUE 18
+void recordLog2PValue(uint32_t pvalue);
