@@ -46,6 +46,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Random.h"
 #include "Analyze.h"
 #include "Instantiate.h"
@@ -226,6 +227,8 @@ static bool AvalancheImpl ( HashFn hash, const int keybits, const int reps, bool
   addVCodeResult(bias);
 
   result &= ReportBias(bias, reps, arraysize, drawDiagram);
+
+  recordTestResult(result, "Avalanche", keybits);
 
   return result;
 }

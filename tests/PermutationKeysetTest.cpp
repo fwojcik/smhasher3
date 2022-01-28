@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -256,10 +257,12 @@ bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
         if(!curresult) printf("*********FAIL*********\n");
         printf("\n");
 
+	recordTestResult(curresult, "Permutation", test.desc);
+
+	addVCodeResult(curresult);
+
         result &= curresult;
     }
-
-    addVCodeResult(result);
 
     return result;
 }

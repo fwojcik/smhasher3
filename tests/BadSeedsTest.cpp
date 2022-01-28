@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -354,6 +355,8 @@ bool BadSeedsTest(const HashInfo * hinfo, const bool find_new_seeds) {
     hinfo->Seed(0);
 
     result &= BadSeedsImpl<hashtype>( hinfo, find_new_seeds );
+
+    recordTestResult(result, "BadSeeds", (const char *)NULL);
 
     if(!result) printf("\n*********FAIL*********\n");
     printf("\n");

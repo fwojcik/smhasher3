@@ -103,11 +103,16 @@ static bool WindowedKeyImpl ( HashFn hash, int windowbits,
     }
 
     printf("Window at bit %3d\n",j);
-    result &= TestHashList(hashes, drawDiagram, testCollision, testDistribution,
+
+    bool thisresult = TestHashList(hashes, drawDiagram, testCollision, testDistribution,
                            /* do not test high/low bits (to not clobber the screen) */
                            false, false, true);
-    //printf("\n");
-    addVCodeResult(result);
+
+    recordTestResult(thisresult, "Windowed", j);
+
+    addVCodeResult(thisresult);
+
+    result &= thisresult;
   }
 
   return result;

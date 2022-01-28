@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -85,6 +86,8 @@ static bool ZeroKeyImpl ( HashFn hash, bool drawDiagram )
   printf("\n");
 
   delete [] nullblock;
+
+  recordTestResult(result, "Zeroes", (const char *)NULL);
 
   addVCodeResult(result);
 

@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -91,7 +92,13 @@ static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
       }
   }
 
-  return TestHashList(hashes,drawDiagram,testColl,testDist);
+  bool result = TestHashList(hashes,drawDiagram,testColl,testDist);
+
+  recordTestResult(result, "PerlinNoise", inputLen);
+
+  addVCodeResult(result);
+
+  return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -115,8 +122,6 @@ bool PerlinNoiseTest (const HashInfo * hinfo, const bool verbose, const bool ext
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");
-
-    addVCodeResult(result);
 
     return result;
 }

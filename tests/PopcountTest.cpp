@@ -62,6 +62,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
@@ -315,7 +316,11 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   addVCodeOutput(&b[0][0], 8 * sizeof(b[0][0]));
   addVCodeResult((uint32_t)(worstchisq * 1000.0));
 
-  return (rank > 0);
+  bool result = (rank > 0);
+
+  recordTestResult(result, "Popcount", inputSize);
+
+  return result;
 }
 
 //-----------------------------------------------------------------------------

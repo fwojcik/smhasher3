@@ -46,6 +46,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Random.h"
 #include "Analyze.h"
 #include "Instantiate.h"
@@ -91,8 +92,13 @@ static bool DiffDistTest2 ( HashFn hash, bool drawDiagram )
       hashes[i] = h1 ^ h2;
     }
 
-    result &= TestHashList<hashtype>(hashes,drawDiagram,true,true);
-    addVCodeResult(result);
+    bool thisresult = TestHashList<hashtype>(hashes,drawDiagram,true,true);
+
+    addVCodeResult(thisresult);
+
+    recordTestResult(thisresult, "DiffDist", keybit);
+
+    result &= thisresult;
 
     printf("\n");
   }

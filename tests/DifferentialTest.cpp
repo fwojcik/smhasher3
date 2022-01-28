@@ -178,7 +178,7 @@ static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisi
 
   for(int i = 0; i < reps; i++)
   {
-    if(i % (reps/10) == 0) printf(".");
+    if ((reps >= 10) && (i % (reps/10) == 0)) printf(".");
 
     r.rand_p(&k1,sizeof(keytype));
     k2 = k1;
@@ -195,6 +195,8 @@ static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisi
 
   result &= ProcessDifferentials(diffcounts,reps,dumpCollisions);
 
+  recordTestResult(result, "Differential", diffbits);
+
   return result;
 }
 
@@ -208,7 +210,7 @@ bool DiffTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
 
     // Do fewer reps with slow or very bad hashes
     bool slowhash = hinfo->bits > 128 || hinfo->isSlow();
-    int reps = (hinfo->isMock() || (slowhash && !extra)) ? 100 : 1000;
+    int reps = hinfo->isMock() ? 2 : ((slowhash && !extra) ? 100 : 1000);
 
     printf("[[[ Diff 'Differential' Tests ]]]\n\n");
 

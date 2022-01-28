@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -85,6 +86,8 @@ static bool SeedTestImpl(const HashInfo * hinfo, int keycount, bool drawDiagram)
 
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
+
+  recordTestResult(result, "Seed", (const char *)NULL);
 
   addVCodeResult(result);
 

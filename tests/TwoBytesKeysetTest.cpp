@@ -133,6 +133,8 @@ static bool TwoBytesTest2 ( HashFn hash, int maxlen, bool drawDiagram )
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
 
+  recordTestResult(result, "TwoBytes", maxlen);
+
   addVCodeResult(result);
 
   return result;

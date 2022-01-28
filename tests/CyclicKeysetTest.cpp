@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Random.h"
 #include "Analyze.h"
 #include "Instantiate.h"
@@ -114,6 +115,8 @@ static bool CyclicKeyImpl ( HashFn hash, int cycleLen, int cycleReps, const int 
 
   addVCodeResult(result);
 
+  recordTestResult(result, "Cyclic", cycleLen);
+
   return result;
 }
 
@@ -147,4 +150,3 @@ bool CyclicKeyTest(const HashInfo * hinfo, const bool verbose) {
 }
 
 INSTANTIATE(CyclicKeyTest, HASHTYPELIST);
-

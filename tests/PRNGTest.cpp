@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -109,6 +110,8 @@ bool PRNGTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
 
     if(!result) printf("\n*********FAIL*********\n");
     printf("\n");
+
+    recordTestResult(result, "Prng", (const char *)NULL);
 
     addVCodeResult(result);
 

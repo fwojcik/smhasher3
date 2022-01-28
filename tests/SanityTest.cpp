@@ -47,6 +47,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Random.h"
 #include "VCode.h"
 
@@ -79,6 +80,7 @@ static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t senti
 bool SanityTest (const HashInfo * hinfo) {
   Rand r(883743);
   bool result = true;
+  bool didpart2 = false;
 
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const int hashbytes = hinfo->bits / 8;
@@ -175,6 +177,8 @@ bool SanityTest (const HashInfo * hinfo) {
 
   printf("Running sanity check 2      ");
 
+  didpart2 = true;
+
   for(int irep = 0; irep < reps; irep++)
   {
     if(irep % (reps/10) == 0) printf(".");
@@ -249,8 +253,6 @@ bool SanityTest (const HashInfo * hinfo) {
   }
 
  end_sanity:
-  addVCodeResult(result);
-
   if(result == false)
   {
     printf(" FAIL  !!!!!\n");
@@ -259,6 +261,10 @@ bool SanityTest (const HashInfo * hinfo) {
   {
     printf(" PASS\n");
   }
+
+  recordTestResult(result, "Sanity", didpart2 ? "Basic 2" : "Basic 1");
+
+  addVCodeResult(result);
 
   delete [] buffer1;
   delete [] buffer2;
@@ -283,6 +289,7 @@ bool AppendedZeroesTest (const HashInfo * hinfo) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const int hashbytes = hinfo->bits / 8;
   const seed_t seed = 0;
+  bool result = true;
 
   printf("Running AppendedZeroesTest  ");
 
@@ -318,17 +325,24 @@ bool AppendedZeroesTest (const HashInfo * hinfo) {
 
     for(int i = 1; i < 32; i++) {
         if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
-            printf(" FAIL !!!!!\n");
-            addVCodeResult(false);
-            return false;
+	    result = false;
+	    goto done;
         }
     }
-
   }
 
-  printf(" PASS\n");
-  addVCodeResult(true);
-  return true;
+ done:
+  if (result) {
+    printf(" PASS\n");
+  } else {
+    printf(" FAIL !!!!!\n");
+  }
+
+  recordTestResult(result, "Sanity", "Append zeroes");
+
+  addVCodeResult(result);
+
+  return result;
 }
 
 //----------------------------------------------------------------------------
@@ -343,6 +357,7 @@ bool PrependedZeroesTest (const HashInfo * hinfo) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const int hashbytes = hinfo->bits / 8;
   const seed_t seed = 0;
+  bool result = true;
 
   printf("Running PrependedZeroesTest ");
 
@@ -378,15 +393,22 @@ bool PrependedZeroesTest (const HashInfo * hinfo) {
 
     for(int i = 1; i < 32; i++) {
         if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
-            printf(" FAIL !!!!!\n");
-            addVCodeResult(false);
-            return false;
+	    result = false;
+	    goto done;
         }
     }
-
   }
 
-  printf(" PASS\n");
-  addVCodeResult(true);
-  return true;
+ done:
+  if (result) {
+    printf(" PASS\n");
+  } else {
+    printf(" FAIL !!!!!\n");
+  }
+
+  recordTestResult(result, "Sanity", "Prepend zeroes");
+
+  addVCodeResult(result);
+
+  return result;
 }

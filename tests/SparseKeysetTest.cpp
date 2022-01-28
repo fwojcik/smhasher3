@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -127,6 +128,8 @@ static bool SparseKeyImpl ( HashFn hash, const int setbits, bool inclusive,
 
   bool result = TestHashList<hashtype>(hashes,drawDiagram,testColl,testDist);
   printf("\n");
+
+  recordTestResult(result, "Sparse", keybits);
 
   addVCodeResult(result);
 

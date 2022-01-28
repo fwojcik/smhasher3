@@ -48,6 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Random.h"
 #include "Analyze.h"
 #include "Instantiate.h"
@@ -76,16 +77,13 @@ static bool TextKeyImpl ( HashFn hash, const char * prefix, const char * coreset
   if (keycount > INT32_MAX / 8)
     keycount = INT32_MAX / 8;
 
-  printf("Keyset 'Text' - keys of form \"%s",prefix);
-  for(int i = 0; i < corelen; i++) printf("X");
-  printf("%s\" - %ld keys\n",suffix,keycount);
-
   uint8_t * key = new uint8_t[std::min(keybytes+1, 64)];
-
+  memcpy(key,prefix,prefixlen);
+  memset(key+prefixlen, 'X', corelen);
+  memcpy(key+prefixlen+corelen,suffix,suffixlen);
   key[keybytes] = 0;
 
-  memcpy(key,prefix,prefixlen);
-  memcpy(key+prefixlen+corelen,suffix,suffixlen);
+  printf("Keyset 'Text' - keys of form \"%s\" - %ld keys\n", key, keycount);
 
   //----------
 
@@ -109,9 +107,12 @@ static bool TextKeyImpl ( HashFn hash, const char * prefix, const char * coreset
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
 
-  delete [] key;
+  memset(key+prefixlen, 'X', corelen);
+  recordTestResult(result, "Text", (const char *)key);
 
   addVCodeResult(result);
+
+  delete [] key;
 
   return result;
 }
@@ -168,6 +169,8 @@ static bool WordsKeyImpl ( HashFn hash, const long keycount,
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
 
+  recordTestResult(result, "Text", name);
+
   addVCodeResult(result);
 
   return result;
@@ -203,6 +206,8 @@ static bool WordsStringImpl ( HashFn hash, std::vector<std::string> & words,
   //----------
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
+
+  recordTestResult(result, "Text", "dictionary");
 
   addVCodeResult(result);
 

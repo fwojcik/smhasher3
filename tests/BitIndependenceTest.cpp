@@ -46,6 +46,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Stats.h"
 #include "Random.h"
 #include "Analyze.h"
 #include "Instantiate.h"
@@ -196,6 +197,8 @@ bool BicTest(const HashInfo * hinfo, const bool verbose) {
       //result &= BicTest<uint64_t,hashtype>(hash,2000000);
       result &= BicTest3<Blob<88>,hashtype>(hash,(int)reps,verbose);
     }
+
+    recordTestResult(result, "BIC", (const char *)NULL);
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

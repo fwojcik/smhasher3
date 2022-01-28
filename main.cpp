@@ -115,8 +115,10 @@ uint32_t g_outputVCode = 1;
 uint32_t g_resultVCode = 1;
 
 //--------
-// Overall log2-p-value statistics
+// Overall log2-p-value statistics and test pass/fail counts
 uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE+2];
+uint32_t g_testPass, g_testFail;
+std::vector< std::pair<const char *, char *> > g_testFailures;
 
 //-----------------------------------------------------------------------------
 // Locally-visible configuration
@@ -530,7 +532,26 @@ static bool test ( const HashInfo * hInfo )
     printf("-------------------------------------------------------------------------------\n");
     print_pvaluecounts();
     printf("-------------------------------------------------------------------------------\n");
-    printf("Overall result: %s\n", result ? "pass" : "FAIL");
+    printf("Overall result: %s            (%d/%d passed)\n", result ? "pass" : "FAIL",
+	   g_testPass, g_testPass+g_testFail);
+    if (!result) {
+      const char * prev = "";
+      printf("Failures");
+      for (auto x: g_testFailures) {
+	if (strcmp(prev, x.first) != 0) {
+	  printf("%c\n    %-20s: [%s", (strlen(prev) == 0) ? ':' : ']',
+		 x.first, x.second ? x.second : "");
+	  prev = x.first;
+	} else {
+	  printf(", %s", x.second);
+	}
+	free(x.second);
+      }
+      printf("]\n\n");
+    } else {
+      printf("\n");
+    }
+    printf("-------------------------------------------------------------------------------\n");
   }
 
   return result;
@@ -724,8 +745,6 @@ int main ( int argc, const char ** argv )
 
   size_t timeEnd = monotonic_clock();
 
-  printf("\n");
-
   uint32_t vcode = VCODE_FINALIZE();
 
   FILE * outfile = g_testAll ? stdout : stderr;
@@ -733,7 +752,7 @@ int main ( int argc, const char ** argv )
           "Input vcode 0x%08x, Output vcode 0x%08x, Result vcode 0x%08x\n",
           g_inputVCode, g_outputVCode, g_resultVCode);
   fprintf(outfile,
-          "Verification value is 0x%08x - Testing took %f seconds\n",
+          "Verification value is 0x%08x - Testing took %f seconds\n\n",
           vcode, double(timeEnd-timeBegin)/double(NSEC_PER_SEC));
 
   return 0;

@@ -818,17 +818,6 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
 INSTANTIATE(TestHashList, HASHTYPELIST);
 
 //----------------------------------------------------------------------------
-
-extern uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE+2];
-void recordLog2PValue(uint32_t log_pvalue) {
-  if (log_pvalue <= COUNT_MAX_PVALUE) {
-    g_log2pValueCounts[log_pvalue]++;
-  } else {
-    g_log2pValueCounts[COUNT_MAX_PVALUE+1]++;
-  }
-}
-
-//----------------------------------------------------------------------------
 #if 0
 // Bytepair test - generate 16-bit indices from all possible non-overlapping
 // 8-bit sections of the hash value, check distribution on all of them.
