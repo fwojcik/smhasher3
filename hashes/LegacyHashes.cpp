@@ -134,10 +134,6 @@ static LegacyHashInfo g_hashes[] =
 #ifdef HAVE_INT64
   { o1hash_test,          64, 0x85051E87, "o1hash",       "o(1)hash unseeded, from wyhash", POOR, {0x0} /* !! */ },
 #endif
-#if 0 && defined(__x86_64__) && (defined(__linux__) || defined(__APPLE__))
-  // elf64 or macho64 only
-  { fhtw_test,            64, 0x0,        "fhtw",        "fhtw asm", POOR, {} },
-#endif
 #ifndef HAVE_ALIGNED_ACCESS_REQUIRED
   { khash32_test,         32, 0x99B3FFCD, "k-hash32",    "K-Hash mixer, 32-bit", POOR, {0,1,2,3,5,0x40000001} /*... !!*/},
   { khash64_test,         64, 0xAB5518A1, "k-hash64",    "K-Hash mixer, 64-bit", POOR, {0,1,2,3,4,5} /*...!!*/},

@@ -202,9 +202,6 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(REGEX REPLACE "^.*(sse4_2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "sse4_2" "${SSE_THERE}" SSE42_TRUE)
     set(FALKHASH_OBJ falkhash-elf64.o)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(FHTW_OBJ fhtw-elf64.o)
-    endif()
     string(REGEX REPLACE "^.*(aes).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "aes" "${AES_THERE}" AES_TRUE)
     string(REGEX REPLACE "^.*(pclmulqdq).*$" "\\1" CLMUL_THERE ${CPUINFO})
@@ -225,9 +222,6 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(REGEX REPLACE "^.*(SSE4.2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "SSE4.2" "${SSE_THERE}" SSE42_TRUE)
     set(FALKHASH_OBJ falkhash-macho64.o)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(FHTW_OBJ fhtw-macho64.o)
-    endif()
     string(REGEX REPLACE "^.*(AES).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "AES" "${AES_THERE}" AES_TRUE)
     string(REGEX REPLACE "^.*(SHA).*$" "\\1" SHA_THERE ${CPUINFO})
@@ -245,9 +239,6 @@ if(NOT CMAKE_CROSSCOMPILING)
     string(REGEX REPLACE "^.*(SSE4.2).*$" "\\1" SSE_THERE ${CPUINFO})
     string(COMPARE EQUAL "SSE4.2" "${SSE_THERE}" SSE42_TRUE)
     set(FALKHASH_OBJ falkhash-elf64.o)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(FHTW_OBJ fhtw-elf64.o)
-    endif()
     string(REGEX REPLACE "^.*(AES).*$" "\\1" AES_THERE ${CPUINFO})
     string(COMPARE EQUAL "AES" "${AES_THERE}" AES_TRUE)
     string(REGEX REPLACE "^.*(PCLMULQDQ).*$" "\\1" CLMUL_THERE ${CPUINFO})
@@ -685,7 +676,6 @@ add_library(
   ${SSE4_SRC}
   ${SIPHASH_SRC}
   ${SSE4_OBJ}
-  # ${FHTW_OBJ}
   ${T1HA_SRC}
   ${SHA_SRC}
   ${TSIP_SRC}

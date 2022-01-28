@@ -342,18 +342,6 @@ hasshe2_test(const void *input, int len, uint32_t seed, void *out)
 }
 #endif
 
-#if 0 && defined(__x86_64__) && (defined(__linux__) || defined(__APPLE__))
-/* asm */
-extern "C" {
-  int fhtw_hash(const void* key, int key_len);
-}
-void
-fhtw_test(const void *input, int len, uint32_t seed, void *out)
-{
-  *(uint32_t *) out = fhtw_hash(input, len);
-}
-#endif
-
 /* https://github.com/floodyberry/siphash */
 void
 siphash_test(const void *input, int len, uint32_t seed, void *out)
