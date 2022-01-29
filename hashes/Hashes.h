@@ -145,17 +145,6 @@ void farmhash64_c_test     ( const void * key, int len, uint32_t seed, void * ou
 // objsize: 4140-48a2: 1890
 void farmhash128_c_test    ( const void * key, int len, uint32_t seed, void * out );
 
-// all 3 using the same Hash128
-// objsize: 0-8ad: 2221
-void SpookyHash32_test     ( const void * key, int len, uint32_t seed, void * out );
-void SpookyHash64_test     ( const void * key, int len, uint32_t seed, void * out );
-void SpookyHash128_test    ( const void * key, int len, uint32_t seed, void * out );
-
-// objsize: 465b90-4663c0: 2069
-void SpookyV2_32_test     ( const void * key, int len, uint32_t seed, void * out );
-void SpookyV2_64_test     ( const void * key, int len, uint32_t seed, void * out );
-void SpookyV2_128_test    ( const void * key, int len, uint32_t seed, void * out );
-
 //----------
 // Used internally as C++
 uint32_t MurmurOAAT ( const char * key, int len, uint32_t seed );

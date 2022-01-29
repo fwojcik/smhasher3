@@ -635,6 +635,7 @@ add_library(
   wyhash.cpp
   pmp_multilinear.cpp
   falkhash.cpp
+  spookyhash.cpp
 )
 
 add_library(
@@ -662,10 +663,6 @@ add_library(
   City.cpp
   Hashes.cpp
   lookup3.cpp
-  Spooky.cpp
-  SpookyTest.cpp
-  SpookyV2.cpp
-  SpookyTestV2.cpp
   SuperFastHash.cpp
   tifuhash.cpp
   floppsyhash.cpp

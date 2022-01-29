@@ -42,6 +42,7 @@ unsigned refs() {
     USE_FAMILY(wyhash);
     USE_FAMILY(PMP_mutilinear);
     USE_FAMILY(falkhash);
+    USE_FAMILY(spookyhash);
 
     return 0;
 }
