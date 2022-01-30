@@ -506,47 +506,6 @@ inline void blake2s256_64(const void * key, int len, uint32_t seed, void * out)
   blake2s_done(&ltc_state, buf);
   memcpy(out, buf, 8);
 }
-// almost all seeds are bad
-inline void sha2_224(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  sha224_init(&ltc_state);
-  ltc_state.sha256.state[0] ^= seed;
-  ltc_state.sha256.state[0] += len; // hardened against padding
-  sha224_process(&ltc_state, (unsigned char *)key, len);
-  sha224_done(&ltc_state, (unsigned char *)out);
-}
-inline void sha2_224_64(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  unsigned char buf[28];
-  sha224_init(&ltc_state);
-  ltc_state.sha256.state[0] ^= seed;
-  ltc_state.sha256.state[0] += len; // hardened against padding
-  sha224_process(&ltc_state, (unsigned char *)key, len);
-  sha224_done(&ltc_state, buf);
-  memcpy(out, buf, 8);
-}
-inline void sha2_256(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  sha256_init(&ltc_state);
-  ltc_state.sha256.state[0] ^= seed;
-  ltc_state.sha256.state[0] += len; // hardened against padding
-  sha256_process(&ltc_state, (unsigned char *)key, len);
-  sha256_done(&ltc_state, (unsigned char *)out);
-}
-inline void sha2_256_64(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  unsigned char buf[32];
-  sha256_init(&ltc_state);
-  ltc_state.sha256.state[0] ^= seed;
-  ltc_state.sha256.state[0] += len; // hardened against padding
-  sha256_process(&ltc_state, (unsigned char *)key, len);
-  sha256_done(&ltc_state, buf);
-  memcpy(out, buf, 8);
-}
 inline void rmd128(const void *key, int len, uint32_t seed, void *out)
 {
   // objsize
@@ -611,60 +570,6 @@ inline void MeowHash32_test(const void *key, int len, unsigned seed, void *out) 
   *(int unsigned *)MeowDefaultSeed = seed;
   meow_u128 h = MeowHash(MeowDefaultSeed, (meow_umm)len, (void*)key);
   *(uint32_t *)out = MeowU32From(h, 0);
-}
-#endif
-
-#if defined(HAVE_SHANI) && defined(__x86_64__)
-extern "C" void sha256_process_x86(uint32_t *state, const uint8_t *data, uint32_t length);
-
-inline void sha2ni_256(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize: 0x2f1 + this (0x4095c0-0x408820) = 4241
-  uint32_t state[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-                       0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
-  state[0] ^= seed;
-  if (len < 64) {
-    uint8_t padded[64];
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, 64-len);
-    state[0] += len; // to prevent Zeroes
-    sha256_process_x86(state, (const uint8_t*)padded, 64);
-  } else if (len % 64) {
-    uint32_t lenpadded = len + (64 - len % 64);
-    uint8_t *padded = (uint8_t*)malloc (lenpadded);
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, lenpadded-len);
-    state[0] += len;
-    sha256_process_x86(state, (const uint8_t*)padded, lenpadded);
-    free (padded);
-  } else {
-    sha256_process_x86(state, (const uint8_t*)key, (uint32_t)len);
-  }
-  memcpy(out, state, 32);
-}
-inline void sha2ni_256_64(const void *key, int len, uint32_t seed, void *out)
-{
-  uint32_t state[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-                       0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
-  state[0] ^= seed;
-  if (len < 64) {
-    uint8_t padded[64];
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, 64-len);
-    state[0] += len;
-    sha256_process_x86(state, (const uint8_t*)padded, 64);
-  } else if (len % 64) {
-    uint32_t lenpadded = len + (64 - len % 64);
-    uint8_t *padded = (uint8_t*)malloc (lenpadded);
-    memcpy (padded, key, len);
-    memset (&padded[len], 0, lenpadded-len);
-    state[0] += len;
-    sha256_process_x86(state, (const uint8_t*)padded, lenpadded);
-    free (padded);
-  } else {
-    sha256_process_x86(state, (const uint8_t*)key, (uint32_t)len);
-  }
-  *(uint64_t *)out = *(uint64_t *)state;
 }
 #endif
 

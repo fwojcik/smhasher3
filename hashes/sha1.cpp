@@ -40,11 +40,11 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SHA_X86_64)
+#if defined(NEW_HAVE_SHA1_X86_64)
 #  include <immintrin.h>
 #endif
 
-#if defined(NEW_HAVE_SHA_ARM)
+#if defined(NEW_HAVE_SHA1_ARM)
 #  include <arm_neon.h>
 #  if defined(NEW_HAVE_ARM_ACLE)
 #    include <arm_acle.h>
@@ -206,7 +206,7 @@ static void SHA1_Transform_portable(uint32_t state[5], const uint8_t buffer[64])
   state[4] += e;
 }
 
-#if defined(NEW_HAVE_SHA_X86_64)
+#if defined(NEW_HAVE_SHA1_X86_64)
 template < bool bswap >
 static void SHA1_Transform_sha1NI(uint32_t state[5], const uint8_t buffer[64]) {
     __m128i ABCD, ABCD_SAVE, E0, E0_SAVE, E1;
@@ -391,7 +391,7 @@ static void SHA1_Transform_sha1NI(uint32_t state[5], const uint8_t buffer[64]) {
 }
 #endif
 
-#if defined(NEW_HAVE_SHA_ARM)
+#if defined(NEW_HAVE_SHA1_ARM)
 template < bool bswap >
 static void SHA1_Transform_neon(uint32_t state[5], const uint8_t buffer[64]) {
     uint32x4_t ABCD, ABCD_SAVED;
@@ -568,10 +568,10 @@ static void SHA1_Transform_neon(uint32_t state[5], const uint8_t buffer[64]) {
 
 template < bool bswap >
 static void SHA1_Transform(uint32_t state[5], const uint8_t buffer[64]) {
-#if defined(NEW_HAVE_SHA_X86_64)
+#if defined(NEW_HAVE_SHA1_X86_64)
     return SHA1_Transform_sha1NI<bswap>(state, buffer);
 #endif
-#if defined(NEW_HAVE_SHA_ARM)
+#if defined(NEW_HAVE_SHA1_ARM)
     return SHA1_Transform_neon<bswap>(state, buffer);
 #endif
     return SHA1_Transform_portable<bswap>(state, buffer);
@@ -724,7 +724,7 @@ static bool SHA1_Selftest(void) {
   return true;
 }
 
-bool init(void) {
+bool SHA1_test(void) {
   if (isBE()) {
       return SHA1_Selftest<false>();
   } else {
@@ -750,7 +750,7 @@ REGISTER_HASH(sha1_32,
   $.bits = 32,
   $.verification_LE = 0xF0E4D9E9,
   $.verification_BE = 0xE00EF4D6,
-  $.initfn = init,
+  $.initfn = SHA1_test,
   $.hashfn_native = SHA1<32,false>,
   $.hashfn_bswap = SHA1<32,true>
 );
@@ -771,7 +771,7 @@ REGISTER_HASH(sha1_64,
   $.bits = 64,
   $.verification_LE = 0x36801ECB,
   $.verification_BE = 0xFC26F4C7,
-  $.initfn = init,
+  $.initfn = SHA1_test,
   $.hashfn_native = SHA1<64,false>,
   $.hashfn_bswap = SHA1<64,true>
 );
@@ -792,7 +792,7 @@ REGISTER_HASH(sha1,
   $.bits = 128,
   $.verification_LE = 0xE444A591,
   $.verification_BE = 0x35E00C29,
-  $.initfn = init,
+  $.initfn = SHA1_test,
   $.hashfn_native = SHA1<128,false>,
   $.hashfn_bswap = SHA1<128,true>
 );

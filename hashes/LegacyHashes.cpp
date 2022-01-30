@@ -75,14 +75,6 @@ static LegacyHashInfo g_hashes[] =
  // here start the real hashes. first the problematic ones:
 
   // totally broken seed mixin
-  { sha2_224,            224, 0x407AA518, "sha2-224",     "SHA2-224", GOOD, {0xc1059ed8} /* >100 bad seeds */ },
-  { sha2_224_64,          64, 0xF3E40ECA, "sha2-224_64",  "SHA2-224, low 64 bits", GOOD, {0xc1059ed8} },
-  { sha2_256,            256, 0xEBDA2FB1, "sha2-256",     "SHA2-256", POOR, {0x6a09e667} },
-  { sha2_256_64,          64, 0xC1C4FA72, "sha2-256_64",  "SHA2-256, low 64 bits", POOR, {0x6a09e667} },
-#if defined(HAVE_SHANI) && defined(__x86_64__)
-  { sha2ni_256,          256, 0x4E3BB25E, "sha2ni-256",   "SHA2_NI-256 (amd64 HW SHA ext)", POOR, {0x6a09e667} },
-  { sha2ni_256_64,        64, 0xF938E80E, "sha2ni-256_64","hardened SHA2_NI-256 (amd64 HW SHA ext), low 64 bits", POOR, {0x6a09e667} },
-#endif
   { sha3_256,            256, 0x21048CE3, "sha3-256",     "SHA3-256 (Keccak)", GOOD, {0x1UL} },
   { sha3_256_64,          64, 0xE62E5CC0, "sha3-256_64",  "SHA3-256 (Keccak), low 64 bits", GOOD, {0x1UL} },
   { rmd128,              128, 0xFF576977, "rmd128",       "RIPEMD-128", GOOD, {0x67452301} },
@@ -372,9 +364,7 @@ LegacyHashInfo * findLegacyHash ( const char * name )
 
 // optional hash state initializers
 void Hash_init (LegacyHashInfo* info) {
-  if (info->hash == sha2_224_64)
-    sha224_init(&ltc_state);
-  else if (info->hash == rmd128)
+  if (info->hash == rmd128)
     rmd128_init(&ltc_state);
 #ifdef __SIZEOF_INT128__
   else if(info->hash == multiply_shift ||
@@ -472,10 +462,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
 bool hash_is_very_slow(pfHash hash) {
     // known very slow hashes (typically > 500 cycle/hash)
     const struct { pfHash h; } slowhashes[] = {
-        { sha2_224                 },
-        { sha2_224_64              },
-        { sha2_256                 },
-        { sha2_256_64              },
         { rmd128                   },
         { rmd160                   },
         { rmd256                   },

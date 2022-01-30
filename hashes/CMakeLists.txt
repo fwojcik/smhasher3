@@ -139,13 +139,19 @@ endif()
 
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sha1.cpp)
 if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SHA_X86_64)
+  add_definitions(-DNEW_HAVE_SHA1_X86_64)
   message(STATUS "x86_64 SHA-1 intrinsics available")
+endif()
+
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sha2.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_SHA2_X86_64)
+  message(STATUS "x86_64 SHA-2 intrinsics available")
 endif()
 
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/arm_neon_sha1.cpp)
 if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SHA_ARM)
+  add_definitions(-DNEW_HAVE_SHA1_ARM)
   message(STATUS "ARM SHA-1 intrinsics available")
 endif()
 
@@ -510,11 +516,6 @@ else()
   set(T1HA_SRC t1ha/t1ha0.c t1ha/t1ha1.c t1ha/t1ha2.c)
 endif(AES_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel"))
 
-if(SHA_FOUND)
-  # todo: arm, power
-  set(SHA_SRC SHA-Intrinsics/sha256-x86.c)
-endif(SHA_FOUND)
-
 if(SSE42_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel") AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
   set(SSE4_OBJ ${SSE4_OBJ} pearson_hash/pearson.c)
 endif()
@@ -620,6 +621,7 @@ add_library(
 #
   md5.cpp
   sha1.cpp
+  sha2.cpp
   crc.cpp
 #
   aesnihash.cpp
@@ -649,7 +651,6 @@ add_library(
   ${SIPHASH_SRC}
   ${SSE4_OBJ}
   ${T1HA_SRC}
-  ${SHA_SRC}
   ${TSIP_SRC}
   # ${BEAGLE_SRC}
   ${NOTMSVC_SRC}
@@ -681,10 +682,6 @@ add_library(
   rmd128.c
   rmd160.c
   rmd256.c
-  sha2/sha224.c
-  sha2/sha256.c
-  sha2/sha512_224.c
-  sha2/sha512_256.c
   sha3.c
   vmac.cpp
   rijndael-alg-fst.c
