@@ -60,28 +60,35 @@
 //-----------------------------------------------------------------------------
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 
-template < typename hashtype >
-static bool SeedTestImpl(const HashInfo * hinfo, int keycount, bool drawDiagram) {
+template < typename hashtype, uint32_t seedbits, bool bigseed >
+static bool SeedTestImpl(const HashInfo * hinfo, bool drawDiagram) {
+  assert(seedbits <= 31);
   const HashFn hash = hinfo->hashFn(g_hashEndian);
-  printf("Keyset 'Seed' - %d keys\n",keycount);
-  assert(keycount < (1<<31));
+  const int totalkeys = 1 << seedbits;
+  const int hibits = seedbits >> 1;
+  const int lobits = seedbits - hibits;
+  const int shiftbits = bigseed ? (64 - hibits) : (32 - hibits);
+
+  printf("Keyset 'Seed' - %d keys\n", totalkeys);
 
   const char text[64] = "The quick brown fox jumps over the lazy dog";
   const int len = (int)strlen(text);
 
   addVCodeInput(text, len);
-  addVCodeInput(keycount);
+  addVCodeInput(totalkeys);
 
   //----------
 
   std::vector<hashtype> hashes;
 
-  hashes.resize(keycount);
+  hashes.resize(totalkeys);
 
-  for(seed_t i = 0; i < keycount; i++)
-  {
-    hinfo->Seed(i);
-    hash(text,len,i,&hashes[i]);
+  for(seed_t i = 0; i < (1 << hibits); i++) {
+    for(seed_t j = 0; j < (1 << lobits); j++) {
+      seed_t seed = (i << shiftbits) + j;
+      hinfo->Seed(seed);
+      hash(text,len,seed,&hashes[(i<<lobits)+j]);
+    }
   }
 
   bool result = TestHashList(hashes,drawDiagram);
@@ -102,7 +109,11 @@ bool SeedTest(const HashInfo * hinfo, const bool verbose) {
 
     printf("[[[ Keyset 'Seed' Tests ]]]\n\n");
 
-    result &= SeedTestImpl<hashtype>( hinfo, 5000000, verbose );
+    if (hinfo->is32BitSeed()) {
+      result &= SeedTestImpl<hashtype,22,false>( hinfo, verbose );
+    } else {
+      result &= SeedTestImpl<hashtype,22,true>( hinfo, verbose );
+    }
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");
