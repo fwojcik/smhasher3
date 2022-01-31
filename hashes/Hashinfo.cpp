@@ -177,6 +177,10 @@ HashInfo * convertLegacyHash(LegacyHashInfo * linfo) {
     if (linfo->quality == SKIP) {
         hinfo->hash_flags |= FLAG_HASH_MOCK;
     }
+    if (!Hash_Seed_init(linfo->hash, 0)) {
+        hinfo->hash_flags |= FLAG_HASH_SMALL_SEED;
+    }
+
     hinfo->impl_flags      = 0;
     if (hash_is_very_slow(linfo->hash)) {
         hinfo->impl_flags |= FLAG_IMPL_VERY_SLOW;
