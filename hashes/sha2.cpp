@@ -362,7 +362,7 @@ static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
 
   /* Save state */
   _mm_storeu_si128((__m128i*) &state[0], STATE0);
-  _mm_storeu_si128((__m128i*) &state[4], STATE1);  
+  _mm_storeu_si128((__m128i*) &state[4], STATE1);
 }
 #endif
 
@@ -575,7 +575,7 @@ static void SHA256_Final(SHA2_CTX * context, uint32_t digest_words, uint8_t * di
   c = 0200;
   SHA256_Update<bswap>(context, &c, 1);
   while ((context->curlen) != 56) {
-    c = 0000; 
+    c = 0000;
     SHA256_Update<bswap>(context, &c, 1);
   }
   SHA256_Update<bswap>(context, finalcount, 8); /* Should cause a SHA256_Transform() */
@@ -588,11 +588,12 @@ static void SHA256_Final(SHA2_CTX * context, uint32_t digest_words, uint8_t * di
 
 //-----------------------------------------------------------------------------
 // Homegrown SHA-2 seeding function
-static FORCE_INLINE void SHA256_Seed(SHA2_CTX * ctx, const seed_t seed, uint32_t len) {
+static FORCE_INLINE void SHA256_Seed(SHA2_CTX * ctx, const seed_t seed) {
     const uint32_t seedlo = seed         & 0xFFFFFFFF;
     const uint32_t seedhi = (seed >> 32) & 0xFFFFFFFF;
-    ctx->state[0] ^= seedlo;
-    ctx->state[0] += len;
+    ctx->state[1] ^= seedlo;
+    ctx->state[3] += seedlo + seedhi;
+    ctx->state[5] ^= seedhi;
 }
 
 //-----------------------------------------------------------------------------
@@ -601,7 +602,7 @@ void SHA256(const void * in, const size_t len, const seed_t seed, void * out) {
   SHA2_CTX context;
 
   SHA256_Init         (&context);
-  SHA256_Seed         (&context, seed, len);
+  SHA256_Seed         (&context, seed);
   SHA256_Update<bswap>(&context, (uint8_t*)in, len);
   SHA256_Final<bswap> (&context, (hashbits+31)/32, (uint8_t*)out);
 }
@@ -611,7 +612,7 @@ void SHA224(const void * in, const size_t len, const seed_t seed, void * out) {
   SHA2_CTX context;
 
   SHA224_Init         (&context);
-  SHA256_Seed         (&context, seed, len);
+  SHA256_Seed         (&context, seed);
   SHA256_Update<bswap>(&context, (uint8_t*)in, len);
   SHA256_Final<bswap> (&context, (hashbits+31)/32, (uint8_t*)out);
 }
@@ -631,7 +632,7 @@ void SHA224(const void * in, const size_t len, const seed_t seed, void * out) {
 //       cdc76e5c 9914fb92 81a1c7e2 84d73e67
 //       f1809a48 a497200e 046d39cc c7112cd0
 static const char *const test_data[] = {
-    "", "abc", 
+    "", "abc",
     "A million repetitions of 'a'"};
 static const char *const test_results[] = {
   "e3b0c442 98fc1c14 9afbf4c8 996fb924 27ae41e4 649b934c a495991b 7852b855",
@@ -710,7 +711,6 @@ REGISTER_HASH(sha2_256_64,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |
-        FLAG_HASH_SMALL_SEED           |
         FLAG_HASH_NO_SEED,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT          |
@@ -719,8 +719,8 @@ REGISTER_HASH(sha2_256_64,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 64,
-  $.verification_LE = 0xA179A015,
-  $.verification_BE = 0xC1C4FA72,
+  $.verification_LE = 0x31C40E74,
+  $.verification_BE = 0x6E81AB0B,
   $.initfn = SHA256_test,
   $.hashfn_native = SHA256<64,false>,
   $.hashfn_bswap = SHA256<64,true>
@@ -731,7 +731,6 @@ REGISTER_HASH(sha2_256,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |
-        FLAG_HASH_SMALL_SEED           |
         FLAG_HASH_NO_SEED,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT          |
@@ -740,8 +739,8 @@ REGISTER_HASH(sha2_256,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 256,
-  $.verification_LE = 0x6972DB41,
-  $.verification_BE = 0xEBDA2FB1,
+  $.verification_LE = 0x33BD25DE,
+  $.verification_BE = 0x1643B047,
   $.initfn = SHA256_test,
   $.hashfn_native = SHA256<256,false>,
   $.hashfn_bswap = SHA256<256,true>
@@ -752,7 +751,6 @@ REGISTER_HASH(sha2_224_64,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |
-        FLAG_HASH_SMALL_SEED           |
         FLAG_HASH_NO_SEED,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT          |
@@ -761,8 +759,8 @@ REGISTER_HASH(sha2_224_64,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 64,
-  $.verification_LE = 0x52FB89D2,
-  $.verification_BE = 0xF3E40ECA,
+  $.verification_LE = 0x36C55CA5,
+  $.verification_BE = 0x8C3C0B2A,
   $.initfn = SHA256_test,
   $.hashfn_native = SHA224<64,false>,
   $.hashfn_bswap = SHA224<64,true>
@@ -773,7 +771,6 @@ REGISTER_HASH(sha2_224,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |
-        FLAG_HASH_SMALL_SEED           |
         FLAG_HASH_NO_SEED,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT          |
@@ -782,8 +779,8 @@ REGISTER_HASH(sha2_224,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 224,
-  $.verification_LE = 0xF4128E9F,
-  $.verification_BE = 0x407AA518,
+  $.verification_LE = 0x6BA219E5,
+  $.verification_BE = 0x56F30297,
   $.initfn = SHA256_test,
   $.hashfn_native = SHA224<224,false>,
   $.hashfn_bswap = SHA224<224,true>
