@@ -94,7 +94,66 @@ static bool SeedTestImpl(const HashInfo * hinfo, bool drawDiagram) {
   bool result = TestHashList(hashes,drawDiagram);
   printf("\n");
 
-  recordTestResult(result, "Seed", (const char *)NULL);
+  recordTestResult(result, "Seed", "Seq");
+
+  addVCodeResult(result);
+
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+// Keyset 'SparseSeed' - hash "sphinx of black quartz..." using seeds with few
+// bits set/cleared
+
+template < typename hashtype, bool bigseed >
+static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool drawDiagram) {
+  assert(maxbits < 16);
+  const HashFn hash = hinfo->hashFn(g_hashEndian);
+  size_t totalkeys = 2 + 2*chooseUpToK(bigseed ? 64 : 32, maxbits);
+
+  printf("Keyset 'SparseSeed' - %d keys\n", totalkeys);
+
+  const char text[64] = "Sphinx of black quartz, judge my vow";
+  const int len = (int)strlen(text);
+
+  addVCodeInput(text, len);
+  addVCodeInput(totalkeys);
+
+  //----------
+
+  std::vector<hashtype> hashes;
+
+  hashes.resize(totalkeys);
+
+  size_t cnt = 0;
+
+  hinfo->Seed(0);
+  hash(text,len,0,&hashes[cnt++]);
+
+  hinfo->Seed(~0);
+  hash(text,len,~0,&hashes[cnt++]);
+
+  for(seed_t i = 1; i <= maxbits; i++) {
+    uint64_t seed = (UINT64_C(1) << i) - 1;
+    bool done;
+
+    do {
+      hinfo->Seed(seed);
+      hash(text,len,seed,&hashes[cnt++]);
+
+      hinfo->Seed(~seed);
+      hash(text,len,~seed,&hashes[cnt++]);
+
+      /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
+      uint64_t t = (seed | (seed - 1)) + 1;
+      seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
+      done = bigseed ? (seed == ~0) : ((seed >> 32) != 0);
+    } while (!done);
+  }
+
+  bool result = TestHashList(hashes,drawDiagram);
+
+  recordTestResult(result, "Seed", "Sparse");
 
   addVCodeResult(result);
 
@@ -111,8 +170,10 @@ bool SeedTest(const HashInfo * hinfo, const bool verbose) {
 
     if (hinfo->is32BitSeed()) {
       result &= SeedTestImpl<hashtype,22,false>( hinfo, verbose );
+      result &= SparseSeedTestImpl<hashtype,false>( hinfo, 7, verbose );
     } else {
       result &= SeedTestImpl<hashtype,22,true>( hinfo, verbose );
+      result &= SparseSeedTestImpl<hashtype,true>( hinfo, 5, verbose );
     }
 
     if(!result) printf("*********FAIL*********\n");
