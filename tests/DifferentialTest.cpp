@@ -57,6 +57,13 @@
 #include <cstdio>
 #include <math.h>
 
+#ifdef HAVE_THREADS
+#include <atomic>
+typedef std::atomic<int> a_int;
+#else
+typedef int a_int;
+#endif
+
 //-----------------------------------------------------------------------------
 // Sort through the differentials, ignoring collisions that only
 // occured once (these could be false positives). If we find identical
@@ -129,8 +136,6 @@ static void DiffTestRecurse ( HashFn hash, keytype & k1, keytype & k2, hashtype 
     bitsleft--;
 
     hash(&k2,sizeof(k2),g_seed,&h2);
-    addVCodeInput(&k2, sizeof(k2));
-    addVCodeOutput(&h2, sizeof(h2));
 
     if(h1 == h2)
     {
@@ -154,8 +159,32 @@ static void DiffTestRecurse ( HashFn hash, keytype & k1, keytype & k2, hashtype 
 //-----------------------------------------------------------------------------
 
 template < typename keytype, typename hashtype >
+static void DiffTestImplThread(const HashFn hash, std::map<keytype, uint32_t> &diffcounts, const uint8_t * keys, int diffbits, a_int & irepp, const int reps) {
+  const int keybytes = sizeof(keytype);
+
+  keytype k1,k2;
+  hashtype h1,h2;
+  h1 = h2 = 0;
+
+  int irep;
+  while ((irep = irepp++) < reps) {
+    if ((reps >= 10) && (irep % (reps/10) == 0)) { printf("."); }
+
+    memcpy(&k1, &keys[keybytes * irep], sizeof(k1));
+    k2 = k1;
+
+    hash(&k1,sizeof(k1),g_seed,(void*)&h1);
+
+    DiffTestRecurse<true,keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffcounts);
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+template < typename keytype, typename hashtype >
 static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisions )
 {
+  const int keybytes = sizeof(keytype);
   const int keybits = sizeof(keytype) * 8;
   const int hashbits = sizeof(hashtype) * 8;
 
@@ -163,37 +192,49 @@ static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisi
   double testcount = (diffcount * double(reps));
   double expected  = testcount / pow(2.0,double(hashbits));
 
-  Rand r(100);
-
-  std::map<keytype, uint32_t> diffcounts;
-
-  keytype k1,k2;
-  hashtype h1,h2;
-  h1 = h2 = 0;
-
   printf("Testing %0.f up-to-%d-bit differentials in %d-bit keys -> %d bit hashes.\n",
          diffcount,diffbits,keybits,hashbits);
   printf("%d reps, %0.f total tests, expecting %2.2f random collisions",
          reps,testcount,expected);
 
-  for(int i = 0; i < reps; i++)
-  {
-    if ((reps >= 10) && (i % (reps/10) == 0)) printf(".");
+  Rand r(100);
+  std::vector<uint8_t> keys(reps * keybytes);
 
-    r.rand_p(&k1,sizeof(keytype));
-    k2 = k1;
+  for (int i = 0; i < reps; i++)
+      r.rand_p(&keys[i*keybytes],keybytes);
+  addVCodeInput(&keys[0], reps * keybytes);
 
-    hash(&k1,sizeof(k1),g_seed,(void*)&h1);
-    addVCodeInput(&k1, sizeof(k1));
-    addVCodeOutput(&h1, sizeof(h1));
+  a_int irep(0);
 
-    DiffTestRecurse<true,keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffcounts);
+  std::vector<std::map<keytype, uint32_t> > diffcounts(g_NCPU);
+
+  if ((g_NCPU == 1) || (reps < 10)) {
+      DiffTestImplThread<keytype,hashtype>(hash,diffcounts[0],&keys[0],diffbits,irep,reps);
+  } else {
+#ifdef HAVE_THREADS
+      std::thread t[g_NCPU];
+      for (int i=0; i < g_NCPU; i++) {
+	  t[i] = std::thread {DiffTestImplThread<keytype,hashtype>,hash,std::ref(diffcounts[i]),&keys[0],diffbits,std::ref(irep),reps};
+      }
+      for (int i=0; i < g_NCPU; i++) {
+          t[i].join();
+      }
+      for (int i=1; i < g_NCPU; i++)
+	  for (std::pair<keytype, uint32_t> dc : diffcounts[i])
+	      diffcounts[0][dc.first] += dc.second;
+#endif
   }
+
+  for (std::pair<keytype, uint32_t> dc : diffcounts[0]) {
+      addVCodeOutput(&dc.first, sizeof(keytype));
+      addVCodeOutput(&dc.second, sizeof(uint32_t));
+  }
+
   printf("\n");
 
   bool result = true;
 
-  result &= ProcessDifferentials(diffcounts,reps,dumpCollisions);
+  result &= ProcessDifferentials(diffcounts[0],reps,dumpCollisions);
 
   recordTestResult(result, "Differential", diffbits);
 
