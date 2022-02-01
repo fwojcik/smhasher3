@@ -13,19 +13,19 @@
 // ----------------------------------------------------------------------------
 // for internal use
 #define VCODE_COUNT 3
-static XXH32_state_t vcode_states[VCODE_COUNT];
+static XXH3_state_t vcode_states[VCODE_COUNT];
 
 void VCODE_HASH(const void * input, size_t len, unsigned idx) {
     if (idx >= VCODE_COUNT)
         return;
-    XXH32_update(&vcode_states[idx], input, len);
+    XXH3_64bits_update(&vcode_states[idx], input, len);
 }
 
 static uint32_t VCODE_MASK = 0x0;
 
 void VCODE_INIT(void) {
     for (int i = 0; i < VCODE_COUNT; i++) {
-        XXH32_reset(&vcode_states[i], i);
+        XXH3_64bits_reset_withSeed(&vcode_states[i], i);
     }
     // This sets VCODE_MASK such that VCODE_FINALIZE() will report a
     // vcode of 0x00000001 if no testing was done.
@@ -38,18 +38,18 @@ extern uint32_t g_resultVCode;
 uint32_t VCODE_FINALIZE(void) {
     if (!g_doVCode) return 1;
 
-    g_inputVCode = XXH32_digest(&vcode_states[0]);
-    g_outputVCode = XXH32_digest(&vcode_states[1]);
-    g_resultVCode = XXH32_digest(&vcode_states[2]);
+    g_inputVCode = (uint32_t)XXH3_64bits_digest(&vcode_states[0]);
+    g_outputVCode = (uint32_t)XXH3_64bits_digest(&vcode_states[1]);
+    g_resultVCode = (uint32_t)XXH3_64bits_digest(&vcode_states[2]);
 
-    XXH32_state_t finalvcode;
-    XXH32_reset(&finalvcode, VCODE_COUNT);
+    XXH3_state_t finalvcode;
+    XXH3_64bits_reset_withSeed(&finalvcode, VCODE_COUNT);
 
-    XXH32_update(&finalvcode, &g_inputVCode,  sizeof(g_inputVCode));
-    XXH32_update(&finalvcode, &g_outputVCode, sizeof(g_outputVCode));
-    XXH32_update(&finalvcode, &g_resultVCode, sizeof(g_resultVCode));
+    XXH3_64bits_update(&finalvcode, &g_inputVCode,  sizeof(g_inputVCode));
+    XXH3_64bits_update(&finalvcode, &g_outputVCode, sizeof(g_outputVCode));
+    XXH3_64bits_update(&finalvcode, &g_resultVCode, sizeof(g_resultVCode));
 
-    return VCODE_MASK ^ XXH32_digest(&finalvcode);
+    return VCODE_MASK ^ XXH3_64bits_digest(&finalvcode);
 }
 
 // ----------------------------------------------------------------------------
