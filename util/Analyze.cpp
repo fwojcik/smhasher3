@@ -771,11 +771,11 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
     }
 
     addVCodeResult(collcount);
-    if (testHighBits) {
+    if (testHighBits && (collcounts_fwd.size() != 0)) {
         addVCodeResult(&collcounts_fwd[0], sizeof(collcounts_fwd[0]) *
                 collcounts_fwd.size());
     }
-    if (testLowBits) {
+    if (testLowBits && (collcounts_rev.size() != 0)) {
         addVCodeResult(&collcounts_rev[0], sizeof(collcounts_rev[0]) *
                 collcounts_rev.size());
     }
