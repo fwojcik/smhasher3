@@ -603,7 +603,7 @@ void SHA256(const void * in, const size_t len, const seed_t seed, void * out) {
 
   SHA256_Init         (&context);
   SHA256_Seed         (&context, seed);
-  SHA256_Update<bswap>(&context, (uint8_t*)in, len);
+  SHA256_Update<bswap>(&context, (const uint8_t*)in, len);
   SHA256_Final<bswap> (&context, (hashbits+31)/32, (uint8_t*)out);
 }
 
@@ -613,7 +613,7 @@ void SHA224(const void * in, const size_t len, const seed_t seed, void * out) {
 
   SHA224_Init         (&context);
   SHA256_Seed         (&context, seed);
-  SHA256_Update<bswap>(&context, (uint8_t*)in, len);
+  SHA256_Update<bswap>(&context, (const uint8_t*)in, len);
   SHA256_Final<bswap> (&context, (hashbits+31)/32, (uint8_t*)out);
 }
 
