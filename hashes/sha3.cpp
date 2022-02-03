@@ -114,6 +114,20 @@ static void sha3_Init(sha3_context * ctx, unsigned bitSize) {
   ctx->capacityWords = 2 * bitSize / (8 * sizeof(uint64_t));
 }
 
+/*
+ * Homegrown SHA3 seeding -- alter the capacity bytes so that merely
+ * changing the hashed bytes cannot easily reveal the seed nor
+ * trivially collide the hash state.
+ */
+static void sha3_Seed(sha3_context * ctx, uint64_t seed) {
+  if (ctx->capacityWords >= 2) {
+    ctx->s[SHA3_KECCAK_SPONGE_WORDS - 2] ^= seed;
+    ctx->s[SHA3_KECCAK_SPONGE_WORDS - 1] ^= (seed + 1) * UINT64_C(0x9E3779B97F4A7C15);
+  } else {
+    ctx->s[SHA3_KECCAK_SPONGE_WORDS - 1] ^= seed;
+  }
+}
+
 template < bool bswap >
 static void sha3_Process(sha3_context * ctx, const uint8_t * in, size_t inlen) {
    /* 0...7 -- how much is needed to have a word */
@@ -192,8 +206,7 @@ void SHA3_256(const void * in, const size_t len, const seed_t seed, void * out) 
   sha3_context context;
 
   sha3_Init           (&context, 256);
-  context.s[0] ^= seed;
-  //sha3_Seed         (&context, seed);
+  sha3_Seed           (&context, (uint64_t)seed);
   sha3_Process<bswap> (&context, (const uint8_t *)in, len);
   sha3_Finalize<bswap>(&context, (hashbits+63)/64, (uint8_t *)out);
 }
@@ -213,8 +226,8 @@ REGISTER_HASH(sha3_256_64,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 64,
-  $.verification_LE = 0xE62E5CC0,
-  $.verification_BE = 0x11CA488A,
+  $.verification_LE = 0x00FF5701,
+  $.verification_BE = 0x7FC2F919,
   $.hashfn_native = SHA3_256<64,false>,
   $.hashfn_bswap = SHA3_256<64,true>
 );
@@ -232,8 +245,8 @@ REGISTER_HASH(sha3_256,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 256,
-  $.verification_LE = 0x21048CE3,
-  $.verification_BE = 0x029EB534,
+  $.verification_LE = 0x4EEA1FBE,
+  $.verification_BE = 0x27C883B2,
   $.hashfn_native = SHA3_256<256,false>,
   $.hashfn_bswap = SHA3_256<256,true>
 );
