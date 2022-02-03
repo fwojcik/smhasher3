@@ -530,25 +530,6 @@ inline void rmd256(const void *key, int len, uint32_t seed, void *out)
   rmd256_process(&ltc_state, (unsigned char *)key, len);
   rmd256_done(&ltc_state, (unsigned char *)out);
 }
-// Keccak:
-inline void sha3_256_64(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  unsigned char buf[32];
-  sha3_256_init(&ltc_state);
-  ltc_state.sha3.s[0] ^= seed;
-  sha3_process(&ltc_state, (unsigned char *)key, len);
-  sha3_done(&ltc_state, buf);
-  memcpy(out, buf, 8);
-}
-inline void sha3_256(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  sha3_256_init(&ltc_state);
-  ltc_state.sha3.s[0] ^= seed;
-  sha3_process(&ltc_state, (unsigned char *)key, len);
-  sha3_done(&ltc_state, (unsigned char *)out);
-}
 
 #if defined(HAVE_AESNI) && defined(__SIZEOF_INT128__) && \
   (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__)  || defined(_M_IX86))

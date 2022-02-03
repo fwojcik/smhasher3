@@ -622,6 +622,7 @@ add_library(
   md5.cpp
   sha1.cpp
   sha2.cpp
+  sha3.cpp
   crc.cpp
 #
   aesnihash.cpp
@@ -682,7 +683,6 @@ add_library(
   rmd128.c
   rmd160.c
   rmd256.c
-  sha3.c
   vmac.cpp
   rijndael-alg-fst.c
   pengyhash.c

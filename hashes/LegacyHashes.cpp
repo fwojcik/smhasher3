@@ -74,9 +74,6 @@ static LegacyHashInfo g_hashes[] =
 {
  // here start the real hashes. first the problematic ones:
 
-  // totally broken seed mixin
-  { sha3_256,            256, 0x21048CE3, "sha3-256",     "SHA3-256 (Keccak)", GOOD, {0x1UL} },
-  { sha3_256_64,          64, 0xE62E5CC0, "sha3-256_64",  "SHA3-256 (Keccak), low 64 bits", GOOD, {0x1UL} },
   { rmd128,              128, 0xFF576977, "rmd128",       "RIPEMD-128", GOOD, {0x67452301} },
   { rmd160,              160, 0x30B37AC6, "rmd160",       "RIPEMD-160", GOOD, {0x67452301} },
   { rmd256,              256, 0xEB16FAD7, "rmd256",       "RIPEMD-256", GOOD, {0x67452301} },
@@ -474,8 +471,6 @@ bool hash_is_very_slow(pfHash hash) {
         { blake2b224_test          },
         { blake2b256_test          },
         { blake2b256_64            },
-        { sha3_256                 },
-        { sha3_256_64              },
         { tifuhash_64              },
         { floppsyhash_64           },
     };
