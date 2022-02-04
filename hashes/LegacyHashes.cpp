@@ -74,9 +74,6 @@ static LegacyHashInfo g_hashes[] =
 {
  // here start the real hashes. first the problematic ones:
 
-  { rmd128,              128, 0xFF576977, "rmd128",       "RIPEMD-128", GOOD, {0x67452301} },
-  { rmd160,              160, 0x30B37AC6, "rmd160",       "RIPEMD-160", GOOD, {0x67452301} },
-  { rmd256,              256, 0xEB16FAD7, "rmd256",       "RIPEMD-256", GOOD, {0x67452301} },
 #if defined(HAVE_BIT32) && !defined(_WIN32)
 #  define BLAKE3_VERIF   0x58571F56
 #else
@@ -361,8 +358,9 @@ LegacyHashInfo * findLegacyHash ( const char * name )
 
 // optional hash state initializers
 void Hash_init (LegacyHashInfo* info) {
-  if (info->hash == rmd128)
-    rmd128_init(&ltc_state);
+  if (0) {
+    info = info;
+  }
 #ifdef __SIZEOF_INT128__
   else if(info->hash == multiply_shift ||
           info->hash == pair_multiply_shift)
@@ -459,9 +457,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
 bool hash_is_very_slow(pfHash hash) {
     // known very slow hashes (typically > 500 cycle/hash)
     const struct { pfHash h; } slowhashes[] = {
-        { rmd128                   },
-        { rmd160                   },
-        { rmd256                   },
         { blake2s128_test          },
         { blake2s160_test          },
         { blake2s224_test          },

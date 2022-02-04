@@ -623,6 +623,7 @@ add_library(
   sha1.cpp
   sha2.cpp
   sha3.cpp
+  rmd.cpp
   crc.cpp
 #
   aesnihash.cpp
@@ -680,9 +681,6 @@ add_library(
   jody_hash64.c
   blake2b.c
   blake2s.c
-  rmd128.c
-  rmd160.c
-  rmd256.c
   vmac.cpp
   rijndael-alg-fst.c
   pengyhash.c

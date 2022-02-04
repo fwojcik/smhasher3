@@ -506,30 +506,6 @@ inline void blake2s256_64(const void * key, int len, uint32_t seed, void * out)
   blake2s_done(&ltc_state, buf);
   memcpy(out, buf, 8);
 }
-inline void rmd128(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  rmd128_init(&ltc_state);
-  ltc_state.rmd128.state[0] ^= seed;
-  rmd128_process(&ltc_state, (unsigned char *)key, len);
-  rmd128_done(&ltc_state, (unsigned char *)out);
-}
-inline void rmd160(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  rmd160_init(&ltc_state);
-  ltc_state.rmd160.state[0] = 0x67452301UL ^ seed;
-  rmd160_process(&ltc_state, (unsigned char *)key, len);
-  rmd160_done(&ltc_state, (unsigned char *)out);
-}
-inline void rmd256(const void *key, int len, uint32_t seed, void *out)
-{
-  // objsize
-  rmd256_init(&ltc_state);
-  ltc_state.rmd256.state[0] ^= seed;
-  rmd256_process(&ltc_state, (unsigned char *)key, len);
-  rmd256_done(&ltc_state, (unsigned char *)out);
-}
 
 #if defined(HAVE_AESNI) && defined(__SIZEOF_INT128__) && \
   (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__)  || defined(_M_IX86))
