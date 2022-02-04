@@ -75,19 +75,17 @@
 // lowest 32 bits set over the whole key space. Not where the bits are, but how many.
 // See e.g. https://www.statlect.com/fundamentals-of-probability/moment-generating-function
 
-typedef long double moments[8];
+typedef uint32_t popcnt_hist[65];
 
 // Copy the results into g_NCPU ranges of 2^32
 static void PopcountThread(const HashInfo * hinfo, const int inputSize,
                         const unsigned start, const unsigned end, const unsigned step,
-                        moments &b)
+			popcnt_hist &hist1, popcnt_hist &hist2)
 {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   seed_t seed = g_seed;
   long double const n = (end-(start+1)) / step;
   uint64_t previous = 0;
-  long double b0h = b[0], b0l = b[1], db0h = b[2], db0l = b[3];
-  long double b1h = b[4], b1l = b[5], db1h = b[6], db1l = b[7];
 #define INPUT_SIZE_MAX 256
   assert(inputSize <= INPUT_SIZE_MAX);
   char key[INPUT_SIZE_MAX] = {0};
@@ -111,37 +109,19 @@ static void PopcountThread(const HashInfo * hinfo, const int inputSize,
     memcpy(key, &i, sizeof(i));
     hash(key, inputSize, seed, hbuff);
 
-    uint64_t h; memcpy(&h, hbuff, 8);
     // popcount8 assumed to work on 64-bit
     // note : ideally, one should rather popcount the whole hash
-    {
-      uint64_t const bits1 = popcount8(h);
-      uint64_t const bits0 = hbits - bits1;
-      uint64_t const b1_exp5 = bits1 * bits1 * bits1 * bits1 * bits1;
-      uint64_t const b0_exp5 = bits0 * bits0 * bits0 * bits0 * bits0;
-      b1h += b1_exp5; b1l += b1_exp5 * b1_exp5;
-      b0h += b0_exp5; b0l += b0_exp5 * b0_exp5;
-    }
+    uint64_t h;
+    memcpy(&h, hbuff, 8);
+
+    uint64_t setbits = popcount8(h);
+    hist1[setbits]++;
+
     // derivative
-    {
-      uint64_t const bits1 = popcount8(previous^h);
-      uint64_t const bits0 = hbits - bits1;
-      uint64_t const b1_exp5 = bits1 * bits1 * bits1 * bits1 * bits1;
-      uint64_t const b0_exp5 = bits0 * bits0 * bits0 * bits0 * bits0;
-      db1h += b1_exp5; db1l += b1_exp5 * b1_exp5;
-      db0h += b0_exp5; db0l += b0_exp5 * b0_exp5;
-    }
+    setbits = popcount8(h ^ previous);
+    hist2[setbits]++;
     previous = h;
   }
-
-  b[0] = b0h;
-  b[1] = b0l;
-  b[2] = db0h;
-  b[3] = db0l;
-  b[4] = b1h;
-  b[5] = b1l;
-  b[6] = db1h;
-  b[7] = db1l;
 }
 
 static double PopcountResults ( long double srefh, long double srefl,
@@ -167,7 +147,7 @@ static double PopcountResults ( long double srefh, long double srefl,
 static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const unsigned mx = 0xffffffff;
-  const long double n = 0x100000000UL / step;
+  const long double n = UINT64_C(0x100000000) / step;
   const int hbits = std::min(hinfo->bits, 64U); // limited due to popcount8
 
   assert(hbits <= HASH_SIZE_MAX*8);
@@ -240,9 +220,6 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
           abort();
   }
 
-  moments b[g_NCPU];
-  memset(b, 0, sizeof(b));
-
   // Because of threading, the actual inputs can't be hashed into the
   // main thread's state, so just hash the parameters of the input data.
   addVCodeInput(0);          // start
@@ -250,8 +227,13 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   addVCodeInput(step);       // step
   addVCodeInput(inputSize);  // size
 
+  popcnt_hist rawhash[g_NCPU];
+  popcnt_hist xorhash[g_NCPU];
+  memset(rawhash, 0, sizeof(rawhash));
+  memset(xorhash, 0, sizeof(xorhash));
+
   if (g_NCPU == 1) {
-      PopcountThread(hinfo, inputSize, 0, 0xffffffff, step, std::ref(b[0]));
+      PopcountThread(hinfo, inputSize, 0, 0xffffffff, step, rawhash[0], xorhash[0]);
   } else {
 #ifdef HAVE_THREADS
       // split into g_NCPU threads
@@ -263,7 +245,7 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
           const uint32_t start = i * len * step;
           const uint32_t end = (i < (g_NCPU - 1)) ? start + (len * step - 1) : 0xffffffff;
           //printf("thread[%d]: %d, 0x%x - 0x%x %d\n", i, inputSize, start, end, step);
-          t[i] = std::thread {PopcountThread, hinfo, inputSize, start, end, step, std::ref(b[i])};
+          t[i] = std::thread {PopcountThread, hinfo, inputSize, start, end, step, std::ref(rawhash[i]), std::ref(xorhash[i]) };
       }
 
       std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -273,20 +255,34 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
       }
 
       printf(" done\n");
-
-      //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", 0,
-      //       b[0][0], b[0][1], b[0][2], b[0][3], b[0][4], b[0][5], b[0][6], b[0][7]);
-      for (int i=1; i < g_NCPU; i++) {
-          //printf("[%d]: %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf, %Lf\n", i,
-          //       b[i][0], b[i][1], b[i][2], b[i][3], b[i][4], b[i][5], b[i][6], b[i][7]);
-          for (int j=0; j < 8; j++)
-              b[0][j] += b[i][j];
+      for (int i = 1; i < g_NCPU; i++) {
+	for (int j = 0; j <= hbits; j++) {
+	  rawhash[0][j] += rawhash[i][j];
+	  xorhash[0][j] += xorhash[i][j];
+	}
       }
 #endif
   }
 
-  long double b0h = b[0][0], b0l = b[0][1], db0h = b[0][2], db0l = b[0][3];
-  long double b1h = b[0][4], b1l = b[0][5], db1h = b[0][6], db1l = b[0][7];
+  long double b0h = 0, b0l = 0, db0h = 0, db0l = 0;
+  long double b1h = 0, b1l = 0, db1h = 0, db1l = 0;
+  // b1h = SUM[ 1-bits**5 ]
+  // b0h = SUM[ 0-bits**5 ]
+  // b1l = SUM[ 1-bits**10 ]
+  // b0l = SUM[ 0-bits**10 ]
+
+  for (uint64_t j = 0; j <= hbits; j++) {
+    long double mult1 = j * j * j * j * j;
+    long double mult0 = (hbits - j) * (hbits - j) * (hbits - j) * (hbits - j) * (hbits - j);
+     b1h += mult1 * (long double)rawhash[0][j];
+     b0h += mult0 * (long double)rawhash[0][j];
+    db1h += mult1 * (long double)xorhash[0][j];
+    db0h += mult0 * (long double)xorhash[0][j];
+     b1l += mult1 * mult1 * (long double)rawhash[0][j];
+     b0l += mult0 * mult0 * (long double)rawhash[0][j];
+    db1l += mult1 * mult1 * (long double)xorhash[0][j];
+    db0l += mult0 * mult0 * (long double)xorhash[0][j];
+  }
 
   b1h  /= n;  b1l = (b1l/n  - b1h*b1h) / n;
   db1h /= n; db1l = (db1l/n - db1h*db1h) / n;
@@ -313,7 +309,8 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
 
   // Similar threading problems for the outputs, so just hash in the
   // summary data.
-  addVCodeOutput(&b[0][0], 8 * sizeof(b[0][0]));
+  addVCodeOutput(&rawhash[0][0], 65 * sizeof(rawhash[0][0]));
+  addVCodeOutput(&xorhash[0][0], 65 * sizeof(xorhash[0][0]));
   addVCodeResult((uint32_t)(worstchisq * 1000.0));
 
   bool result = (rank > 0);
