@@ -551,8 +551,14 @@ static void rmd_update(rmd_ctx * ctx, const uint8_t * data, size_t len) {
 }
 
 /* Homegrown RMD seeding */
-static void rmd_seed(rmd_ctx * ctx, uint32_t seed) {
-  ctx->state[0] ^= seed;
+static void rmd_seed(rmd_ctx * ctx, uint64_t seed) {
+  const uint32_t seedlo = seed         & 0xFFFFFFFF;
+  const uint32_t seedhi = (seed >> 32) & 0xFFFFFFFF;
+
+  ctx->state[0] ^= seedlo;
+  ctx->state[1] ^= seedlo + seedhi;
+  ctx->state[2] ^= seedhi;
+  ctx->state[3] ^= seedlo + seedhi;
 }
 
 template < bool bswap >
@@ -701,8 +707,8 @@ REGISTER_HASH(rmd128,
         FLAG_IMPL_VERY_SLOW            |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
-  $.verification_LE = 0xFF576977,
-  $.verification_BE = 0xDC0DD164,
+  $.verification_LE = 0xC9B0B675,
+  $.verification_BE = 0xD1DB09B5,
   $.initfn = rmd_test,
   $.hashfn_native = rmd128<false>,
   $.hashfn_bswap = rmd128<true>
@@ -717,8 +723,8 @@ REGISTER_HASH(rmd160,
         FLAG_IMPL_VERY_SLOW            |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 160,
-  $.verification_LE = 0x30B37AC6,
-  $.verification_BE = 0x849CA73B,
+  $.verification_LE = 0x8613F5B2,
+  $.verification_BE = 0x2265C3AA,
   $.initfn = rmd_test,
   $.hashfn_native = rmd160<false>,
   $.hashfn_bswap = rmd160<true>
@@ -733,8 +739,8 @@ REGISTER_HASH(rmd256,
         FLAG_IMPL_VERY_SLOW            |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 256,
-  $.verification_LE = 0xEB16FAD7,
-  $.verification_BE = 0xC7ADC85E,
+  $.verification_LE = 0x870A973A,
+  $.verification_BE = 0xF2A877EE,
   $.initfn = rmd_test,
   $.hashfn_native = rmd256<false>,
   $.hashfn_bswap = rmd256<true>
