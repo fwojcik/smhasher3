@@ -152,6 +152,12 @@ if(RESULT_VAR)
   message(STATUS "x86_64 SHA-2 intrinsics available")
 endif()
 
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sse41.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_SSE_4_1)
+  message(STATUS "x86_64 SSE 4.1 intrinsics available")
+endif()
+
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/arm_neon_sha1.cpp)
 if(RESULT_VAR)
   add_definitions(-DNEW_HAVE_SHA1_ARM)
