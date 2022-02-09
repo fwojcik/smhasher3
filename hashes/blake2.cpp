@@ -380,20 +380,3 @@ REGISTER_HASH(blake2s_256_64,
   $.hashfn_native = BLAKE2S<256,64,false>,
   $.hashfn_bswap = BLAKE2S<256,64,true>
 );
-
-#if 0
-  { blake2s128_test,     128, 0xE8D8FCDF, "blake2s-128",  "blake2s-128", GOOD, {0x6a09e667} },
-  { blake2s160_test,     160, 0xD50FF144, "blake2s-160",  "blake2s-160", GOOD, {0x6a09e667} },
-  { blake2s224_test,     224, 0x19B36D2C, "blake2s-224",  "blake2s-224", GOOD, {0x6a09e667} },
-  { blake2s256_test,     256, 0x841D6354, "blake2s-256",  "blake2s-256", GOOD,
-    {0x31, 0x32, 0x15e, 0x432, 0x447, 0x8000001e, 0x80000021 } /* !! and >1000 more */ },
-  { blake2s256_64,        64, 0x53000BB2, "blake2s-256_64","blake2s-256, low 64 bits", GOOD,
-    {0xa, 0xe, 0x2d, 0x2f, 0x53, 0x40000003, 0x40000005, 0x40000006 } /* !! and >1000 more */ },
-  { blake2s160_test,     160, 0x28ADDA30, "blake2s-160",  "blake2s-160", GOOD,
-    {0x4a, 0x5a, 0x5e, 0x74, 0x7f, 0x81} /* !! and >1000 more */ },
-  { blake2s224_test,     224, 0x101A62A4, "blake2s-224",  "blake2b-224", GOOD,
-    {0x12, 0x2e, 0x32, 0x99a, 0xc80, 0xc98, 0xc9c} /* !! and >1000 more */ },
-  { blake2b256_test,     256, 0xC9D8D995, "blake2b-256",  "blake2b-256", POOR, {} },
-  { blake2b256_64,        64, 0xCF4F7EC3, "blake2b-256_64","blake2b-256, low 64 bits", GOOD, {} },
-
-#endif
