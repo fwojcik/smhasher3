@@ -116,6 +116,30 @@ endif()
 
 set(HASHSRCDIR ${CMAKE_SOURCE_DIR}/hashes/detect)
 
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sse2.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_SSE_2)
+  message(STATUS "x86_64 SSE 2 intrinsics available")
+endif()
+
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_ssse3.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_SSSE2)
+  message(STATUS "x86_64 SSSE3 intrinsics available")
+endif()
+
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sse41.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_SSE_4_1)
+  message(STATUS "x86_64 SSE 4.1 intrinsics available")
+endif()
+
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_xop.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_XOP)
+  message(STATUS "x86_64 XOP intrinsics available")
+endif()
+
 if(MSVC)
   try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_umul128.cpp)
   if(RESULT_VAR)
@@ -150,12 +174,6 @@ try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sha2.cpp)
 if(RESULT_VAR)
   add_definitions(-DNEW_HAVE_SHA2_X86_64)
   message(STATUS "x86_64 SHA-2 intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_sse41.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SSE_4_1)
-  message(STATUS "x86_64 SSE 4.1 intrinsics available")
 endif()
 
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/arm_neon_sha1.cpp)
