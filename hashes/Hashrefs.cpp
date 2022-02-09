@@ -30,6 +30,7 @@ unsigned refs() {
     USE_FAMILY(sha2);
     USE_FAMILY(sha3);
     USE_FAMILY(rmd);
+    USE_FAMILY(blake2);
     USE_FAMILY(crc);
 
     USE_FAMILY(aesnihash);
