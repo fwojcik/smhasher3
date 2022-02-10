@@ -449,57 +449,6 @@ void farsh128_test ( const void * key, int len, unsigned seed, void * out );
 void farsh256_test ( const void * key, int len, unsigned seed, void * out );
 #endif
 
-extern "C" {
-#include "blake3/blake3_impl.h"
-// The C API, serially
-  inline void blake3c_test ( const void * key, int len, unsigned seed, void * out )
-  {
-    blake3_hasher hasher;
-#if 1
-    blake3_hasher_init (&hasher);
-    // See GH #168
-    hasher.key[0] ^= (uint32_t)seed;
-    hasher.chunk.cv[0] ^= (uint32_t)seed;
-#else
-    // same speed
-    uint32_t seed_key[8] = {0x6A09E667 ^ (uint32_t)seed, 0xBB67AE85, 0x3C6EF372,
-      0xA54FF53A, 0x510E527F, 0x9B05688C,
-      0x1F83D9AB, 0x5BE0CD19};    // Copied the default IV from blake3_impl.h
-    blake3_hasher_init_keyed(&hasher, (uint8_t*)seed_key); // Changed to the KEYED variant
-#endif
-    blake3_hasher_update (&hasher, (uint8_t*)key, (size_t)len);
-    blake3_hasher_finalize (&hasher, (uint8_t*)out, BLAKE3_OUT_LEN);
-  }
-}
-
-#ifdef HAVE_BLAKE3
-// The Rust API, parallized
-typedef struct rust_array {
-  char *ptr;
-  size_t len;
-} rs_arr;
-extern "C" rs_arr *blake3_hash (const rs_arr *input);
-
-inline void blake3_test ( const void * key, int len, unsigned seed, void * out )
-{
-  rs_arr input;
-  rs_arr *result;
-  input.ptr = (char*)key;
-  input.len = (size_t)len;
-  result = blake3_hash (&input);
-  memcpy (out, result->ptr, 32);
-}
-inline void blake3_64 ( const void * key, int len, unsigned seed, void * out )
-{
-  rs_arr input;
-  rs_arr *result;
-  input.ptr = (char*)key;
-  input.len = (size_t)len;
-  result = blake3_hash (&input);
-  *(uint64_t *)out = *(uint64_t *)result->ptr;
-}
-#endif
-
 #ifdef HAVE_INT64
 // https://github.com/avaneev/prvhash
 #include "prvhash/prvhash64.h"

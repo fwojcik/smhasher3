@@ -477,16 +477,6 @@ endif(NOT CMAKE_CROSSCOMPILING)
 # Legacy src inclusion based on platform
 ########################################
 
-if(NOT MSVC)
-  if(CMAKE_COMPILER_IS_GNUCC
-     OR (CMAKE_C_COMPILER_ID STREQUAL AppleClang)
-     OR (CMAKE_C_COMPILER_ID STREQUAL Clang)
-     OR (CMAKE_C_COMPILER_ID STREQUAL Intel))
-
-    set_source_files_properties(blake3/blake3.c PROPERTIES COMPILE_FLAGS "-std=c99")
-  endif()
-endif()
-
 if(SSE2_FOUND)
   set(SSE2_SRC hasshe2.c)
 endif()
@@ -552,38 +542,6 @@ else(NOT MSVC)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest")
 endif(NOT MSVC)
 
-if(SSE42_FOUND AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
-  find_library(BLAKE3 blake3)
-  # if (BLAKE3)
-  #   set(BLAKE3_LIB ${BLAKE3})
-  #   add_definitions(-DHAVE_BLAKE3)
-  # endif()
-endif()
-
-set(BLAKE3_SRC blake3/blake3.c blake3/blake3_dispatch.c
-               blake3/blake3_portable.c)
-if(SSE42_FOUND)
-  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_neon.c)
-  else()
-    set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_sse41.c)
-    set_source_files_properties(blake3/blake3_sse41.c
-      PROPERTIES COMPILE_FLAGS "-DBLAKE3_USE_SSE41")
-  endif()
-endif()
-if(AVX2_FOUND)
-  set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_avx2.c)
-  set_source_files_properties(
-    blake3/blake3_avx2.c PROPERTIES COMPILE_FLAGS
-                                    "-DBLAKE3_USE_SSE41 -DBLAKE3_USE_AVX2 -mavx2")
-endif()
-if(AVX512F_FOUND AND AVX512VL_FOUND)
-  set(BLAKE3_SRC ${BLAKE3_SRC} blake3/blake3_avx512.c)
-  set_source_files_properties(
-    blake3/blake3_avx512.c
-    PROPERTIES COMPILE_FLAGS
-               "-DBLAKE3_USE_SSE41 -DBLAKE3_USE_AVX2 -DBLAKE3_USE_AVX512 -mavx512f -mavx512vl")
-endif()
 if(SSE42_FOUND
    AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
    AND (NOT MSVC))
@@ -648,6 +606,7 @@ add_library(
   sha3.cpp
   rmd.cpp
   blake2.cpp
+  blake3.cpp
   crc.cpp
 #
   aesnihash.cpp
@@ -681,7 +640,6 @@ add_library(
   # ${BEAGLE_SRC}
   ${NOTMSVC_SRC}
   ${X86_64ONLY_SRC}
-  ${BLAKE3_SRC}
   ${ASCON_SRC}
   ${UMASH_SRC}
 #

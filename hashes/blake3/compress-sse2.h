@@ -1,51 +1,50 @@
-#include "blake3_impl.h"
-
-#include <immintrin.h>
+#define SIMD_DEGREE_OR_2  4
+#define SIMD_DEGREE       4
 
 #define DEGREE 4
+
+#include <immintrin.h>
 
 #define _mm_shuffle_ps2(a, b, c)                                               \
   (_mm_castps_si128(                                                           \
       _mm_shuffle_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(b), (c))))
 
-INLINE __m128i loadu(const uint8_t src[16]) {
+FORCE_INLINE __m128i loadu(const uint8_t src[16]) {
   return _mm_loadu_si128((const __m128i *)src);
 }
 
-INLINE void storeu(__m128i src, uint8_t dest[16]) {
+FORCE_INLINE void storeu(__m128i src, uint8_t dest[16]) {
   _mm_storeu_si128((__m128i *)dest, src);
 }
 
-INLINE __m128i addv(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
+FORCE_INLINE __m128i addv(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
 
 // Note that clang-format doesn't like the name "xor" for some reason.
-INLINE __m128i xorv(__m128i a, __m128i b) { return _mm_xor_si128(a, b); }
+FORCE_INLINE __m128i xorv(__m128i a, __m128i b) { return _mm_xor_si128(a, b); }
 
-INLINE __m128i set1(uint32_t x) { return _mm_set1_epi32((int32_t)x); }
+FORCE_INLINE __m128i set1(uint32_t x) { return _mm_set1_epi32((int32_t)x); }
 
-INLINE __m128i set4(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+FORCE_INLINE __m128i set4(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   return _mm_setr_epi32((int32_t)a, (int32_t)b, (int32_t)c, (int32_t)d);
 }
 
-INLINE __m128i rot16(__m128i x) {
-  return _mm_shuffle_epi8(
-      x, _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2));
+FORCE_INLINE __m128i rot16(__m128i x) {
+  return _mm_shufflehi_epi16(_mm_shufflelo_epi16(x, 0xB1), 0xB1);
 }
 
-INLINE __m128i rot12(__m128i x) {
+FORCE_INLINE __m128i rot12(__m128i x) {
   return xorv(_mm_srli_epi32(x, 12), _mm_slli_epi32(x, 32 - 12));
 }
 
-INLINE __m128i rot8(__m128i x) {
-  return _mm_shuffle_epi8(
-      x, _mm_set_epi8(12, 15, 14, 13, 8, 11, 10, 9, 4, 7, 6, 5, 0, 3, 2, 1));
+FORCE_INLINE __m128i rot8(__m128i x) {
+  return xorv(_mm_srli_epi32(x, 8), _mm_slli_epi32(x, 32 - 8));
 }
 
-INLINE __m128i rot7(__m128i x) {
+FORCE_INLINE __m128i rot7(__m128i x) {
   return xorv(_mm_srli_epi32(x, 7), _mm_slli_epi32(x, 32 - 7));
 }
 
-INLINE void g1(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
+FORCE_INLINE void g1(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
                __m128i m) {
   *row0 = addv(addv(*row0, m), *row1);
   *row3 = xorv(*row3, *row0);
@@ -55,7 +54,7 @@ INLINE void g1(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
   *row1 = rot12(*row1);
 }
 
-INLINE void g2(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
+FORCE_INLINE void g2(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
                __m128i m) {
   *row0 = addv(addv(*row0, m), *row1);
   *row3 = xorv(*row3, *row0);
@@ -68,19 +67,27 @@ INLINE void g2(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
 // Note the optimization here of leaving row1 as the unrotated row, rather than
 // row0. All the message loads below are adjusted to compensate for this. See
 // discussion at https://github.com/sneves/blake2-avx2/pull/4
-INLINE void diagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
+FORCE_INLINE void diagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
   *row0 = _mm_shuffle_epi32(*row0, _MM_SHUFFLE(2, 1, 0, 3));
   *row3 = _mm_shuffle_epi32(*row3, _MM_SHUFFLE(1, 0, 3, 2));
   *row2 = _mm_shuffle_epi32(*row2, _MM_SHUFFLE(0, 3, 2, 1));
 }
 
-INLINE void undiagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
+FORCE_INLINE void undiagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
   *row0 = _mm_shuffle_epi32(*row0, _MM_SHUFFLE(0, 3, 2, 1));
   *row3 = _mm_shuffle_epi32(*row3, _MM_SHUFFLE(1, 0, 3, 2));
   *row2 = _mm_shuffle_epi32(*row2, _MM_SHUFFLE(2, 1, 0, 3));
 }
 
-INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
+FORCE_INLINE __m128i blend_epi16(__m128i a, __m128i b, const int16_t imm8) {
+  const __m128i bits = _mm_set_epi16(0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01);
+  __m128i mask = _mm_set1_epi16(imm8);
+  mask = _mm_and_si128(mask, bits);
+  mask = _mm_cmpeq_epi16(mask, bits);
+  return _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
+}
+
+FORCE_INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
                          const uint8_t block[BLAKE3_BLOCK_LEN],
                          uint8_t block_len, uint64_t counter, uint8_t flags) {
   rows[0] = loadu((uint8_t *)&cv[0]);
@@ -122,11 +129,11 @@ INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t0);
   t1 = _mm_shuffle_ps2(m2, m3, _MM_SHUFFLE(3, 3, 2, 2));
   tt = _mm_shuffle_epi32(m0, _MM_SHUFFLE(0, 0, 3, 3));
-  t1 = _mm_blend_epi16(tt, t1, 0xCC);
+  t1 = blend_epi16(tt, t1, 0xCC);
   g2(&rows[0], &rows[1], &rows[2], &rows[3], t1);
   diagonalize(&rows[0], &rows[2], &rows[3]);
   t2 = _mm_unpacklo_epi64(m3, m1);
-  tt = _mm_blend_epi16(t2, m2, 0xC0);
+  tt = blend_epi16(t2, m2, 0xC0);
   t2 = _mm_shuffle_epi32(tt, _MM_SHUFFLE(1, 3, 2, 0));
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t2);
   t3 = _mm_unpackhi_epi32(m1, m3);
@@ -145,11 +152,11 @@ INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t0);
   t1 = _mm_shuffle_ps2(m2, m3, _MM_SHUFFLE(3, 3, 2, 2));
   tt = _mm_shuffle_epi32(m0, _MM_SHUFFLE(0, 0, 3, 3));
-  t1 = _mm_blend_epi16(tt, t1, 0xCC);
+  t1 = blend_epi16(tt, t1, 0xCC);
   g2(&rows[0], &rows[1], &rows[2], &rows[3], t1);
   diagonalize(&rows[0], &rows[2], &rows[3]);
   t2 = _mm_unpacklo_epi64(m3, m1);
-  tt = _mm_blend_epi16(t2, m2, 0xC0);
+  tt = blend_epi16(t2, m2, 0xC0);
   t2 = _mm_shuffle_epi32(tt, _MM_SHUFFLE(1, 3, 2, 0));
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t2);
   t3 = _mm_unpackhi_epi32(m1, m3);
@@ -168,11 +175,11 @@ INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t0);
   t1 = _mm_shuffle_ps2(m2, m3, _MM_SHUFFLE(3, 3, 2, 2));
   tt = _mm_shuffle_epi32(m0, _MM_SHUFFLE(0, 0, 3, 3));
-  t1 = _mm_blend_epi16(tt, t1, 0xCC);
+  t1 = blend_epi16(tt, t1, 0xCC);
   g2(&rows[0], &rows[1], &rows[2], &rows[3], t1);
   diagonalize(&rows[0], &rows[2], &rows[3]);
   t2 = _mm_unpacklo_epi64(m3, m1);
-  tt = _mm_blend_epi16(t2, m2, 0xC0);
+  tt = blend_epi16(t2, m2, 0xC0);
   t2 = _mm_shuffle_epi32(tt, _MM_SHUFFLE(1, 3, 2, 0));
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t2);
   t3 = _mm_unpackhi_epi32(m1, m3);
@@ -191,11 +198,11 @@ INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t0);
   t1 = _mm_shuffle_ps2(m2, m3, _MM_SHUFFLE(3, 3, 2, 2));
   tt = _mm_shuffle_epi32(m0, _MM_SHUFFLE(0, 0, 3, 3));
-  t1 = _mm_blend_epi16(tt, t1, 0xCC);
+  t1 = blend_epi16(tt, t1, 0xCC);
   g2(&rows[0], &rows[1], &rows[2], &rows[3], t1);
   diagonalize(&rows[0], &rows[2], &rows[3]);
   t2 = _mm_unpacklo_epi64(m3, m1);
-  tt = _mm_blend_epi16(t2, m2, 0xC0);
+  tt = blend_epi16(t2, m2, 0xC0);
   t2 = _mm_shuffle_epi32(tt, _MM_SHUFFLE(1, 3, 2, 0));
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t2);
   t3 = _mm_unpackhi_epi32(m1, m3);
@@ -214,11 +221,11 @@ INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t0);
   t1 = _mm_shuffle_ps2(m2, m3, _MM_SHUFFLE(3, 3, 2, 2));
   tt = _mm_shuffle_epi32(m0, _MM_SHUFFLE(0, 0, 3, 3));
-  t1 = _mm_blend_epi16(tt, t1, 0xCC);
+  t1 = blend_epi16(tt, t1, 0xCC);
   g2(&rows[0], &rows[1], &rows[2], &rows[3], t1);
   diagonalize(&rows[0], &rows[2], &rows[3]);
   t2 = _mm_unpacklo_epi64(m3, m1);
-  tt = _mm_blend_epi16(t2, m2, 0xC0);
+  tt = blend_epi16(t2, m2, 0xC0);
   t2 = _mm_shuffle_epi32(tt, _MM_SHUFFLE(1, 3, 2, 0));
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t2);
   t3 = _mm_unpackhi_epi32(m1, m3);
@@ -237,11 +244,11 @@ INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t0);
   t1 = _mm_shuffle_ps2(m2, m3, _MM_SHUFFLE(3, 3, 2, 2));
   tt = _mm_shuffle_epi32(m0, _MM_SHUFFLE(0, 0, 3, 3));
-  t1 = _mm_blend_epi16(tt, t1, 0xCC);
+  t1 = blend_epi16(tt, t1, 0xCC);
   g2(&rows[0], &rows[1], &rows[2], &rows[3], t1);
   diagonalize(&rows[0], &rows[2], &rows[3]);
   t2 = _mm_unpacklo_epi64(m3, m1);
-  tt = _mm_blend_epi16(t2, m2, 0xC0);
+  tt = blend_epi16(t2, m2, 0xC0);
   t2 = _mm_shuffle_epi32(tt, _MM_SHUFFLE(1, 3, 2, 0));
   g1(&rows[0], &rows[1], &rows[2], &rows[3], t2);
   t3 = _mm_unpackhi_epi32(m1, m3);
@@ -251,20 +258,20 @@ INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   undiagonalize(&rows[0], &rows[2], &rows[3]);
 }
 
-void blake3_compress_in_place_sse41(uint32_t cv[8],
-                                    const uint8_t block[BLAKE3_BLOCK_LEN],
-                                    uint8_t block_len, uint64_t counter,
-                                    uint8_t flags) {
+void blake3_compress_in_place(uint32_t cv[8],
+                                   const uint8_t block[BLAKE3_BLOCK_LEN],
+                                   uint8_t block_len, uint64_t counter,
+                                   uint8_t flags) {
   __m128i rows[4];
   compress_pre(rows, cv, block, block_len, counter, flags);
   storeu(xorv(rows[0], rows[2]), (uint8_t *)&cv[0]);
   storeu(xorv(rows[1], rows[3]), (uint8_t *)&cv[4]);
 }
 
-void blake3_compress_xof_sse41(const uint32_t cv[8],
-                               const uint8_t block[BLAKE3_BLOCK_LEN],
-                               uint8_t block_len, uint64_t counter,
-                               uint8_t flags, uint8_t out[64]) {
+void blake3_compress_xof(const uint32_t cv[8],
+                              const uint8_t block[BLAKE3_BLOCK_LEN],
+                              uint8_t block_len, uint64_t counter,
+                              uint8_t flags, uint8_t out[64]) {
   __m128i rows[4];
   compress_pre(rows, cv, block, block_len, counter, flags);
   storeu(xorv(rows[0], rows[2]), &out[0]);
@@ -273,7 +280,7 @@ void blake3_compress_xof_sse41(const uint32_t cv[8],
   storeu(xorv(rows[3], loadu((uint8_t *)&cv[4])), &out[48]);
 }
 
-INLINE void round_fn(__m128i v[16], __m128i m[16], size_t r) {
+FORCE_INLINE void round_fn(__m128i v[16], __m128i m[16], size_t r) {
   v[0] = addv(v[0], m[(size_t)MSG_SCHEDULE[r][0]]);
   v[1] = addv(v[1], m[(size_t)MSG_SCHEDULE[r][2]]);
   v[2] = addv(v[2], m[(size_t)MSG_SCHEDULE[r][4]]);
@@ -389,7 +396,7 @@ INLINE void round_fn(__m128i v[16], __m128i m[16], size_t r) {
   v[4] = rot7(v[4]);
 }
 
-INLINE void transpose_vecs(__m128i vecs[DEGREE]) {
+FORCE_INLINE void transpose_vecs(__m128i vecs[DEGREE]) {
   // Interleave 32-bit lates. The low unpack is lanes 00/11 and the high is
   // 22/33. Note that this doesn't split the vector into two lanes, as the
   // AVX2 counterparts do.
@@ -410,7 +417,7 @@ INLINE void transpose_vecs(__m128i vecs[DEGREE]) {
   vecs[3] = abcd_3;
 }
 
-INLINE void transpose_msg_vecs(const uint8_t *const *inputs,
+FORCE_INLINE void transpose_msg_vecs(const uint8_t *const *inputs,
                                size_t block_offset, __m128i out[16]) {
   out[0] = loadu(&inputs[0][block_offset + 0 * sizeof(__m128i)]);
   out[1] = loadu(&inputs[1][block_offset + 0 * sizeof(__m128i)]);
@@ -428,27 +435,33 @@ INLINE void transpose_msg_vecs(const uint8_t *const *inputs,
   out[13] = loadu(&inputs[1][block_offset + 3 * sizeof(__m128i)]);
   out[14] = loadu(&inputs[2][block_offset + 3 * sizeof(__m128i)]);
   out[15] = loadu(&inputs[3][block_offset + 3 * sizeof(__m128i)]);
+  for (size_t i = 0; i < 4; ++i) {
+    _mm_prefetch((const void *)&inputs[i][block_offset + 256], _MM_HINT_T0);
+  }
   transpose_vecs(&out[0]);
   transpose_vecs(&out[4]);
   transpose_vecs(&out[8]);
   transpose_vecs(&out[12]);
 }
 
-INLINE void load_counters(uint64_t counter, bool increment_counter,
-                          __m128i *out_low, __m128i *out_high) {
-  uint64_t mask = (increment_counter ? ~0 : 0);
-  *out_low = set4(
-      counter_low(counter + (mask & 0)), counter_low(counter + (mask & 1)),
-      counter_low(counter + (mask & 2)), counter_low(counter + (mask & 3)));
-  *out_high = set4(
-      counter_high(counter + (mask & 0)), counter_high(counter + (mask & 1)),
-      counter_high(counter + (mask & 2)), counter_high(counter + (mask & 3)));
+FORCE_INLINE void load_counters(uint64_t counter, bool increment_counter,
+                          __m128i *out_lo, __m128i *out_hi) {
+  const __m128i mask = _mm_set1_epi32(-(int32_t)increment_counter);
+  const __m128i add0 = _mm_set_epi32(3, 2, 1, 0);
+  const __m128i add1 = _mm_and_si128(mask, add0);
+  __m128i l = _mm_add_epi32(_mm_set1_epi32((int32_t)counter), add1);
+  __m128i carry = _mm_cmpgt_epi32(_mm_xor_si128(add1, _mm_set1_epi32(0x80000000)),
+                                  _mm_xor_si128(   l, _mm_set1_epi32(0x80000000)));
+  __m128i h = _mm_sub_epi32(_mm_set1_epi32((int32_t)(counter >> 32)), carry);
+  *out_lo = l;
+  *out_hi = h;
 }
 
-void blake3_hash4_sse41(const uint8_t *const *inputs, size_t blocks,
-                        const uint32_t key[8], uint64_t counter,
-                        bool increment_counter, uint8_t flags,
-                        uint8_t flags_start, uint8_t flags_end, uint8_t *out) {
+static
+void blake3_hash4(const uint8_t *const *inputs, size_t blocks,
+                       const uint32_t key[8], uint64_t counter,
+                       bool increment_counter, uint8_t flags,
+                       uint8_t flags_start, uint8_t flags_end, uint8_t *out) {
   __m128i h_vecs[8] = {
       set1(key[0]), set1(key[1]), set1(key[2]), set1(key[3]),
       set1(key[4]), set1(key[5]), set1(key[6]), set1(key[7]),
@@ -506,10 +519,10 @@ void blake3_hash4_sse41(const uint8_t *const *inputs, size_t blocks,
   storeu(h_vecs[7], &out[7 * sizeof(__m128i)]);
 }
 
-INLINE void hash_one_sse41(const uint8_t *input, size_t blocks,
-                           const uint32_t key[8], uint64_t counter,
-                           uint8_t flags, uint8_t flags_start,
-                           uint8_t flags_end, uint8_t out[BLAKE3_OUT_LEN]) {
+FORCE_INLINE void hash_one(const uint8_t *input, size_t blocks,
+                          const uint32_t key[8], uint64_t counter,
+                          uint8_t flags, uint8_t flags_start,
+                          uint8_t flags_end, uint8_t out[BLAKE3_OUT_LEN]) {
   uint32_t cv[8];
   memcpy(cv, key, BLAKE3_KEY_LEN);
   uint8_t block_flags = flags | flags_start;
@@ -517,8 +530,8 @@ INLINE void hash_one_sse41(const uint8_t *input, size_t blocks,
     if (blocks == 1) {
       block_flags |= flags_end;
     }
-    blake3_compress_in_place_sse41(cv, input, BLAKE3_BLOCK_LEN, counter,
-                                   block_flags);
+    blake3_compress_in_place(cv, input, BLAKE3_BLOCK_LEN, counter,
+                                  block_flags);
     input = &input[BLAKE3_BLOCK_LEN];
     blocks -= 1;
     block_flags = flags;
@@ -526,14 +539,14 @@ INLINE void hash_one_sse41(const uint8_t *input, size_t blocks,
   memcpy(out, cv, BLAKE3_OUT_LEN);
 }
 
-void blake3_hash_many_sse41(const uint8_t *const *inputs, size_t num_inputs,
-                            size_t blocks, const uint32_t key[8],
-                            uint64_t counter, bool increment_counter,
-                            uint8_t flags, uint8_t flags_start,
-                            uint8_t flags_end, uint8_t *out) {
+void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
+                           size_t blocks, const uint32_t key[8],
+                           uint64_t counter, bool increment_counter,
+                           uint8_t flags, uint8_t flags_start,
+                           uint8_t flags_end, uint8_t *out) {
   while (num_inputs >= DEGREE) {
-    blake3_hash4_sse41(inputs, blocks, key, counter, increment_counter, flags,
-                       flags_start, flags_end, out);
+    blake3_hash4(inputs, blocks, key, counter, increment_counter, flags,
+                      flags_start, flags_end, out);
     if (increment_counter) {
       counter += DEGREE;
     }
@@ -542,8 +555,8 @@ void blake3_hash_many_sse41(const uint8_t *const *inputs, size_t num_inputs,
     out = &out[DEGREE * BLAKE3_OUT_LEN];
   }
   while (num_inputs > 0) {
-    hash_one_sse41(inputs[0], blocks, key, counter, flags, flags_start,
-                   flags_end, out);
+    hash_one(inputs[0], blocks, key, counter, flags, flags_start,
+                  flags_end, out);
     if (increment_counter) {
       counter += 1;
     }
