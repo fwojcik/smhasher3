@@ -48,6 +48,7 @@ unsigned refs() {
     USE_FAMILY(PMP_mutilinear);
     USE_FAMILY(falkhash);
     USE_FAMILY(spookyhash);
+    USE_FAMILY(metrohash);
 
     return 0;
 }

@@ -486,10 +486,6 @@ if(SSE42_FOUND)
   # 64bit only:
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(X86_64ONLY_SRC farmhash-c.c farmhash-c-test.cc clhash.c)
-    if(NOT MSVC)
-      list(APPEND X86_64ONLY_SRC metrohash/metrohash64crc.cpp
-           metrohash/metrohash128crc.cpp)
-    endif()
   else()
     message(STATUS "32bit only: CMAKE_SIZEOF_VOID_P=${CMAKE_SIZEOF_VOID_P}")
   endif()
@@ -623,6 +619,7 @@ add_library(
   pmp_multilinear.cpp
   falkhash.cpp
   spookyhash.cpp
+  metrohash.cpp
 )
 
 add_library(
@@ -632,7 +629,6 @@ add_library(
 #
   ${HIGHWAY_SRC}
   ${SSE2_SRC}
-  ${SSE4_SRC}
   ${SIPHASH_SRC}
   ${SSE4_OBJ}
   ${T1HA_SRC}
@@ -653,10 +649,6 @@ add_library(
   floppsyhash.cpp
   fasthash.cpp
   xxhash.c
-  metrohash/metrohash64.cpp
-  metrohash/metrohash128.cpp
-  cmetrohash64.c
-  opt_cmetrohash64_1.c
   farmhash.cc
   FarmTest.cc
   jody_hash32.c
