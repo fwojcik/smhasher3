@@ -175,7 +175,7 @@ static void SHA256_Transform_portable(uint32_t state[8], const uint8_t buffer[64
   state[7] += h;
 }
 
-#if defined(NEW_HAVE_SHA_X86_64)
+#if defined(NEW_HAVE_SHA2_X86_64)
 template < bool bswap >
 static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
   __m128i STATE0, STATE1;
