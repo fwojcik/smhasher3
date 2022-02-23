@@ -49,6 +49,8 @@ unsigned refs() {
     USE_FAMILY(falkhash);
     USE_FAMILY(spookyhash);
     USE_FAMILY(metrohash);
+    USE_FAMILY(pearson);
+    USE_FAMILY(blockpearson);
 
     return 0;
 }

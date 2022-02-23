@@ -525,10 +525,6 @@ else()
   set(T1HA_SRC t1ha/t1ha0.c t1ha/t1ha1.c t1ha/t1ha2.c)
 endif(AES_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel"))
 
-if(SSE42_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel") AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
-  set(SSE4_OBJ ${SSE4_OBJ} pearson_hash/pearson.c)
-endif()
-
 if(NOT MSVC)
   set(NOTMSVC_SRC seahash.c)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -flax-vector-conversions -Wno-ignored-attributes")
@@ -620,6 +616,8 @@ add_library(
   falkhash.cpp
   spookyhash.cpp
   metrohash.cpp
+  pearson.cpp
+  blockpearson.cpp
 )
 
 add_library(
@@ -630,10 +628,8 @@ add_library(
   ${HIGHWAY_SRC}
   ${SSE2_SRC}
   ${SIPHASH_SRC}
-  ${SSE4_OBJ}
   ${T1HA_SRC}
   ${TSIP_SRC}
-  # ${BEAGLE_SRC}
   ${NOTMSVC_SRC}
   ${X86_64ONLY_SRC}
   ${ASCON_SRC}
@@ -656,5 +652,4 @@ add_library(
   vmac.cpp
   rijndael-alg-fst.c
   pengyhash.c
-  pearson_hash/pearsonb.c
 )
