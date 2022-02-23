@@ -124,7 +124,7 @@ endif()
 
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_ssse3.cpp)
 if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SSSE2)
+  add_definitions(-DNEW_HAVE_SSSE3)
   message(STATUS "x86_64 SSSE3 intrinsics available")
 endif()
 
