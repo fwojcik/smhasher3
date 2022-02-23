@@ -156,7 +156,7 @@ static void calcBiasRange ( const HashFn hash, std::vector<int> &bins,
 
       for(int oByte = 0; oByte < hashbytes; oByte++)
       {
-        int byte = getbyte(B, oByte);
+        uint32_t byte = getbyte(B, oByte);
         for(int oBit = 0; oBit < 8; oBit++)
         {
           (*cursor++) += byte & 1;

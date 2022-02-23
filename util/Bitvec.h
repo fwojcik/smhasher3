@@ -459,7 +459,7 @@ static void radixsort( T * begin, T * end )
   // the last one.
   do {
     for (size_t pass = 0; pass < RADIX_LEVELS; pass++) {
-      int value = getbyte(*ptr, pass);
+      uint32_t value = getbyte(*ptr, pass);
       ++freqs[pass][value];
     }
   } while (++ptr < (end - 1));
@@ -468,7 +468,7 @@ static void radixsort( T * begin, T * end )
   // therefore be skipped entirely.
   size_t trivial_passes = 0;
   for (size_t pass = 0; pass < RADIX_LEVELS; pass++) {
-    int value = getbyte(*ptr, pass);
+    uint32_t value = getbyte(*ptr, pass);
     if (++freqs[pass][value] == count)
       trivial_passes |= 1UL << pass;
   }
@@ -494,7 +494,7 @@ static void radixsort( T * begin, T * end )
 
     // Copy each element into its queue based on the current byte.
     for (size_t i = 0; i < count; i++) {
-      int index = getbyte(from[i], pass);
+      uint32_t index = getbyte(from[i], pass);
       *queue_ptrs[index]++ = from[i];
       __builtin_prefetch(queue_ptrs[index] + 1);
     }
@@ -568,7 +568,7 @@ static void flagsort( T * begin, T * end, int idx )
       nxt += freqs[curblock];
       continue;
     }
-    unsigned value = getbyte(*ptr, idx);
+    uint32_t value = getbyte(*ptr, idx);
     if (expectp(value == curblock, 0.501155)) {
       ptr++;
       continue;
