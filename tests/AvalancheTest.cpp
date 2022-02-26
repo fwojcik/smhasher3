@@ -58,7 +58,11 @@
 #include <cassert>
 #include <math.h>
 
-#ifdef HAVE_THREADS
+#if defined(NEW_HAVE_AVX2)
+#include <immintrin.h>
+#endif
+
+#if defined(HAVE_THREADS)
 #include <atomic>
 typedef std::atomic<int> a_int;
 #else
@@ -67,7 +71,7 @@ typedef int a_int;
 
 //-----------------------------------------------------------------------------
 
-static void PrintAvalancheDiagram ( int x, int y, int reps, double scale, int * bins )
+static void PrintAvalancheDiagram ( int x, int y, int reps, double scale, uint32_t * bins )
 {
   const char * symbols = ".123456789X";
 
@@ -78,7 +82,7 @@ static void PrintAvalancheDiagram ( int x, int y, int reps, double scale, int * 
     {
       int k = (y - i) -1;
 
-      int bin = bins[k + (j*y)];
+      uint32_t bin = bins[k + (j*y)];
 
       double b = double(bin) / double(reps);
       b = fabs(b*2 - 1);
@@ -100,14 +104,14 @@ static void PrintAvalancheDiagram ( int x, int y, int reps, double scale, int * 
 
 //----------------------------------------------------------------------------
 
-static int maxBias ( int * counts, int buckets, int reps )
+static int maxBias ( uint32_t * counts, int buckets, int reps )
 {
   int expected = reps / 2;
   int worst = 0;
 
   for(int i = 0; i < buckets; i++)
   {
-    int c = abs(counts[i] - expected);
+    int c = abs((int)counts[i] - expected);
     if(worst < c)
       worst = c;
   }
@@ -124,12 +128,24 @@ static int maxBias ( int * counts, int buckets, int reps )
 // hash function to fail to create an even, random distribution of hash values.
 
 template < typename hashtype >
-static void calcBiasRange ( const HashFn hash, std::vector<int> &bins,
+static void calcBiasRange ( const HashFn hash, std::vector<uint32_t> &bins,
                      const int keybytes, const uint8_t * keys,
                      a_int & irepp, const int reps, const bool verbose )
 {
   const int keybits = keybytes * 8;
   const int hashbytes = sizeof(hashtype);
+#if defined(NEW_HAVE_AVX2)
+  const __m256i ONE  = _mm256_set1_epi32(1);
+  const __m256i MASK = _mm256_setr_epi32(
+                                         1 << 0,
+                                         1 << 1,
+                                         1 << 2,
+                                         1 << 3,
+                                         1 << 4,
+                                         1 << 5,
+                                         1 << 6,
+                                         1 << 7);
+#endif
 
   uint8_t K[keybytes];
   hashtype A,B;
@@ -144,7 +160,7 @@ static void calcBiasRange ( const HashFn hash, std::vector<int> &bins,
     memcpy(K,&keys[keybytes * irep],keybytes);
     hash(K,keybytes,g_seed,&A);
 
-    int * cursor = &bins[0];
+    uint32_t * cursor = &bins[0];
 
     for(int iBit = 0; iBit < keybits; iBit++)
     {
@@ -154,15 +170,50 @@ static void calcBiasRange ( const HashFn hash, std::vector<int> &bins,
 
       B ^= A;
 
-      for(int oByte = 0; oByte < hashbytes; oByte++)
-      {
-        uint32_t byte = getbyte(B, oByte);
-        for(int oBit = 0; oBit < 8; oBit++)
-        {
-          (*cursor++) += byte & 1;
-          byte >>= 1;
-        }
+#if defined(NEW_HAVE_AVX2)
+      for(int oWord = 0; oWord < (hashbytes/4); oWord++) {
+          // Get the next 32-bit chunk of the hash difference
+          uint32_t word;
+          memcpy(&word, ((const uint8_t *)&B) + 4*oWord, 4);
+
+          // Expand it out into 4 sets of 8 32-bit integer words, with
+          // each integer being zero or one.
+          __m256i base  = _mm256_set1_epi32(word);
+          __m256i incr1 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+          base = _mm256_srli_epi32(base, 8);
+          __m256i incr2 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+          base = _mm256_srli_epi32(base, 8);
+          __m256i incr3 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+          base = _mm256_srli_epi32(base, 8);
+          __m256i incr4 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+
+          // Add these into the counts in bins[]
+          __m256i cnt1  = _mm256_loadu_si256((const __m256i *)cursor);
+          cnt1 = _mm256_add_epi32(cnt1, incr1);
+          _mm256_storeu_si256((__m256i *)cursor, cnt1);
+          cursor += 8;
+          __m256i cnt2  = _mm256_loadu_si256((const __m256i *)cursor);
+          cnt2 = _mm256_add_epi32(cnt2, incr2);
+          _mm256_storeu_si256((__m256i *)cursor, cnt2);
+          cursor += 8;
+          __m256i cnt3  = _mm256_loadu_si256((const __m256i *)cursor);
+          cnt3 = _mm256_add_epi32(cnt3, incr3);
+          _mm256_storeu_si256((__m256i *)cursor, cnt3);
+          cursor += 8;
+          __m256i cnt4  = _mm256_loadu_si256((const __m256i *)cursor);
+          cnt4 = _mm256_add_epi32(cnt4, incr4);
+          _mm256_storeu_si256((__m256i *)cursor, cnt4);
+          cursor += 8;
       }
+#else
+      for(int oByte = 0; oByte < hashbytes; oByte++) {
+          uint32_t byte = getbyte(B, oByte);
+          for(int oBit = 0; oBit < 8; oBit++) {
+              (*cursor++) += byte & 1;
+              byte >>= 1;
+          }
+      }
+#endif
     }
   }
 }
@@ -193,7 +244,7 @@ static bool AvalancheImpl ( HashFn hash, const int keybits, const int reps, bool
 
   a_int irep(0);
 
-  std::vector<std::vector<int> > bins(g_NCPU);
+  std::vector<std::vector<uint32_t> > bins(g_NCPU);
   for (unsigned i = 0; i < g_NCPU; i++) {
       bins[i].resize(arraysize);
   }
