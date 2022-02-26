@@ -134,6 +134,12 @@ if(RESULT_VAR)
   message(STATUS "x86_64 SSE 4.1 intrinsics available")
 endif()
 
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_avx2.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_AVX2)
+  message(STATUS "x86_64 AVX2 intrinsics available")
+endif()
+
 try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${HASHSRCDIR}/x86_64_xop.cpp)
 if(RESULT_VAR)
   add_definitions(-DNEW_HAVE_XOP)
