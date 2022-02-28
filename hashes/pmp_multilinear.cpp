@@ -29,8 +29,7 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#define HAVE_MULQ 1
-#define HAVE_x64 1
+#include "mathmult.h"
 
 #include <functional>
 using namespace std;
@@ -632,77 +631,18 @@ inline uint64_t fmix64_short(uint64_t k) {
 // 32-bit hash
 
 inline
-void multiply32x32to64(uint32_t& rhi, uint32_t& rlo, uint32_t a, uint32_t b)
-{
-#if defined __arm__ || defined __aarch64__
-__asm("UMULL %0, %1, %2, %3\n"
-      : "+r" (rlo), "+r" (rhi)
-      : "r" (a), "r" (b) : "cc", "memory" );
-#elif defined(HAVE_x64)
-__asm__(
-"    mull  %[b]\n"
-:"=d"(rhi),"=a"(rlo)
-:"1"(a),[b]"rm"(b));
-#else
- uint64_t r = (uint64_t)(a) * (uint64_t)(b);
- rhi = (uint32_t)(r >> 32);
- rlo = (uint32_t)(r);
-#endif
+void multiply32x32to64(uint32_t& rhi, uint32_t& rlo, uint32_t a, uint32_t b) {
+    mult32_64(rlo, rhi, a, b);
 }
 
 inline
-void add64(uint32_t& loWord, uint32_t& hiWord, uint32_t& hhWord, uint32_t& loAdd, uint32_t& hiAdd, uint32_t& hhAdd)
-{
-#if defined __arm__ || defined __aarch64__
-__asm("ADDS %3, %3, %0\n"
-      "ADCS %1, %4, %1\n"
-      "ADC %2, %5, %2"
-      : "+r" (loWord), "+r" (hiWord), "+r" (hhWord)
-      : "r" (loAdd), "r" (hiAdd), "r" (hhAdd) : "cc", "memory" );
-#elif defined(HAVE_x64)
-__asm("addl %3, %0\n"
-      "adcl %4, %1\n"
-      "adcl %5, %2"
-      : "+g" (loWord), "+g" (hiWord), "+g" (hhWord)
-      : "g" (loAdd), "g" (hiAdd), "g" (hhAdd) : "cc", "memory" );
-#else
- uint64_t w = (((uint64_t)hiWord) << 32) + ((uint64_t)loWord);
- uint64_t r = (((uint64_t)hiAdd) << 32) + ((uint64_t)loAdd) + w;
- if (r < w) { hhWord++; }
- hhWord += hhAdd;
- hiWord = (uint32_t)(r >> 32);
- loWord = (uint32_t)(r);
-#endif
+void add64(uint32_t& loWord, uint32_t& hiWord, uint32_t& hhWord, uint32_t& loAdd, uint32_t& hiAdd, uint32_t& hhAdd) {
+    add96(loWord, hiWord, hhWord, loAdd, hiAdd, hhAdd);
 }
 
 FORCE_INLINE
-void mul32x32to64addto96(uint32_t& loWord, uint32_t& hiWord, uint32_t& hhWord, uint32_t a, uint32_t b)
-{
-  uint32_t rhi, rlo;
-#if defined __arm__ || defined __aarch64__
-
-__asm("UMULL %3, %4, %5, %6\n"
-      "ADDS %0, %3, %0\n"
-      "ADCS %1, %4, %1\n"
-      "ADC %2, %2, #0x0"
-      : "+r" (loWord), "+r" (hiWord), "+r" (hhWord), "=r" (rlo), "=r" (rhi)
-      : "r" (a), "r" (b) : "cc" );
-
-#elif defined(HAVE_x64)
-(void)rlo;
-
-__asm__( "mull %5\n"
-        "addl %%eax, %0\n"
-        "adcl %%edx, %1\n"
-        "adcl $0, %2\n"
-        : "+g" (loWord), "+g" (hiWord), "+g" (hhWord), "=a" (rhi)
-        :"a"(a), "g"(b) : "edx", "cc" );
-
-#else
- uint32_t hhAdd = 0;
- multiply32x32to64(rhi,rlo,a,b);
- add64(loWord, hiWord, hhWord, rlo, rhi, hhAdd);
-#endif
+void mul32x32to64addto96(uint32_t& loWord, uint32_t& hiWord, uint32_t& hhWord, uint32_t a, uint32_t b) {
+    fma32_96(loWord, hiWord, hhWord, a, b);
 }
 
 #define PMPML_CHUNK_LOOP_INTRO_L0 \
@@ -1842,23 +1782,7 @@ public:
 // 64-bit hash
 
 static FORCE_INLINE void MultiplyWordLoHi(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
-#if defined(HAVE_MULQ)
-  __asm__("    mulq  %[b]\n"
-	  :"=d"(rhi),"=a"(rlo)
-	  :"1"(a),[b]"rm"(b)
-	  );
-#elif defined(NEW_HAVE_UMUL128)
-  rlo = _umul128((a),(b),&(rhi));
-#elif defined(__aarch64__)
-  rlo = a * b;
-  asm("umulh %0, %1, %2" : "=r" (rhi) : "r" (a), "r" (b));
-#elif defined(HAVE_INT128)
-  uint128_t r = (uint128_t)a * (uint128_t)b;
-  rhi = (uint64_t) (r >> 64);
-  rlo = (uint64_t) r;
-#else
-#error "not implemented yet"
-#endif
+    mult64_128(rlo, rhi, a, b);
 }
 
 /*
@@ -1866,23 +1790,7 @@ static FORCE_INLINE void MultiplyWordLoHi(uint64_t& rlo, uint64_t& rhi, uint64_t
  * value spread across rhi:rlo.
  */
 static FORCE_INLINE void AccumulateLoHi(uint64_t& rlo, uint64_t& rhi, uint64_t alo) {
-#if defined(HAVE_MULQ)
-  __asm__("addq %2, %0\n"			\
-	  "adcq $0, %1\n"
-#if defined(__clang__)
-// clang cannot work properly with "g" and silently produces hardly-workging code, if "g" is specified; see, for instance, here:
-// http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-// To avoid 3x performance hit we have to specify sources/destinations
-           : "+r" (rlo), "+r" (rhi)
-           : "m" (alo)
-#else
-           : "+g" (rlo), "+g" (rhi)
-           : "g" (alo)
-#endif
-           : "cc" , "memory");
-#else
-#error "not implemented yet"
-#endif
+    add128(rlo, rhi, alo);
 }
 
 /*
@@ -1890,24 +1798,7 @@ static FORCE_INLINE void AccumulateLoHi(uint64_t& rlo, uint64_t& rhi, uint64_t a
  * value spread across rhi:rmi:rlo.
  */
 static FORCE_INLINE void AccumulateLoMidHi(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uint64_t alo, uint64_t ami, uint64_t ahi) {
-#if defined(HAVE_MULQ)
-  __asm__("addq %3, %0\n"			\
-	  "adcq %4, %1\n"			\
-	  "adcq %5, %2\n"
-#if defined(__clang__)
-// clang cannot work properly with "g" and silently produces hardly-workging code, if "g" is specified; see, for instance, here:
-// http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-// To avoid 3x performance hit we have to specify sources/destinations
-           : "+r" (rlo), "+r" (rmi), "+r" (rhi)
-           : "m" (alo), "m"(ami), "m"(ahi)
-#else
-           : "+g" (rlo), "+g" (rmi), "+g" (rhi)
-           : "g" (alo), "g"(ami), "g"(ahi)
-#endif
-	   : "cc" );
-#else
-#error "not implemented yet"
-#endif
+    add192(rlo, rmi, rhi, alo, ami, ahi);
 }
 
 /*
@@ -1915,31 +1806,7 @@ static FORCE_INLINE void AccumulateLoMidHi(uint64_t& rlo, uint64_t& rmi, uint64_
  * 192-bit value spread across rhi:rmi:rlo.
  */
 static FORCE_INLINE void MultiplyAccumulateWordLoMidHi(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uint64_t a, uint64_t b) {
-#if defined(HAVE_MULQ)
-  /*
-   * Dummy variable to tell the compiler that the register rax is
-   * input and clobbered but not actually output; see assembler code
-   * below. Better syntactic expression is very welcome.
-   */
-  uint64_t dummy;
-  __asm__( "mulq %5\n"							\
-	   "addq %%rax, %0\n"						\
-	   "adcq %%rdx, %1\n"						\
-	   "adcq $0, %2\n"
-#if defined(__clang__)
-// clang cannot work properly with "g" and silently produces hardly-workging code, if "g" is specified; see, for instance, here:
-// http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-// To avoid 3x performance hit we have to specify sources/destinations
-	   : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
-	   : "a"(a), "m"(b)
-#else
-	   : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (dummy)
-	   : "a"(a), "g"(b)
-#endif
-	   : "rdx", "cc" );
-#else
-#error "not implemented yet"
-#endif
+    fma64_192(rlo, rmi, rhi, a, b);
 }
 
 /*
@@ -1947,33 +1814,10 @@ static FORCE_INLINE void MultiplyAccumulateWordLoMidHi(uint64_t& rlo, uint64_t& 
  * 128-bit value spread across rhi:rlo.
  */
 static FORCE_INLINE void MultiplyAccumulateWordLoHi(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
-#if defined(HAVE_MULQ)
-  /*
-   * Dummy variable to tell the compiler that the register rax is
-   * input and clobbered but not actually output; see assembler code
-   * below. Better syntactic expression is very welcome.
-   */
-  uint64_t dummy;
-  __asm__( "mulq %4\n"							\
-	   "addq %%rax, %0\n"						\
-	   "adcq %%rdx, %1\n"
-#if defined(__clang__)
-// clang cannot work properly with "g" and silently produces hardly-workging code, if "g" is specified; see, for instance, here:
-// http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-// To avoid 3x performance hit we have to specify sources/destinations
-	   : "+r" (rlo), "+r" (rhi), "=a" (dummy)
-	   : "a"(a), "m"(b)
-#else
-	   : "+g" (rlo), "+g" (rhi), "=a" (dummy)
-	   : "a"(a), "g"(b)
-#endif
-	   : "rdx", "cc" );
-#else
-#error "not implemented yet"
-#endif
+    fma64_128(rlo, rhi, a, b);
 }
 
-#define ADD_SHIFT_ADD_NORMALIZE( lo, hi ) {\
+#define ADD_SHIFT_ADD_NORMALIZE( lo, hi ) {     \
 	uint32_t lohi = lo >> 32; \
 	uint32_t hilo = hi; \
 	uint32_t diff = lohi - hilo; \
@@ -2716,7 +2560,7 @@ REGISTER_HASH(PMPML_32,
   $.hash_flags =
 	FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_LICENSE_MIT,
+        FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
   $.verification_LE = 0xF3199670,
   $.verification_BE = 0x39FA6DFF,
@@ -2730,7 +2574,7 @@ REGISTER_HASH(PMPML_64,
   $.hash_flags =
 	      0,
   $.impl_flags =
-        FLAG_IMPL_LICENSE_MIT,
+        FLAG_IMPL_LICENSE_BSD,
   $.bits = 64,
   $.verification_LE = 0xB776D2B9,
   $.verification_BE = 0x8E1E0CDF,

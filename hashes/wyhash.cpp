@@ -39,6 +39,8 @@
 #include "Types.h"
 #include "Hashlib.h"
 
+#include "mathmult.h"
+
 //-----------------------------------------------------------------------------
 // Data reading functions, common to 32- and 64-bit hashes
 template < bool bswap >
@@ -72,33 +74,15 @@ static inline void _wymum(uint64_t *A, uint64_t *B){
       *A^=_wyrot(hl)^hh; *B^=_wyrot(lh)^ll;
     } else {
       *A=_wyrot(hl)^hh; *B=_wyrot(lh)^ll;
-    }
+   }
   } else {
-#if defined(HAVE_INT128)
-    uint128_t r=*A; r*=*B;
-    if (strict) {
-      *A^=(uint64_t)r; *B^=(uint64_t)(r>>64);
-    } else {
-      *A=(uint64_t)r; *B=(uint64_t)(r>>64);
-    }
-#elif defined(NEW_HAVE_UMUL128)
-    if (strict) {
-      uint64_t  a,  b;
-      a=_umul128(*A,*B,&b);
-      *A^=a;  *B^=b;
-    } else {
-      *A=_umul128(*A,*B,B);
-    }
-#else
-    uint64_t ha=*A>>32, hb=*B>>32, la=(uint32_t)*A, lb=(uint32_t)*B, hi, lo;
-    uint64_t rh=ha*hb, rm0=ha*lb, rm1=hb*la, rl=la*lb, t=rl+(rm0<<32), c=t<rl;
-    lo=t+(rm1<<32); c+=lo<t; hi=rh+(rm0>>32)+(rm1>>32)+c;
-    if (strict) {
-      *A^=lo;  *B^=hi;
-    } else {
-      *A=lo;  *B=hi;
-    }
-#endif
+      uint64_t rlo, rhi;
+      mult64_128(rlo, rhi, *A, *B);
+      if (strict) {
+          *A^=rlo; *B^=rhi;
+      } else {
+          *A=rlo; *B=rhi;
+      }
   }
 }
 

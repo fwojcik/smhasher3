@@ -36,6 +36,8 @@
 #include "Types.h"
 #include "Hashlib.h"
 
+#include "mathmult.h"
+
 #include <cassert>
 
 //-----------------------------------------------------------------------------
@@ -220,8 +222,18 @@ static inline uint64_t combine61(uint64_t h, uint64_t x, uint64_t a) {
    // a <= p-1  = 2^b-2     (60 bits suffices)
       // actually, checking the proof, it's fine if a is 61 bits.
    // h <= 2p-1 = 2^62-3. this will also be guaranteed of the output.
-   uint128_t temp = (uint128_t)h * x + a;
-   return ((uint64_t)temp & TAB_MERSENNE_61) + (uint64_t)(temp >> 61);
+
+    //uint128_t temp = (uint128_t)h * x + a;
+    //return ((uint64_t)temp & TAB_MERSENNE_61) + (uint64_t)(temp >> 61);
+
+    uint64_t rhi = 0, rlo = a;
+    fma64_128(rlo, rhi, h, x);
+
+    rhi <<= (64 - 61);
+    rhi |= (rlo >> 61);
+    rlo &= TAB_MERSENNE_61;
+
+    return rlo + rhi;
 }
 
 template < bool bswap >

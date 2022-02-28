@@ -26,6 +26,8 @@
 #include "Types.h"
 #include "Hashlib.h"
 
+#include "mathmult.h"
+
 //-----------------------------------------------------------------------------
 // Multiply 64-bit V and P and return sum of high and low parts of the
 // result.
@@ -40,56 +42,13 @@
 // The code has been reworked to allow both forms to always be
 // calculable on every platform.
 template < bool exact >
-#if defined(HAS_AVX2)
-/*
- * We want to use AVX2 insn MULX instead of generic x86-64 MULQ
- * where it is possible.  Although on modern Intel processors MULQ
- * takes 3-cycles vs. 4 for MULX, MULX permits more freedom in
- * insn scheduling as it uses less fixed registers.
- */
-//_MUM_TARGET("arch=haswell")
-#endif
 static inline uint64_t _mum(uint64_t v, uint64_t p) {
     uint64_t hi, lo;
     if (exact) {
-#if defined(__aarch64__)
-        /*
-         * AARCH64 needs 2 insns to calculate 128-bit result of the
-         * multiplication.  If we use a generic code we actually call a
-         * function doing 128x128->128 bit multiplication. The function
-         * is very slow.
-         */
-        lo = v * p;
-        asm ("umulh %0, %1, %2" : "=r" (hi) : "r" (v), "r" (p));
-        return hi + lo;
-#elif defined(HAVE_INT128)
-        uint128_t r = (uint128_t)v * (uint128_t)p;
-        hi = (uint64_t) (r >> 64);
-        lo = (uint64_t) r;
-        return hi + lo;
-#endif
+        mult64_128(lo, hi, v, p);
+    } else {
+        mult64_128_nocarry(lo, hi, v, p);
     }
-    /*
-     * Implementation of 64x64->128-bit multiplication by four
-     * 32x32->64 bit multiplication.
-     */
-    uint64_t hv = v >> 32, hp = p >> 32;
-    uint64_t lv = (uint32_t) v, lp = (uint32_t) p;
-    uint64_t rh =  hv * hp;
-    uint64_t rm_0 = hv * lp;
-    uint64_t rm_1 = hp * lv;
-    uint64_t rl =  lv * lp;
-    uint64_t t, carry = 0;
-
-    /*
-     * We could ignore a carry bit here if we did not care about the
-     * same hash for 32-bit and 64-bit targets.
-     */
-    t = rl + (rm_0 << 32);
-    if (exact) { carry = t < rl; }
-    lo = t + (rm_1 << 32);
-    if (exact) { carry += lo < t; }
-    hi = rh + (rm_0 >> 32) + (rm_1 >> 32) + carry;
 
     /*
      * We could use XOR here too but, for some reasons, on Haswell and
