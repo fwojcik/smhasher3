@@ -15,8 +15,6 @@
 
 #include "siphash.h"
 
-#include "vmac.h"
-
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
 

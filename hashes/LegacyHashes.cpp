@@ -106,16 +106,6 @@ static LegacyHashInfo g_hashes[] =
   { JenkinsOOAT_test,     32, 0x83E133DA, "JenkinsOOAT", "Bob Jenkins' OOAT as in perl 5.18", POOR, {0UL} /* !! */ },
   { JenkinsOOAT_perl_test,32, 0xEE05869B, "JenkinsOOAT_perl", "Bob Jenkins' OOAT as in old perl5", POOR, {0UL} /* !! */},
 
-  // FIXME: seed
-#ifdef __aarch64__
-  #define VHASH32_VERIF 0x0F02AEFD
-  #define VHASH64_VERIF 0xFAAEE597
-#else
-  #define VHASH32_VERIF 0xF0077651
-  #define VHASH64_VERIF 0xF97D84FE
-#endif
-  { VHASH_32,             32, VHASH32_VERIF, "VHASH_32",    "VHASH_32 by Ted Krovetz and Wei Dai", POOR, {} },
-  { VHASH_64,             64, VHASH64_VERIF, "VHASH_64",    "VHASH_64 by Ted Krovetz and Wei Dai", POOR, {} },
   { MicroOAAT_test,       32, 0x16F1BA97,    "MicroOAAT",   "Small non-multiplicative OAAT (by funny-falcon)", POOR,
     {0x3b00} },
 #ifdef HAVE_SSE2
@@ -321,8 +311,6 @@ void Hash_init (LegacyHashInfo* info) {
   //        info->hash == umash128_test)
   //  umash_init();
 #endif
-  else if (info->hash == VHASH_32 || info->hash == VHASH_64)
-    VHASH_init();
 #ifdef HAVE_HIGHWAYHASH
   else if(info->hash == HighwayHash64_test)
     HighwayHash_init();
@@ -368,8 +356,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
 
   uint32_t seed32 = seed;
 
-  //if (hash == VHASH_32 || hash == VHASH_64)
-  //  VHASH_seed_init(seed);
   if (0)
       seed32 = seed32;
 #ifdef __SIZEOF_INT128__

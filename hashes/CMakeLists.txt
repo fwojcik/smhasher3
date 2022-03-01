@@ -611,6 +611,7 @@ add_library(
   rmd.cpp
   blake2.cpp
   blake3.cpp
+  vmac.cpp
   crc.cpp
 #
   aesnihash.cpp
@@ -661,7 +662,5 @@ add_library(
   FarmTest.cc
   jody_hash32.c
   jody_hash64.c
-  vmac.cpp
-  rijndael-alg-fst.c
   pengyhash.c
 )
