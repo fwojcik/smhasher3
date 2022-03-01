@@ -529,14 +529,15 @@ static uint64_t l3hash(uint64_t p1, uint64_t p2, uint64_t k1, uint64_t k2, uint6
     return rl;
 }
 
+// Homegrown (unofficial) seeding
 template < bool bswap >
-static uint64_t vhash(const uint8_t * mptr, unsigned int mbytes, vmac_ctx_t * ctx) {
+static uint64_t vhash(const uint8_t * mptr, size_t mbytes, uint64_t seed, vmac_ctx_t * ctx) {
     uint64_t rh, rl;
     const uint64_t *kptr = (uint64_t *)ctx->nhkey;
-    int i, remaining;
+    size_t i, remaining;
     uint64_t ch, cl;
-    uint64_t pkh = ctx->polykey[0];
-    uint64_t pkl = ctx->polykey[1];
+    uint64_t pkh = ctx->polykey[0] ^ ROTR64(seed, 24);
+    uint64_t pkl = ctx->polykey[1] ^ seed;
 
     i = mbytes / VMAC_NHBYTES;
     remaining = mbytes % VMAC_NHBYTES;
@@ -572,7 +573,7 @@ static uint64_t vhash(const uint8_t * mptr, unsigned int mbytes, vmac_ctx_t * ct
 do_l3:
     vhash_abort(ctx);
     remaining *= 8;
-    return l3hash(ch, cl, ctx->l3key[0], ctx->l3key[1],remaining);
+    return l3hash(ch, cl, ctx->l3key[0], ctx->l3key[1], remaining);
 }
 
 //-----------------------------------------------------------------------------
@@ -603,17 +604,18 @@ public:
 
 // WARNING: this is shared across CPUs, and so must be read-only
 // during hashing!!
+// Making this thread-local has a sizable performance hit.
 static VHASH_initializer vhi;
 
 template < bool bswap >
 void VHASH32(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint32_t hash = vhash<bswap>((const uint8_t *)in, len, &(vhi.ctx));
+    uint32_t hash = vhash<bswap>((const uint8_t *)in, len, (uint64_t)seed, &(vhi.ctx));
     PUT_U32<bswap>(hash, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
 void VHASH64(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t hash = vhash<bswap>((const uint8_t *)in, len, &(vhi.ctx));
+    uint64_t hash = vhash<bswap>((const uint8_t *)in, len, (uint64_t)seed, &(vhi.ctx));
     PUT_U64<bswap>(hash, (uint8_t *)out, 0);
 }
 
@@ -628,8 +630,8 @@ REGISTER_HASH(VHASH_32,
   $.impl_flags =
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
-  $.verification_LE = 0xF0077651,
-  $.verification_BE = 0x464C5782,
+  $.verification_LE = 0x917BE075,
+  $.verification_BE = 0x92F11E7B,
   $.hashfn_native = VHASH32<false>,
   $.hashfn_bswap = VHASH32<true>
 );
@@ -641,8 +643,8 @@ REGISTER_HASH(VHASH_64,
   $.impl_flags =
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
-  $.verification_LE = 0xF97D84FE,
-  $.verification_BE = 0xA3CCDA93,
+  $.verification_LE = 0x79D9CB90,
+  $.verification_BE = 0xE95F8587,
   $.hashfn_native = VHASH64<false>,
   $.hashfn_bswap = VHASH64<true>
 );
