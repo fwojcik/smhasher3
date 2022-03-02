@@ -72,15 +72,6 @@ static LegacyHashInfo g_hashes[] =
 {
  // here start the real hashes. first the problematic ones:
 
-#ifdef __SIZEOF_INT128__
-  // M. Dietzfelbinger, T. Hagerup, J. Katajainen, and M. Penttonen. A reliable randomized
-  // algorithm for the closest-pair problem. J. Algorithms, 25:19–51, 1997.
-  { multiply_shift,       64, 0x6DE70D61, "multiply_shift", "Dietzfelbinger Multiply-shift on strings", POOR,
-    { 0xfffffff0, 0x1fffffff0, 0xb13dea7c9c324e51ULL, 0x75f17d6b3588f843ULL } /* !! all & 0xfffffff0 (2^32 bad seeds) */ },
-  { pair_multiply_shift,  64, 0x3CB18128, "pair_multiply_shift", "Pair-multiply-shift", POOR,
-    { 0xb13dea7c9c324e51ULL, 0x75f17d6b3588f843ULL } },
-#endif
-
   { asconhashv12_256,    256, 0xA969C160, "asconhashv12", "asconhashv12 256bit", GOOD,
     { 0xee9398aadb67f03dULL } },
   { asconhashv12_64,      64, 0xE7DEF300, "asconhashv12_64", "asconhashv12, low 64 bits", GOOD,
@@ -297,11 +288,6 @@ void Hash_init (LegacyHashInfo* info) {
   if (0) {
     info = info;
   }
-#ifdef __SIZEOF_INT128__
-  else if(info->hash == multiply_shift ||
-          info->hash == pair_multiply_shift)
-    multiply_shift_init();
-#endif
 #if defined(HAVE_SSE42) && defined(__x86_64__)
   else if(info->hash == clhash_test)
     clhash_init();
@@ -340,10 +326,6 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
     seed++;
   else if (hash == Crap8_test && (seed == 0x83d2e73b || seed == 0x97e1cc59))
     seed++;
-#ifdef __SIZEOF_INT128__
-  else if(hash == multiply_shift)
-    multiply_shift_seed_init(seed);
-#endif
 #if defined(__SSE4_2__) && defined(__x86_64__)
   else if (hash == clhash_test && seed == 0x0)
     seed++;
@@ -358,10 +340,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
 
   if (0)
       seed32 = seed32;
-#ifdef __SIZEOF_INT128__
-  else if(hash == multiply_shift || hash == pair_multiply_shift)
-    multiply_shift_seed_init(seed32);
-#endif
 #if defined(HAVE_SSE42) && defined(__x86_64__)
   else if (hash == clhash_test)
     clhash_seed_init(seed);

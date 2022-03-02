@@ -631,6 +631,7 @@ add_library(
   metrohash.cpp
   pearson.cpp
   blockpearson.cpp
+  multiply_shift.cpp
 )
 
 add_library(

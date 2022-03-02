@@ -52,6 +52,7 @@ unsigned refs() {
     USE_FAMILY(metrohash);
     USE_FAMILY(pearson);
     USE_FAMILY(blockpearson);
+    USE_FAMILY(multiply_shift);
 
     return 0;
 }
