@@ -548,7 +548,10 @@ static uint64_t vhash(const uint8_t * mptr, size_t mbytes, uint64_t seed, vmac_c
         ADD128(ch,cl,pkh,pkl);
         i--;
     } else if (remaining) {
-        nh_16<bswap>(mptr,kptr,2*((remaining+15)/16),ch,cl);
+        alignas(16) uint8_t buf[VMAC_NHBYTES];
+        memcpy(buf, mptr, remaining);
+        memset(buf + remaining, 0, sizeof(buf) - remaining);
+        nh_16<bswap>(buf,kptr,2*((remaining+15)/16),ch,cl);
         ch &= m62;
         ADD128(ch,cl,pkh,pkl);
         goto do_l3;
@@ -564,8 +567,10 @@ static uint64_t vhash(const uint8_t * mptr, size_t mbytes, uint64_t seed, vmac_c
         poly_step(ch,cl,pkh,pkl,rh,rl);
     }
     if (remaining) {
-        mptr += VMAC_NHBYTES;
-        nh_16<bswap>(mptr,kptr,2*((remaining+15)/16),rh,rl);
+        alignas(16) uint8_t buf[VMAC_NHBYTES];
+        memcpy(buf, mptr + VMAC_NHBYTES, remaining);
+        memset(buf + remaining, 0, sizeof(buf) - remaining);
+        nh_16<bswap>(buf,kptr,2*((remaining+15)/16),rh,rl);
         rh &= m62;
         poly_step(ch,cl,pkh,pkl,rh,rl);
     }
@@ -579,11 +584,7 @@ do_l3:
 //-----------------------------------------------------------------------------
 
 class VHASH_initializer {
-private:
-	uint8_t * buff;
 public:
-	enum { MAX_BUFF_LN = VMAC_NHBYTES };
-	uint8_t * aligned16Buff;
 	alignas(16) vmac_ctx_t ctx;
 
 	VHASH_initializer() {
@@ -593,12 +594,9 @@ public:
         } else {
             vmac_set_key<true>(key, &ctx);
         }
-		buff = new uint8_t[ MAX_BUFF_LN + 128 ];
-		aligned16Buff = (uint8_t*)( ( ( ( size_t(buff) ) >> 4 ) << 4 ) + 16 );
 	}
 
 	~VHASH_initializer() {
-		delete [] buff;
 	}
 };
 
@@ -630,8 +628,8 @@ REGISTER_HASH(VHASH_32,
   $.impl_flags =
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
-  $.verification_LE = 0x917BE075,
-  $.verification_BE = 0x92F11E7B,
+  $.verification_LE = 0x613E4735,
+  $.verification_BE = 0x8797E01C,
   $.hashfn_native = VHASH32<false>,
   $.hashfn_bswap = VHASH32<true>
 );
@@ -643,8 +641,8 @@ REGISTER_HASH(VHASH_64,
   $.impl_flags =
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
-  $.verification_LE = 0x79D9CB90,
-  $.verification_BE = 0xE95F8587,
+  $.verification_LE = 0x7417A00F,
+  $.verification_BE = 0x81C8B066,
   $.hashfn_native = VHASH64<false>,
   $.hashfn_bswap = VHASH64<true>
 );
