@@ -1764,15 +1764,15 @@ public:
 
   PMP_Multilinear_Hasher_32()
   {
-        curr_rd = (random_data_for_PMPML_32*)rd_for_PMPML_32;
-	coeff0 = curr_rd[0].const_term;
+      curr_rd = (random_data_for_PMPML_32*)rd_for_PMPML_32;
+      coeff0 = curr_rd[0].const_term;
   }
   virtual ~PMP_Multilinear_Hasher_32()
   {
     if ( curr_rd != NULL && curr_rd != rd_for_PMPML_32 )
         delete [] curr_rd;
   }
-  void seed( uint32_t seed )
+  void seed( uint64_t seed )
   {
     curr_rd[0].const_term = coeff0 ^ seed;
   }
@@ -2532,7 +2532,7 @@ static PMP_Multilinear_Hasher_32 pmpml_hasher_32;
 static PMP_Multilinear_Hasher_64 pmpml_hasher_64;
 
 uintptr_t PMPML_32_seed(const seed_t seed) {
-  pmpml_hasher_32.seed((uint32_t)seed);
+  pmpml_hasher_32.seed((uint64_t)seed);
   return 0;
 }
 
@@ -2558,7 +2558,7 @@ REGISTER_FAMILY(PMP_mutilinear);
 REGISTER_HASH(PMPML_32,
   $.desc = "PMP_Multilinear 32-bit",
   $.hash_flags =
-	FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
