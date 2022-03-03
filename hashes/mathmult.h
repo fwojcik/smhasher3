@@ -104,7 +104,8 @@ static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint
 
 // 96-bit fused multiply addition [rhi:rmi:rlo += a * b]
 static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t a, uint32_t b) {
-#if defined __arm__ || defined __aarch64__
+// These #defines are not correct; some arm seems to not support this
+#if 0 && (defined(__arm__) || defined(__aarch64__))
     uint32_t tmphi, tmplo;
     __asm__("UMULL %3, %4, %5, %6\n"
             "ADDS  %0, %3, %0\n"
