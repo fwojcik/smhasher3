@@ -29,6 +29,8 @@
 
 #if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
 #include <immintrin.h>
+#else
+uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v);
 #endif
 
 #define VARIANTS_64 5
@@ -337,6 +339,8 @@ REGISTER_HASH(metrohash2_64,
   $.badseeds = {}
 );
 
+#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+
 REGISTER_HASH(metrohashcrc1_64,
   $.desc = "Metrohash-crc v1 variant 1, 64-bit version (unofficial)",
   $.hash_flags =
@@ -370,6 +374,8 @@ REGISTER_HASH(metrohashcrc2_64,
   $.hashfn_bswap = MetroHash64<4, true>,
   $.badseeds = {}
 );
+
+#endif
 
 REGISTER_HASH(metrohash_128,
   $.desc = "Metrohash v1 base variant, 128-bit version",
@@ -422,6 +428,8 @@ REGISTER_HASH(metrohash2_128,
   $.badseeds = {}
 );
 
+#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+
 REGISTER_HASH(metrohashcrc1_128,
   $.desc = "Metrohash-crc v1 variant 1, 128-bit version",
   $.hash_flags =
@@ -455,3 +463,5 @@ REGISTER_HASH(metrohashcrc2_128,
   $.hashfn_bswap = MetroHash128<4, true>,
   $.badseeds = {}
 );
+
+#endif
