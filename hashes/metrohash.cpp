@@ -178,112 +178,112 @@ static const uint8_t ROTK128[VARIANTS_128][15] = {
 
 template < uint32_t variant, bool bswap >
 void MetroHash128(const void * in, const size_t len, const seed_t seed, void * out) {
-  if (variant >= VARIANTS_128) { return; }
+    if (variant >= VARIANTS_128) { return; }
 
-  const uint64_t * K = &MULTK128[variant][0];
-  const uint8_t * ROTK = &ROTK128[variant][0];
-  const size_t length = len;
-  const uint8_t * ptr = (const uint8_t *)in;
-  const uint8_t * const end = ptr + len;
+    const uint64_t * K = &MULTK128[variant][0];
+    const uint8_t * ROTK = &ROTK128[variant][0];
+    const size_t length = len;
+    const uint8_t * ptr = (const uint8_t *)in;
+    const uint8_t * const end = ptr + len;
 
-  uint64_t v[4];
+    uint64_t v[4];
 
-  v[0] = (seed - K[0]) * K[3];
-  v[1] = (seed + K[1]) * K[2];
-  if (variant != 0) {
-    v[0] += len;
-    v[1] += len;
-  }
-
-  // bulk update
-  if (len >= 32) {
-    v[2] = (seed + K[0]) * K[2];
-    v[3] = (seed - K[1]) * K[3];
+    v[0] = (seed - K[0]) * K[3];
+    v[1] = (seed + K[1]) * K[2];
     if (variant != 0) {
-      v[2] += len;
-      v[3] += len;
+        v[0] += len;
+        v[1] += len;
     }
 
-    while (ptr <= (end - 32)) {
-      if (variant <= 2) {
-	v[0] += GET_U64<bswap>(ptr,  0) * K[0]; v[0] = ROTR64(v[0], 29) + v[2];
-	v[1] += GET_U64<bswap>(ptr,  8) * K[1]; v[1] = ROTR64(v[1], 29) + v[3];
-	v[2] += GET_U64<bswap>(ptr, 16) * K[2]; v[2] = ROTR64(v[2], 29) + v[0];
-	v[3] += GET_U64<bswap>(ptr, 24) * K[3]; v[3] = ROTR64(v[3], 29) + v[1];
-      } else {
-	v[0] ^= _mm_crc32_u64(v[0], GET_U64<bswap>(ptr,  0));
-	v[1] ^= _mm_crc32_u64(v[1], GET_U64<bswap>(ptr,  8));
-	v[2] ^= _mm_crc32_u64(v[2], GET_U64<bswap>(ptr, 16));
-	v[3] ^= _mm_crc32_u64(v[3], GET_U64<bswap>(ptr, 24));
-      }
-      ptr += 32;
+    // bulk update
+    if (len >= 32) {
+        v[2] = (seed + K[0]) * K[2];
+        v[3] = (seed - K[1]) * K[3];
+        if (variant != 0) {
+            v[2] += len;
+            v[3] += len;
+        }
+
+        while (ptr <= (end - 32)) {
+            if (variant <= 2) {
+                v[0] += GET_U64<bswap>(ptr,  0) * K[0]; v[0] = ROTR64(v[0], 29) + v[2];
+                v[1] += GET_U64<bswap>(ptr,  8) * K[1]; v[1] = ROTR64(v[1], 29) + v[3];
+                v[2] += GET_U64<bswap>(ptr, 16) * K[2]; v[2] = ROTR64(v[2], 29) + v[0];
+                v[3] += GET_U64<bswap>(ptr, 24) * K[3]; v[3] = ROTR64(v[3], 29) + v[1];
+            } else {
+                v[0] ^= _mm_crc32_u64(v[0], GET_U64<bswap>(ptr,  0));
+                v[1] ^= _mm_crc32_u64(v[1], GET_U64<bswap>(ptr,  8));
+                v[2] ^= _mm_crc32_u64(v[2], GET_U64<bswap>(ptr, 16));
+                v[3] ^= _mm_crc32_u64(v[3], GET_U64<bswap>(ptr, 24));
+            }
+            ptr += 32;
+        }
+
+        v[2] ^= ROTR64(((v[0] + v[3]) * K[0]) + v[1], ROTK[0]) * K[1];
+        v[3] ^= ROTR64(((v[1] + v[2]) * K[1]) + v[0], ROTK[1]) * K[0];
+        v[0] ^= ROTR64(((v[0] + v[2]) * K[0]) + v[3], ROTK[0]) * K[1];
+        v[1] ^= ROTR64(((v[1] + v[3]) * K[1]) + v[2], ROTK[2]) * K[0];
     }
 
-    v[2] ^= ROTR64(((v[0] + v[3]) * K[0]) + v[1], ROTK[0]) * K[1];
-    v[3] ^= ROTR64(((v[1] + v[2]) * K[1]) + v[0], ROTK[1]) * K[0];
-    v[0] ^= ROTR64(((v[0] + v[2]) * K[0]) + v[3], ROTK[0]) * K[1];
-    v[1] ^= ROTR64(((v[1] + v[3]) * K[1]) + v[2], ROTK[2]) * K[0];
-  }
-
-  if ((end - ptr) >= 16) {
-    v[0] += (GET_U64<bswap>(ptr, 0) * K[2]); v[0] = ROTR64(v[0], ROTK[3]) * K[3];
-    v[1] += (GET_U64<bswap>(ptr, 8) * K[2]); v[1] = ROTR64(v[1], ROTK[3]) * K[3];
-    v[0] ^= ROTR64(v[0] * K[2] + v[1], ROTK[4]) * K[1];
-    v[1] ^= ROTR64(v[1] * K[3] + v[0], ROTK[4]) * K[0];
-    ptr += 16;
-  }
-
-  if ((end - ptr) >= 8) {
-    v[0] += GET_U64<bswap>(ptr, 0) * K[2];
-    v[0]  = ROTR64(v[0], ROTK[5]) * K[3];
-    v[0] ^= ROTR64(v[0] * K[2] + v[1], ROTK[6]) * K[1];
-    ptr += 8;
-  }
-
-  if ((end - ptr) >= 4) {
-    if (variant <= 2) {
-      v[1] += GET_U32<bswap>(ptr, 0) * K[2];
-      v[1]  = ROTR64(v[1], ROTK[7]) * K[3];
-    } else {
-      v[1] ^= _mm_crc32_u64(v[0], GET_U32<bswap>(ptr, 0));
+    if ((end - ptr) >= 16) {
+        v[0] += (GET_U64<bswap>(ptr, 0) * K[2]); v[0] = ROTR64(v[0], ROTK[3]) * K[3];
+        v[1] += (GET_U64<bswap>(ptr, 8) * K[2]); v[1] = ROTR64(v[1], ROTK[3]) * K[3];
+        v[0] ^= ROTR64(v[0] * K[2] + v[1], ROTK[4]) * K[1];
+        v[1] ^= ROTR64(v[1] * K[3] + v[0], ROTK[4]) * K[0];
+        ptr += 16;
     }
-    v[1] ^= ROTR64(v[1] * K[3] + v[0], ROTK[8]) * K[0];
-    ptr += 4;
-  }
 
-  if ((end - ptr) >= 2) {
-    if (variant <= 2) {
-      v[0] += GET_U16<bswap>(ptr, 0) * K[2];
-      v[0]  = ROTR64(v[0], ROTK[9]) * K[3];
-    } else {
-      v[0] ^= _mm_crc32_u64(v[1], GET_U16<bswap>(ptr, 0));
+    if ((end - ptr) >= 8) {
+        v[0] += GET_U64<bswap>(ptr, 0) * K[2];
+        v[0]  = ROTR64(v[0], ROTK[5]) * K[3];
+        v[0] ^= ROTR64(v[0] * K[2] + v[1], ROTK[6]) * K[1];
+        ptr += 8;
     }
-    v[0] ^= ROTR64(v[0] * K[2] + v[1], ROTK[10]) * K[1];
-    ptr += 2;
-  }
 
-  if ((end - ptr) >= 1) {
-    if (variant <= 2) {
-      v[1] += (*ptr) * K[2];
-      v[1]  = ROTR64(v[1], ROTK[11]) * K[3];
-    } else {
-      v[1] ^= _mm_crc32_u64(v[0], *ptr);
+    if ((end - ptr) >= 4) {
+        if (variant <= 2) {
+            v[1] += GET_U32<bswap>(ptr, 0) * K[2];
+            v[1]  = ROTR64(v[1], ROTK[7]) * K[3];
+        } else {
+            v[1] ^= _mm_crc32_u64(v[0], GET_U32<bswap>(ptr, 0));
+        }
+        v[1] ^= ROTR64(v[1] * K[3] + v[0], ROTK[8]) * K[0];
+        ptr += 4;
     }
-    v[1] ^= ROTR64(v[1] * K[3] + v[0], ROTK[12]) * K[0];
-  }
 
-  v[0] += ROTR64((v[0] * K[0]) + v[1], ROTK[13]);
-  v[1] += ROTR64((v[1] * K[1]) + v[0], ROTK[14]);
-  if (variant <= 2) {
-    v[0] += ROTR64((v[0] * K[2]) + v[1], ROTK[13]);
-    v[1] += ROTR64((v[1] * K[3]) + v[0], ROTK[14]);
-  } else {
+    if ((end - ptr) >= 2) {
+        if (variant <= 2) {
+            v[0] += GET_U16<bswap>(ptr, 0) * K[2];
+            v[0]  = ROTR64(v[0], ROTK[9]) * K[3];
+        } else {
+            v[0] ^= _mm_crc32_u64(v[1], GET_U16<bswap>(ptr, 0));
+        }
+        v[0] ^= ROTR64(v[0] * K[2] + v[1], ROTK[10]) * K[1];
+        ptr += 2;
+    }
+
+    if ((end - ptr) >= 1) {
+        if (variant <= 2) {
+            v[1] += (*ptr) * K[2];
+            v[1]  = ROTR64(v[1], ROTK[11]) * K[3];
+        } else {
+            v[1] ^= _mm_crc32_u64(v[0], *ptr);
+        }
+        v[1] ^= ROTR64(v[1] * K[3] + v[0], ROTK[12]) * K[0];
+    }
+
     v[0] += ROTR64((v[0] * K[0]) + v[1], ROTK[13]);
     v[1] += ROTR64((v[1] * K[1]) + v[0], ROTK[14]);
-  }
+    if (variant <= 2) {
+        v[0] += ROTR64((v[0] * K[2]) + v[1], ROTK[13]);
+        v[1] += ROTR64((v[1] * K[3]) + v[0], ROTK[14]);
+    } else {
+        v[0] += ROTR64((v[0] * K[0]) + v[1], ROTK[13]);
+        v[1] += ROTR64((v[1] * K[1]) + v[0], ROTK[14]);
+    }
 
-  PUT_U64<bswap>(v[0], (uint8_t *)out, 0);
-  PUT_U64<bswap>(v[1], (uint8_t *)out, 8);
+    PUT_U64<bswap>(v[0], (uint8_t *)out, 0);
+    PUT_U64<bswap>(v[1], (uint8_t *)out, 8);
 }
 
 REGISTER_FAMILY(metrohash);
