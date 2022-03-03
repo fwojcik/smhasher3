@@ -57,7 +57,7 @@
 static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uint32_t b) {
     // XXX Are either of these asm blocks better than just the plain code?
 #if 0 && (defined(__arm__) || defined(__aarch64__))
-    __asm__("UMULL %0, %1, %2, %3\n"
+    __asm__("UMULL w%0, w%1, w%2, w%3\n"
             : "+r" (rlo), "+r" (rhi)
             : "r" (a), "r" (b)
             : "cc", "memory"
@@ -76,10 +76,10 @@ static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uin
 
 // 96-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
 static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t& addlo, uint32_t& addmi, uint32_t& addhi) {
-#if defined(__arm__) || defined(__aarch64__)
-    __asm__("ADDS %0, %3, %0\n"
-            "ADCS %1, %4, %1\n"
-            "ADC  %2, %5, %2\n"
+#if (defined(__arm__) || defined(__aarch64__))
+    __asm__("ADDS %w0, %w3, %w0\n"
+            "ADCS %w1, %w4, %w1\n"
+            "ADC  %w2, %w5, %w2\n"
             : "+r" (rlo), "+r" (rmi), "+r" (rhi)
             : "r" (addlo), "r" (addmi), "r" (addhi)
             : "cc"
@@ -107,10 +107,10 @@ static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, u
 // These #defines are not correct; some arm seems to not support this
 #if 0 && (defined(__arm__) || defined(__aarch64__))
     uint32_t tmphi, tmplo;
-    __asm__("UMULL %3, %4, %5, %6\n"
-            "ADDS  %0, %3, %0\n"
-            "ADCS  %1, %4, %1\n"
-            "ADC   %2, %2, #0x0\n"
+    __asm__("UMULL %w3, %w4, %w5, %w6\n"
+            "ADDS  %w0, %w3, %w0\n"
+            "ADCS  %w1, %w4, %w1\n"
+            "ADC   %w2, %w2, #0x0\n"
             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=r" (tmplo), "=r" (tmphi)
             : "r" (a), "r" (b)
             : "cc"
