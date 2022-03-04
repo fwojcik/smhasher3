@@ -36,6 +36,7 @@ using namespace std;
 
 //-------------------------------------------------------------
 // Common typedefs
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 typedef union _ULARGE_INTEGER__XX
 {
   struct {
@@ -60,6 +61,32 @@ typedef union _LARGE_INTEGER__XX {
     } u;
     int64_t QuadPart;
 } LARGE_INTEGER__XX;
+#else
+typedef union _ULARGE_INTEGER__XX
+{
+  struct {
+    uint32_t HighPart;
+    uint32_t LowPart;
+  };
+  struct {
+    uint32_t HighPart;
+    uint32_t LowPart;
+  } u;
+  uint64_t QuadPart;
+} ULARGE_INTEGER__XX;
+
+typedef union _LARGE_INTEGER__XX {
+    struct {
+        int32_t HighPart;
+        uint32_t LowPart;
+    };
+    struct {
+        int32_t HighPart;
+        uint32_t LowPart;
+    } u;
+    int64_t QuadPart;
+} LARGE_INTEGER__XX;
+#endif
 
 typedef struct _ULARGELARGE_INTEGER__XX
 {
@@ -650,10 +677,18 @@ void mul32x32to64addto96(uint32_t& loWord, uint32_t& hiWord, uint32_t& hhWord, u
 	ctr = 0; \
 	ULARGE_INTEGER__XX mul;
 
+// Input data is read in 32-bit chunks.
 #define PMPML_CHUNK_LOOP_BODY_ULI_T1( i ) \
     /*multiply32x32to64(mul.HighPart, mul.LowPart, x[i], coeff[ i ]); \
     add64(constTerm.LowPart, constTerm.HighPart, ctr, mul.LowPart, mul.HighPart, zero);*/ \
-  mul32x32to64addto96(constTerm.LowPart, constTerm.HighPart, ctr, GET_U32<bswap>((const uint8_t*)x, (i)*sizeof(x[0])), coeff[ i ]); \
+  mul32x32to64addto96(constTerm.LowPart, constTerm.HighPart, ctr, GET_U32<bswap>((const uint8_t*)x, (i)*sizeof(x[0])), coeff[ i ]);
+
+// Hash data from previous blocks is read in 64-bit chunks, and always
+// in native endian format.
+#define PMPML_CHUNK_LOOP_BODY_ULI_T1_64( i ) \
+    /*multiply32x32to64(mul.HighPart, mul.LowPart, x[i], coeff[ i ]); \
+    add64(constTerm.LowPart, constTerm.HighPart, ctr, mul.LowPart, mul.HighPart, zero);*/ \
+  mul32x32to64addto96(constTerm.LowPart, constTerm.HighPart, ctr, GET_U64<false>((const uint8_t*)x, (i)*sizeof(x[0])), coeff[ i ]);
 
 #define PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST \
     /*multiply32x32to64(mul.HighPart, mul.LowPart, xLast, coeff[ size ]); \
@@ -1411,22 +1446,21 @@ class PMP_Multilinear_Hasher_32
   }
 
   // a call to be done from subsequent levels
-  template < bool bswap >
   FORCE_INLINE uint64_t hash_of_num_chunk( const uint32_t* coeff, ULARGE_INTEGER__XX constTerm, const uint64_t* x ) const
   {
 	PMPML_CHUNK_LOOP_INTRO_L0
 
 	for ( uint32_t i=0; i<PMPML_32_CHUNK_SIZE; i+=8 )
 	{
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 0 + i )
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 1 + i )
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 2 + i )
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 3 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 0 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 1 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 2 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 3 + i )
 #if (PMPML_32_CHUNK_SIZE_LOG2 > 2)
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 4 + i )
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 5 + i )
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 6 + i )
-		PMPML_CHUNK_LOOP_BODY_ULI_T1( 7 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 4 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 5 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 6 + i )
+		PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 7 + i )
 #endif
 	}
 
@@ -1436,7 +1470,6 @@ class PMP_Multilinear_Hasher_32
   }
 
   // a call to be done from subsequent levels
-  template < bool bswap >
   FORCE_INLINE uint64_t hash_of_num_chunk_incomplete( const uint32_t* coeff, ULARGE_INTEGER__XX constTerm, ULARGE_INTEGER__XX prevConstTerm, ULARGE_INTEGER__XX coeffSum, const uint64_t* x, size_t count ) const
   {
 	PMPML_CHUNK_LOOP_INTRO_L0
@@ -1450,7 +1483,7 @@ class PMP_Multilinear_Hasher_32
 	{
 		for ( i=0; i<count; i++ )
 		{
-			PMPML_CHUNK_LOOP_BODY_ULI_T1( 0 + i )
+			PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 0 + i )
 			c_ctr.QuadPart += coeff[ i ];
 		}
 		c_ctr.QuadPart = coeffSum.QuadPart - c_ctr.QuadPart;
@@ -1458,7 +1491,7 @@ class PMP_Multilinear_Hasher_32
 	else
 	{
 		for ( i=0; i<count; i++ )
-			PMPML_CHUNK_LOOP_BODY_ULI_T1( 0 + i )
+			PMPML_CHUNK_LOOP_BODY_ULI_T1_64( 0 + i )
 		for ( ; i<PMPML_32_CHUNK_SIZE; i++ )
 			c_ctr.QuadPart += coeff[ i ];
 	}
@@ -1505,7 +1538,7 @@ class PMP_Multilinear_Hasher_32
 		if ( cnts[ i ] != PMPML_32_CHUNK_SIZE )
 			break;
 		cnts[ i ] = 0;
-		value = hash_of_num_chunk<bswap>( curr_rd[ i ].random_coeff, *(ULARGE_INTEGER__XX*)(&(curr_rd[i].const_term)), allValues + ( i << PMPML_32_CHUNK_SIZE_LOG2 ) );
+		value = hash_of_num_chunk( curr_rd[ i ].random_coeff, *(ULARGE_INTEGER__XX*)(&(curr_rd[i].const_term)), allValues + ( i << PMPML_32_CHUNK_SIZE_LOG2 ) );
 		if ( ( flag & ( 1 << i ) ) == 0 )
 		{
 			cnts[ i + 1] = 0;
@@ -1537,7 +1570,7 @@ class PMP_Multilinear_Hasher_32
 /*							 hash_of_num_chunk( curr_rd[ i ].random_coeff,
 												*(ULARGE_INTEGER__XX*)(&(curr_rd[i].const_term)),
 												allValues + ( i << PMPML_CHUNK_SIZE_LOG2 ) ), */
-							 hash_of_num_chunk_incomplete<bswap>( curr_rd[ i ].random_coeff,
+							 hash_of_num_chunk_incomplete( curr_rd[ i ].random_coeff,
 												*(ULARGE_INTEGER__XX*)(&(curr_rd[i].const_term)),
 												*(ULARGE_INTEGER__XX*)(&(curr_rd[i-1].const_term)),
 												*(ULARGE_INTEGER__XX*)(&(curr_rd[i].cachedSum)),
@@ -2563,7 +2596,7 @@ REGISTER_HASH(PMPML_32,
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
   $.verification_LE = 0xF3199670,
-  $.verification_BE = 0x39FA6DFF,
+  $.verification_BE = 0xF602E963,
   $.seedfn = PMPML_32_seed,
   $.hashfn_native = PMPML_32<false>,
   $.hashfn_bswap = PMPML_32<true>
