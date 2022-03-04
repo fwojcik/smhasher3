@@ -208,6 +208,8 @@ bool wyhash64_selftest(void) {
       Wyhash64<false,false>(selftests[i].key, strlen(selftests[i].key), i, &h);
     } else {
       Wyhash64<true,false>(selftests[i].key, strlen(selftests[i].key), i, &h);
+      // h is in little-endian format
+      h = COND_BSWAP(h, true);
     }
     if (h != selftests[i].hash) {
       printf("Hash %016llx != expected %016llx for string \"%s\"\n",
