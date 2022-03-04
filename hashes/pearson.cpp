@@ -76,11 +76,15 @@ static void pearson_hash_256_portable(uint8_t * out, const uint8_t * in, size_t 
   uint8_t upper[8] = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
   uint8_t lower[8] = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
 
-  uint64_t upper_hash_mask = *(uint64_t*)&upper;
-  uint64_t lower_hash_mask = *(uint64_t*)&lower;
+  uint64_t upper_hash_mask = GET_U64<false>(upper, 0);
+  uint64_t lower_hash_mask = GET_U64<false>(lower, 0);
   uint64_t high_upper_hash_mask = upper_hash_mask + 0x1010101010101010;
   uint64_t high_lower_hash_mask = lower_hash_mask + 0x1010101010101010;
 
+  // The one nod to endianness is that the hash_in value needs be in
+  // little-endian format always, to match up with the byte ordering
+  // of upper[] and lower[] above.
+  hash_in = COND_BSWAP(hash_in, isBE());
   uint64_t upper_hash = hash_in;
   uint64_t lower_hash = hash_in;
   uint64_t high_upper_hash = hash_in;
@@ -128,17 +132,10 @@ static void pearson_hash_256_portable(uint8_t * out, const uint8_t * in, size_t 
     high_lower_hash = h;
   }
   // store output
-  if (isBE()) {
-    PUT_U64<true>(high_upper_hash, out, 0);
-    PUT_U64<true>(high_lower_hash, out, 8);
-    PUT_U64<true>(upper_hash, out, 16);
-    PUT_U64<true>(lower_hash, out, 24);
-  } else {
-    PUT_U64<false>(high_upper_hash, out, 0);
-    PUT_U64<false>(high_lower_hash, out, 8);
-    PUT_U64<false>(upper_hash, out, 16);
-    PUT_U64<false>(lower_hash, out, 24);
-  }
+  PUT_U64<false>(high_upper_hash, out, 0);
+  PUT_U64<false>(high_lower_hash, out, 8);
+  PUT_U64<false>(upper_hash, out, 16);
+  PUT_U64<false>(lower_hash, out, 24);
 }
 
 static void pearson_hash_128_portable(uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in) {
@@ -150,9 +147,13 @@ static void pearson_hash_128_portable(uint8_t * out, const uint8_t * in, size_t 
   uint8_t upper[8] = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
   uint8_t lower[8] = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
 
-  uint64_t upper_hash_mask = *(uint64_t*)&upper;
-  uint64_t lower_hash_mask = *(uint64_t*)&lower;
+  uint64_t upper_hash_mask = GET_U64<false>(upper, 0);
+  uint64_t lower_hash_mask = GET_U64<false>(lower, 0);
 
+  // The one nod to endianness is that the hash_in value needs be in
+  // little-endian format always, to match up with the byte ordering
+  // of upper[] and lower[] above.
+  hash_in = COND_BSWAP(hash_in, isBE());
   uint64_t upper_hash = hash_in;
   uint64_t lower_hash = hash_in;
 
@@ -182,13 +183,8 @@ static void pearson_hash_128_portable(uint8_t * out, const uint8_t * in, size_t 
     lower_hash = h;
   }
   // store output
-  if (isBE()) {
-    PUT_U64<true>(upper_hash, out, 0);
-    PUT_U64<true>(lower_hash, out, 8);
-  } else {
-    PUT_U64<false>(upper_hash, out, 0);
-    PUT_U64<false>(lower_hash, out, 8);
-  }
+  PUT_U64<false>(upper_hash, out, 0);
+  PUT_U64<false>(lower_hash, out, 8);
 }
 
 static void pearson_hash_64_portable(uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in) {
