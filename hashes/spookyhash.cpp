@@ -158,13 +158,15 @@ public:
 	const uint8_t * data)
     {
         if (version == 2) {
-	  const uint64_t * data64 = (const uint64_t *)data;
-	  h0 += data64[0];   h1 += data64[1];   h2 += data64[2];   h3 += data64[3];
-	  h4 += data64[4];   h5 += data64[5];   h6 += data64[6];   h7 += data64[7];
-	  h8 += data64[8];   h9 += data64[9];   h10 += data64[10]; h11 += data64[11];
-	} else {
-	  Mix<bswap>(data,h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11);
-	}
+            h0  += GET_U64<bswap>(data, 8*0);    h1 += GET_U64<bswap>(data, 8*1);
+            h2  += GET_U64<bswap>(data, 8*2);    h3 += GET_U64<bswap>(data, 8*3);
+            h4  += GET_U64<bswap>(data, 8*4);    h5 += GET_U64<bswap>(data, 8*5);
+            h6  += GET_U64<bswap>(data, 8*6);    h7 += GET_U64<bswap>(data, 8*7);
+            h8  += GET_U64<bswap>(data, 8*8);    h9 += GET_U64<bswap>(data, 8*9);
+            h10 += GET_U64<bswap>(data, 8*10);  h11 += GET_U64<bswap>(data, 8*11);
+        } else {
+            Mix<bswap>(data,h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11);
+        }
         EndPartial(h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11);
         EndPartial(h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11);
         EndPartial(h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11);
@@ -362,7 +364,12 @@ template < uint32_t version, uint32_t hashlen, bool bswap >
 void spookyhash(const void * in, const size_t len, const seed_t seed, void * out) {
   uint64_t h1, h2;
   h1 = h2 = (uint64_t)seed;
+
   SpookyHash::Hash128<version,bswap>(in, len, &h1, &h2);
+
+  h1 = COND_BSWAP(h1, bswap);
+  h2 = COND_BSWAP(h2, bswap);
+
   if (hashlen > 64) {
     memcpy(out, &h1, 8);
     memcpy(((uint8_t *)out) + 8, &h2, hashlen/8 - 8);
@@ -382,7 +389,7 @@ REGISTER_HASH(Spookyhash_v1_32,
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
   $.verification_LE = 0x3F798BBB,
-  $.verification_BE = 0xA0B18D3A,
+  $.verification_BE = 0x32C8248C,
   $.hashfn_native = spookyhash<1,32,false>,
   $.hashfn_bswap = spookyhash<1,32,true>
 );
@@ -395,7 +402,7 @@ REGISTER_HASH(Spookyhash_v1_64,
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
   $.verification_LE = 0xA7F955F1,
-  $.verification_BE = 0x5471CBD4,
+  $.verification_BE = 0xD6BD6D2B,
   $.hashfn_native = spookyhash<1,64,false>,
   $.hashfn_bswap = spookyhash<1,64,true>
 );
@@ -408,7 +415,7 @@ REGISTER_HASH(Spookyhash_v1_128,
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
   $.verification_LE = 0x8D263080,
-  $.verification_BE = 0xC1A9FD00,
+  $.verification_BE = 0xE9E5572C,
   $.hashfn_native = spookyhash<1,128,false>,
   $.hashfn_bswap = spookyhash<1,128,true>
 );
@@ -421,7 +428,7 @@ REGISTER_HASH(Spookyhash_v2_32,
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
   $.verification_LE = 0xA48BE265,
-  $.verification_BE = 0x0FD24120,
+  $.verification_BE = 0x9742FF7D,
   $.hashfn_native = spookyhash<2,32,false>,
   $.hashfn_bswap = spookyhash<2,32,true>,
   $.sort_order = 10
@@ -435,7 +442,7 @@ REGISTER_HASH(Spookyhash_v2_64,
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
   $.verification_LE = 0x972C4BDC,
-  $.verification_BE = 0xFA1A5FB2,
+  $.verification_BE = 0x6B914F15,
   $.hashfn_native = spookyhash<2,64,false>,
   $.hashfn_bswap = spookyhash<2,64,true>,
   $.sort_order = 10
@@ -449,7 +456,7 @@ REGISTER_HASH(Spookyhash_v2_128,
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
   $.verification_LE = 0x893CFCBE,
-  $.verification_BE = 0xFE29A469,
+  $.verification_BE = 0x7C1EA273,
   $.hashfn_native = spookyhash<2,128,false>,
   $.hashfn_bswap = spookyhash<2,128,true>,
   $.sort_order = 10
