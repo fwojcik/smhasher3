@@ -77,6 +77,7 @@ typedef struct blake2s_context_ {
   size_t   buflen;
 } blake2s_context;
 
+// This layout is explicitly little-endian
 struct blake2_params_prefix {
   uint8_t  digest_length; /* 1 */
   uint8_t  key_length;    /* 2 */
@@ -104,7 +105,15 @@ NEVER_INLINE static void blake2_Init(T * ctx, unsigned hashbits, uint64_t seed) 
   params.digest_length = hashbits/8;
   params.fanout = 1;
   params.depth = 1;
-  ctx->h[0] ^= *((typeof(ctx->h[0])*)(&params));
+  if (sizeof(ctx->h[0]) == 8) {
+      ctx->h[0] ^= isLE() ?
+          GET_U64<false>((const uint8_t *)(&params), 0) :
+          GET_U64<true> ((const uint8_t *)(&params), 0);
+  } else {
+      ctx->h[0] ^= isLE() ?
+          GET_U32<false>((const uint8_t *)(&params), 0) :
+          GET_U32<true> ((const uint8_t *)(&params), 0);
+  }
 
   // Legacy BLAKE2 seeding
   ctx->h[0] ^= seedlo;
