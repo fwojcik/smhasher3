@@ -194,6 +194,26 @@ if(RESULT_VAR)
   message(STATUS "ARM SHA-1 intrinsics available")
 endif()
 
+if(NOT MSVC)
+  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_asm.cpp)
+  if(RESULT_VAR)
+    add_definitions(-DNEW_HAVE_ARM_ASM)
+    message(STATUS "ARM 32-bit __asm__() available")
+  endif()
+
+  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_asm64.cpp)
+  if(RESULT_VAR)
+    add_definitions(-DNEW_HAVE_ARM64_ASM)
+    message(STATUS "ARM 64-bit __asm__() available")
+  endif()
+
+  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/ppc_asm.cpp)
+  if(RESULT_VAR)
+    add_definitions(-DNEW_HAVE_PPC_ASM)
+    message(STATUS "PPC __asm__() available")
+  endif()
+endif()
+
 ########################################
 # Legacy type size detection things
 ########################################

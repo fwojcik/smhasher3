@@ -56,13 +56,13 @@
 // 32x32->64 multiplication [rhi:rlo = a * b]
 static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uint32_t b) {
     // XXX Are either of these asm blocks better than just the plain code?
-#if 0 && (defined(__arm__) || defined(__aarch64__))
+#if 0 && defined(NEW_HAVE_ARM_ASM)
     __asm__("UMULL w%0, w%1, w%2, w%3\n"
             : "+r" (rlo), "+r" (rhi)
             : "r" (a), "r" (b)
             : "cc", "memory"
             );
-#elif 0
+#elif 0 && defined(NEW_HAVE_X64_ASM)
     __asm__("mull  %[b]\n"
             : "=d" (rhi), "=a" (rlo)
             : "1" (a), [b] "rm" (b)
@@ -76,7 +76,7 @@ static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uin
 
 // 96-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
 static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t& addlo, uint32_t& addmi, uint32_t& addhi) {
-#if (defined(__arm__) || defined(__aarch64__))
+#if defined(NEW_HAVE_ARM_ASM)
     __asm__("ADDS %w0, %w3, %w0\n"
             "ADCS %w1, %w4, %w1\n"
             "ADC  %w2, %w5, %w2\n"
@@ -105,7 +105,7 @@ static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint
 // 96-bit fused multiply addition [rhi:rmi:rlo += a * b]
 static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t a, uint32_t b) {
 // These #defines are not correct; some arm seems to not support this
-#if 0 && (defined(__arm__) || defined(__aarch64__))
+#if 0 && defined(NEW_HAVE_ARM_ASM)
     uint32_t tmphi, tmplo;
     __asm__("UMULL %w3, %w4, %w5, %w6\n"
             "ADDS  %w0, %w3, %w0\n"
@@ -134,7 +134,7 @@ static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, u
 
 // 64x64->128 multiplication [rhi:rlo = a * b]
 static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
-#if defined(__aarch64__)
+#if defined(NEW_HAVE_ARM64_ASM)
     /*
      * AARCH64 needs 2 insns to calculate 128-bit result of the
      * multiplication.  If we use a generic code we actually call a
