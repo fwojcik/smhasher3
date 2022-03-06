@@ -27,88 +27,58 @@
 #include "Types.h"
 #include "Hashlib.h"
 
+// This uses bog-standard AES encryption
+#include "lib/AES.h"
+
 #include <assert.h>
-
-#if defined(NEW_HAVE_AES_X86_64)
-#include <immintrin.h>
-
-// ------------------------------------------------------------
-// This is bog-standard AES encryption and key expansion
-static inline void AES_encrypt(const uint8_t * in, uint8_t * out,  __m128i * round_keys) {
-    __m128i tmp;
-    tmp = _mm_loadu_si128((const __m128i*)in);
-    tmp = _mm_xor_si128(tmp, round_keys[0]);
-    for (int j = 1; j <10; j++)
-        tmp = _mm_aesenc_si128(tmp, round_keys[j]);
-    tmp = _mm_aesenclast_si128(tmp, round_keys[10]);
-    _mm_storeu_si128((((__m128i*)out)), tmp);
-}
-
-static inline __m128i expand_key_helper( __m128i prev_rkey, __m128i assist ) {
-    __m128i rkey = prev_rkey, temp;
-    temp = _mm_slli_si128(rkey, 0x4);
-    rkey = _mm_xor_si128(rkey, temp);
-    temp = _mm_slli_si128(temp, 0x4);
-    rkey = _mm_xor_si128(rkey, temp);
-    temp = _mm_slli_si128(temp, 0x4);
-    rkey = _mm_xor_si128(rkey, temp);
-
-    temp = _mm_shuffle_epi32(assist, 0xff);
-    rkey = _mm_xor_si128 (rkey, temp);
-
-    return rkey;
-}
-
-#define MKASSIST(x, y) x, _mm_aeskeygenassist_si128(x, y)
-
-static void AES_expand_key(__m128i * round_keys) {
-    round_keys[1] = expand_key_helper(MKASSIST(round_keys[0], 0x01));
-    round_keys[2] = expand_key_helper(MKASSIST(round_keys[1], 0x02));
-    round_keys[3] = expand_key_helper(MKASSIST(round_keys[2], 0x04));
-    round_keys[4] = expand_key_helper(MKASSIST(round_keys[3], 0x08));
-    round_keys[5] = expand_key_helper(MKASSIST(round_keys[4], 0x10));
-    round_keys[6] = expand_key_helper(MKASSIST(round_keys[5], 0x20));
-    round_keys[7] = expand_key_helper(MKASSIST(round_keys[6], 0x40));
-    round_keys[8] = expand_key_helper(MKASSIST(round_keys[7], 0x80));
-    round_keys[9] = expand_key_helper(MKASSIST(round_keys[8], 0x1b));
-    round_keys[10] = expand_key_helper(MKASSIST(round_keys[9], 0x36));
-}
-
-#undef MKASSIST
 
 // ------------------------------------------------------------
 // This is not strictly AES CTR mode, it is based on that plus the ARS
 // RNG constructions.
 
-static thread_local __m128i ctr, oldctr;
-static const __m128i incr = _mm_set_epi64x(-1ULL,1ULL);
-static __m128i round_keys[11]; // only modified on main thread
+static thread_local uint64_t ctr[2], oldctr[2];
+static const uint64_t incr[2] = {UINT64_C(1), UINT64_C(-1)};
+static uint32_t round_keys[44]; // only modified on main thread
 
 /* K1 is golden ratio - 1, K2 is sqrt(3) - 1 */
 #define K1 0x9E3779B97F4A7C15ULL
 #define K2 0xBB67AE8584CAA73BULL
 bool aesrng_init(void) {
-    uint64_t seed = g_seed;
-    round_keys[0] = _mm_set_epi64x(seed + K1, seed + K2);
-    AES_expand_key(round_keys);
-    ctr = incr;
+    uint8_t key[16];
+    if (isLE()) {
+        PUT_U64<false>(g_seed + K2, key, 0);
+        PUT_U64<false>(g_seed + K1, key, 8);
+    } else {
+        PUT_U64<true>(g_seed + K2, key, 0);
+        PUT_U64<true>(g_seed + K1, key, 8);
+    }
+    AES_KeySetup_Enc(round_keys, key, 128);
+    ctr[0] = incr[0]; ctr[1] = incr[1];
     return true;
 }
 
 static uint64_t rnd64(void) {
-    __m128i result;
-    AES_encrypt((const uint8_t *)&ctr, (uint8_t *)&result, round_keys);
-    ctr = _mm_add_epi64(ctr, incr);
-    return _mm_cvtsi128_si64x(result);
+    uint8_t result[16];
+    if (isLE()) {
+        PUT_U64<false>(ctr[0], result, 0);
+        PUT_U64<false>(ctr[1], result, 8);
+    } else {
+        PUT_U64<true>(ctr[0], result, 0);
+        PUT_U64<true>(ctr[1], result, 8);
+    }
+    AES_Encrypt<10>(round_keys, result, result);
+    ctr[0] += incr[0]; ctr[1] += incr[1];
+    // The result will get put into the output buffer from this return
+    // value via memcpy(), so just using native endianness is fine.
+    return GET_U64<false>(result, 0);
 }
 
 static void rng_ffwd(int64_t ffwd) {
-    __m128i ctrfwd = _mm_set_epi64x(-ffwd, ffwd);
-    ctr = _mm_add_epi64(ctr, ctrfwd);
+    ctr[0] += ffwd; ctr[1] -= ffwd;
 }
 
 static void rng_setctr(uint64_t stream, uint64_t seq) {
-    ctr = _mm_set_epi64x(stream, seq);
+    ctr[0] = seq; ctr[1] = stream;
 }
 
 // This variable is _not_ thread-local
@@ -138,10 +108,12 @@ static uint64_t hash_mode;
 // per-thread results should be unaffected by the number of threads.
 uintptr_t aesrng_seed(const uint64_t hint) {
     if (hash_mode == hint) {
-        oldctr = ctr;
+        oldctr[0] = ctr[0];
+        oldctr[1] = ctr[1];
     } else {
         hash_mode = hint;
-        ctr = oldctr;
+        ctr[0] = oldctr[0];
+        ctr[1] = oldctr[1];
     }
     return 0;
 }
@@ -163,6 +135,7 @@ static void rng_keyseq(const void * key, size_t len, uint64_t seed) {
             callcount = (8 * len);
     uint64_t s = 0;
     memcpy(&s, key, len > 8 ? 8 : len);
+    s = COND_BSWAP(s, isBE());
     s ^= len * K2;
     seed ^= s * K1;
     s ^= seed * K2;
@@ -333,7 +306,3 @@ REGISTER_HASH(aesrng256,
   $.seedfn = aesrng_seed,
   $.sort_order = 50
 );
-
-#else
-REGISTER_FAMILY(aesrng);
-#endif
