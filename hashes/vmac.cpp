@@ -37,7 +37,7 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#include "mathmult.h"
+#include "lib/Mathmult.h"
 
 //-----------------------------------------------------------------------------
 // Constants and masks

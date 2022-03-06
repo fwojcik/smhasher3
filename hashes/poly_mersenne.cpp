@@ -34,7 +34,7 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#include "mathmult.h"
+#include "lib/Mathmult.h"
 
 #if defined(HAVE_INT128)
 // This code originally used the system's srand()/rand() functions

@@ -39,7 +39,7 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#include "mathmult.h"
+#include "lib/Mathmult.h"
 
 //-----------------------------------------------------------------------------
 // Data reading functions, common to 32- and 64-bit hashes

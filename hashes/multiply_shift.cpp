@@ -29,7 +29,7 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#include "mathmult.h"
+#include "lib/Mathmult.h"
 
 // Multiply shift from
 // Thorup "High Speed Hashing for Integers and Strings" 2018
