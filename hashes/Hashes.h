@@ -37,7 +37,7 @@ void CityHashCrc64_test(const void *key, int len, uint32_t seed, void *out);
 void CityHashCrc128_test(const void *key, int len, uint32_t seed, void *out);
 #endif
 
-static inline bool fletcher_bad_seeds(std::vector<uint64_t> &seeds)
+static inline uint8_t fletcher_bad_seeds(std::vector<uint64_t> &seeds)
 {
   seeds = std::vector<uint64_t> { UINT64_C(0) };
   return true;
@@ -51,7 +51,7 @@ inline void fletcher4_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint64_t *) out = fletcher4((const char *)key, len, (uint64_t)seed);
 }
 uint32_t Bernstein(const char *key, int len, uint32_t seed);
-static inline bool Bernstein_bad_seeds(std::vector<uint32_t> &seeds)
+static inline uint8_t Bernstein_bad_seeds(std::vector<uint32_t> &seeds)
 {
   seeds = std::vector<uint32_t> { UINT32_C(0) };
   return true;
@@ -60,7 +60,7 @@ inline void Bernstein_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint32_t *) out = Bernstein((const char *)key, len, seed);
 }
 uint32_t sdbm(const char *key, int len, uint32_t hash);
-static inline bool sdbm_bad_seeds(std::vector<uint32_t> &seeds)
+static inline uint8_t sdbm_bad_seeds(std::vector<uint32_t> &seeds)
 {
   seeds = std::vector<uint32_t> { UINT32_C(0) };
   return true;
@@ -89,7 +89,7 @@ inline void MicroOAAT_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint32_t *) out = MicroOAAT((const char *)key, len, seed);
 }
 uint32_t SuperFastHash (const char * data, int len, uint32_t hash);
-static inline bool SuperFastHash_bad_seeds(std::vector<uint32_t> &seeds)
+static inline uint8_t SuperFastHash_bad_seeds(std::vector<uint32_t> &seeds)
 {
   seeds = std::vector<uint32_t> { UINT32_C(0) };
   return true;
@@ -173,7 +173,7 @@ inline void xxHash64_test( const void * key, int len, uint32_t seed, void * out 
 #include "xxh3.h"
 
 #ifdef HAVE_INT64
-static inline bool xxh3_bad_seeds(std::vector<uint64_t> &seeds) {
+static inline uint8_t xxh3_bad_seeds(std::vector<uint64_t> &seeds) {
   return false;
 }
 inline void xxh3_test( const void * key, int len, uint32_t seed, void * out ) {
