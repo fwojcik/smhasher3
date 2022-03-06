@@ -409,20 +409,18 @@ static void poly_step(uint64_t & ah, uint64_t & al, const uint64_t & kh,
 #define VMAC_NHBYTES  128
 
 //-----------------------------------------------------------------------------
-extern "C" {
-  #include "rijndael-alg-fst.h"
-  #include "rijndael-alg-fst.c"
-  typedef u32 aes_int_key[4*(VMAC_KEY_LEN/32+7)];
-}
+#include "lib/AES.h"
+
+typedef uint32_t aes_int_key[4*(VMAC_KEY_LEN/32+7)];
 
 #define aes_encryption(in,out,int_key)                  \
-    rijndaelEncrypt((u32 *)(int_key),                   \
-            ((VMAC_KEY_LEN/32)+6),                      \
-            (u8 *)(in), (u8 *)(out))
+    AES_Encrypt<10>(int_key,                            \
+            (const uint8_t *)(in),                      \
+            (uint8_t *)(out))
 
 #define aes_key_setup(user_key,int_key)                 \
-    rijndaelKeySetupEnc((u32 *)(int_key),               \
-            (u8 *)(user_key),                           \
+    AES_KeySetup_Enc(int_key,                           \
+            (const uint8_t *)(user_key),                \
             VMAC_KEY_LEN)
 
 //-----------------------------------------------------------------------------
@@ -457,12 +455,12 @@ static void vmac_set_key(uint8_t user_key[], vmac_ctx_t *ctx) {
     uint64_t in[2] = {0}, out[2];
     uint32_t i;
 
-    aes_key_setup(user_key, &ctx->cipher_key);
+    aes_key_setup(user_key, ctx->cipher_key);
 
     /* Fill nh key */
     ((uint8_t *)in)[0] = 0x80;
     for (i = 0; i < sizeof(ctx->nhkey)/8; i+=2) {
-        aes_encryption((uint8_t *)in, (uint8_t *)out, &ctx->cipher_key);
+        aes_encryption((uint8_t *)in, (uint8_t *)out, ctx->cipher_key);
         ctx->nhkey[i  ] = GET_U64<bswap>((uint8_t *)out, 0);
         ctx->nhkey[i+1] = GET_U64<bswap>((uint8_t *)out, 8);
         ((uint8_t *)in)[15] += 1;
@@ -472,7 +470,7 @@ static void vmac_set_key(uint8_t user_key[], vmac_ctx_t *ctx) {
     ((uint8_t *)in)[0] = 0xC0;
     in[1] = 0;
     for (i = 0; i < sizeof(ctx->polykey)/8; i+=2) {
-        aes_encryption((uint8_t *)in, (uint8_t *)out, &ctx->cipher_key);
+        aes_encryption((uint8_t *)in, (uint8_t *)out, ctx->cipher_key);
         ctx->polykey[i  ] = GET_U64<bswap>((uint8_t *)out, 0) & mpoly;
         ctx->polykey[i+1] = GET_U64<bswap>((uint8_t *)out, 8) & mpoly;
         ((uint8_t *)in)[15] += 1;
@@ -483,7 +481,7 @@ static void vmac_set_key(uint8_t user_key[], vmac_ctx_t *ctx) {
     in[1] = 0;
     for (i = 0; i < sizeof(ctx->l3key)/8; i+=2) {
         do {
-            aes_encryption((uint8_t *)in, (uint8_t *)out, &ctx->cipher_key);
+            aes_encryption((uint8_t *)in, (uint8_t *)out, ctx->cipher_key);
             ctx->l3key[i  ] = GET_U64<bswap>((uint8_t *)out, 0);
             ctx->l3key[i+1] = GET_U64<bswap>((uint8_t *)out, 8);
             ((uint8_t *)in)[15] += 1;
