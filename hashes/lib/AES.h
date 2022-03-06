@@ -44,7 +44,7 @@
 #  include "AES-portable.h"
 #endif
 
-void _bswap_subkeys(uint32_t rk[], int subkeys) {
+static inline void _bswap_subkeys(uint32_t rk[], int subkeys) {
     for (int i = 0; i < subkeys; i++) {
         rk[i] = COND_BSWAP(rk[i], true);
     }
