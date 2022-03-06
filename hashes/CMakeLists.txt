@@ -631,6 +631,7 @@ add_library(
   Hashlib.cpp
   Hashinfo.cpp
   Hashrefs.cpp
+  lib/AES.cpp
 #
   donothing.cpp
   badhash.cpp
