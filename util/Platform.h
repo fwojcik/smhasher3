@@ -132,6 +132,8 @@ static char* strndup(char const *s, size_t n)
 
 #define likely(x) (x)
 #define assume(x) (__assume(x))
+#define unreachable() (__assume(0))
+#define prefetch(ptr) do { (void)(ptr); } while (0)
 
 //-----------------------------------------------------------------------------
 // Other compilers
@@ -195,6 +197,8 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #define unlikely(x) __builtin_expect(!!(x), 0)
 /* Should work for gcc, clang, and icc at least */
 #define assume(x) do { if (!(x)) __builtin_unreachable(); } while (0)
+#define unreachable() __builtin_unreachable()
+#define prefetch(ptr) __builtin_prefetch(ptr)
 
 #include <strings.h>
 #define _stricmp strcasecmp
