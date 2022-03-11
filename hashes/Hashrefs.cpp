@@ -53,6 +53,7 @@ unsigned refs() {
     USE_FAMILY(pearson);
     USE_FAMILY(blockpearson);
     USE_FAMILY(multiply_shift);
+    USE_FAMILY(t1ha);
 
     return 0;
 }

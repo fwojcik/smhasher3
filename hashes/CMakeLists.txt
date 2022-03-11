@@ -544,31 +544,6 @@ else()
   set(SIPHASH_SRC siphash.c)
 endif(SSE42_FOUND)
 
-if(AES_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel"))
-  set(T1HA_SRC
-      t1ha/t1ha0.c t1ha/t1ha1.c t1ha/t1ha2.c t1ha/t1ha0_ia32aes_noavx.c
-      t1ha/t1ha0_ia32aes_avx.c t1ha/t1ha0_ia32aes_avx2.c)
-  if(MSVC)
-    # ignoring unknown option '/arch:ia32'
-    # set_source_files_properties(t1ha/t1ha0_ia32aes_noavx.c PROPERTIES
-    # COMPILE_FLAGS "/arch:ia32")
-    set_source_files_properties(t1ha/t1ha0_ia32aes_avx.c
-                                PROPERTIES COMPILE_FLAGS "/arch:avx")
-    set_source_files_properties(t1ha/t1ha0_ia32aes_avx2.c
-      PROPERTIES COMPILE_FLAGS "/arch:avx2")
-  else()
-    set_source_files_properties(
-      t1ha/t1ha0_ia32aes_noavx.c PROPERTIES COMPILE_FLAGS
-                                            "-mno-avx2 -mno-avx -maes")
-    set_source_files_properties(
-      t1ha/t1ha0_ia32aes_avx.c PROPERTIES COMPILE_FLAGS "-mno-avx2 -mavx -maes")
-    set_source_files_properties(t1ha/t1ha0_ia32aes_avx2.c
-                                PROPERTIES COMPILE_FLAGS "-mavx -mavx2 -maes")
-  endif()
-else()
-  set(T1HA_SRC t1ha/t1ha0.c t1ha/t1ha1.c t1ha/t1ha2.c)
-endif(AES_FOUND AND (PROCESSOR_FAMILY STREQUAL "Intel"))
-
 if(NOT MSVC)
   set(NOTMSVC_SRC seahash.c)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -flax-vector-conversions -Wno-ignored-attributes")
@@ -665,6 +640,7 @@ add_library(
   pearson.cpp
   blockpearson.cpp
   multiply_shift.cpp
+  t1ha.cpp
 )
 
 add_library(
@@ -675,7 +651,6 @@ add_library(
   ${HIGHWAY_SRC}
   ${SSE2_SRC}
   ${SIPHASH_SRC}
-  ${T1HA_SRC}
   ${TSIP_SRC}
   ${NOTMSVC_SRC}
   ${X86_64ONLY_SRC}
