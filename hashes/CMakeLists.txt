@@ -529,7 +529,7 @@ if(SSE42_FOUND)
   # MSVC CL 14.16.27023 32bit crashes, 14.28.29910 works fine.
   # 64bit only:
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(X86_64ONLY_SRC farmhash-c.c farmhash-c-test.cc clhash.c)
+    set(X86_64ONLY_SRC clhash.c)
   else()
     message(STATUS "32bit only: CMAKE_SIZEOF_VOID_P=${CMAKE_SIZEOF_VOID_P}")
   endif()
@@ -641,6 +641,7 @@ add_library(
   blockpearson.cpp
   multiply_shift.cpp
   t1ha.cpp
+  farmhash.cpp
 )
 
 add_library(
@@ -667,8 +668,6 @@ add_library(
   floppsyhash.cpp
   fasthash.cpp
   xxhash.c
-  farmhash.cc
-  FarmTest.cc
   jody_hash32.c
   jody_hash64.c
   pengyhash.c

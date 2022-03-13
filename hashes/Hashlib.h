@@ -42,9 +42,7 @@ HashInfo * convertLegacyHash(LegacyHashInfo * linfo);
 
 // FIXME Make this code properly portable
 template < typename T >
-static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
-    if (!doit || (sizeof(T) < 2)) { return value; }
-
+static FORCE_INLINE T BSWAP(T value) {
     switch(sizeof(T)) {
     case 2:  value = __builtin_bswap16((uint16_t)value); break;
     case 4:  value = __builtin_bswap32((uint32_t)value); break;
@@ -57,6 +55,12 @@ static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
     default: break;
     }
     return value;
+}
+
+template < typename T >
+static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
+    if (!doit || (sizeof(T) < 2)) { return value; }
+    return BSWAP(value);
 }
 
 //-----------------------------------------------------------------------------

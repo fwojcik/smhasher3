@@ -120,18 +120,6 @@ inline void CityHash64_low_test(const void *key, int len, uint32_t seed, void *o
 }
 void CityHash128_test(const void *key, int len, uint32_t seed, void *out);
 // objsize: eb0-3b91: 11489 (mult. variants per len)
-void FarmHash32_test       ( const void * key, int len, uint32_t seed, void * out );
-// objsize: 0-eae: 3758 (mult. variants per len)
-void FarmHash64_test       ( const void * key, int len, uint32_t seed, void * out );
-void FarmHash64noSeed_test ( const void * key, int len, uint32_t seed, void * out );
-// objsize: 44a0-4543: 163
-void FarmHash128_test      ( const void * key, int len, uint32_t seed, void * out );
-// objsize: 0x2c70-0x2f6a farmhash32_su_with_seed
-void farmhash32_c_test     ( const void * key, int len, uint32_t seed, void * out );
-// objsize: 4a20-4a82/5b0-5fd/660-1419: 3688 farmhash64_na_with_seeds
-void farmhash64_c_test     ( const void * key, int len, uint32_t seed, void * out );
-// objsize: 4140-48a2: 1890
-void farmhash128_c_test    ( const void * key, int len, uint32_t seed, void * out );
 
 //----------
 // Used internally as C++
