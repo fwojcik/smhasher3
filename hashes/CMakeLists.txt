@@ -642,6 +642,7 @@ add_library(
   multiply_shift.cpp
   t1ha.cpp
   farmhash.cpp
+  farsh.cpp
 )
 
 add_library(

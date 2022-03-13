@@ -285,13 +285,6 @@ inline void MeowHash32_test(const void *key, int len, unsigned seed, void *out) 
 }
 #endif
 
-#ifdef HAVE_SSE2
-void farsh32_test ( const void * key, int len, unsigned seed, void * out );
-void farsh64_test ( const void * key, int len, unsigned seed, void * out );
-void farsh128_test ( const void * key, int len, unsigned seed, void * out );
-void farsh256_test ( const void * key, int len, unsigned seed, void * out );
-#endif
-
 #ifdef HAVE_INT64
 // https://github.com/avaneev/prvhash
 #include "prvhash/prvhash64.h"
