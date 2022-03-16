@@ -56,6 +56,7 @@ unsigned refs() {
     USE_FAMILY(t1ha);
     USE_FAMILY(farmhash);
     USE_FAMILY(farsh);
+    USE_FAMILY(prvhash);
 
     return 0;
 }

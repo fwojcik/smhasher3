@@ -643,6 +643,7 @@ add_library(
   t1ha.cpp
   farmhash.cpp
   farsh.cpp
+  prvhash.cpp
 )
 
 add_library(
