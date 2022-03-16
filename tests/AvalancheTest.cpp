@@ -58,7 +58,7 @@
 #include <cassert>
 #include <math.h>
 
-#if defined(NEW_HAVE_AVX2)
+#if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_4_1)
 #include <immintrin.h>
 #endif
 
@@ -145,6 +145,13 @@ static void calcBiasRange ( const HashFn hash, std::vector<uint32_t> &bins,
                                          1 << 5,
                                          1 << 6,
                                          1 << 7);
+#elif defined(NEW_HAVE_SSE_4_1)
+  const __m128i ONE  = _mm_set1_epi32(1);
+  const __m128i MASK = _mm_setr_epi32(
+                                         1 << 0,
+                                         1 << 1,
+                                         1 << 2,
+                                         1 << 3);
 #endif
 
   uint8_t K[keybytes];
@@ -204,6 +211,25 @@ static void calcBiasRange ( const HashFn hash, std::vector<uint32_t> &bins,
           cnt4 = _mm256_add_epi32(cnt4, incr4);
           _mm256_storeu_si256((__m256i *)cursor, cnt4);
           cursor += 8;
+      }
+#elif defined(NEW_HAVE_SSE_4_1)
+      for(int oWord = 0; oWord < (hashbytes/4); oWord++) {
+          // Get the next 32-bit chunk of the hash difference
+          uint32_t word;
+          memcpy(&word, ((const uint8_t *)&B) + 4*oWord, 4);
+
+          // Expand it out into 8 sets of 4 32-bit integer words, with
+          // each integer being zero or one, and add them into the
+          // counts in bins[].
+          __m128i base = _mm_set1_epi32(word);
+          for (int i = 0; i < 8; i++) {
+              __m128i incr = _mm_min_epu32(_mm_and_si128(base, MASK), ONE);
+              __m128i cnt  = _mm_loadu_si128((const __m128i *)cursor);
+              cnt = _mm_add_epi32(cnt, incr);
+              _mm_storeu_si128((__m128i *)cursor, cnt);
+              base = _mm_srli_epi32(base, 4);
+              cursor += 4;
+          }
       }
 #else
       for(int oByte = 0; oByte < hashbytes; oByte++) {
