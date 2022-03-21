@@ -196,17 +196,6 @@ void clhash_seed_init(size_t &seed);
 void clhash_test (const void * key, int len, uint32_t seed, void * out);
 #endif
 
-// objsize 454880-4554f3: 2911
-void halftime_hash_style64_test(const void *key, int len, uint32_t seed, void *out);
-// 455e90 - 45682e: 2462
-void halftime_hash_style128_test(const void *key, int len, uint32_t seed, void *out);
-// 458840 - 45927e: 2622
-void halftime_hash_style256_test(const void *key, int len, uint32_t seed, void *out);
-// 457a60 - 45883e: 3550 (without AVX512 on Ryzen3)
-void halftime_hash_style512_test(const void *key, int len, uint32_t seed, void *out);
-void halftime_hash_init();
-void halftime_hash_seed_init(size_t &seed);
-
 #ifdef __SIZEOF_INT128__
    void multiply_shift_init();
    void multiply_shift_seed_init(uint32_t &seed);

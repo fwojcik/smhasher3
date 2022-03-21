@@ -546,7 +546,8 @@ endif(SSE42_FOUND)
 
 if(NOT MSVC)
   set(NOTMSVC_SRC seahash.c)
-  set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y -flax-vector-conversions -Wno-ignored-attributes")
+  set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y")
+  set_source_files_properties(halftimehash.cpp PROPERTIES COMPILE_FLAGS "-flax-vector-conversions -Wno-ignored-attributes")
   set(TSIP_SRC tsip.c)
 else(NOT MSVC)
   # nmhash32 wants "/std:c++latest"
@@ -645,6 +646,7 @@ add_library(
   farsh.cpp
   prvhash.cpp
   cityhash.cpp
+  halftimehash.cpp
 )
 
 add_library(

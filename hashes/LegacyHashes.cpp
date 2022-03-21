@@ -166,18 +166,6 @@ static LegacyHashInfo g_hashes[] =
   { umash,                64, 0x4542288C, "umash64",     "umash 64", GOOD, {} },
   { umash128,            128, 0xDA4E82B6, "umash128",    "umash 128", GOOD, {} },
 #endif
-  { halftime_hash_style64_test,  64, 0x0, "halftime_hash64",    "NH tree hash variant", GOOD,
-    {0xc61d672b, 0xcc70c4c1798e4a6f, 0xd3833e804f4c574b, 0xecfc1357d65941ae, 0xbe1927f97b8c43f1, 
-     0xf4d4beb14ae042bbULL, 0x9a9b4c4e44dd48d1ULL} }, // not vulnerable
-  { halftime_hash_style128_test, 64, 0x0, "halftime_hash128",   "NH tree hash variant", GOOD,
-    {0xc61d672b, 0xcc70c4c1798e4a6f, 0xd3833e804f4c574b, 0xecfc1357d65941ae, 0xbe1927f97b8c43f1, 
-     0xf4d4beb14ae042bbULL, 0x9a9b4c4e44dd48d1ULL} },
-  { halftime_hash_style256_test, 64, 0x0, "halftime_hash256",   "NH tree hash variant", GOOD,
-    {0xc61d672b, 0xcc70c4c1798e4a6f, 0xd3833e804f4c574b, 0xecfc1357d65941ae, 0xbe1927f97b8c43f1, 
-     0xf4d4beb14ae042bbULL, 0x9a9b4c4e44dd48d1ULL} },
-  { halftime_hash_style512_test, 64, 0x0, "halftime_hash512",   "NH tree hash variant", GOOD,
-    {0xc61d672b, 0xcc70c4c1798e4a6f, 0xd3833e804f4c574b, 0xecfc1357d65941ae, 0xbe1927f97b8c43f1, 
-     0xf4d4beb14ae042bbULL, 0x9a9b4c4e44dd48d1ULL} },
 
 #ifdef HAVE_AHASH_C
   // aHash does not adhere to a fixed output
@@ -247,11 +235,6 @@ void Hash_init (LegacyHashInfo* info) {
 #endif
   else if(info->hash == chaskey_test)
     chaskey_init();
-  else if (info->hash == halftime_hash_style64_test ||
-           info->hash == halftime_hash_style128_test ||
-           info->hash == halftime_hash_style256_test ||
-           info->hash == halftime_hash_style512_test)
-    halftime_hash_init();
 }
 
 // Needed for hashed with a few bad seeds, to reject this seed and generate a new one.
@@ -290,13 +273,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
           hash == umash128)
     umash_seed_init(seed);
 # endif
-  else if (hash == halftime_hash_style64_test || hash == halftime_hash_style128_test ||
-           hash == halftime_hash_style256_test || hash == halftime_hash_style512_test)
-    halftime_hash_seed_init(seed);
-  /*
-  else if(hash == hashx_test)
-    hashx_seed_init(info, seed);
-  */
 #endif
   else
       return false;
@@ -328,10 +304,6 @@ bool hash_is_slow(pfHash hash) {
     // known somewhat slow hashes
     const struct { pfHash h; } slowhashes[] = {
         { o1hash_test                 },
-        { halftime_hash_style64_test  },
-        { halftime_hash_style128_test },
-        { halftime_hash_style256_test },
-        { halftime_hash_style512_test },
     };
 
     for (int i=0; i<sizeof(slowhashes)/sizeof(slowhashes[0]); i++) {
