@@ -51,7 +51,7 @@ void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out
     __m128i seed128 = {(int64_t)seed, 0};
     __m128i hash = _mm_xor_si128(rk0, seed128);
     // Arbitrarily chose 64-bit wordlen
-    const __m128i MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020340506070ULL);
+    const __m128i MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020304050607ULL);
 
     while (src_sz >= 16) {
     onemoretry:
@@ -94,7 +94,7 @@ REGISTER_HASH(aesnihash,
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 64,
   $.verification_LE = 0xA68E0D42,
-  $.verification_BE = 0x2918A889,
+  $.verification_BE = 0xEBC48EDA,
   $.hashfn_native = aesnihash<false>,
   $.hashfn_bswap = aesnihash<true>,
   $.badseeds = {0x70736575}
