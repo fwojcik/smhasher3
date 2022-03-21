@@ -644,6 +644,7 @@ add_library(
   farmhash.cpp
   farsh.cpp
   prvhash.cpp
+  cityhash.cpp
 )
 
 add_library(
@@ -661,8 +662,6 @@ add_library(
   ${UMASH_SRC}
 #
   chaskey.c
-  CityTest.cpp
-  City.cpp
   Hashes.cpp
   lookup3.cpp
   SuperFastHash.cpp

@@ -32,10 +32,6 @@ void aesrng256(const void *key, int len, uint32_t seed, void *out);
 #if defined(HAVE_SSE2)
 void hasshe2_test(const void *key, int len, uint32_t seed, void *out);
 #endif
-#if defined(HAVE_SSE42)
-void CityHashCrc64_test(const void *key, int len, uint32_t seed, void *out);
-void CityHashCrc128_test(const void *key, int len, uint32_t seed, void *out);
-#endif
 
 static inline uint8_t fletcher_bad_seeds(std::vector<uint64_t> &seeds)
 {
@@ -109,17 +105,6 @@ uint32_t Crap8(const uint8_t * key, uint32_t len, uint32_t seed);
 inline void Crap8_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint32_t *) out = Crap8((const uint8_t *)key, len, seed);
 }
-
-void CityHash32_test(const void *key, int len, uint32_t seed, void *out);
-void CityHash64noSeed_test(const void *key, int len, uint32_t seed, void *out);
-void CityHash64_test(const void *key, int len, uint32_t seed, void *out);
-inline void CityHash64_low_test(const void *key, int len, uint32_t seed, void *out) {
-  uint64_t result;
-  CityHash64_test(key, len, seed, &result);
-  *(uint32_t *)out = (uint32_t)result;
-}
-void CityHash128_test(const void *key, int len, uint32_t seed, void *out);
-// objsize: eb0-3b91: 11489 (mult. variants per len)
 
 //----------
 // Used internally as C++

@@ -116,9 +116,6 @@ static LegacyHashInfo g_hashes[] =
   { xxHash32_test,        32, 0xBA88B743, "xxHash32",    "xxHash, 32-bit for x86", POOR, {} },
   { fasthash32_test,      32, 0xE9481AFC, "fasthash32",  "fast-hash 32bit", POOR, {0x880355f21e6d1965ULL} },
   { fasthash64_test,      64, 0xA16231A7, "fasthash64",  "fast-hash 64bit", POOR, {0x880355f21e6d1965ULL} },
-  { CityHash32_test,      32, 0x5C28AD62, "City32",      "Google CityHash32WithSeed (old)", POOR, {0x2eb38c9f} /* !! */},
-  { CityHash64noSeed_test, 64, 0x63FC6063, "City64noSeed","Google CityHash64 without seed (default version, misses one final avalanche)", POOR, {} },
-  { CityHash64_test,      64, 0x25A20825, "City64",       "Google CityHash64WithSeed (old)", POOR, {} },
 #ifdef HAVE_MEOW_HASH
   { MeowHash32_test,      32, 0x8872DE1A, "MeowHash32low","MeowHash (requires x64 AES-NI)", POOR,
     {0x920e7c64} /* !! */},
@@ -156,12 +153,6 @@ static LegacyHashInfo g_hashes[] =
 #ifdef HAVE_HIGHWAYHASH
   { HighwayHash64_test,   64, 0x0,        "HighwayHash64", "Google HighwayHash (portable with dylib overhead)", GOOD, {} },
 #endif
-  { CityHash64_low_test,  32, 0xCC5BC861, "City64low",   "Google CityHash64WithSeed (low 32-bits)", GOOD, {} },
-#if defined(__SSE4_2__) && defined(__x86_64__)
-  { CityHash128_test,    128, 0x6531F54E, "City128",     "Google CityHash128WithSeed (old)", GOOD, {} },
-  { CityHashCrc128_test, 128, 0xD4389C97, "CityCrc128",  "Google CityHashCrc128WithSeed SSE4.2 (old)", GOOD, {} },
-#endif
-
   { xxHash64_test,        64, 0x024B7CF4, "xxHash64",    "xxHash, 64-bit", GOOD, {} },
 #if 0
   { xxhash256_test,       64, 0x024B7CF4, "xxhash256",   "xxhash256, 64-bit unportable", GOOD, {} },

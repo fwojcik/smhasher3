@@ -57,6 +57,7 @@ unsigned refs() {
     USE_FAMILY(farmhash);
     USE_FAMILY(farsh);
     USE_FAMILY(prvhash);
+    USE_FAMILY(cityhash);
 
     return 0;
 }
