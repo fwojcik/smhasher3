@@ -374,10 +374,6 @@ static uint64_t tsip(const uint64_t seed, const uint8_t * m, uint64_t len) {
 //------------------------------------------------------------
 template < bool bswap >
 void SipHash_2_4(const void * in, const size_t len, const seed_t seed, void * out) {
-    if (len == 0) {
-        memset(out, 0, 8);
-        return;
-    }
     uint64_t key[2] = { seed, 0 };
     uint64_t h;
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
@@ -390,10 +386,6 @@ void SipHash_2_4(const void * in, const size_t len, const seed_t seed, void * ou
 
 template < bool bswap >
 void SipHash_1_3(const void * in, const size_t len, const seed_t seed, void * out) {
-    if (len == 0) {
-        memset(out, 0, 8);
-        return;
-    }
     uint64_t key[2] = { seed, 0 };
     uint64_t h;
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
@@ -406,10 +398,6 @@ void SipHash_1_3(const void * in, const size_t len, const seed_t seed, void * ou
 
 template < bool bswap >
 void HalfSipHash(const void * in, const size_t len, const seed_t seed, void * out) {
-    if (len == 0) {
-        memset(out, 0, 4);
-        return;
-    }
     uint32_t key[2] = { (uint32_t)seed, (uint32_t)(((uint64_t)seed) >> 32) };
     uint32_t h;
     h = halfsiphash<bswap>(key, (const uint8_t *)in, len);
@@ -433,8 +421,8 @@ REGISTER_HASH(siphash_2_4,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
-  $.verification_LE = 0xC58D7F9C,
-  $.verification_BE = 0x9F50B073,
+  $.verification_LE = 0x57B661ED,
+  $.verification_BE = 0x01B634D0,
   $.hashfn_native = SipHash_2_4<false>,
   $.hashfn_bswap = SipHash_2_4<true>
 );
@@ -446,8 +434,8 @@ REGISTER_HASH(siphash_1_3,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
-  $.verification_LE = 0x29C010BF,
-  $.verification_BE = 0xD1BE5C90,
+  $.verification_LE = 0x8936B193,
+  $.verification_BE = 0xBEB90EAC,
   $.hashfn_native = SipHash_1_3<false>,
   $.hashfn_bswap = SipHash_1_3<true>
 );
@@ -459,8 +447,8 @@ REGISTER_HASH(siphash_half,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
-  $.verification_LE = 0xA7A05F72,
-  $.verification_BE = 0x45FEFEEC,
+  $.verification_LE = 0xD2BE7FD8,
+  $.verification_BE = 0xEC8BC9AF,
   $.hashfn_native = HalfSipHash<false>,
   $.hashfn_bswap = HalfSipHash<true>
 );
