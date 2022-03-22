@@ -135,7 +135,7 @@ bool SanityTest (const HashInfo * hinfo) {
 
       // See if hash overflowed output buffer
       if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes, sentinel1)) {
-          printf(" hash overflowed input buffer (pass 1):");
+          printf(" hash overflowed output buffer (pass 1):");
           result = false;
           goto end_sanity;
       }
@@ -144,7 +144,7 @@ bool SanityTest (const HashInfo * hinfo) {
 
       // See if hash overflowed output buffer again
       if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes, sentinel2)) {
-          printf(" hash overflowed input buffer (pass 2):");
+          printf(" hash overflowed output buffer (pass 2):");
           result = false;
           goto end_sanity;
       }
