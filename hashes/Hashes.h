@@ -204,18 +204,6 @@ inline void o1hash_test (const void * key, int len, uint32_t seed, void * out) {
   *(uint64_t*)out = o1hash(key, (uint64_t)len);
 }
 
-//TODO MSVC
-#ifndef _MSC_VER
-extern "C" uint64_t seahash(const char *key, int len, uint64_t seed);
-// objsize 29b0-2d17: 871
-inline void seahash_test (const void *key, int len, uint32_t seed, void *out) {
-  *(uint64_t*)out = seahash((const char *)key, len, (uint64_t)seed);
-}
-inline void seahash32low (const void *key, int len, uint32_t seed, void *out) {
-  uint64_t result = seahash((const char *)key, len, (uint64_t)seed);
-  *(uint32_t*)out = (uint32_t)(UINT64_C(0xffffffff) & result);
-}
-#endif /* !MSVC */
 #endif /* HAVE_INT64 */
 
 #if defined(HAVE_AESNI) && defined(__SIZEOF_INT128__) && \

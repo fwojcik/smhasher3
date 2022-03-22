@@ -135,12 +135,6 @@ static LegacyHashInfo g_hashes[] =
   { chaskey_test,         64, 0xBB4F6706, "chaskey",     "mouha.be/chaskey/ with added seed support", GOOD, {} },
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
   { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
-#ifndef _MSC_VER
-#ifdef HAVE_INT64
-  { seahash_test,         64, 0xF0374078, "seahash",     "seahash (64-bit, little-endian)", GOOD, {} },
-  { seahash32low,         32, 0x712F0EE8, "seahash32low","seahash - lower 32bit", GOOD, {} },
-#endif /* HAVE_INT64 */
-#endif /* !MSVC */
 #if defined(HAVE_SSE42) && defined(__x86_64__)
   { clhash_test,          64, 0x0, "clhash",      "carry-less mult. hash -DBITMIX (64-bit for x64, SSE4.2)", GOOD,
     {0xb3816f6a2c68e530, 711} },

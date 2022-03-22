@@ -536,7 +536,6 @@ if(SSE42_FOUND)
 endif(SSE42_FOUND)
 
 if(NOT MSVC)
-  set(NOTMSVC_SRC seahash.c)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y")
   set_source_files_properties(halftimehash.cpp PROPERTIES COMPILE_FLAGS "-flax-vector-conversions -Wno-ignored-attributes")
 else(NOT MSVC)
@@ -638,6 +637,7 @@ add_library(
   cityhash.cpp
   halftimehash.cpp
   siphash.cpp
+  seahash.cpp
 )
 
 add_library(
@@ -647,7 +647,6 @@ add_library(
 #
   ${HIGHWAY_SRC}
   ${SSE2_SRC}
-  ${NOTMSVC_SRC}
   ${X86_64ONLY_SRC}
   ${ASCON_SRC}
   ${UMASH_SRC}

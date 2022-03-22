@@ -60,6 +60,7 @@ unsigned refs() {
     USE_FAMILY(cityhash);
     USE_FAMILY(halftimehash);
     USE_FAMILY(siphash);
+    USE_FAMILY(seahash);
 
     return 0;
 }
