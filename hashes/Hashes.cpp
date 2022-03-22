@@ -342,45 +342,6 @@ hasshe2_test(const void *input, int len, uint32_t seed, void *out)
 }
 #endif
 
-/* https://github.com/floodyberry/siphash */
-void
-siphash_test(const void *input, int len, uint32_t seed, void *out)
-{
-  /* 128bit state, filled with a 32bit seed */
-  unsigned char	key[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  if (!len) {
-    *(uint32_t *) out = 0;
-    return;
-  }
-  memcpy(key, &seed, sizeof(seed));
-  // objsize: 0-0x42f: 1071
-  *(uint64_t *) out = siphash(key, (const unsigned char *)input, (size_t) len);
-}
-void
-siphash13_test(const void *input, int len, uint32_t seed, void *out)
-{
-  unsigned char	key[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  if (!len) {
-    *(uint32_t *) out = 0;
-    return;
-  }
-  memcpy(key, &seed, sizeof(seed));
-  // objsize: 0x450-0x75a: 778
-  *(uint64_t *) out = siphash13(key, (const unsigned char *)input, (size_t) len);
-}
-void
-halfsiphash_test(const void *input, int len, uint32_t seed, void *out)
-{
-  unsigned char	key[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  if (!len) {
-    *(uint32_t *) out = 0;
-    return;
-  }
-  memcpy(key, &seed, sizeof(seed));
-  // objsize: 0x780-0xa3c: 700
-  *(uint32_t *) out = halfsiphash(key, (const unsigned char *)input, (size_t) len);
-}
-
 #if defined(HAVE_SSE42) && defined(__x86_64__)
 
 #include "clhash.h"
@@ -410,28 +371,6 @@ void clhash_seed_init(size_t &seed)
 }
 
 #endif
-
-//TODO MSVC
-#ifdef HAVE_INT64
-#ifndef _MSC_VER
-static uint8_t tsip_key[16];
-void tsip_init()
-{
-  Rand r(729176);
-  uint64_t rv = r.rand_u64();
-  memcpy(&tsip_key[0], &rv, 8);
-  rv = r.rand_u64();
-  memcpy(&tsip_key[8], &rv, 8);
-}
-void tsip_test(const void *bytes, int len, uint32_t seed, void *out)
-{
-  memcpy(&tsip_key[0], &seed, 4);
-  memcpy(&tsip_key[8], &seed, 4);
-  *(uint64_t*)out = tsip(tsip_key, (const unsigned char*)bytes, (uint64_t)len);
-}
-
-#endif /* !MSVC */
-#endif /* HAVE_INT64 */
 
 #include "hash-garage/nmhash.h"
 // objsize: 4202f0-420c7d: 2445

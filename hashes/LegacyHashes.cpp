@@ -133,14 +133,9 @@ static LegacyHashInfo g_hashes[] =
   // different verif on gcc vs clang
   { floppsyhash_64,       64, 0x0,        "floppsyhash", "slow hash designed for floating point hardware", GOOD, {} },
   { chaskey_test,         64, 0xBB4F6706, "chaskey",     "mouha.be/chaskey/ with added seed support", GOOD, {} },
-  { siphash_test,         64, 0xC58D7F9C, "SipHash",     "SipHash 2-4 - SSSE3 optimized", GOOD, {} },
-  { halfsiphash_test,     32, 0xA7A05F72, "HalfSipHash", "HalfSipHash 2-4, 32bit", GOOD, {} },
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
   { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
-  // as in rust and swift:
-  { siphash13_test,       64, 0x29C010BF, "SipHash13",   "SipHash 1-3 - SSSE3 optimized", GOOD, {} },
 #ifndef _MSC_VER
-  { tsip_test,            64, 0x75C732C0, "TSip",        "Damian Gryski's Tiny SipHash variant", GOOD, {} },
 #ifdef HAVE_INT64
   { seahash_test,         64, 0xF0374078, "seahash",     "seahash (64-bit, little-endian)", GOOD, {} },
   { seahash32low,         32, 0x712F0EE8, "seahash32low","seahash - lower 32bit", GOOD, {} },
@@ -228,10 +223,6 @@ void Hash_init (LegacyHashInfo* info) {
 #ifdef HAVE_HIGHWAYHASH
   else if(info->hash == HighwayHash64_test)
     HighwayHash_init();
-#endif
-#ifndef _MSC_VER
-  else if(info->hash == tsip_test)
-    tsip_init();
 #endif
   else if(info->hash == chaskey_test)
     chaskey_init();

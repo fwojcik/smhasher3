@@ -59,6 +59,7 @@ unsigned refs() {
     USE_FAMILY(prvhash);
     USE_FAMILY(cityhash);
     USE_FAMILY(halftimehash);
+    USE_FAMILY(siphash);
 
     return 0;
 }

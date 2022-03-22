@@ -533,22 +533,12 @@ if(SSE42_FOUND)
   else()
     message(STATUS "32bit only: CMAKE_SIZEOF_VOID_P=${CMAKE_SIZEOF_VOID_P}")
   endif()
-  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    set(SIPHASH_SRC siphash.c)
-  else()
-    set(SIPHASH_SRC siphash_ssse3.c)
-  endif()
-elseif(SSE2_FOUND)
-  set(SIPHASH_SRC siphash_sse2.c)
-else()
-  set(SIPHASH_SRC siphash.c)
 endif(SSE42_FOUND)
 
 if(NOT MSVC)
   set(NOTMSVC_SRC seahash.c)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "-std=c++1y")
   set_source_files_properties(halftimehash.cpp PROPERTIES COMPILE_FLAGS "-flax-vector-conversions -Wno-ignored-attributes")
-  set(TSIP_SRC tsip.c)
 else(NOT MSVC)
   # nmhash32 wants "/std:c++latest"
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest")
@@ -647,6 +637,7 @@ add_library(
   prvhash.cpp
   cityhash.cpp
   halftimehash.cpp
+  siphash.cpp
 )
 
 add_library(
@@ -656,8 +647,6 @@ add_library(
 #
   ${HIGHWAY_SRC}
   ${SSE2_SRC}
-  ${SIPHASH_SRC}
-  ${TSIP_SRC}
   ${NOTMSVC_SRC}
   ${X86_64ONLY_SRC}
   ${ASCON_SRC}

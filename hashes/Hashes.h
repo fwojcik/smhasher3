@@ -13,8 +13,6 @@
 // objsize: 5f0-85f = 623
 #include "floppsyhash.h"
 
-#include "siphash.h"
-
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
 
@@ -110,9 +108,6 @@ inline void Crap8_test(const void *key, int len, uint32_t seed, void *out) {
 // Used internally as C++
 uint32_t MurmurOAAT ( const char * key, int len, uint32_t seed );
 
-void siphash_test          ( const void * key, int len, uint32_t seed, void * out );
-void siphash13_test        ( const void * key, int len, uint32_t seed, void * out );
-void halfsiphash_test      ( const void * key, int len, uint32_t seed, void * out );
 extern "C" void chaskey_c  ( const void * key, int len, uint64_t seed, void * out );
 extern "C" void chaskey_init();
 inline void
@@ -219,11 +214,6 @@ inline void o1hash_test (const void * key, int len, uint32_t seed, void * out) {
 
 //TODO MSVC
 #ifndef _MSC_VER
-void tsip_init();
-void tsip_test (const void * key, int len, uint32_t seed, void * out);
-// objsize 0-207: 519
-extern "C" uint64_t tsip(const unsigned char *seed, const unsigned char *m, uint64_t len);
-
 extern "C" uint64_t seahash(const char *key, int len, uint64_t seed);
 // objsize 29b0-2d17: 871
 inline void seahash_test (const void *key, int len, uint32_t seed, void *out) {
