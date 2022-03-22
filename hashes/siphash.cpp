@@ -1,5 +1,5 @@
 /*
- * DoNothing hash and DoNothing One-At-A-Time Hash
+ * SipHash
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (c) 2018      Leo Yuriev
  * Copyright (c) 2014-2021 Reini Urban

@@ -1,5 +1,5 @@
 /*
- * DoNothing hash and DoNothing One-At-A-Time Hash
+ * Multiply-Shift Hash
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (C) 2020       Thomas Dybdahl Ahle
  * Copyright (c) 2019       Reini Urban
