@@ -61,6 +61,7 @@ unsigned refs() {
     USE_FAMILY(halftimehash);
     USE_FAMILY(siphash);
     USE_FAMILY(seahash);
+    USE_FAMILY(hasshe2);
 
     return 0;
 }

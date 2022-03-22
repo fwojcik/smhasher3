@@ -27,10 +27,6 @@ void aesrng256(const void *key, int len, uint32_t seed, void *out);
 //----------
 // General purpose hashes
 
-#if defined(HAVE_SSE2)
-void hasshe2_test(const void *key, int len, uint32_t seed, void *out);
-#endif
-
 static inline uint8_t fletcher_bad_seeds(std::vector<uint64_t> &seeds)
 {
   seeds = std::vector<uint64_t> { UINT64_C(0) };

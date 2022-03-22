@@ -319,29 +319,6 @@ Crap8(const uint8_t * key, uint32_t len, uint32_t seed)
   return k;
 }
 
-extern "C" {
-#ifdef HAVE_SSE2
-  void		  hasshe2 (const void *input, int len, uint32_t seed, void *out);
-#endif
-}
-
-#if defined(HAVE_SSE2)
-void
-hasshe2_test(const void *input, int len, uint32_t seed, void *out)
-{
-  if (!len) {
-    *(uint32_t *) out = 0;
-    return;
-  }
-  if (len % 16) {
-    //add pad NUL
-    len += 16 - (len % 16);
-  }
-  // objsize: 0-1bd: 445
-  hasshe2(input, len, seed, out);
-}
-#endif
-
 #if defined(HAVE_SSE42) && defined(__x86_64__)
 
 #include "clhash.h"

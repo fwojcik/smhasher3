@@ -76,10 +76,6 @@ static LegacyHashInfo g_hashes[] =
     { 0xee9398aadb67f03dULL } },
   { asconhashv12_64,      64, 0xE7DEF300, "asconhashv12_64", "asconhashv12, low 64 bits", GOOD,
     { 0xee9398aadb67f03dULL } },
-#if defined(HAVE_SSE2)
-  { hasshe2_test,        256, 0xF5D39DFE, "hasshe2",     "SSE2 hasshe2, 256-bit", POOR, {} },
-#endif
-
   // 32bit crashes
 #ifdef HAVE_INT64
   { o1hash_test,          64, 0x85051E87, "o1hash",       "o(1)hash unseeded, from wyhash", POOR, {0x0} /* !! */ },
