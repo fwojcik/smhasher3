@@ -174,6 +174,12 @@ if(RESULT_VAR)
   message(STATUS "x86_64 SHA-2 intrinsics available")
 endif()
 
+try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_clmul.cpp)
+if(RESULT_VAR)
+  add_definitions(-DNEW_HAVE_CLMUL_X86_64)
+  message(STATUS "x86_64 CLMUL intrinsics available")
+endif()
+
 if(MSVC)
   try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_umul128.cpp)
   if(RESULT_VAR)
