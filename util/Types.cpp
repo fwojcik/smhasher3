@@ -56,12 +56,10 @@ uint32_t MurmurOAAT ( const char * blob, int len, uint32_t seed );
 #pragma optimize( "", off )
 #endif
 
-void blackhole ( uint32_t )
-{
+void blackhole ( uint64_t ) {
 }
 
-uint32_t whitehole ( void )
-{
+uint32_t whitehole ( void ) {
   return 0;
 }
 

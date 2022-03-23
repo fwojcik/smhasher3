@@ -61,7 +61,7 @@
 // doing this we declare two trivial functions that either sink or source data,
 // and bar the compiler from optimizing them.
 
-void     blackhole ( uint32_t x );
+void     blackhole ( uint64_t x );
 uint32_t whitehole ( void );
 
 //-----------------------------------------------------------------------------
