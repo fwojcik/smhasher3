@@ -1,19 +1,99 @@
-#include "clhash.h"
+/*
+ * clhash
+ * Copyright (C) 2021-2022  Frank J. T. Wojcik
+ * Copyright (C) 2017       Daniel Lemire
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
+/*
+ * This code is based on https://github.com/lemire/clhash, and has
+ * been sublicensed as GPL3 from the original Apache-2.0 license.
+ */
+#include "Platform.h"
+#include "Types.h"
+#include "Hashlib.h"
 
-#include <assert.h>
-#include <string.h>
-#ifdef _MSC_VER
-#include <intrin.h>
-#elif defined(__aarch64__)
-#include "sse2neon.h"
-#else
-#include <x86intrin.h>
-#endif
+#if defined(NEW_HAVE_CLMUL_X86_64)
 
-#ifdef _WIN32
-#define posix_memalign(p, a, s) (((*(p)) = _aligned_malloc((s), (a))), *(p) ?0 :errno)
-#endif
+#include <immintrin.h>
+#include <cassert>
 
+/*
+ * CLHash is a very fast hashing function that uses the
+ * carry-less multiplication and SSE instructions.
+ *
+ * Daniel Lemire, Owen Kaser, Faster 64-bit universal hashing
+ * using carry-less multiplications, Journal of Cryptographic Engineering (to appear)
+ *
+ * Best used on recent x64 processors (Haswell or better).
+ *
+ * Template option: if you define BITMIX during compilation, extra
+ * work is done to pass smhasher's avalanche test succesfully.
+ **/
+
+//------------------------------------------------------------
+// xoshift RNG for turning uint seeds into random bytes.
+//
+// Keys for scalar xorshift128. Must be non-zero. These are modified
+// by xorshift128plus.
+typedef struct xorshift128plus_key_s {
+    uint64_t part1;
+    uint64_t part2;
+} xorshift128plus_key_t;
+
+static uint64_t xorshift128plus(xorshift128plus_key_t * key) {
+    uint64_t s1 = key->part1;
+    const uint64_t s0 = key->part2;
+    key->part1 = s0;
+    s1 ^= s1 << 23; // a
+    key->part2 = s1 ^ s0 ^ (s1 >> 18) ^ (s0 >> 5); // b, c
+    return key->part2 + s0;
+}
+
+// key must be aligned to 16 bytes!
+static void get_random_key_for_clhash(uint64_t seed1, uint64_t seed2, size_t keycnt, uint64_t * key) {
+    xorshift128plus_key_t k;
+    k.part1 = seed1;
+    k.part2 = seed2;
+
+    for (size_t i = 0; i < keycnt; ++i) {
+        key[i] = xorshift128plus(&k);
+    }
+    while ((key[128] == 0) && (key[129] == 1)) {
+        key[128] = xorshift128plus(&k);
+        key[129] = xorshift128plus(&k);
+    }
+}
+
+//------------------------------------------------------------
+enum {
+    RANDOM_64BITWORDS_NEEDED_FOR_CLHASH = 133,
+    RANDOM_BYTES_NEEDED_FOR_CLHASH = 133*8
+};
+// static_assert(((RANDOM_64BITWORDS_NEEDED_FOR_CLHASH - 5) % 4) == 0)
+
+alignas(16) static uint64_t clhash_random[RANDOM_64BITWORDS_NEEDED_FOR_CLHASH];
+
+static bool clhash_init(void) {
+    // Constants taken from SMHasher, for compatibility
+    get_random_key_for_clhash(UINT64_C(0xb3816f6a2c68e530), 711,
+            RANDOM_64BITWORDS_NEEDED_FOR_CLHASH, clhash_random);
+    return true;
+}
+
+//------------------------------------------------------------
 // computes a << 1
 static inline __m128i leftshift1(__m128i a) {
     const int x = 1;
@@ -46,7 +126,6 @@ static inline __m128i lazymod127(__m128i Alow, __m128i Ahigh) {
     // CHECKING THE PRECONDITION:
     // Important: we are assuming that the two highest bits of Ahigh
     // are zero. This could be checked by adding a line such as this one:
-    assert(_mm_extract_epi64(Ahigh,1) < (1ULL<<62));
     // if(_mm_extract_epi64(Ahigh,1) >= (1ULL<<62)){printf("bug\n");abort();}
     //                       (this assumes SSE4.1 support)
     ///////////////////////////////////////////////////
@@ -60,7 +139,6 @@ static inline __m128i lazymod127(__m128i Alow, __m128i Ahigh) {
     __m128i final =  _mm_xor_si128(_mm_xor_si128(Alow, shift1),shift2);
     return final;
 }
-
 
 // multiplication with lazy reduction
 // assumes that the two highest bits of the 256-bit multiplication are zeros
@@ -78,9 +156,6 @@ static inline  __m128i mul128by128to128_lazymod127( __m128i A, __m128i B) {
     return lazymod127(Alow, Ahigh);
 }
 
-
-
-
 // multiply the length and the some key, no modulo
 static __m128i lazyLengthHash(uint64_t keylength, uint64_t length) {
     const __m128i lengthvector = _mm_set_epi64x(keylength,length);
@@ -88,48 +163,40 @@ static __m128i lazyLengthHash(uint64_t keylength, uint64_t length) {
     return clprod1;
 }
 
-
-// modulo reduction to 64-bit value. The high 64 bits contain garbage, see precompReduction64
+// modulo reduction to 64-bit value. The high 64 bits contain garbage,
+// see precompReduction64
 static inline __m128i precompReduction64_si128( __m128i A) {
-
     //const __m128i C = _mm_set_epi64x(1U,(1U<<4)+(1U<<3)+(1U<<1)+(1U<<0)); // C is the irreducible poly. (64,4,3,1,0)
     const __m128i C = _mm_cvtsi64_si128((1U<<4)+(1U<<3)+(1U<<1)+(1U<<0));
     __m128i Q2 = _mm_clmulepi64_si128( A, C, 0x01);
-    __m128i Q3 = _mm_shuffle_epi8(_mm_setr_epi8(0, 27, 54, 45, 108, 119, 90, 65, (char)216, (char)195, (char)238, (char)245, (char)180, (char)175, (char)130, (char)153),
-                                  _mm_srli_si128(Q2,8));
+    __m128i Q3 = _mm_shuffle_epi8(_mm_setr_epi8(
+                                                0, 27, 54, 45,
+                                                108, 119, 90, 65,
+                                                (uint8_t)216, (uint8_t)195, (uint8_t)238, (uint8_t)245,
+                                                (uint8_t)180, (uint8_t)175, (uint8_t)130, (uint8_t)153) ,
+            _mm_srli_si128(Q2,8));
     __m128i Q4 = _mm_xor_si128(Q2,A);
     const __m128i final = _mm_xor_si128(Q3,Q4);
-    return final;/// WARNING: HIGH 64 BITS CONTAIN GARBAGE
+    return final; /// WARNING: HIGH 64 BITS CONTAIN GARBAGE
 }
-
 
 static inline uint64_t precompReduction64( __m128i A) {
     return _mm_cvtsi128_si64(precompReduction64_si128(A));
 }
 
-
-// hashing the bits in value using the keys key1 and key2 (only the first 64 bits of key2 are used).
-// This is basically (a xor k1) * (b xor k2) mod p with length component
-static uint64_t simple128to64hashwithlength( const __m128i value, const __m128i key, uint64_t keylength, uint64_t length) {
+// hashing the bits in value using the keys key1 and key2 (only the
+// first 64 bits of key2 are used).  This is basically (a xor k1) * (b
+// xor k2) mod p with length component.
+static uint64_t simple128to64hashwithlength(const __m128i value, const __m128i key, uint64_t keylength, uint64_t length) {
     const __m128i add =  _mm_xor_si128 (value,key);
     const __m128i clprod1  = _mm_clmulepi64_si128( add, add, 0x10);
     const __m128i total = _mm_xor_si128 (clprod1,lazyLengthHash(keylength, length));
     return precompReduction64(total);
 }
 
-#ifdef DEBUG
-enum {CLHASH_DEBUG=1};
-#else
-enum {CLHASH_DEBUG=0};
-#endif
-
-// For use with CLHASH
 // we expect length to have value 128 or, at least, to be divisible by 4.
-static __m128i __clmulhalfscalarproductwithoutreduction(const __m128i * randomsource, const uint64_t * string,
-        const size_t length) {
-    assert(((uintptr_t) randomsource & 15) == 0);// we expect cache line alignment for the keys
-    // we expect length = 128, so we need  16 cache lines of keys and 16 cache lines of strings.
-    if(CLHASH_DEBUG) assert((length & 3) == 0); // if not, we need special handling (omitted)
+static __m128i clmulhalfscalarproductwithoutreduction(const __m128i * randomsource,
+        const uint64_t * string, const size_t length) {
     const uint64_t * const endstring = string + length;
     __m128i acc = _mm_setzero_si128();
     // we expect length = 128
@@ -145,16 +212,11 @@ static __m128i __clmulhalfscalarproductwithoutreduction(const __m128i * randomso
         const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
         acc = _mm_xor_si128(clprod12, acc);
     }
-    if(CLHASH_DEBUG) assert(string == endstring);
     return acc;
 }
 
-
-
-// the value length does not have to be divisible by 4
-static __m128i __clmulhalfscalarproductwithtailwithoutreduction(const __m128i * randomsource,
+static __m128i clmulhalfscalarproductwithtailwithoutreduction(const __m128i * randomsource,
         const uint64_t * string, const size_t length) {
-    assert(((uintptr_t) randomsource & 15) == 0);// we expect cache line alignment for the keys
     const uint64_t * const endstring = string + length;
     __m128i acc = _mm_setzero_si128();
     for (; string + 3 < endstring; randomsource += 2, string += 4) {
@@ -170,7 +232,6 @@ static __m128i __clmulhalfscalarproductwithtailwithoutreduction(const __m128i * 
         acc = _mm_xor_si128(clprod12, acc);
     }
     if (string + 1 < endstring) {
-        if(CLHASH_DEBUG) assert(length != 128);
         const __m128i temp1 = _mm_load_si128(randomsource);
         const __m128i temp2 = _mm_lddqu_si128((__m128i *) string);
         const __m128i add1 = _mm_xor_si128(temp1, temp2);
@@ -180,21 +241,17 @@ static __m128i __clmulhalfscalarproductwithtailwithoutreduction(const __m128i * 
         string += 2;
     }
     if (string < endstring) {
-        if(CLHASH_DEBUG) assert(length != 128);
         const __m128i temp1 = _mm_load_si128(randomsource);
         const __m128i temp2 = _mm_loadl_epi64((__m128i const*)string);
         const __m128i add1 = _mm_xor_si128(temp1, temp2);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
-        if(CLHASH_DEBUG) ++string;
     }
-    if(CLHASH_DEBUG) assert(string == endstring);
     return acc;
 }
-// the value length does not have to be divisible by 4
-static __m128i __clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(const __m128i * randomsource,
+
+static __m128i clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(const __m128i * randomsource,
         const uint64_t * string, const size_t length, const uint64_t extraword) {
-    assert(((uintptr_t) randomsource & 15) == 0);// we expect cache line alignment for the keys
     const uint64_t * const endstring = string + length;
     __m128i acc = _mm_setzero_si128();
     for (; string + 3 < endstring; randomsource += 2, string += 4) {
@@ -235,8 +292,7 @@ static __m128i __clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(con
     return acc;
 }
 
-
-static __m128i __clmulhalfscalarproductOnlyExtraWord(const __m128i * randomsource,
+static __m128i clmulhalfscalarproductOnlyExtraWord(const __m128i * randomsource,
         const uint64_t extraword) {
     const __m128i temp1 = _mm_load_si128(randomsource);
     const __m128i temp2 = _mm_loadl_epi64((__m128i const*)&extraword);
@@ -245,10 +301,6 @@ static __m128i __clmulhalfscalarproductOnlyExtraWord(const __m128i * randomsourc
     return clprod1;
 }
 
-
-
-
-#ifdef BITMIX
 ////////
 // an invertible function used to mix the bits
 // borrowed directly from murmurhash
@@ -261,12 +313,9 @@ static inline uint64_t fmix64 ( uint64_t k ) {
     k ^= k >> 33;
     return k;
 }
-#endif
 
-
-
-// there always remain an incomplete word that has 1,2, 3, 4, 5, 6, 7 used bytes.
-// we append 0s to it
+// there always remain an incomplete word that has 1,2, 3, 4, 5, 6, 7
+// used bytes.  we append 0s to it
 static inline uint64_t createLastWord(const size_t lengthbyte, const uint64_t * lastw) {
     const int significantbytes = lengthbyte % sizeof(uint64_t);
     uint64_t lastword = 0;
@@ -274,46 +323,37 @@ static inline uint64_t createLastWord(const size_t lengthbyte, const uint64_t * 
     return lastword;
 }
 
-
-
-
-uint64_t clhash(const void* random, const char * stringbyte,
-                const size_t lengthbyte) {
-    assert(sizeof(size_t)<=sizeof(uint64_t));// otherwise, we need to worry
+template < bool bitmix >
+static uint64_t clhash(const void * random, const uint8_t * stringbyte, const size_t lengthbyte) {
     assert(((uintptr_t) random & 15) == 0);// we expect cache line alignment for the keys
-    const unsigned int  m = 128;// we process the data in chunks of 16 cache lines
-    if(CLHASH_DEBUG) assert((m  & 3) == 0); //m should be divisible by 4
-    const int m128neededperblock = m / 2;// that is how many 128-bit words of random bits we use per block
-    const __m128i zero128 = {0ULL,0ULL};
-    const __m128i * rs64 = (__m128i *) random;
-    __m128i polyvalue =  _mm_load_si128(rs64 + m128neededperblock); // to preserve alignment on cache lines for main loop, we pick random bits at the end
-    polyvalue = _mm_and_si128(polyvalue,_mm_setr_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0x3fffffff));// setting two highest bits to zero
-    // we should check that polyvalue is non-zero, though this is best done outside the function and highly unlikely
+
+    // We process the data in chunks of 16 cache lines (m should be divisible by 4).
+    const uint32_t m = RANDOM_64BITWORDS_NEEDED_FOR_CLHASH - 5;
+    const uint32_t m128neededperblock = m / 2; // How many 128-bit words of random bits we use per block.
+    const uint64_t * string = (const uint64_t *)stringbyte;
     const size_t length = lengthbyte / sizeof(uint64_t); // # of complete words
     const size_t lengthinc = (lengthbyte + sizeof(uint64_t) - 1) / sizeof(uint64_t); // # of words, including partial ones
-#ifdef DEBUG
-    if(CLHASH_DEBUG) {
-        // avoid bad seeds
-        if (memcmp(&polyvalue[0], &zero128, 8) == 0)
-            polyvalue[0]++;
-        if (memcmp(&polyvalue[1], &zero128, 8) == 0)
-            polyvalue[1]++;
-        assert(memcmp(&rs64[1], &zero128, 8));
-    }
-#endif
+    const __m128i * rs64 = (__m128i *)random;
 
-    const uint64_t * string = (const uint64_t *)  stringbyte;
-    if (m < lengthinc) { // long strings // modified from length to lengthinc to address issue #3 raised by Eik List
-        __m128i  acc =  __clmulhalfscalarproductwithoutreduction(rs64, string,m);
+    // to preserve alignment on cache lines for main loop, we pick random bits at the end
+    __m128i polyvalue =  _mm_load_si128(rs64 + m128neededperblock);
+    // setting two highest bits to zero
+    polyvalue = _mm_and_si128(polyvalue,_mm_setr_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0x3fffffff));
+    // we should check that polyvalue is non-zero, though this is best done outside the function and highly unlikely
+
+    // long strings // modified from length to lengthinc to address issue #3 raised by Eik List
+    if (m < lengthinc) {
+        __m128i acc = clmulhalfscalarproductwithoutreduction(rs64, string, m);
+
         size_t t = m;
-        for (; t +  m <= length; t +=  m) {
+        for (; t + m <= length; t += m) {
             // we compute something like
             // acc+= polyvalue * acc + h1
             acc =  mul128by128to128_lazymod127(polyvalue,acc);
-            const __m128i h1 =  __clmulhalfscalarproductwithoutreduction(rs64, string+t,m);
-            acc = _mm_xor_si128(acc,h1);
+            const __m128i h1 =  clmulhalfscalarproductwithoutreduction(rs64, string + t, m);
+            acc = _mm_xor_si128(acc, h1);
         }
-        const int remain = length - t;  // number of completely filled words
+        const uint32_t remain = length - t;  // number of completely filled words
 
         if (remain != 0) {
             // we compute something like
@@ -321,131 +361,97 @@ uint64_t clhash(const void* random, const char * stringbyte,
             acc = mul128by128to128_lazymod127(polyvalue, acc);
             if (lengthbyte % sizeof(uint64_t) == 0) {
                 const __m128i h1 =
-                    __clmulhalfscalarproductwithtailwithoutreduction(rs64,
-                            string + t, remain);
+                    clmulhalfscalarproductwithtailwithoutreduction(rs64, string + t, remain);
                 acc = _mm_xor_si128(acc, h1);
             } else {
-                const uint64_t lastword = createLastWord(lengthbyte,
-                                          (string + length));
+                const uint64_t lastword = createLastWord(lengthbyte, (string + length));
                 const __m128i h1 =
-                    __clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(
+                    clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(
                         rs64, string + t, remain, lastword);
                 acc = _mm_xor_si128(acc, h1);
             }
-        } else if (lengthbyte % sizeof(uint64_t) != 0) {// added to address issue #2 raised by Eik List
+        } else if (lengthbyte % sizeof(uint64_t) != 0) { // added to address issue #2 raised by Eik List
             // there are no completely filled words left, but there is one partial word.
             acc = mul128by128to128_lazymod127(polyvalue, acc);
             const uint64_t lastword = createLastWord(lengthbyte, (string + length));
-            const __m128i h1 = __clmulhalfscalarproductOnlyExtraWord( rs64, lastword);
+            const __m128i h1 = clmulhalfscalarproductOnlyExtraWord(rs64, lastword);
             acc = _mm_xor_si128(acc, h1);
         }
 
         const __m128i finalkey = _mm_load_si128(rs64 + m128neededperblock + 1);
         const uint64_t keylength = *(const uint64_t *)(rs64 + m128neededperblock + 2);
-        return simple128to64hashwithlength(acc,finalkey,keylength, (uint64_t)lengthbyte);
-    } else { // short strings
+        return simple128to64hashwithlength(acc, finalkey, keylength, (uint64_t)lengthbyte);
+
+    } else {
+        // short strings
+        __m128i acc;
+
         if(lengthbyte % sizeof(uint64_t) == 0) {
-            __m128i  acc = __clmulhalfscalarproductwithtailwithoutreduction(rs64, string, length);
-            const uint64_t keylength = *(const uint64_t *)(rs64 + m128neededperblock + 2);
-            acc = _mm_xor_si128(acc,lazyLengthHash(keylength, (uint64_t)lengthbyte));
-#ifdef BITMIX
-            return fmix64(precompReduction64(acc)) ;
-#else
-            return precompReduction64(acc) ;
-#endif
-        }
-        const uint64_t lastword = createLastWord(lengthbyte, (string + length));
-        __m128i acc = __clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(
+            acc = clmulhalfscalarproductwithtailwithoutreduction(rs64, string, length);
+        } else {
+            const uint64_t lastword = createLastWord(lengthbyte, (string + length));
+            acc = clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(
                           rs64, string, length, lastword);
-        const uint64_t keylength =  *(const uint64_t *)(rs64 + m128neededperblock + 2);
-        acc = _mm_xor_si128(acc,lazyLengthHash(keylength, (uint64_t)lengthbyte));
-#ifdef BITMIX
-        return fmix64(precompReduction64(acc)) ;
-#else
-        return precompReduction64(acc) ;
+        }
+
+        const uint64_t keylength = *(const uint64_t *)(rs64 + m128neededperblock + 2);
+        acc = _mm_xor_si128(acc, lazyLengthHash(keylength, (uint64_t)lengthbyte));
+        return bitmix ? fmix64(precompReduction64(acc)) : precompReduction64(acc);
+    }
+}
+
+//------------------------------------------------------------
+void CLHash(const void * in, const size_t len, const seed_t seed, void * out) {
+    memcpy(clhash_random, &seed, 8);
+    uint64_t h = clhash<true>(clhash_random, (const uint8_t *)in, len);
+    PUT_U64<false>(h, (uint8_t *)out, 0);
+}
+
+void CLHashNomix(const void * in, const size_t len, const seed_t seed, void * out) {
+    memcpy(clhash_random, &seed, 8);
+    uint64_t h = clhash<false>(clhash_random, (const uint8_t *)in, len);
+    PUT_U64<false>(h, (uint8_t *)out, 0);
+}
+
 #endif
-    }
-}
 
+//------------------------------------------------------------
+REGISTER_FAMILY(clhash);
 
-/***************************
- * Rest is optional random-number generation stuff
- */
+#if defined(NEW_HAVE_CLMUL_X86_64)
 
+REGISTER_HASH(clhash,
+  $.desc = "Carryless multiplication hash, with -DBITMIX",
+  $.hash_flags =
+        FLAG_HASH_CLMUL_BASED      |
+        FLAG_HASH_LOOKUP_TABLE     |
+        FLAG_HASH_NO_SEED          |
+        FLAG_HASH_SYSTEM_SPECIFIC  ,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_GPL3,
+  $.bits = 64,
+  $.verification_LE = 0x2129B0F3,
+  $.verification_BE = 0x2129B0F3,
+  $.hashfn_native = CLHash,
+  $.hashfn_bswap = CLHash,
+  $.initfn = clhash_init
+);
 
-/* Keys for scalar xorshift128. Must be non-zero
-These are modified by xorshift128plus.
- */
-struct xorshift128plus_key_s {
-    uint64_t part1;
-    uint64_t part2;
-};
+REGISTER_HASH(clhash_nomix,
+  $.desc = "Carryless multiplication hash, without -DBITMIX",
+  $.hash_flags =
+        FLAG_HASH_CLMUL_BASED      |
+        FLAG_HASH_LOOKUP_TABLE     |
+        FLAG_HASH_NO_SEED          |
+        FLAG_HASH_SYSTEM_SPECIFIC  ,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_GPL3,
+  $.bits = 64,
+  $.verification_LE = 0x66E26666,
+  $.verification_BE = 0x66E26666,
+  $.hashfn_native = CLHashNomix,
+  $.hashfn_bswap = CLHashNomix,
+  $.initfn = clhash_init
+);
 
-typedef struct xorshift128plus_key_s xorshift128plus_key_t;
-
-
-
-/**
-*
-* You can create a new key like so...
-*   xorshift128plus_key_t mykey;
-*   xorshift128plus_init(324, 4444,&mykey);
-*
-* or directly if you prefer:
-*  xorshift128plus_key_t mykey = {.part1=324,.part2=4444}
-*
-*  Then you can generate random numbers like so...
-*      xorshift128plus(&mykey);
-* If your application is threaded, each thread should have its own
-* key.
-*
-*
-* The seeds (key1 and key2) should be non-zero. You are responsible for
-* checking that they are non-zero.
-*
-*/
-static inline void xorshift128plus_init(uint64_t key1, uint64_t key2, xorshift128plus_key_t *key) {
-    assert(key1 != 0 && key2 != 0);
-    key->part1 = key1;
-    key->part2 = key2;
-}
-
-
-/*
-Return a new 64-bit random number
-*/
-uint64_t xorshift128plus(xorshift128plus_key_t * key) {
-    uint64_t s1 = key->part1;
-    const uint64_t s0 = key->part2;
-    key->part1 = s0;
-    s1 ^= s1 << 23; // a
-    key->part2 = s1 ^ s0 ^ (s1 >> 18) ^ (s0 >> 5); // b, c
-    return key->part2 + s0;
-}
-
-void * get_random_key_for_clhash(uint64_t seed1, uint64_t seed2) {
-    uint32_t i;
-    void *answer;
-    uint64_t *a64;
-    xorshift128plus_key_t k;
-    // avoid bad seeds
-    if (seed1 == 0)
-        seed1 = 137;
-    if (seed2 == 0)
-        seed2 = 777;
-    xorshift128plus_init(seed1, seed2, &k);
-
-    if (posix_memalign((void**)&a64, sizeof(__m128i),
-                       RANDOM_BYTES_NEEDED_FOR_CLHASH)) {
-        return NULL;
-    }
-    for(i = 0; i < RANDOM_64BITWORDS_NEEDED_FOR_CLHASH; ++i) {
-        a64[i] = xorshift128plus(&k);
-    }
-    // avoid bad seeds here also
-    while((a64[128]==0) && (a64[129]==1)) {
-        a64[128] = xorshift128plus(&k);
-        a64[129] = xorshift128plus(&k);
-    }
-    return (void*)a64;
-}
+#endif

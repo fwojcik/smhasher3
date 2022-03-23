@@ -131,10 +131,6 @@ static LegacyHashInfo g_hashes[] =
   { chaskey_test,         64, 0xBB4F6706, "chaskey",     "mouha.be/chaskey/ with added seed support", GOOD, {} },
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
   { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
-#if defined(HAVE_SSE42) && defined(__x86_64__)
-  { clhash_test,          64, 0x0, "clhash",      "carry-less mult. hash -DBITMIX (64-bit for x64, SSE4.2)", GOOD,
-    {0xb3816f6a2c68e530, 711} },
-#endif
 #ifdef HAVE_HIGHWAYHASH
   { HighwayHash64_test,   64, 0x0,        "HighwayHash64", "Google HighwayHash (portable with dylib overhead)", GOOD, {} },
 #endif
@@ -201,15 +197,6 @@ void Hash_init (LegacyHashInfo* info) {
   if (0) {
     info = info;
   }
-#if defined(HAVE_SSE42) && defined(__x86_64__)
-  else if(info->hash == clhash_test)
-    clhash_init();
-  //else if(info->hash == umash32_test ||
-  //        info->hash == umash32hi_test ||
-  //        info->hash == umash64_test ||
-  //        info->hash == umash128_test)
-  //  umash_init();
-#endif
 #ifdef HAVE_HIGHWAYHASH
   else if(info->hash == HighwayHash64_test)
     HighwayHash_init();
@@ -230,10 +217,6 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
     seed++;
   else if (hash == Crap8_test && (seed == 0x83d2e73b || seed == 0x97e1cc59))
     seed++;
-#if defined(__SSE4_2__) && defined(__x86_64__)
-  else if (hash == clhash_test && seed == 0x0)
-    seed++;
-#endif
 }
 
 // Optional hash seed initializer, for expensive seeding.
@@ -245,8 +228,6 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
   if (0)
       seed32 = seed32;
 #if defined(HAVE_SSE42) && defined(__x86_64__)
-  else if (hash == clhash_test)
-    clhash_seed_init(seed);
 # ifndef _MSC_VER  
   else if (hash == umash32 ||
           hash == umash32_hi ||

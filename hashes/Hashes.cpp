@@ -319,36 +319,6 @@ Crap8(const uint8_t * key, uint32_t len, uint32_t seed)
   return k;
 }
 
-#if defined(HAVE_SSE42) && defined(__x86_64__)
-
-#include "clhash.h"
-static char clhash_random[RANDOM_BYTES_NEEDED_FOR_CLHASH];
-void clhash_test (const void * key, int len, uint32_t seed, void * out) {
-  memcpy(clhash_random, &seed, 4);
-  // objsize: 0-0x711: 1809  
-  *(uint64_t*)out = clhash(&clhash_random, (char*)key, (size_t)len);
-}
-void clhash_init()
-{
-  void* data = get_random_key_for_clhash(UINT64_C(0xb3816f6a2c68e530), 711);
-  memcpy(clhash_random, data, RANDOM_BYTES_NEEDED_FOR_CLHASH);
-}
-bool clhash_bad_seeds(std::vector<uint64_t> &seeds)
-{
-  seeds = std::vector<uint64_t> { UINT64_C(0) };
-  return true;
-}
-void clhash_seed_init(size_t &seed)
-{
-  // reject bad seeds
-  const std::vector<uint64_t> bad_seeds = { UINT64_C(0) };
-  while (std::find(bad_seeds.begin(), bad_seeds.end(), (uint64_t)seed) != bad_seeds.end())
-    seed++;
-  memcpy(clhash_random, &seed, sizeof(seed));
-}
-
-#endif
-
 #include "hash-garage/nmhash.h"
 // objsize: 4202f0-420c7d: 2445
 void nmhash32_test ( const void * key, int len, uint32_t seed, void * out ) {

@@ -180,13 +180,6 @@ inline void ahash64_test ( const void * key, int len, uint32_t seed, void * out 
 
 //-----------------------------------------------------------------------------
 
-#if defined(HAVE_SSE42) && defined(__x86_64__)
-#include "clhash.h"
-void clhash_init();
-void clhash_seed_init(size_t &seed);
-void clhash_test (const void * key, int len, uint32_t seed, void * out);
-#endif
-
 void HighwayHash_init();
 // objsize 20-a12: 2546
 void HighwayHash64_test (const void * key, int len, uint32_t seed, void * out);

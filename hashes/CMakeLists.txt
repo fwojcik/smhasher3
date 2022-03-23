@@ -530,9 +530,7 @@ endif(NOT CMAKE_CROSSCOMPILING)
 if(SSE42_FOUND)
   # MSVC CL 14.16.27023 32bit crashes, 14.28.29910 works fine.
   # 64bit only:
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(X86_64ONLY_SRC clhash.c)
-  else()
+  if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(STATUS "32bit only: CMAKE_SIZEOF_VOID_P=${CMAKE_SIZEOF_VOID_P}")
   endif()
 endif(SSE42_FOUND)
@@ -641,6 +639,7 @@ add_library(
   siphash.cpp
   seahash.cpp
   hasshe2.cpp
+  clhash.cpp
 )
 
 add_library(
@@ -649,7 +648,6 @@ add_library(
   LegacyHashes.cpp
 #
   ${HIGHWAY_SRC}
-  ${X86_64ONLY_SRC}
   ${ASCON_SRC}
   ${UMASH_SRC}
 #
