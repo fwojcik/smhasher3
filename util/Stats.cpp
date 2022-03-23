@@ -1102,9 +1102,12 @@ double calcScore ( const unsigned * bins, const int bincount, const int keycount
 // 1.0), to show the user something like the previous report.
 double normalizeScore ( double score, int scorewidth, int tests )
 {
+    if (score <= 0)
+        return 0.0;
+
     // Never return a result higher than this, as a precise value
     // would be visually cluttered and not really meaningful.
-    const double maxresult = 9999.999;
+    const double maxresult = 999.9;
 
     double result = score / sqrt(2.0 * scorewidth);
 

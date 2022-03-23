@@ -164,7 +164,7 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
       ratio = 1.00;
   else {
       ratio = double(collcount) / expected;
-      if (ratio > 9999.99)
+      if (ratio >= 999.95)
           ratio = INFINITY;
   }
 
@@ -182,13 +182,15 @@ static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize
       printf("Testing %s collisions (%s %3i-bit)", maxcoll ? "max" : "all",
         highbits ? "high" : "low ", hashsize);
 
-    // 7 integer digits would match the 9.1 float specifier
-    // (9 characters - 1 decimal point - 1 digit after the decimal),
+    // 8 integer digits would match the 10.1 float specifier
+    // (10 characters - 1 decimal point - 1 digit after the decimal),
     // but some hashes greatly exceed expected collision counts.
-    if (finite(ratio))
-      printf(" - Expected %9.1f, actual %9i  (%.3fx) ", expected, collcount, ratio);
+    if (!finite(ratio))
+        printf(" - Expected %10.1f, actual %10i  (------) ", expected, collcount);
+    else if (ratio < 9.0)
+        printf(" - Expected %10.1f, actual %10i  (%5.3fx) ", expected, collcount, ratio);
     else
-      printf(" - Expected %9.1f, actual %9i  (------) ", expected, collcount);
+        printf(" - Expected %10.1f, actual %10i  (%#.4gx) ", expected, collcount, ratio);
 
     // Since ratios and p-value summaries are most important to humans,
     // and deltas and exact p-values add visual noise and variable line
@@ -377,7 +379,7 @@ static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, in
 {
   if (maxBits <= 1 || minBits > maxBits) return true;
 
-  int spacelen = 78;
+  int spacelen = 80;
   spacelen -= printf("Testing all collisions (%s %2i..%2i bits) - ",
           highbits ? "high" : "low ", minBits, maxBits);
 
@@ -411,13 +413,16 @@ static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, in
   else if (spacelen > strlen(spaces))
       spacelen = strlen(spaces);
 
-  if (maxCollDev > 9999.99)
+  if (maxCollDev >= 999.95)
       maxCollDev = INFINITY;
 
-  if (finite(maxCollDev))
-    printf("%.*s(%.3fx) ", spacelen, spaces, maxCollDev);
+  if (!finite(maxCollDev))
+      printf("%.*s(------) ", spacelen, spaces);
+  else if (maxCollDev < 9.0)
+      printf("%.*s(%5.3fx) ", spacelen, spaces, maxCollDev);
   else
-    printf("%.*s(------) ", spacelen, spaces);
+      printf("%.*s(%#.4gx) ", spacelen, spaces, maxCollDev);
+
 
   double p_value = ScalePValue(maxPValue, maxBits - minBits + 1);
   int logp_value = GetLog2PValue(p_value);
@@ -483,7 +488,7 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
 
   if (maxwidth < minwidth) return true;
 
-  printf("Testing distribution - %s", drawDiagram ? "\n[" : "");
+  printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
 
   std::vector<unsigned> bins;
   bins.resize(1 << maxwidth);
@@ -551,10 +556,12 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
   double mult = normalizeScore(worstN, worstWidth, tests);
 
   if (worstStart == -1)
-      printf("Worst bias is                              - %.3fx             ",
-              mult);
+      printf("No positive bias detected            %5.3fx  ", 0);
+  else if (mult < 9.0)
+      printf("Worst bias is %2d bits at bit %3d:    %5.3fx  ",
+              worstWidth, worstStart, mult);
   else
-      printf("Worst bias is the %2d-bit window at bit %3d - %.3fx             ",
+      printf("Worst bias is %2d bits at bit %3d:    %#.4gx  ",
               worstWidth, worstStart, mult);
 
   recordLog2PValue(logp_value);
