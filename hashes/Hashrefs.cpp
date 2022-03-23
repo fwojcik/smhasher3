@@ -63,6 +63,7 @@ unsigned refs() {
     USE_FAMILY(seahash);
     USE_FAMILY(hasshe2);
     USE_FAMILY(clhash);
+    USE_FAMILY(umash);
 
     return 0;
 }

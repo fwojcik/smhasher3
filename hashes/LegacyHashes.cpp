@@ -141,12 +141,6 @@ static LegacyHashInfo g_hashes[] =
   { pengyhash_test,       64, 0x1FC2217B, "pengyhash",   "pengyhash", GOOD, {} },
   { mx3rev1hash64_test,   64, 0x4DB51E5B, "mx3-rev1",    "mx3 revision 1 64bit", GOOD, {0x10} /* !! and all & 0x10 */},
   { mx3hash64_test,       64, 0x527399AD, "mx3",         "mx3 revision 2 64bit", GOOD, {} },
-#if defined(HAVE_SSE42) &&  (defined(__x86_64__) ||  defined(__aarch64__)) && !defined(_MSC_VER)
-  { umash32,              32, 0x03E16CA1, "umash32",     "umash 32", GOOD, {0x90e37057} /* !! */},
-  { umash32_hi,           32, 0xE29D613C, "umash32_hi",  "umash 32 hi", GOOD, {} },
-  { umash,                64, 0x4542288C, "umash64",     "umash 64", GOOD, {} },
-  { umash128,            128, 0xDA4E82B6, "umash128",    "umash 128", GOOD, {} },
-#endif
 
 #ifdef HAVE_AHASH_C
   // aHash does not adhere to a fixed output
@@ -223,22 +217,7 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
 bool Hash_Seed_init (pfHash hash, size_t seed) {
   addVCodeInput(seed);
 
-  uint32_t seed32 = seed;
-
-  if (0)
-      seed32 = seed32;
-#if defined(HAVE_SSE42) && defined(__x86_64__)
-# ifndef _MSC_VER  
-  else if (hash == umash32 ||
-          hash == umash32_hi ||
-          hash == umash ||
-          hash == umash128)
-    umash_seed_init(seed);
-# endif
-#endif
-  else
-      return false;
-  return true;
+  return false;
 }
 
 //-----------------------------------------------------------------------------

@@ -242,12 +242,6 @@ inline void pengyhash_test ( const void * key, int len, uint32_t seed, void * ou
   *(uint64_t*)out = pengyhash (key, (size_t) len, seed);
 }
 
-// requires modern builtins, like __builtin_uaddll_overflow, and 64bit
-#if defined(HAVE_SSE42) &&  (defined(__x86_64__) ||  defined(__aarch64__)) && !defined(_MSC_VER)
-// objsize: 4bcb90 - 4bd18a
-#include "umash.hpp"
-#endif
-
 extern "C" {
   // objsize: b200 - c2f5: 4341
   void asconhashv12_64  ( const void * key, int len, uint32_t seed, void * out );

@@ -543,12 +543,6 @@ else(NOT MSVC)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest")
 endif(NOT MSVC)
 
-if(SSE42_FOUND
-   AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
-   AND (NOT MSVC))
-  set(UMASH_SRC umash.c umash.hpp)
-endif()
-
 set(ASCON_SRC asconhashv12/hash.c)
 set_source_files_properties(
     ${ASCON_SRC}
@@ -640,6 +634,7 @@ add_library(
   seahash.cpp
   hasshe2.cpp
   clhash.cpp
+  umash.cpp
 )
 
 add_library(
@@ -649,7 +644,6 @@ add_library(
 #
   ${HIGHWAY_SRC}
   ${ASCON_SRC}
-  ${UMASH_SRC}
 #
   chaskey.c
   Hashes.cpp
