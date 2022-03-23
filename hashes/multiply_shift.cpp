@@ -71,6 +71,7 @@ bool multiply_shift_init(void) {
     return true;
 }
 
+// Vector multiply-shift (3.4) from Thorup's notes.
 template < bool bswap >
 void multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
@@ -84,6 +85,7 @@ void multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed
         ((uint32_t)(seed>>32))      * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
         ((uint32_t)(len_bytes))     * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
         ((uint32_t)(len_bytes>>32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
+
     for (size_t i = 0; i < len; i++, buf += 4) {
         t = GET_U32<bswap>(buf, 0) *
             multiply_shift_random[i % MULTIPLY_SHIFT_RANDOM_WORDS];
@@ -104,6 +106,7 @@ void multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed
     PUT_U32<bswap>(h >> 32, (uint8_t *)out, 0);
 }
 
+// Pair multiply-shift (3.5) from Thorup's notes.
 template < bool bswap >
 void pair_multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
@@ -120,8 +123,8 @@ void pair_multiply_shift32(const void * in, const size_t len_bytes, const seed_t
 
     for (size_t i = 0; i < len/2; i++, buf += 8) {
         t = GET_U64<bswap>(buf, 0);
-        h += ((uint32_t)(t)) * multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 1] +
-            ((uint32_t)(t>>32)) * multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 0];
+        h += (((uint32_t)(t)) + multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 1]) *
+            (((uint32_t)(t>>32)) + multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 0]);
     }
 
     // Make sure we have the last word, if the number of words is odd
@@ -146,6 +149,14 @@ void pair_multiply_shift32(const void * in, const size_t len_bytes, const seed_t
     PUT_U32<bswap>(h >> 32, (uint8_t *)out, 0);
 }
 
+// Vector multiply-shift (3.4) from Thorup's notes.
+//
+// XXX This doesn't seem to quite match the paper, as we are only
+// maintaining a sum of the high bits, but for most inputs that will
+// only affect a few low bits of the result, so I won't worry about it
+// for the moment.
+//
+// XXX Need to implement fma128_128()
 template < bool bswap >
 void multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
@@ -162,6 +173,7 @@ void multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4]);
     h += t;
+
     for (size_t i = 0; i < len; i++, buf += 8) {
         mult128_128(ignored, t, GET_U64<bswap>(buf, 0), 0,
                 multiply_shift_random[(i % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
@@ -185,7 +197,7 @@ void multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
-// Vector multiply-shift (3.4) from Thorup's notes.
+// Pair multiply-shift (3.5) from Thorup's notes.
 template < bool bswap >
 void pair_multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
@@ -267,8 +279,8 @@ REGISTER_HASH(pair_multiply_shift_32,
         FLAG_IMPL_MULTIPLY_64_64    |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
-  $.verification_LE = 0x26A637CF,
-  $.verification_BE = 0x133CC3AC,
+  $.verification_LE = 0xFC284F0F,
+  $.verification_BE = 0x6E93B706,
   $.hashfn_native = pair_multiply_shift32<false>,
   $.hashfn_bswap = pair_multiply_shift32<true>,
 //$.seedfn = multiply_shift_seed_init_slow
