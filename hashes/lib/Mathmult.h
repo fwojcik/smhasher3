@@ -95,7 +95,7 @@ static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint
 #else
     uint64_t w = (((uint64_t)rmi) << 32)   + ((uint64_t)rlo);
     uint64_t r = (((uint64_t)addmi) << 32) + ((uint64_t)addlo) + w;
-    if (r < w) { rhi++; }
+    rhi += (r < w);
     rhi += addhi;
     rmi = (uint32_t)(r >> 32);
     rlo = (uint32_t)(r);
@@ -191,9 +191,9 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
     uint64_t t, carry = 0;
 
     t = tmplo + (tmpmi_0 << 32);
-    carry = t < tmplo;
+    carry += (t < tmplo);
     rlo = t + (tmpmi_1 << 32);
-    carry += rlo < t;
+    carry += (rlo < t);
     rhi = tmphi + (tmpmi_0 >> 32) + (tmpmi_1 >> 32) + carry;
 #endif
 }
@@ -238,7 +238,7 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo) {
             );
 #else
     rlo += addlo;
-    if (rlo < addlo) { rhi++; }
+    rhi += (rlo < addlo);
 #endif
 }
 
@@ -269,7 +269,7 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo, ui
             );
 #else
     rlo += addlo;
-    if (rlo < addlo) { rhi++; }
+    rhi += (rlo < addlo);
     rhi += addhi;
 #endif
 }
@@ -296,9 +296,9 @@ static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uin
             );
 #else
     rlo += addlo;
-    if (rlo < addlo) { rmi++; }
+    rmi += (rlo < addlo);
     rmi += addmi;
-    if (rmi < addmi) { rhi++; }
+    rhi += (rmi < addmi);
     rhi += addhi;
 #endif
 }
