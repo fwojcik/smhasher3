@@ -79,10 +79,11 @@ static void get_random_key_for_clhash(uint64_t seed1, uint64_t seed2, size_t key
 
 //------------------------------------------------------------
 enum {
-    RANDOM_64BITWORDS_NEEDED_FOR_CLHASH = 133,
-    RANDOM_BYTES_NEEDED_FOR_CLHASH = 133*8
+    CLHASH_64BITWORDS_CHUNK_SIZE = 128,
+    CLHASH_64BITWORDS_EXTRA = 6,
+    RANDOM_64BITWORDS_NEEDED_FOR_CLHASH = CLHASH_64BITWORDS_CHUNK_SIZE + CLHASH_64BITWORDS_EXTRA,
 };
-// static_assert(((RANDOM_64BITWORDS_NEEDED_FOR_CLHASH - 5) % 4) == 0)
+// static_assert((CLHASH_64BITWORDS_CHUNK_SIZE % 4) == 0)
 
 alignas(16) static uint64_t clhash_random[RANDOM_64BITWORDS_NEEDED_FOR_CLHASH];
 
@@ -323,17 +324,19 @@ static inline uint64_t createLastWord(const size_t lengthbyte, const uint64_t * 
     return lastword;
 }
 
+// The seeding here is homegrown for SMHasher3
 template < bool bitmix >
-static uint64_t clhash(const void * random, const uint8_t * stringbyte, const size_t lengthbyte) {
+static uint64_t clhash(const void * random, const uint8_t * stringbyte, const size_t lengthbyte, const uint64_t seed) {
     assert(((uintptr_t) random & 15) == 0);// we expect cache line alignment for the keys
 
     // We process the data in chunks of 16 cache lines (m should be divisible by 4).
-    const uint32_t m = RANDOM_64BITWORDS_NEEDED_FOR_CLHASH - 5;
+    const uint32_t m = CLHASH_64BITWORDS_CHUNK_SIZE;
     const uint32_t m128neededperblock = m / 2; // How many 128-bit words of random bits we use per block.
     const uint64_t * string = (const uint64_t *)stringbyte;
     const size_t length = lengthbyte / sizeof(uint64_t); // # of complete words
     const size_t lengthinc = (lengthbyte + sizeof(uint64_t) - 1) / sizeof(uint64_t); // # of words, including partial ones
     const __m128i * rs64 = (__m128i *)random;
+    const __m128i seed128 = lazyLengthHash(((const uint64_t *)(rs64 + m128neededperblock + 2))[1], seed);
 
     // to preserve alignment on cache lines for main loop, we pick random bits at the end
     __m128i polyvalue =  _mm_load_si128(rs64 + m128neededperblock);
@@ -344,6 +347,8 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
     // long strings // modified from length to lengthinc to address issue #3 raised by Eik List
     if (m < lengthinc) {
         __m128i acc = clmulhalfscalarproductwithoutreduction(rs64, string, m);
+        // Mix the seed in using a non-commuting operation with all the xors and clmuls.
+        acc = _mm_sub_epi8(acc, seed128);
 
         size_t t = m;
         for (; t + m <= length; t += m) {
@@ -379,7 +384,7 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
         }
 
         const __m128i finalkey = _mm_load_si128(rs64 + m128neededperblock + 1);
-        const uint64_t keylength = *(const uint64_t *)(rs64 + m128neededperblock + 2);
+        const uint64_t keylength = ((const uint64_t *)(rs64 + m128neededperblock + 2))[0];
         return simple128to64hashwithlength(acc, finalkey, keylength, (uint64_t)lengthbyte);
 
     } else {
@@ -393,8 +398,10 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
             acc = clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(
                           rs64, string, length, lastword);
         }
+        // Mix the seed in using a non-commuting operation with all the xors and clmuls.
+        acc = _mm_sub_epi8(acc, seed128);
 
-        const uint64_t keylength = *(const uint64_t *)(rs64 + m128neededperblock + 2);
+        const uint64_t keylength = ((const uint64_t *)(rs64 + m128neededperblock + 2))[0];
         acc = _mm_xor_si128(acc, lazyLengthHash(keylength, (uint64_t)lengthbyte));
         return bitmix ? fmix64(precompReduction64(acc)) : precompReduction64(acc);
     }
@@ -402,14 +409,12 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
 
 //------------------------------------------------------------
 void CLHash(const void * in, const size_t len, const seed_t seed, void * out) {
-    memcpy(clhash_random, &seed, 8);
-    uint64_t h = clhash<true>(clhash_random, (const uint8_t *)in, len);
+    uint64_t h = clhash<true>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<false>(h, (uint8_t *)out, 0);
 }
 
 void CLHashNomix(const void * in, const size_t len, const seed_t seed, void * out) {
-    memcpy(clhash_random, &seed, 8);
-    uint64_t h = clhash<false>(clhash_random, (const uint8_t *)in, len);
+    uint64_t h = clhash<false>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<false>(h, (uint8_t *)out, 0);
 }
 
@@ -430,8 +435,8 @@ REGISTER_HASH(clhash,
   $.impl_flags =
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 64,
-  $.verification_LE = 0x2129B0F3,
-  $.verification_BE = 0x2129B0F3,
+  $.verification_LE = 0x578865A5,
+  $.verification_BE = 0,
   $.hashfn_native = CLHash,
   $.hashfn_bswap = CLHash,
   $.initfn = clhash_init
@@ -447,8 +452,8 @@ REGISTER_HASH(clhash_nomix,
   $.impl_flags =
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 64,
-  $.verification_LE = 0x66E26666,
-  $.verification_BE = 0x66E26666,
+  $.verification_LE = 0xDD8248E4,
+  $.verification_BE = 0,
   $.hashfn_native = CLHashNomix,
   $.hashfn_bswap = CLHashNomix,
   $.initfn = clhash_init
