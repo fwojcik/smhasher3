@@ -127,9 +127,6 @@ static LegacyHashInfo g_hashes[] =
   { chaskey_test,         64, 0xBB4F6706, "chaskey",     "mouha.be/chaskey/ with added seed support", GOOD, {} },
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
   { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
-#ifdef HAVE_HIGHWAYHASH
-  { HighwayHash64_test,   64, 0x0,        "HighwayHash64", "Google HighwayHash (portable with dylib overhead)", GOOD, {} },
-#endif
   { xxHash64_test,        64, 0x024B7CF4, "xxHash64",    "xxHash, 64-bit", GOOD, {} },
 #if 0
   { xxhash256_test,       64, 0x024B7CF4, "xxhash256",   "xxhash256, 64-bit unportable", GOOD, {} },
@@ -138,10 +135,6 @@ static LegacyHashInfo g_hashes[] =
   { mx3rev1hash64_test,   64, 0x4DB51E5B, "mx3-rev1",    "mx3 revision 1 64bit", GOOD, {0x10} /* !! and all & 0x10 */},
   { mx3hash64_test,       64, 0x527399AD, "mx3",         "mx3 revision 2 64bit", GOOD, {} },
 
-#ifdef HAVE_AHASH_C
-  // aHash does not adhere to a fixed output
-  { ahash64_test,         64, 0x00000000, "ahash64",     "ahash 64bit", GOOD, {} },
-#endif
   { xxh3_test,            64, 0x39CD9E4A, "xxh3",        "xxHash v3, 64-bit", GOOD, // no known bad seeds
     {0x47ebda34,             // 32bit bad seed
      /* 0xbe4ba423396cfeb8,  // kSecret
@@ -187,10 +180,6 @@ void Hash_init (LegacyHashInfo* info) {
   if (0) {
     info = info;
   }
-#ifdef HAVE_HIGHWAYHASH
-  else if(info->hash == HighwayHash64_test)
-    HighwayHash_init();
-#endif
   else if(info->hash == chaskey_test)
     chaskey_init();
 }

@@ -548,31 +548,6 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 ########################################
-# Find additional hash libraries
-########################################
-
-find_library(HIGHWAY highwayhash)
-if(HIGHWAY
-   AND (NOT(CMAKE_CROSSCOMPILING)))
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(HIGHWAY_SRC HighwayHash.cpp)
-    set(HIGHWAY_LIB highwayhash)
-    add_definitions(-DHAVE_HIGHWAYHASH)
-  endif()
-endif()
-
-# rust staticlib: https://github.com/tkaitchuck/aHash/ smhasher/ahash-cbindings/install.sh
-find_library(AHASH_C ahash_c
-             HINTS /usr/local/lib)
-if(AHASH_C
-   AND (NOT(CMAKE_CROSSCOMPILING)))
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(AHASH_C_LIB ahash_c)
-    add_definitions(-DHAVE_AHASH_C)
-  endif()
-endif()
-
-########################################
 # Build all the hashes
 ########################################
 
@@ -637,8 +612,6 @@ add_library(
   SMHasher3Hashes STATIC
 #
   LegacyHashes.cpp
-#
-  ${HIGHWAY_SRC}
 #
   chaskey.c
   Hashes.cpp
