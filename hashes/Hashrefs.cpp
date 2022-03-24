@@ -32,6 +32,7 @@ unsigned refs() {
     USE_FAMILY(rmd);
     USE_FAMILY(blake2);
     USE_FAMILY(blake3);
+    USE_FAMILY(ascon);
     USE_FAMILY(vmac);
     USE_FAMILY(crc);
 

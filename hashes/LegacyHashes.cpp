@@ -72,10 +72,6 @@ static LegacyHashInfo g_hashes[] =
 {
  // here start the real hashes. first the problematic ones:
 
-  { asconhashv12_256,    256, 0xA969C160, "asconhashv12", "asconhashv12 256bit", GOOD,
-    { 0xee9398aadb67f03dULL } },
-  { asconhashv12_64,      64, 0xE7DEF300, "asconhashv12_64", "asconhashv12, low 64 bits", GOOD,
-    { 0xee9398aadb67f03dULL } },
   // 32bit crashes
 #ifdef HAVE_INT64
   { o1hash_test,          64, 0x85051E87, "o1hash",       "o(1)hash unseeded, from wyhash", POOR, {0x0} /* !! */ },

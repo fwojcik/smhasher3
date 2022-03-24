@@ -242,13 +242,6 @@ inline void pengyhash_test ( const void * key, int len, uint32_t seed, void * ou
   *(uint64_t*)out = pengyhash (key, (size_t) len, seed);
 }
 
-extern "C" {
-  // objsize: b200 - c2f5: 4341
-  void asconhashv12_64  ( const void * key, int len, uint32_t seed, void * out );
-  // objsize: c300 - dc5a: 6490
-  void asconhashv12_256 ( const void * key, int len, uint32_t seed, void * out );
-}
-
 void nmhash32_test ( const void * key, int len, uint32_t seed, void * out );
 void nmhash32x_test ( const void * key, int len, uint32_t seed, void * out );
 

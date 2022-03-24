@@ -543,11 +543,6 @@ else(NOT MSVC)
   set_source_files_properties(Hashes.cpp PROPERTIES COMPILE_FLAGS "/std:c++latest")
 endif(NOT MSVC)
 
-set(ASCON_SRC asconhashv12/hash.c)
-set_source_files_properties(
-    ${ASCON_SRC}
-    PROPERTIES COMPILE_FLAGS "-Iasconhashv12 -DASCON_INLINE_MODE")
-
 if(CMAKE_CROSSCOMPILING)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCROSSCOMPILING")
 endif()
@@ -635,6 +630,7 @@ add_library(
   hasshe2.cpp
   clhash.cpp
   umash.cpp
+  ascon.cpp
 )
 
 add_library(
@@ -643,7 +639,6 @@ add_library(
   LegacyHashes.cpp
 #
   ${HIGHWAY_SRC}
-  ${ASCON_SRC}
 #
   chaskey.c
   Hashes.cpp
