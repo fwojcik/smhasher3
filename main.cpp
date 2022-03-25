@@ -365,7 +365,7 @@ static bool test ( const HashInfo * hInfo )
   {
     printf("[[[ Sanity Tests ]]]\n\n");
 
-    result &= hInfo->Verify(g_hashEndian, true, false);
+    result &=  VerifyTest(hInfo);
     result &= (SanityTest(hInfo)          || hInfo->isMock());
     result &= (AppendedZeroesTest(hInfo)  || hInfo->isMock());
     result &= (PrependedZeroesTest(hInfo) || hInfo->isMock());
