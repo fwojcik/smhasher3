@@ -132,15 +132,19 @@ class HashInfo {
         case ENDIAN_BYTESWAPPED: is_native = false; break;
         case ENDIAN_LITTLE     : is_native = isLE(); break;
         case ENDIAN_BIG        : is_native = isBE(); break;
-        case ENDIAN_DEFAULT    :
+        case ENDIAN_DEFAULT    : /* fallthrough */
         case ENDIAN_NONDEFAULT :
+            // Compute is_native for the DEFAULT case
             if (hash_flags & FLAG_HASH_ENDIAN_INDEPENDENT) {
                 if (impl_flags & FLAG_IMPL_CANONICAL_LE) {
                     is_native = isLE();
                 } else if (impl_flags & FLAG_IMPL_CANONICAL_BE) {
                     is_native = isBE();
                 }
+            } else {
+                is_native = true;
             }
+            // Invert it for the NONDEFAULT case
             if (e == ENDIAN_NONDEFAULT) { is_native = !is_native; }
             break;
         }
