@@ -28,21 +28,7 @@
         v[1] ^= v[2]; v[2]=ROTL32(v[2],16);                 \
     } while(0)
 
-#define PERMUTE(v)                              \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);                                   \
-    ROUND(v);
-
-template < uint32_t tagwords, bool bswap >
+template < uint32_t rounds, uint32_t tagwords, bool bswap >
 void chaskey_impl(uint8_t * tag, const uint8_t * m, const size_t mlen,
         const uint32_t k[4], const uint32_t k1[4], const uint32_t k2[4]) {
   const uint8_t * end = m + (((mlen - 1) >> 4) << 4); /* pointer to last message block */
@@ -60,7 +46,9 @@ void chaskey_impl(uint8_t * tag, const uint8_t * m, const size_t mlen,
           v[1] ^= GET_U32<bswap>(m,  4);
           v[2] ^= GET_U32<bswap>(m,  8);
           v[3] ^= GET_U32<bswap>(m, 12);
-          PERMUTE(v);
+          for (uint32_t i = 0; i < rounds; i++) {
+              ROUND(v);
+          }
       }
   }
 
@@ -90,7 +78,9 @@ void chaskey_impl(uint8_t * tag, const uint8_t * m, const size_t mlen,
   v[2] ^= lastkey[2];
   v[3] ^= lastkey[3];
 
-  PERMUTE(v);
+  for (uint32_t i = 0; i < rounds; i++) {
+      ROUND(v);
+  }
 
   v[0] ^= lastkey[0];
   v[1] ^= lastkey[1];
@@ -136,8 +126,11 @@ static thread_local keys_t chaskeys;
 // and putting through the inverse of ROUND() 6 times. This means a
 // seed of 0 will end up with chaskeys.k[] set to that test vector key.
 //
-// The choice of 6 rounds was semi-arbitrarily made as half of
-// PERMUTE(), since the seed space is half of the state space.
+// The choice of 6 rounds was semi-arbitrarily made as half of the
+// ISO-standard 12-round PERMUTE(), since the seed space is half of
+// the state space. ROUND() also has full diffusion after 3 rounds, so
+// this is two full diffusions. Finally, a 6-round permutation is the
+// smallest number where chaskey passes this SMHasher3 test suite.
 static uintptr_t seed_subkeys(uint64_t seed) {
     uint32_t seedlo = (uint32_t)(seed);
     uint32_t seedhi = (uint32_t)(seed >> 32);
@@ -146,6 +139,7 @@ static uintptr_t seed_subkeys(uint64_t seed) {
     chaskeys.k[1] = seedhi ^ 0x5c0e8048;
     chaskeys.k[2] = seedlo ^ 0xc35ad9d8;
     chaskeys.k[3] = seedhi ^ 0xfbdf7e14;
+
     ROUND(chaskeys.k);
     ROUND(chaskeys.k);
     ROUND(chaskeys.k);
@@ -157,9 +151,9 @@ static uintptr_t seed_subkeys(uint64_t seed) {
     return (uintptr_t)(&chaskeys);
 }
 
-template < uint32_t tagwords,bool bswap >
+template < uint32_t rounds, uint32_t tagwords,bool bswap >
 void chaskey(const void * in, const size_t len, const seed_t seed, void * out) {
-    chaskey_impl<tagwords,bswap>((uint8_t *)out, (const uint8_t *)in, len,
+    chaskey_impl<rounds,tagwords,bswap>((uint8_t *)out, (const uint8_t *)in, len,
             chaskeys.k, chaskeys.k1, chaskeys.k2);
 }
 //------------------------------------------------------------
@@ -244,9 +238,9 @@ static bool chaskey_selftest(void) {
     bool passed = true;
     for (int i = 0; i < 64; i++) {
         if (isLE()) {
-            chaskey<2,false>(m, i, s, tag);
+            chaskey<12,2,false>(m, i, s, tag);
         } else {
-            chaskey<2,true>(m, i, s, tag);
+            chaskey<12,2,true>(m, i, s, tag);
         }
         if (0 != memcmp(tag, vectors[i], 8)) {
             printf("Mismatch with len %d\n  Expected:", i);
@@ -264,8 +258,9 @@ static bool chaskey_selftest(void) {
 //------------------------------------------------------------
 REGISTER_FAMILY(chaskey);
 
-REGISTER_HASH(chaskey_32,
-  $.desc = "Chaskey PRF (32 bits)",
+REGISTER_HASH(chaskey_12_32,
+  $.desc = "Chaskey PRF (12 rounds, 32 bits)",
+  $.sort_order = 20,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC          |
         FLAG_HASH_NO_SEED                |
@@ -280,12 +275,13 @@ REGISTER_HASH(chaskey_32,
   $.verification_BE = 0x22B350D2,
   $.initfn = chaskey_selftest,
   $.seedfn = seed_subkeys,
-  $.hashfn_native = chaskey<1,false>,
-  $.hashfn_bswap = chaskey<1,true>
+  $.hashfn_native = chaskey<12,1,false>,
+  $.hashfn_bswap = chaskey<12,1,true>
 );
 
-REGISTER_HASH(chaskey_64,
-  $.desc = "Chaskey PRF (64 bits)",
+REGISTER_HASH(chaskey_12_64,
+  $.desc = "Chaskey PRF (12 rounds, 64 bits)",
+  $.sort_order = 20,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC          |
         FLAG_HASH_NO_SEED                |
@@ -300,12 +296,13 @@ REGISTER_HASH(chaskey_64,
   $.verification_BE = 0x5D0E8285,
   $.initfn = chaskey_selftest,
   $.seedfn = seed_subkeys,
-  $.hashfn_native = chaskey<2,false>,
-  $.hashfn_bswap = chaskey<2,true>
+  $.hashfn_native = chaskey<12,2,false>,
+  $.hashfn_bswap = chaskey<12,2,true>
 );
 
-REGISTER_HASH(chaskey_128,
-  $.desc = "Chaskey PRF (128 bits)",
+REGISTER_HASH(chaskey_12_128,
+  $.desc = "Chaskey PRF (12 rounds, 128 bits)",
+  $.sort_order = 20,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC          |
         FLAG_HASH_NO_SEED                |
@@ -320,6 +317,69 @@ REGISTER_HASH(chaskey_128,
   $.verification_BE = 0xB042962B,
   $.initfn = chaskey_selftest,
   $.seedfn = seed_subkeys,
-  $.hashfn_native = chaskey<4,false>,
-  $.hashfn_bswap = chaskey<4,true>
+  $.hashfn_native = chaskey<12,4,false>,
+  $.hashfn_bswap = chaskey<12,4,true>
+);
+
+REGISTER_HASH(chaskey_8_32,
+  $.desc = "Chaskey PRF (8 rounds, 32 bits)",
+  $.sort_order = 10,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC          |
+        FLAG_HASH_NO_SEED                |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_VERY_SLOW              |
+        FLAG_IMPL_ROTATE                 |
+        FLAG_IMPL_CANONICAL_LE           |
+        FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+  $.bits = 32,
+  $.verification_LE = 0xA984B318,
+  $.verification_BE = 0x23FE2699,
+  $.initfn = chaskey_selftest,
+  $.seedfn = seed_subkeys,
+  $.hashfn_native = chaskey<8,1,false>,
+  $.hashfn_bswap = chaskey<8,1,true>
+);
+
+REGISTER_HASH(chaskey_8_64,
+  $.desc = "Chaskey PRF (8 rounds, 64 bits)",
+  $.sort_order = 10,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC          |
+        FLAG_HASH_NO_SEED                |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_VERY_SLOW              |
+        FLAG_IMPL_ROTATE                 |
+        FLAG_IMPL_CANONICAL_LE           |
+        FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+  $.bits = 64,
+  $.verification_LE = 0x4DA0DD3A,
+  $.verification_BE = 0x87A85CD2,
+  $.initfn = chaskey_selftest,
+  $.seedfn = seed_subkeys,
+  $.hashfn_native = chaskey<8,2,false>,
+  $.hashfn_bswap = chaskey<8,2,true>
+);
+
+REGISTER_HASH(chaskey_8_128,
+  $.desc = "Chaskey PRF (8 rounds, 128 bits)",
+  $.sort_order = 10,
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC          |
+        FLAG_HASH_NO_SEED                |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
+  $.impl_flags =
+        FLAG_IMPL_VERY_SLOW              |
+        FLAG_IMPL_ROTATE                 |
+        FLAG_IMPL_CANONICAL_LE           |
+        FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+  $.bits = 128,
+  $.verification_LE = 0x48B645E4,
+  $.verification_BE = 0xB84D00F9,
+  $.initfn = chaskey_selftest,
+  $.seedfn = seed_subkeys,
+  $.hashfn_native = chaskey<8,4,false>,
+  $.hashfn_bswap = chaskey<8,4,true>
 );
