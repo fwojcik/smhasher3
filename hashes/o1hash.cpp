@@ -52,12 +52,12 @@ void o1hash(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * p = (const uint8_t *)in;
     uint64_t h;
     if (len >= 4) {
-        uint32_t first  = GET_U32<bswap>(p, 0);
+        uint64_t first  = GET_U32<bswap>(p, 0);
         uint64_t middle = GET_U32<bswap>(p, ((len >> 1) - 2));
-        uint32_t last   = GET_U32<bswap>(p, len - 4);
-        h = (middle + (uint64_t)0) * (first + last);
+        uint64_t last   = GET_U32<bswap>(p, len - 4);
+        h = (middle + (uint64_t)seed) * (first + last);
     } else if (len > 0) {
-        uint64_t tail = 0 + (
+        uint64_t tail = seed + (
             (((uint64_t)p[       0]) << 16) |
             (((uint64_t)p[len >> 1]) <<  8) |
             (((uint64_t)p[ len - 1])))      ;
@@ -82,8 +82,8 @@ REGISTER_HASH(o1hash,
         FLAG_IMPL_MULTIPLY              |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN ,
   $.bits = 64,
-  $.verification_LE = 0x85051E87,
-  $.verification_BE = 0xC53FB04E,
+  $.verification_LE = 0xAE049F09,
+  $.verification_BE = 0x299BD16A,
   $.hashfn_native = o1hash<false>,
   $.hashfn_bswap = o1hash<true>
 );
