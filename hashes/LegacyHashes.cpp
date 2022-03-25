@@ -110,16 +110,7 @@ static LegacyHashInfo g_hashes[] =
   { MeowHash64_test,      64, 0xB04AC842, "MeowHash64low","MeowHash (requires x64 AES-NI)", POOR, {0x920e7c64} },
   { MeowHash128_test,    128, 0xA0D29861, "MeowHash",     "MeowHash (requires x64 AES-NI)", POOR, {0x920e7c64} },
 #endif
-#if __WORDSIZE >= 64
-# define TIFU_VERIF       0x644236D4
-#else
-  // broken on certain travis
-# define TIFU_VERIF       0x0
-#endif
   // and now the quality hash funcs, slowest first
-  { tifuhash_64,          64, TIFU_VERIF, "tifuhash_64", "Tiny Floatingpoint Unique Hash with continued egyptian fractions", POOR, {} },
-  // different verif on gcc vs clang
-  { floppsyhash_64,       64, 0x0,        "floppsyhash", "slow hash designed for floating point hardware", GOOD, {} },
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
   { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
   { xxHash64_test,        64, 0x024B7CF4, "xxHash64",    "xxHash, 64-bit", GOOD, {} },
@@ -196,24 +187,9 @@ bool Hash_Seed_init (pfHash hash, size_t seed) {
 
 //-----------------------------------------------------------------------------
 bool hash_is_very_slow(pfHash hash) {
-    // known very slow hashes (typically > 500 cycle/hash)
-    const struct { pfHash h; } slowhashes[] = {
-        { tifuhash_64              },
-        { floppsyhash_64           },
-    };
-
-    for (int i=0; i<sizeof(slowhashes)/sizeof(slowhashes[0]); i++) {
-        if (slowhashes[i].h == hash) {
-            return true;
-        }
-    }
-
     return false;
 }
 
 bool hash_is_slow(pfHash hash) {
-    if (hash_is_very_slow(hash)) {
-        return true;
-    }
     return false;
 }

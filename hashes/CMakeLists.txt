@@ -608,6 +608,7 @@ add_library(
   clhash.cpp
   umash.cpp
   o1hash.cpp
+  floppsyhash.cpp
 )
 
 add_library(
@@ -618,8 +619,6 @@ add_library(
   Hashes.cpp
   lookup3.cpp
   SuperFastHash.cpp
-  tifuhash.cpp
-  floppsyhash.cpp
   fasthash.cpp
   xxhash.c
   jody_hash32.c

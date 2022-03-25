@@ -47,7 +47,7 @@
     FLAG_EXPAND(IMPL_MULTIPLY_64_128)                  \
     FLAG_EXPAND(IMPL_MULTIPLY_128_128)                 \
     FLAG_EXPAND(IMPL_ROTATE)                           \
-    FLAG_EXPAND(IMPL_DIVISION)                         \
+    FLAG_EXPAND(IMPL_DIVIDE)                           \
     FLAG_EXPAND(IMPL_MODULUS)                          \
     FLAG_EXPAND(IMPL_ASM)                              \
     FLAG_EXPAND(IMPL_SSE2)                             \
