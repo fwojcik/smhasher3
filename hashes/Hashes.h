@@ -101,15 +101,6 @@ inline void Crap8_test(const void *key, int len, uint32_t seed, void *out) {
 // Used internally as C++
 uint32_t MurmurOAAT ( const char * key, int len, uint32_t seed );
 
-extern "C" void chaskey_c  ( const void * key, int len, uint64_t seed, void * out );
-extern "C" void chaskey_init();
-inline void
-chaskey_test(const void *input, int len, uint32_t seed, void *out)
-{
-  uint64_t lseed = (uint64_t)seed;
-  chaskey_c (input, len, lseed, out);
-}
-
 inline void jodyhash32_test( const void * key, int len, uint32_t seed, void * out ) {
   *(uint32_t*)out = jody_block_hash32((const jodyhash32_t *)key, (jodyhash32_t) seed, (size_t) len);
 }

@@ -124,7 +124,6 @@ static LegacyHashInfo g_hashes[] =
   { tifuhash_64,          64, TIFU_VERIF, "tifuhash_64", "Tiny Floatingpoint Unique Hash with continued egyptian fractions", POOR, {} },
   // different verif on gcc vs clang
   { floppsyhash_64,       64, 0x0,        "floppsyhash", "slow hash designed for floating point hardware", GOOD, {} },
-  { chaskey_test,         64, 0xBB4F6706, "chaskey",     "mouha.be/chaskey/ with added seed support", GOOD, {} },
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
   { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
   { xxHash64_test,        64, 0x024B7CF4, "xxHash64",    "xxHash, 64-bit", GOOD, {} },
@@ -177,11 +176,6 @@ LegacyHashInfo * findLegacyHash ( const char * name )
 
 // optional hash state initializers
 void Hash_init (LegacyHashInfo* info) {
-  if (0) {
-    info = info;
-  }
-  else if(info->hash == chaskey_test)
-    chaskey_init();
 }
 
 // Needed for hashed with a few bad seeds, to reject this seed and generate a new one.

@@ -574,6 +574,8 @@ add_library(
   blake2.cpp
   blake3.cpp
   vmac.cpp
+  ascon.cpp
+  chaskey.cpp
   crc.cpp
 #
   aesnihash.cpp
@@ -605,7 +607,6 @@ add_library(
   hasshe2.cpp
   clhash.cpp
   umash.cpp
-  ascon.cpp
 )
 
 add_library(
@@ -613,7 +614,6 @@ add_library(
 #
   LegacyHashes.cpp
 #
-  chaskey.c
   Hashes.cpp
   lookup3.cpp
   SuperFastHash.cpp
