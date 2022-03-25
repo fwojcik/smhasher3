@@ -232,6 +232,10 @@ class HashInfo {
         return !!(hash_flags & FLAG_HASH_ENDIAN_INDEPENDENT);
     }
 
+    FORCE_INLINE bool isCrypto(void) const {
+        return !!(hash_flags & FLAG_HASH_CRYPTOGRAPHIC);
+    }
+
     FORCE_INLINE bool isSlow(void) const {
         return !!(impl_flags & (FLAG_IMPL_SLOW | FLAG_IMPL_VERY_SLOW));
     }

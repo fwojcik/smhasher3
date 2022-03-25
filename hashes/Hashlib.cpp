@@ -63,6 +63,7 @@ HashMapOrder defaultSort(HashMap & map) {
                 if (a->isMock() != b->isMock())               return a->isMock();
                 if (a->isMock() && (a->sort_order != b->sort_order))
                                                               return (a->sort_order < b->sort_order);
+                if (a->isCrypto() != b->isCrypto())           return a->isCrypto();
                 if ((r = strcmp(a->family, b->family)) != 0)  return (r < 0);
                 if (a->bits != b->bits)                       return (a->bits < b->bits);
                 if (a->sort_order != b->sort_order)           return (a->sort_order < b->sort_order);
@@ -103,16 +104,17 @@ const HashInfo * findHash(const char * name) {
 
 void listHashes(bool nameonly) {
     if (!nameonly) {
-        printf("%-25s %4s  %-50s %4s\n",
-            "Name", "Bits", "Description", "Type");
-        printf("%-25s %4s  %-50s %4s\n",
-            "----", "----", "-----------", "----");
+        printf("%-25s %4s  %6s  %-60s\n",
+            "Name", "Bits", "Type", "Description");
+        printf("%-25s %4s  %6s  %-60s\n",
+            "----", "----", "----", "-----------");
     }
     for (const HashInfo * h : defaultSort(hashMap())) {
         if (!nameonly) {
-            printf("%-25s %4d  %-50s %4s\n",
-                h->name, h->bits, h->desc,
-                (h->hash_flags & FLAG_HASH_MOCK) ? "MOCK" : "");
+            printf("%-25s %4d  %6s  %-60s\n",
+                    h->name, h->bits,
+                    h->isMock() ? "MOCK" : (h->isCrypto() ? "CRYPTO" : ""),
+                    h->desc);
         } else {
             printf("%s\n", h->name);
         }
