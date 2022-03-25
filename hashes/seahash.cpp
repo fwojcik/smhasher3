@@ -140,7 +140,7 @@ void SeaHash(const void * in, const size_t len, const seed_t seed, void * out) {
 REGISTER_FAMILY(seahash);
 
 REGISTER_HASH(seahash,
-  $.desc = "",
+  $.desc = "seahash",
   $.hash_flags =
         0,
   $.impl_flags =
