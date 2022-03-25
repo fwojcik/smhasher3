@@ -73,6 +73,7 @@ REGISTER_FAMILY(o1hash);
 
 REGISTER_HASH(o1hash,
   $.desc = "o(1) hash, from wyhash",
+  $.sort_order = 45,
   $.hash_flags =
         FLAG_HASH_MOCK                  |
         FLAG_HASH_NO_SEED               ,
