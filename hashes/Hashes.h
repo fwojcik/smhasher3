@@ -162,17 +162,6 @@ inline void fasthash64_test ( const void * key, int len, uint32_t seed, void * o
 
 //-----------------------------------------------------------------------------
 
-#ifdef HAVE_INT64
-
-#include "o1hash.h"
-// unseeded. objsize: 101
-// This is vulnerable to keys len>4 and key[len/2 -2]..[len/2 +2] being 0 (binary keys).
-inline void o1hash_test (const void * key, int len, uint32_t seed, void * out) {
-  *(uint64_t*)out = o1hash(key, (uint64_t)len);
-}
-
-#endif /* HAVE_INT64 */
-
 #if defined(HAVE_AESNI) && defined(__SIZEOF_INT128__) && \
   (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__)  || defined(_M_IX86))
 #define HAVE_MEOW_HASH

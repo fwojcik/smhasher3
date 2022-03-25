@@ -66,6 +66,7 @@ unsigned refs() {
     USE_FAMILY(hasshe2);
     USE_FAMILY(clhash);
     USE_FAMILY(umash);
+    USE_FAMILY(o1hash);
 
     return 0;
 }

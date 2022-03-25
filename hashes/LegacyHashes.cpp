@@ -72,10 +72,6 @@ static LegacyHashInfo g_hashes[] =
 {
  // here start the real hashes. first the problematic ones:
 
-  // 32bit crashes
-#ifdef HAVE_INT64
-  { o1hash_test,          64, 0x85051E87, "o1hash",       "o(1)hash unseeded, from wyhash", POOR, {0x0} /* !! */ },
-#endif
 #ifndef HAVE_ALIGNED_ACCESS_REQUIRED
   { khash32_test,         32, 0x99B3FFCD, "k-hash32",    "K-Hash mixer, 32-bit", POOR, {0,1,2,3,5,0x40000001} /*... !!*/},
   { khash64_test,         64, 0xAB5518A1, "k-hash64",    "K-Hash mixer, 64-bit", POOR, {0,1,2,3,4,5} /*...!!*/},
@@ -185,8 +181,7 @@ void Bad_Seed_init (pfHash hash, uint32_t &seed) {
   if (!seed && (hash == fletcher2_test ||
                      hash == fletcher4_test || hash == Bernstein_test || hash == sdbm_test ||
                      hash == JenkinsOOAT_test || hash == JenkinsOOAT_perl_test ||
-                     hash == SuperFastHash_test || hash == MurmurOAAT_test ||
-                     hash == o1hash_test))
+                     hash == SuperFastHash_test || hash == MurmurOAAT_test))
     seed++;
   else if (hash == Crap8_test && (seed == 0x83d2e73b || seed == 0x97e1cc59))
     seed++;
@@ -220,17 +215,5 @@ bool hash_is_slow(pfHash hash) {
     if (hash_is_very_slow(hash)) {
         return true;
     }
-
-    // known somewhat slow hashes
-    const struct { pfHash h; } slowhashes[] = {
-        { o1hash_test                 },
-    };
-
-    for (int i=0; i<sizeof(slowhashes)/sizeof(slowhashes[0]); i++) {
-        if (slowhashes[i].h == hash) {
-            return true;
-        }
-    }
-
     return false;
 }

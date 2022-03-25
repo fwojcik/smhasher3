@@ -607,6 +607,7 @@ add_library(
   hasshe2.cpp
   clhash.cpp
   umash.cpp
+  o1hash.cpp
 )
 
 add_library(
