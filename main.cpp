@@ -177,7 +177,7 @@ static TestOpts g_testopts[] =
   { g_testPopcount,      true,     false,    "Popcount" },
   { g_testPrng,          true,     false,    "Prng" },
   { g_testBIC,          false,     false,    "BIC" },
-  { g_testBadSeeds,      true,     false,    "BadSeeds" },
+  { g_testBadSeeds,     false,     false,    "BadSeeds" },
 };
 
 static void set_default_tests(bool enable) {
