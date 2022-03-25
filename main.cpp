@@ -157,8 +157,8 @@ struct TestOpts {
 };
 static TestOpts g_testopts[] =
 {
+  { g_testVerifyAll,    false,     false,    "VerifyAll" }, // Overrides all others
   { g_testAll,           true,     false,    "All" },
-  { g_testVerifyAll,    false,     false,    "VerifyAll" },
   { g_testSanity,        true,     false,    "Sanity" },
   { g_testSpeed,         true,      true,    "Speed" },
   { g_testHashmap,       true,      true,    "Hashmap" },
@@ -349,13 +349,6 @@ static bool test ( const HashInfo * hInfo )
 
   //-----------------------------------------------------------------------------
   // Sanity tests
-
-  if(g_testVerifyAll)
-  {
-    printf("[[[ VerifyAll Tests ]]]\n\n"); fflush(NULL);
-    HashSelfTestAll(g_drawDiagram);
-    printf("PASS\n\n");
-  }
 
   FILE * outfile;
   if (g_testAll || g_testSpeed || g_testHashmap)
@@ -741,7 +734,13 @@ int main ( int argc, const char ** argv )
 
   size_t timeBegin = monotonic_clock();
 
-  testHash(hashToTest);
+  if (g_testVerifyAll) {
+      printf("[[[ VerifyAll Tests ]]]\n\n");
+      HashSelfTestAll(g_drawDiagram);
+      printf("PASS\n\n");
+  } else {
+      testHash(hashToTest);
+  }
 
   size_t timeEnd = monotonic_clock();
 
