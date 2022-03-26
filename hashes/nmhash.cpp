@@ -1,5 +1,5 @@
 /*
- * NAME
+ * nmhash
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (c) 2021, James Z.M. Gao
  * All rights reserved.
@@ -56,8 +56,6 @@
 #include <immintrin.h>
 #endif
 
-//#define NMH_ACC_ALIGN alignof(max_align_t)
-
 //------------------------------------------------------------
 // constants
 
@@ -103,8 +101,27 @@ alignas(alignof(max_align_t)) static const uint32_t __NMH_M3_V[32] = {
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
 };
+alignas(alignof(max_align_t)) static const uint64_t __NMH_BSWAP_MASK[8] = {
+    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
+    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
+    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
+    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
+};
 
 //------------------------------------------------------------
+static inline uint32_t NMHASH_mult16(uint32_t a, uint32_t b) {
+    uint16_t al = (uint16_t)(a);
+    uint16_t ah = (uint16_t)(a >> 16);
+    uint16_t bl = (uint16_t)(b);
+    uint16_t bh = (uint16_t)(b >> 16);
+
+    al *= bl;
+    ah *= bh;
+
+    return (((uint32_t)ah) << 16) + ((uint32_t)al);
+}
+
+
 static inline uint32_t NMHASH32_0to8(uint32_t const x, uint32_t const seed2) {
     /* base mixer: [-6 -12 776bf593 -19 11 3fb39c65 -15 -9 e9139917 -11 16] = 0.027071104091278835 */
     const uint32_t m1 = UINT32_C(0x776BF593);
@@ -113,20 +130,17 @@ static inline uint32_t NMHASH32_0to8(uint32_t const x, uint32_t const seed2) {
 
 #if NMH_VECTOR == NMH_SCALAR
     {
-        union { uint32_t u32; uint16_t u16[2]; } vx;
-        vx.u32 = x;
-        vx.u32 ^= (vx.u32 >> 12) ^ (vx.u32 >> 6);
-        vx.u16[0] *= (uint16_t)m1;
-        vx.u16[1] *= (uint16_t)(m1 >> 16);
-        vx.u32 ^= (vx.u32 << 11) ^ ( vx.u32 >> 19);
-        vx.u16[0] *= (uint16_t)m2;
-        vx.u16[1] *= (uint16_t)(m2 >> 16);
-        vx.u32 ^= seed2;
-        vx.u32 ^= (vx.u32 >> 15) ^ ( vx.u32 >> 9);
-        vx.u16[0] *= (uint16_t)m3;
-        vx.u16[1] *= (uint16_t)(m3 >> 16);
-        vx.u32 ^= (vx.u32 << 16) ^ ( vx.u32 >> 11);
-        return vx.u32;
+        uint32_t vx;
+        vx  = x;
+        vx ^= (vx >> 12) ^ (vx >> 6);
+        vx  = NMHASH_mult16(vx, m1);
+        vx ^= (vx << 11) ^ (vx >> 19);
+        vx  = NMHASH_mult16(vx, m2);
+        vx ^= seed2;
+        vx ^= (vx >> 15) ^ (vx >> 9);
+        vx  = NMHASH_mult16(vx, m3);
+        vx ^= (vx << 16) ^ (vx >> 11);
+        return vx;
     }
 #else /* at least NMH_SSE2 */
     {
@@ -158,102 +172,88 @@ static inline uint32_t NMHASH32_9to255(const uint8_t* const RESTRICT p,
 
 #if NMH_VECTOR == NMH_SCALAR
     {
-        union { uint32_t u32; uint16_t u16[2]; } x[4], y[4];
+        uint32_t x[4], y[4];
         uint32_t const sl = seed + (uint32_t)len;
         size_t j;
-        x[0].u32 = NMH_PRIME32_1;
-        x[1].u32 = NMH_PRIME32_2;
-        x[2].u32 = NMH_PRIME32_3;
-        x[3].u32 = NMH_PRIME32_4;
-        for (j = 0; j < 4; ++j) y[j].u32 = sl;
+        x[0] = NMH_PRIME32_1;
+        x[1] = NMH_PRIME32_2;
+        x[2] = NMH_PRIME32_3;
+        x[3] = NMH_PRIME32_4;
+        for (j = 0; j < 4; ++j) y[j] = sl;
 
         if (gt32bytes) {
             /* 33 to 255 bytes */
             size_t const r = (len - 1) / 32;
             size_t i;
             for (i = 0; i < r; ++i) {
-                for (j = 0; j < 4; ++j) x[j].u32 ^= GET_U32<bswap>(p, i * 32 + j * 4);
-                for (j = 0; j < 4; ++j) y[j].u32 ^= GET_U32<bswap>(p, i * 32 + j * 4 + 16);
-                for (j = 0; j < 4; ++j) x[j].u32 += y[j].u32;
+                for (j = 0; j < 4; ++j) x[j] ^= GET_U32<bswap>(p, i * 32 + j * 4);
+                for (j = 0; j < 4; ++j) y[j] ^= GET_U32<bswap>(p, i * 32 + j * 4 + 16);
+                for (j = 0; j < 4; ++j) x[j] += y[j];
 
-                for (j = 0; j < 4; ++j) {
-                    x[j].u16[0] *= (uint16_t)(__NMH_M1 & 0xFFFF);
-                    x[j].u16[1] *= (uint16_t)(__NMH_M1 >> 16);
-                }
-                for (j = 0; j < 4; ++j) x[j].u32 ^= (x[j].u32 << 5) ^ (x[j].u32 >> 13);
-                for (j = 0; j < 4; ++j) {
-                    x[j].u16[0] *= (uint16_t)(__NMH_M2 & 0xFFFF);
-                    x[j].u16[1] *= (uint16_t)(__NMH_M2 >> 16);
-                }
+                for (j = 0; j < 4; ++j) x[j] = NMHASH_mult16(x[j], __NMH_M1);
 
-                for (j = 0; j < 4; ++j) x[j].u32 ^= y[j].u32;
+                for (j = 0; j < 4; ++j) x[j] ^= (x[j] << 5) ^ (x[j] >> 13);
 
-                for (j = 0; j < 4; ++j) x[j].u32 ^= (x[j].u32 << 11) ^ (x[j].u32 >> 9);
-                for (j = 0; j < 4; ++j) {
-                    x[j].u16[0] *= (uint16_t)(__NMH_M3 & 0xFFFF);
-                    x[j].u16[1] *= (uint16_t)(__NMH_M3 >> 16);
-                }
-                for (j = 0; j < 4; ++j) x[j].u32 ^= (x[j].u32 >> 10) ^ (x[j].u32 >> 20);
+                for (j = 0; j < 4; ++j) x[j] = NMHASH_mult16(x[j], __NMH_M2);
+
+                for (j = 0; j < 4; ++j) x[j] ^= y[j];
+
+                for (j = 0; j < 4; ++j) x[j] ^= (x[j] << 11) ^ (x[j] >> 9);
+
+                for (j = 0; j < 4; ++j) x[j] = NMHASH_mult16(x[j], __NMH_M3);
+
+                for (j = 0; j < 4; ++j) x[j] ^= (x[j] >> 10) ^ (x[j] >> 20);
             }
-            for (j = 0; j < 4; ++j) x[j].u32 ^= GET_U32<bswap>(p, len - 32 + j * 4);
-            for (j = 0; j < 4; ++j) y[j].u32 ^= GET_U32<bswap>(p, len - 16 + j * 4);
+            for (j = 0; j < 4; ++j) x[j] ^= GET_U32<bswap>(p, len - 32 + j * 4);
+            for (j = 0; j < 4; ++j) y[j] ^= GET_U32<bswap>(p, len - 16 + j * 4);
         } else {
             /* 9 to 32 bytes */
-            x[0].u32 ^= GET_U32<bswap>(p, 0);
-            x[1].u32 ^= GET_U32<bswap>(p, ((len>>4)<<3));
-            x[2].u32 ^= GET_U32<bswap>(p, len - 8);
-            x[3].u32 ^= GET_U32<bswap>(p, len - 8 - ((len>>4)<<3));
-            y[0].u32 ^= GET_U32<bswap>(p, 4);
-            y[1].u32 ^= GET_U32<bswap>(p, ((len>>4)<<3) + 4);
-            y[2].u32 ^= GET_U32<bswap>(p, len - 8 + 4);
-            y[3].u32 ^= GET_U32<bswap>(p, len - 8 - ((len>>4)<<3) + 4);
+            x[0] ^= GET_U32<bswap>(p, 0);
+            x[1] ^= GET_U32<bswap>(p, ((len>>4)<<3));
+            x[2] ^= GET_U32<bswap>(p, len - 8);
+            x[3] ^= GET_U32<bswap>(p, len - 8 - ((len>>4)<<3));
+            y[0] ^= GET_U32<bswap>(p, 4);
+            y[1] ^= GET_U32<bswap>(p, ((len>>4)<<3) + 4);
+            y[2] ^= GET_U32<bswap>(p, len - 8 + 4);
+            y[3] ^= GET_U32<bswap>(p, len - 8 - ((len>>4)<<3) + 4);
         }
 
-        for (j = 0; j < 4; ++j) x[j].u32 += y[j].u32;
-        for (j = 0; j < 4; ++j) y[j].u32 ^= (y[j].u32 << 17) ^ (y[j].u32 >> 6);
+        for (j = 0; j < 4; ++j) x[j] += y[j];
+        for (j = 0; j < 4; ++j) y[j] ^= (y[j] << 17) ^ (y[j] >> 6);
 
-        for (j = 0; j < 4; ++j) {
-            x[j].u16[0] *= (uint16_t)(__NMH_M1 & 0xFFFF);
-            x[j].u16[1] *= (uint16_t)(__NMH_M1 >> 16);
-        }
-        for (j = 0; j < 4; ++j) x[j].u32 ^= (x[j].u32 << 5) ^ (x[j].u32 >> 13);
-        for (j = 0; j < 4; ++j) {
-            x[j].u16[0] *= (uint16_t)(__NMH_M2 & 0xFFFF);
-            x[j].u16[1] *= (uint16_t)(__NMH_M2 >> 16);
-        }
+        for (j = 0; j < 4; ++j) x[j] = NMHASH_mult16(x[j], __NMH_M1);
+        for (j = 0; j < 4; ++j) x[j] ^= (x[j] << 5) ^ (x[j] >> 13);
+        for (j = 0; j < 4; ++j) x[j] = NMHASH_mult16(x[j], __NMH_M2);
 
-        for (j = 0; j < 4; ++j) x[j].u32 ^= y[j].u32;
+        for (j = 0; j < 4; ++j) x[j] ^= y[j];
 
-        for (j = 0; j < 4; ++j) x[j].u32 ^= (x[j].u32 << 11) ^ (x[j].u32 >> 9);
-        for (j = 0; j < 4; ++j) {
-            x[j].u16[0] *= (uint16_t)(__NMH_M3 & 0xFFFF);
-            x[j].u16[1] *= (uint16_t)(__NMH_M3 >> 16);
-        }
-        for (j = 0; j < 4; ++j) x[j].u32 ^= (x[j].u32 >> 10) ^ (x[j].u32 >> 20);
+        for (j = 0; j < 4; ++j) x[j] ^= (x[j] << 11) ^ (x[j] >> 9);
+        for (j = 0; j < 4; ++j) x[j] = NMHASH_mult16(x[j], __NMH_M3);
+        for (j = 0; j < 4; ++j) x[j] ^= (x[j] >> 10) ^ (x[j] >> 20);
 
-        x[0].u32 ^= NMH_PRIME32_1;
-        x[1].u32 ^= NMH_PRIME32_2;
-        x[2].u32 ^= NMH_PRIME32_3;
-        x[3].u32 ^= NMH_PRIME32_4;
+        x[0] ^= NMH_PRIME32_1;
+        x[1] ^= NMH_PRIME32_2;
+        x[2] ^= NMH_PRIME32_3;
+        x[3] ^= NMH_PRIME32_4;
 
-        for (j = 1; j < 4; ++j) x[0].u32 += x[j].u32;
+        for (j = 1; j < 4; ++j) x[0] += x[j];
 
-        x[0].u32 ^= sl + (sl >> 5);
-        x[0].u16[0] *= (uint16_t)(__NMH_M3 & 0xFFFF);
-        x[0].u16[1] *= (uint16_t)(__NMH_M3 >> 16);
-        x[0].u32 ^= (x[0].u32 >> 10) ^ (x[0].u32 >> 20);
+        x[0] ^= sl + (sl >> 5);
+        x[0]  = NMHASH_mult16(x[0], __NMH_M3);
+        x[0] ^= (x[0] >> 10) ^ (x[0] >> 20);
 
-        result = x[0].u32;
+        result = x[0];
     }
 #else /* at least NMH_SSE2 */
     {
-        __m128i const h0 = _mm_setr_epi32((int)NMH_PRIME32_1, (int)NMH_PRIME32_2, (int)NMH_PRIME32_3, (int)NMH_PRIME32_4);
-        __m128i const sl = _mm_set1_epi32((int)seed + (int)len);
-        __m128i const m1 = _mm_set1_epi32((int)__NMH_M1);
-        __m128i const m2 = _mm_set1_epi32((int)__NMH_M2);
-        __m128i const m3 = _mm_set1_epi32((int)__NMH_M3);
-        __m128i       x = h0;
-        __m128i       y = sl;
+        __m128i const h0   = _mm_setr_epi32((int)NMH_PRIME32_1, (int)NMH_PRIME32_2, (int)NMH_PRIME32_3, (int)NMH_PRIME32_4);
+        __m128i const sl   = _mm_set1_epi32((int)seed + (int)len);
+        __m128i const m1   = _mm_set1_epi32((int)__NMH_M1);
+        __m128i const m2   = _mm_set1_epi32((int)__NMH_M2);
+        __m128i const m3   = _mm_set1_epi32((int)__NMH_M3);
+        __m128i const mask = _mm_loadu_si128((const __m128i *)__NMH_BSWAP_MASK);
+        __m128i          x = h0;
+        __m128i          y = sl;
         const uint32_t *const px = (const uint32_t*)&x;
 
         if (gt32bytes) {
@@ -261,8 +261,13 @@ static inline uint32_t NMHASH32_9to255(const uint8_t* const RESTRICT p,
             size_t const r = (len - 1) / 32;
             size_t i;
             for (i = 0; i < r; ++i) {
-                x = _mm_xor_si128(x, _mm_loadu_si128((const __m128i *)(p + i * 32)));
-                y = _mm_xor_si128(y, _mm_loadu_si128((const __m128i *)(p + i * 32 + 16)));
+                if (bswap) {
+                    x = _mm_xor_si128(x, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + i * 32)), mask));
+                    y = _mm_xor_si128(y, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + i * 32 + 16)), mask));
+                } else {
+                    x = _mm_xor_si128(x, _mm_loadu_si128((const __m128i *)(p + i * 32)));
+                    y = _mm_xor_si128(y, _mm_loadu_si128((const __m128i *)(p + i * 32 + 16)));
+                }
                 x = _mm_add_epi32(x, y);
                 x = _mm_mullo_epi16(x, m1);
                 x = _mm_xor_si128(_mm_xor_si128(x, _mm_slli_epi32(x, 5)), _mm_srli_epi32(x, 13));
@@ -272,8 +277,13 @@ static inline uint32_t NMHASH32_9to255(const uint8_t* const RESTRICT p,
                 x = _mm_mullo_epi16(x, m3);
                 x = _mm_xor_si128(_mm_xor_si128(x, _mm_srli_epi32(x, 10)), _mm_srli_epi32(x, 20));
             }
-            x = _mm_xor_si128(x, _mm_loadu_si128((const __m128i *)(p + len - 32)));
-            y = _mm_xor_si128(y, _mm_loadu_si128((const __m128i *)(p + len - 16)));
+            if (bswap) {
+                x = _mm_xor_si128(x, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + len - 32)), mask));
+                y = _mm_xor_si128(y, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + len - 16)), mask));
+            } else {
+                x = _mm_xor_si128(x, _mm_loadu_si128((const __m128i *)(p + len - 32)));
+                y = _mm_xor_si128(y, _mm_loadu_si128((const __m128i *)(p + len - 16)));
+            }
         } else {
             /* 9 to 32 bytes */
             x = _mm_xor_si128(x, _mm_setr_epi32((int)GET_U32<bswap>(p, 0), (int)GET_U32<bswap>(p, ((len>>4)<<3)), (int)GET_U32<bswap>(p, len - 8), (int)GET_U32<bswap>(p, len - 8 - ((len>>4)<<3))));
@@ -387,21 +397,31 @@ static inline void NMHASH32_long_round_scalar(uint32_t * const RESTRICT accX,
 
 #define NMH_VECTOR_NB_GROUP (sizeof(NMH_ACC_INIT) / sizeof(*NMH_ACC_INIT) / (sizeof(_NMH_MM_T) / sizeof(*NMH_ACC_INIT)))
 
+template < bool bswap >
 static inline void NMHASH32_long_round_sse(uint32_t * const RESTRICT accX,
         uint32_t *const RESTRICT accY, const uint8_t* const RESTRICT p) {
     const _NMH_MM_T *const RESTRICT m1    = (const _NMH_MM_T * RESTRICT)__NMH_M1_V;
     const _NMH_MM_T *const RESTRICT m2    = (const _NMH_MM_T * RESTRICT)__NMH_M2_V;
     const _NMH_MM_T *const RESTRICT m3    = (const _NMH_MM_T * RESTRICT)__NMH_M3_V;
+    const _NMH_MM_T *const RESTRICT mask  = (const _NMH_MM_T * RESTRICT)__NMH_BSWAP_MASK;
           _NMH_MM_T *const              xaccX = (      _NMH_MM_T *             )accX;
           _NMH_MM_T *const              xaccY = (      _NMH_MM_T *             )accY;
           _NMH_MM_T *const              xp    = (      _NMH_MM_T *             )p;
     size_t i;
 
     for (i = 0; i < NMH_VECTOR_NB_GROUP; ++i) {
-        xaccX[i] = _NMH_MMW_(xor_si)(xaccX[i], _NMH_MMW_(loadu_si)(xp + i));
+        if (bswap) {
+            xaccX[i] = _NMH_MMW_(xor_si)(xaccX[i], _NMH_MM_(shuffle_epi8)(_NMH_MMW_(loadu_si)(xp + i), *mask));
+        } else {
+            xaccX[i] = _NMH_MMW_(xor_si)(xaccX[i], _NMH_MMW_(loadu_si)(xp + i));
+        }
     }
     for (i = 0; i < NMH_VECTOR_NB_GROUP; ++i) {
-        xaccY[i] = _NMH_MMW_(xor_si)(xaccY[i], _NMH_MMW_(loadu_si)(xp + i + NMH_VECTOR_NB_GROUP));
+        if (bswap) {
+            xaccY[i] = _NMH_MMW_(xor_si)(xaccY[i], _NMH_MM_(shuffle_epi8)(_NMH_MMW_(loadu_si)(xp + i + NMH_VECTOR_NB_GROUP), *mask));
+        } else {
+            xaccY[i] = _NMH_MMW_(xor_si)(xaccY[i], _NMH_MMW_(loadu_si)(xp + i + NMH_VECTOR_NB_GROUP));
+        }
     }
     for (i = 0; i < NMH_VECTOR_NB_GROUP; ++i) {
         xaccX[i] = _NMH_MM_(add_epi32)(xaccX[i], xaccY[i]);
@@ -443,7 +463,7 @@ template < bool bswap >
 static inline void NMHASH32_long_round(uint32_t * const RESTRICT accX,
         uint32_t *const RESTRICT accY, const uint8_t* const RESTRICT p) {
 #if NMH_VECTOR > NMH_SCALAR
-    return NMHASH32_long_round_sse(accX, accY, p);
+    return NMHASH32_long_round_sse<bswap>(accX, accY, p);
 #else
     return NMHASH32_long_round_scalar<bswap>(accX, accY, p);
 #endif
@@ -481,15 +501,13 @@ static inline uint32_t NMHASH32_avalanche32(uint32_t const x) {
     /* [-21 -8 cce5196d 12 -7 464be229 -21 -8] = 3.2267098842182733 */
     const uint32_t m1 = UINT32_C(0xCCE5196D);
     const uint32_t m2 = UINT32_C(0x464BE229);
-    union { uint32_t u32; uint16_t u16[2]; } vx;
-    vx.u32    = x;
-    vx.u32   ^= (vx.u32 >> 8) ^ (vx.u32 >> 21);
-    vx.u16[0] = (uint16_t)(vx.u16[0] * (uint16_t)m1);
-    vx.u16[1] = (uint16_t)(vx.u16[1] * (uint16_t)(m1 >> 16));
-    vx.u32   ^= (vx.u32 << 12) ^ (vx.u32 >> 7);
-    vx.u16[0] = (uint16_t)(vx.u16[0] * (uint16_t)m2);
-    vx.u16[1] = (uint16_t)(vx.u16[1] * (uint16_t)(m2 >> 16));
-    return vx.u32 ^ (vx.u32 >> 8) ^ (vx.u32 >> 21);
+    uint32_t vx;
+    vx    = x;
+    vx   ^= (vx >> 8) ^ (vx >> 21);
+    vx    = NMHASH_mult16(vx, m1);
+    vx   ^= (vx << 12) ^ (vx >> 7);
+    vx    = NMHASH_mult16(vx, m2);
+    return vx ^ (vx >> 8) ^ (vx >> 21);
 }
 
 template < bool bswap >
@@ -507,27 +525,26 @@ static inline uint32_t NMHASH32(const void * const RESTRICT input,
             x ^= x << (len + 7);
             return NMHASH32_0to8(x, ROTL32(y, 5));
         } else {
-            union { uint32_t u32; uint16_t u16[2]; uint8_t u8[4]; } data;
+            uint32_t data;
             switch (len) {
                 case 0: seed += NMH_PRIME32_2;
-                    data.u32 = 0;
+                    data = 0;
                     break;
                 case 1: seed += NMH_PRIME32_2 + (UINT32_C(1) << 24) + (1 << 1);
-                    data.u32 = p[0];
+                    data = p[0];
                     break;
                 case 2: seed += NMH_PRIME32_2 + (UINT32_C(2) << 24) + (2 << 1);
-                    data.u32 = GET_U16<bswap>(p, 0);
+                    data = GET_U16<bswap>(p, 0);
                     break;
                 case 3: seed += NMH_PRIME32_2 + (UINT32_C(3) << 24) + (3 << 1);
-                    data.u16[1] = p[2];
-                    data.u16[0] = GET_U16<bswap>(p, 0);
+                    data = GET_U16<bswap>(p, 0) | (p[2] << 16);
                     break;
                 case 4: seed += NMH_PRIME32_3;
-                    data.u32 = GET_U32<bswap>(p, 0);
+                    data = GET_U32<bswap>(p, 0);
                     break;
                 default: return 0;
             }
-            return NMHASH32_0to8(data.u32 + seed, ROTL32(seed, 5));
+            return NMHASH32_0to8(data + seed, ROTL32(seed, 5));
         }
     }
     if (likely(len < 256)) {
@@ -685,27 +702,26 @@ static inline uint32_t NMHASH32X(const void* const RESTRICT input,
             return NMHASH32X_5to8<bswap>(p, len, seed);
         } else {
             /* 0-4 bytes */
-            union { uint32_t u32; uint16_t u16[2]; uint8_t u8[4]; } data;
+            uint32_t data;
             switch (len) {
                 case 0: seed += NMH_PRIME32_2;
-                    data.u32 = 0;
+                    data = 0;
                     break;
                 case 1: seed += NMH_PRIME32_2 + (UINT32_C(1) << 24) + (1 << 1);
-                    data.u32 = p[0];
+                    data = p[0];
                     break;
                 case 2: seed += NMH_PRIME32_2 + (UINT32_C(2) << 24) + (2 << 1);
-                    data.u32 = GET_U16<bswap>(p, 0);
+                    data = GET_U16<bswap>(p, 0);
                     break;
                 case 3: seed += NMH_PRIME32_2 + (UINT32_C(3) << 24) + (3 << 1);
-                    data.u16[1] = p[2];
-                    data.u16[0] = GET_U16<bswap>(p, 0);
+                    data = GET_U16<bswap>(p, 0) | (p[2] << 16);
                     break;
                 case 4: seed += NMH_PRIME32_1;
-                    data.u32 = GET_U32<bswap>(p, 0);
+                    data = GET_U32<bswap>(p, 0);
                     break;
                 default: return 0;
             }
-            return NMHASH32X_0to4(data.u32, seed);
+            return NMHASH32X_0to4(data, seed);
         }
     }
     if (likely(len < 256)) {
@@ -737,11 +753,10 @@ REGISTER_HASH(nmhash,
   $.impl_flags =
         FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_ROTATE       |
-        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
   $.verification_LE = 0x12A30553,
-  $.verification_BE = 0x03AF4B52,
+  $.verification_BE = 0xE3222AC8,
   $.hashfn_native = NMhash<false>,
   $.hashfn_bswap = NMhash<true>
 );
@@ -753,11 +768,10 @@ REGISTER_HASH(nmhashx,
   $.impl_flags =
         FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_ROTATE       |
-        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
   $.verification_LE = 0xA8580227,
-  $.verification_BE = 0x59D3BABA,
+  $.verification_BE = 0x83B36886,
   $.hashfn_native = NMhashX<false>,
   $.hashfn_bswap = NMhashX<true>
 );
