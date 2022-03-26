@@ -70,6 +70,7 @@ unsigned refs() {
     USE_FAMILY(floppsy);
     USE_FAMILY(nmhash);
     USE_FAMILY(komihash);
+    USE_FAMILY(mx3);
 
     return 0;
 }

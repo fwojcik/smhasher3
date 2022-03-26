@@ -117,8 +117,6 @@ static LegacyHashInfo g_hashes[] =
   { xxhash256_test,       64, 0x024B7CF4, "xxhash256",   "xxhash256, 64-bit unportable", GOOD, {} },
 #endif
   { pengyhash_test,       64, 0x1FC2217B, "pengyhash",   "pengyhash", GOOD, {} },
-  { mx3rev1hash64_test,   64, 0x4DB51E5B, "mx3-rev1",    "mx3 revision 1 64bit", GOOD, {0x10} /* !! and all & 0x10 */},
-  { mx3hash64_test,       64, 0x527399AD, "mx3",         "mx3 revision 2 64bit", GOOD, {} },
 
   { xxh3_test,            64, 0x39CD9E4A, "xxh3",        "xxHash v3, 64-bit", GOOD, // no known bad seeds
     {0x47ebda34,             // 32bit bad seed

@@ -611,6 +611,7 @@ add_library(
   floppsyhash.cpp
   nmhash.cpp
   komihash.cpp
+  mx3.cpp
 )
 
 add_library(
