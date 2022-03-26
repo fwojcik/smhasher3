@@ -112,7 +112,6 @@ static LegacyHashInfo g_hashes[] =
 #endif
   // and now the quality hash funcs, slowest first
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
-  { komihash_test,        64, 0xEE0A1C4A, "komihash",      "komihash", GOOD, {} },
   { xxHash64_test,        64, 0x024B7CF4, "xxHash64",    "xxHash, 64-bit", GOOD, {} },
 #if 0
   { xxhash256_test,       64, 0x024B7CF4, "xxhash256",   "xxhash256, 64-bit unportable", GOOD, {} },

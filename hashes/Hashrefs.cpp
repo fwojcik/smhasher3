@@ -69,6 +69,7 @@ unsigned refs() {
     USE_FAMILY(o1hash);
     USE_FAMILY(floppsy);
     USE_FAMILY(nmhash);
+    USE_FAMILY(komihash);
 
     return 0;
 }

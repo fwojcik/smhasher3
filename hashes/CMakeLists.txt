@@ -610,6 +610,7 @@ add_library(
   o1hash.cpp
   floppsyhash.cpp
   nmhash.cpp
+  komihash.cpp
 )
 
 add_library(
