@@ -419,6 +419,7 @@ REGISTER_HASH(siphash_2_4,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x57B661ED,
@@ -432,6 +433,7 @@ REGISTER_HASH(siphash_1_3,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x8936B193,

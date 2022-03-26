@@ -1634,6 +1634,7 @@ REGISTER_HASH(t1ha2_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING           |
         FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
@@ -1651,6 +1652,7 @@ REGISTER_HASH(t1ha2_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING           |
         FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
@@ -1668,6 +1670,7 @@ REGISTER_HASH(t1ha2_incr_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING           |
         FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
@@ -1687,6 +1690,7 @@ REGISTER_HASH(t1ha2_incr_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING           |
         FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |

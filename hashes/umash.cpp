@@ -1136,6 +1136,7 @@ REGISTER_HASH(umash_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x36A264CD,
@@ -1150,6 +1151,7 @@ REGISTER_HASH(umash_reseed_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x161495C6,
@@ -1165,6 +1167,7 @@ REGISTER_HASH(umash_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x63857D05,
@@ -1179,6 +1182,7 @@ REGISTER_HASH(umash_reseed_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x36D4EC95,
