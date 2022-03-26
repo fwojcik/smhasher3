@@ -135,8 +135,6 @@ static LegacyHashInfo g_hashes[] =
     {0x47ebda34}},
   { xxh128low_test,       64, 0x54D1CC70, "xxh128low",   "xxHash v3, 128-bit, low 64-bits part", GOOD,
     {0x47ebda34}},
-  { nmhash32_test,        32, 0x12A30553, "nmhash32",       "nmhash32", GOOD, {}},
-  { nmhash32x_test,       32, 0xA8580227, "nmhash32x",      "nmhash32x", GOOD, {}},
 };
 
 size_t numLegacyHashes(void) {

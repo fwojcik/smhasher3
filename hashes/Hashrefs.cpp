@@ -68,6 +68,7 @@ unsigned refs() {
     USE_FAMILY(umash);
     USE_FAMILY(o1hash);
     USE_FAMILY(floppsy);
+    USE_FAMILY(nmhash);
 
     return 0;
 }

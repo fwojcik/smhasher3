@@ -609,6 +609,7 @@ add_library(
   umash.cpp
   o1hash.cpp
   floppsyhash.cpp
+  nmhash.cpp
 )
 
 add_library(
