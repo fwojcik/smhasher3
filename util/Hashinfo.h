@@ -38,6 +38,7 @@
     FLAG_EXPAND(IMPL_VERY_SLOW)                        \
     FLAG_EXPAND(IMPL_READ_PAST_EOB)                    \
     FLAG_EXPAND(IMPL_READ_UNALIGNED)                   \
+    FLAG_EXPAND(IMPL_TYPE_PUNNING)                     \
     FLAG_EXPAND(IMPL_INCREMENTAL)                      \
     FLAG_EXPAND(IMPL_INCREMENTAL_DIFFERENT)            \
     FLAG_EXPAND(IMPL_64BIT)                            \
