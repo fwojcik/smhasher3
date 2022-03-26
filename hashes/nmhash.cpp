@@ -199,7 +199,7 @@ static inline uint32_t NMHASH32_9to255(const uint8_t* const RESTRICT p,
             for (j = 0; j < 4; ++j) y[j].u32 ^= GET_U32<bswap>(p, len - 16 + j * 4);
         } else {
             /* 9 to 32 bytes */
-            x[0].u32 ^= GET_U32<bswap>(p);
+            x[0].u32 ^= GET_U32<bswap>(p, 0);
             x[1].u32 ^= GET_U32<bswap>(p, ((len>>4)<<3));
             x[2].u32 ^= GET_U32<bswap>(p, len - 8);
             x[3].u32 ^= GET_U32<bswap>(p, len - 8 - ((len>>4)<<3));
