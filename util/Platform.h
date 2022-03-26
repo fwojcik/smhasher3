@@ -82,6 +82,7 @@ extern const unsigned g_NCPU;
 
 #define FORCE_INLINE	__forceinline
 #define	NEVER_INLINE  __declspec(noinline)
+#define RESTRICT __restrict
 
 #define ROTL32(x,y)	_rotl(x,y)
 #define ROTL64(x,y)	_rotl64(x,y)
@@ -152,6 +153,7 @@ static char* strndup(char const *s, size_t n)
 
 #define	FORCE_INLINE inline __attribute__((always_inline))
 #define	NEVER_INLINE __attribute__((noinline))
+#define RESTRICT __restrict
 
 #define popcount4(x) __builtin_popcount(x)
 #ifdef HAVE_BIT32

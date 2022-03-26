@@ -734,8 +734,8 @@ static FORCE_INLINE void squash(t1ha_state256_t * s) {
   s->n.b ^= prime_5 * (ROTR64(s->n.c, 19) + s->n.d);
 }
 
-static FORCE_INLINE void mixup64(uint64_t *__restrict a,
-        uint64_t *__restrict b, uint64_t v, uint64_t prime) {
+static FORCE_INLINE void mixup64(uint64_t * RESTRICT a,
+        uint64_t * RESTRICT b, uint64_t v, uint64_t prime) {
     uint64_t l, h;
     mult64_128(l, h, *b + v, prime);
     *a ^= l;
@@ -786,7 +786,7 @@ static const void * T1HA2_LOOP(t1ha_state256_t * const state, const void *data, 
 }
 
 template < enum t1ha_modes mode, bool aligned64, bool use_ABCD >
-static uint64_t T1HA2_TAIL(t1ha_state256_t * const s, const void *data, size_t len, uint64_t * __restrict extra_result = NULL) {
+static uint64_t T1HA2_TAIL(t1ha_state256_t * const s, const void *data, size_t len, uint64_t * RESTRICT extra_result = NULL) {
     const uint64_t *v = (const uint64_t *)data;
     uint64_t val;
     switch (len) {
@@ -854,7 +854,7 @@ static void t1ha2_init(t1ha_context_t *ctx, uint64_t seed_x, uint64_t seed_y) {
 }
 
 template < enum t1ha_modes mode >
-static void t1ha2_update(t1ha_context_t *__restrict ctx, const void *__restrict data,
+static void t1ha2_update(t1ha_context_t * RESTRICT ctx, const void * RESTRICT data,
                   size_t length) {
   ctx->total += length;
 
@@ -889,8 +889,8 @@ static void t1ha2_update(t1ha_context_t *__restrict ctx, const void *__restrict 
 }
 
 template < enum t1ha_modes mode >
-static uint64_t t1ha2_final(t1ha_context_t *__restrict ctx,
-        uint64_t *__restrict extra_result) {
+static uint64_t t1ha2_final(t1ha_context_t * RESTRICT ctx,
+        uint64_t * RESTRICT extra_result) {
   uint64_t bits = (ctx->total << 3) ^ (UINT64_C(1) << 63);
   bits = COND_BSWAP(bits, MODE_BE_SYS(mode));
   t1ha2_update<mode>(ctx, &bits, 8);
@@ -959,8 +959,8 @@ static uint64_t t1ha0_aes_impl(const void *data, size_t len, uint64_t seed) {
             y = _mm_aesdec_si128(y, v1x);
         }
     } else {
-        const __m128i *__restrict v = (const __m128i *)data;
-        const __m128i *__restrict const detent =
+        const __m128i * RESTRICT v = (const __m128i *)data;
+        const __m128i * RESTRICT const detent =
             (const __m128i *)((const uint8_t *)data + len - 127);
         y = _mm_aesenc_si128(x, _mm_set_epi64x(prime_5, prime_6));
 
