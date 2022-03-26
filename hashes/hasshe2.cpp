@@ -104,6 +104,7 @@ static void combine_and_mix(uint64_t state[4], const uint64_t input[2]) {
        between 45% to 55%. */
 }
 
+template < bool bswap >
 static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t seed, void *output_state) {
     uint64_t state[4];
     uint64_t input[2];
@@ -123,7 +124,7 @@ static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t
         /* Read in 16 bytes, or 128 bits, from buf.  Advance buf and
            decrement n_bytes accordingly. */
         for (int i = 0; i < 2; i++) {
-            input[i] = GET_U64<false>(input_buf, i*8);
+            input[i] = GET_U64<bswap>(input_buf, i*8);
         }
         input_buf += 16;
         n_bytes -= 16;
@@ -135,7 +136,7 @@ static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t
         memcpy(buf, input_buf, n_bytes);
         memset(buf + n_bytes, 0, 16 - n_bytes);
         for (int i = 0; i < 2; i++) {
-            input[i] = GET_U64<false>(buf, i*8);
+            input[i] = GET_U64<bswap>(buf, i*8);
         }
 
         combine_and_mix(state, input);
@@ -151,7 +152,7 @@ static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t
     combine_and_mix(state, input);
 
     for (int i = 0; i < 4; i++) {
-        PUT_U64<false>(state[i], (uint8_t *)output_state, i*8);
+        PUT_U64<bswap>(state[i], (uint8_t *)output_state, i*8);
     }
 }
 
@@ -195,8 +196,10 @@ static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t
      changed all bits in the internal state with a probability               \
      between 45% to 55%. */
 
+template < bool bswap >
 static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t seed, void *output_state) {
   __m128i coeffs_1, coeffs_2, rnd_data, seed_xmm, input, state_1, state_2;
+  const __m128i mask =_mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020304050607ULL);
 
   coeffs_1 = _mm_load_si128((__m128i *) coeffs);
   coeffs_2 = _mm_load_si128((__m128i *) (coeffs + 4));
@@ -212,6 +215,9 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
       /* Read in 16 bytes, or 128 bits, from buf.  Advance buf and
          decrement n_bytes accordingly. */
       input = _mm_loadu_si128((__m128i *) input_buf);
+      if (bswap) {
+          input = _mm_shuffle_epi8(input, mask);
+      }
       input_buf += 16;
       n_bytes -= 16;
 
@@ -222,6 +228,9 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
       memcpy(buf, input_buf, n_bytes);
       memset(buf + n_bytes, 0, 16 - n_bytes);
       input = _mm_load_si128((__m128i *) buf);
+      if (bswap) {
+          input = _mm_shuffle_epi8(input, mask);
+      }
       COMBINE_AND_MIX(coeffs_1, coeffs_2, state_1, state_2, input);
   }
 
@@ -233,16 +242,21 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
 
   COMBINE_AND_MIX(coeffs_1, coeffs_2, state_1, state_2, input);
 
-  _mm_storeu_si128((__m128i *)output_state, state_1);
+  if (bswap) {
+      state_1 = _mm_shuffle_epi8(state_1, mask);
+      state_2 = _mm_shuffle_epi8(state_2, mask);
+  }
+  _mm_storeu_si128((__m128i *)output_state,               state_1);
   _mm_storeu_si128((__m128i *)((char*)output_state + 16), state_2);
 }
 #endif
 
+template < bool bswap >
 void Hasshe2(const void * in, const size_t len, const seed_t seed, void * out) {
 #if defined(NEW_HAVE_SSE_2)
-    hasshe2_sse2((const uint8_t *)in, len, (uint64_t)seed, out);
+    hasshe2_sse2<bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
 #else
-    hasshe2_portable((const uint8_t *)in, len, (uint64_t)seed, out);
+    hasshe2_portable<bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
 #endif
 }
 
@@ -258,7 +272,7 @@ REGISTER_HASH(hasshe2,
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,
   $.verification_LE = 0xBAF6B1BF,
-  $.verification_BE = 0x0,
-  $.hashfn_native = Hasshe2,
-  $.hashfn_bswap = Hasshe2
+  $.verification_BE = 0x35A87D75,
+  $.hashfn_native = Hasshe2<false>,
+  $.hashfn_bswap = Hasshe2<true>
 );
