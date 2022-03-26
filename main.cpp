@@ -521,30 +521,32 @@ static bool test ( const HashInfo * hInfo )
       result &= BadSeedsTest<hashtype>(hInfo, g_testExtra);
   }
 
+  //-----------------------------------------------------------------------------
+  // If All material tests were done, show a final summary of testing
   if (g_testAll) {
-    printf("-------------------------------------------------------------------------------\n");
-    print_pvaluecounts();
-    printf("-------------------------------------------------------------------------------\n");
-    printf("Overall result: %s            (%d/%d passed)\n", result ? "pass" : "FAIL",
-	   g_testPass, g_testPass+g_testFail);
-    if (!result) {
-      const char * prev = "";
-      printf("Failures");
-      for (auto x: g_testFailures) {
-	if (strcmp(prev, x.first) != 0) {
-	  printf("%c\n    %-20s: [%s", (strlen(prev) == 0) ? ':' : ']',
-		 x.first, x.second ? x.second : "");
-	  prev = x.first;
-	} else {
-	  printf(", %s", x.second);
-	}
-	free(x.second);
+      printf("-------------------------------------------------------------------------------\n");
+      print_pvaluecounts();
+      printf("-------------------------------------------------------------------------------\n");
+      printf("Overall result: %s            (%d/%d passed)\n", result ? "pass" : "FAIL",
+              g_testPass, g_testPass+g_testFail);
+      if (!result) {
+          const char * prev = "";
+          printf("Failures");
+          for (auto x: g_testFailures) {
+              if (strcmp(prev, x.first) != 0) {
+                  printf("%c\n    %-20s: [%s", (strlen(prev) == 0) ? ':' : ']',
+                          x.first, x.second ? x.second : "");
+                  prev = x.first;
+              } else {
+                  printf(", %s", x.second);
+              }
+              free(x.second);
+          }
+          printf("]\n\n");
+      } else {
+          printf("\n");
       }
-      printf("]\n\n");
-    } else {
-      printf("\n");
-    }
-    printf("-------------------------------------------------------------------------------\n");
+      printf("-------------------------------------------------------------------------------\n");
   }
 
   return result;
