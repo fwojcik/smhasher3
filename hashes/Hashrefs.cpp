@@ -73,6 +73,7 @@ unsigned refs() {
     USE_FAMILY(mx3);
     USE_FAMILY(jodyhash);
     USE_FAMILY(pengyhash);
+    USE_FAMILY(fasthash);
 
     return 0;
 }

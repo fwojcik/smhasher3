@@ -1,8 +1,6 @@
 #define XXH_INLINE_ALL
 #include "xxhash.h"
 
-#include "fasthash.h"
-
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
 
@@ -132,16 +130,6 @@ inline void xxh128_test( const void * key, int len, uint32_t seed, void * out ) 
 inline void xxh128low_test( const void * key, int len, uint32_t seed, void * out ) {
   *(uint64_t*)out = (uint64_t) (XXH128(key, (size_t) len, seed).low64);
 }
-#endif
-
-inline void fasthash32_test ( const void * key, int len, uint32_t seed, void * out ) {
-  *(uint32_t*)out = fasthash32(key, (size_t) len, seed);
-}
-#ifdef HAVE_INT64
-inline void fasthash64_test ( const void * key, int len, uint32_t seed, void * out ) {
-  *(uint64_t*)out = fasthash64(key, (size_t) len, (uint64_t)seed);
-}
-
 #endif
 
 //-----------------------------------------------------------------------------

@@ -614,6 +614,7 @@ add_library(
   mx3.cpp
   jodyhash.cpp
   pengyhash.cpp
+  fasthash.cpp
 )
 
 add_library(
@@ -624,6 +625,5 @@ add_library(
   Hashes.cpp
   lookup3.cpp
   SuperFastHash.cpp
-  fasthash.cpp
   xxhash.c
 )
