@@ -616,6 +616,7 @@ add_library(
   pengyhash.cpp
   fasthash.cpp
   khash.cpp
+  superfasthash.cpp
 )
 
 add_library(
@@ -625,6 +626,5 @@ add_library(
 #
   Hashes.cpp
   lookup3.cpp
-  SuperFastHash.cpp
   xxhash.c
 )

@@ -75,6 +75,7 @@ unsigned refs() {
     USE_FAMILY(pengyhash);
     USE_FAMILY(fasthash);
     USE_FAMILY(khash);
+    USE_FAMILY(superfasthash);
 
     return 0;
 }

@@ -66,15 +66,6 @@ uint32_t MicroOAAT(const char *key, int len, uint32_t hash);
 inline void MicroOAAT_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint32_t *) out = MicroOAAT((const char *)key, len, seed);
 }
-uint32_t SuperFastHash (const char * data, int len, uint32_t hash);
-static inline uint8_t SuperFastHash_bad_seeds(std::vector<uint32_t> &seeds)
-{
-  seeds = std::vector<uint32_t> { UINT32_C(0) };
-  return true;
-}
-inline void SuperFastHash_test(const void *key, int len, uint32_t seed, void *out) {
-  *(uint32_t*)out = SuperFastHash((const char*)key, len, seed);
-}
 uint32_t lookup3(const char *key, int len, uint32_t hash);
 inline void lookup3_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint32_t *) out = lookup3((const char *)key, len, seed);
