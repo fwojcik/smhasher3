@@ -169,14 +169,6 @@ inline void MeowHash32_test(const void *key, int len, unsigned seed, void *out) 
 }
 #endif
 
-// objsize: 63d0 - 6575: 421
-extern "C" {
-#include "pengyhash.h"
-}
-inline void pengyhash_test ( const void * key, int len, uint32_t seed, void * out ) {
-  *(uint64_t*)out = pengyhash (key, (size_t) len, seed);
-}
-
 #ifdef HAVE_INT64
 #ifndef HAVE_ALIGNED_ACCESS_REQUIRED
 

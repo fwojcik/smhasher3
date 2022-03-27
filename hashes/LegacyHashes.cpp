@@ -112,8 +112,6 @@ static LegacyHashInfo g_hashes[] =
 #if 0
   { xxhash256_test,       64, 0x024B7CF4, "xxhash256",   "xxhash256, 64-bit unportable", GOOD, {} },
 #endif
-  { pengyhash_test,       64, 0x1FC2217B, "pengyhash",   "pengyhash", GOOD, {} },
-
   { xxh3_test,            64, 0x39CD9E4A, "xxh3",        "xxHash v3, 64-bit", GOOD, // no known bad seeds
     {0x47ebda34,             // 32bit bad seed
      /* 0xbe4ba423396cfeb8,  // kSecret
