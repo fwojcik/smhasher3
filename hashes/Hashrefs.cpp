@@ -74,6 +74,7 @@ unsigned refs() {
     USE_FAMILY(jodyhash);
     USE_FAMILY(pengyhash);
     USE_FAMILY(fasthash);
+    USE_FAMILY(khash);
 
     return 0;
 }

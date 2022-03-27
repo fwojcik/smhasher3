@@ -615,6 +615,7 @@ add_library(
   jodyhash.cpp
   pengyhash.cpp
   fasthash.cpp
+  khash.cpp
 )
 
 add_library(
