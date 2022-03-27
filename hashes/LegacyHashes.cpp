@@ -87,10 +87,6 @@ static LegacyHashInfo g_hashes[] =
 
   { MicroOAAT_test,       32, 0x16F1BA97,    "MicroOAAT",   "Small non-multiplicative OAAT (by funny-falcon)", POOR,
     {0x3b00} },
-  { jodyhash32_test,      32, 0xFB47D60D, "jodyhash32",  "jodyhash, 32-bit (v5)", POOR, {} },
-#ifdef HAVE_INT64
-  { jodyhash64_test,      64, 0x9F09E57F, "jodyhash64",  "jodyhash, 64-bit (v5)", POOR, {} },
-#endif
   { lookup3_test,         32, 0x3D83917A, "lookup3",     "Bob Jenkins' lookup3", POOR, {0x21524101} /* !! */},
 #ifdef __aarch64__
   #define SFAST_VERIF 0x6306A6FE

@@ -71,6 +71,7 @@ unsigned refs() {
     USE_FAMILY(nmhash);
     USE_FAMILY(komihash);
     USE_FAMILY(mx3);
+    USE_FAMILY(jodyhash);
 
     return 0;
 }

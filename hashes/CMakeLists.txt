@@ -612,6 +612,7 @@ add_library(
   nmhash.cpp
   komihash.cpp
   mx3.cpp
+  jodyhash.cpp
 )
 
 add_library(
@@ -624,7 +625,5 @@ add_library(
   SuperFastHash.cpp
   fasthash.cpp
   xxhash.c
-  jody_hash32.c
-  jody_hash64.c
   pengyhash.c
 )

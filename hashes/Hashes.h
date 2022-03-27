@@ -2,8 +2,6 @@
 #include "xxhash.h"
 
 #include "fasthash.h"
-#include "jody_hash32.h"
-#include "jody_hash64.h"
 
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
@@ -95,15 +93,6 @@ inline void Crap8_test(const void *key, int len, uint32_t seed, void *out) {
 //----------
 // Used internally as C++
 uint32_t MurmurOAAT ( const char * key, int len, uint32_t seed );
-
-inline void jodyhash32_test( const void * key, int len, uint32_t seed, void * out ) {
-  *(uint32_t*)out = jody_block_hash32((const jodyhash32_t *)key, (jodyhash32_t) seed, (size_t) len);
-}
-#ifdef HAVE_INT64
-inline void jodyhash64_test( const void * key, int len, uint32_t seed, void * out ) {
-  *(uint64_t*)out = jody_block_hash((const jodyhash_t *)key, (jodyhash_t) seed, (size_t) len);
-}
-#endif
 
 inline void xxHash32_test( const void * key, int len, uint32_t seed, void * out ) {
   // objsize 10-104 + 3e0-5ce: 738
