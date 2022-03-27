@@ -30,13 +30,14 @@
 
 //------------------------------------------------------------
 template < bool bswap >
-static uint32_t SuperFastHash(const uint8_t * data, size_t len, uint32_t hash) {
+static uint32_t SuperFastHash(const uint8_t * data, size_t len, const uint32_t seed) {
+    uint32_t hash = seed;
     uint32_t tmp;
     size_t rem;
 
     if (len <= 0 || data == NULL) return 0;
 
-    //hash += len;
+    hash += len;
     rem = len & 3;
     len >>= 2;
 
@@ -95,12 +96,11 @@ REGISTER_HASH(SuperFastHash,
         FLAG_HASH_ENDIAN_INDEPENDENT  |
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS        |
         FLAG_IMPL_CANONICAL_LE        |
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 32,
-  $.verification_LE = 0x0C80403A,
-  $.verification_BE = 0x7C4ED6F0,
+  $.verification_LE = 0xCFA52B38,
+  $.verification_BE = 0xDF0823CA,
   $.hashfn_native = SFH<false>,
   $.hashfn_bswap = SFH<true>
 );
