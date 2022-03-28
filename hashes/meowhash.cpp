@@ -56,7 +56,7 @@ typedef __m128i meow_u128;
 #define prefetcht0(A)      _mm_prefetch((char const *)(A), _MM_HINT_T0)
 #define movdqu_imm(B)      _mm_loadu_si128((meow_u128 *)(B))
 #define movdqu(A, B)       A = _mm_loadu_si128((meow_u128 *)(B))
-#define movq(A, B)         A = _mm_set_epi64x(0, B);
+#define movq(A, B, C)      A = _mm_set_epi64x(C, B);
 #define aesdec(A, B)       A = _mm_aesdec_si128(A, B)
 #define pshufb(A, B)       A = _mm_shuffle_epi8(A, B)
 #define pxor(A, B)         A = _mm_xor_si128(A, B)
@@ -172,11 +172,6 @@ static meow_u128 MeowHash(const void * Seed128Init, size_t Len, const void * Sou
     movdqu(xmm6, rcx + 0x60);
     movdqu(xmm7, rcx + 0x70);
 
-    // fwojcik: Add in 32 bits of extra seeding here. This mimics what
-    // the previous SMHasher code did, but keeps the MeowDefaultSeed
-    // array const/read-only, which also bypasses threading problems.
-    xmm0 = _mm_blend_epi16(xmm0, _mm_set_epi64x(0, extraseed), 0x3);
-
     //
     // NOTE(casey): Hash all full 256-byte blocks
     //
@@ -255,7 +250,8 @@ static meow_u128 MeowHash(const void * Seed128Init, size_t Len, const void * Sou
         pand(xmm9, xmm8);
     }
 
-    // NOTE(casey): Next, we have to load the part that _is_ 16-byte aligned
+    // NOTE(casey): Next, we have to load the part that _is_ 16-byte
+    // aligned
     if (Len & 0x10) {
         xmm11 = xmm9;
         movdqu(xmm9, Last - 0x10);
@@ -273,17 +269,22 @@ static meow_u128 MeowHash(const void * Seed128Init, size_t Len, const void * Sou
     // here, but the decision was made to leave them zero'd so as not
     // to confuse people about hwo to use them or what security
     // implications they had.
+    //
+    // fwojcik: The (presumed) place of the 64-bit nonce is used for
+    // the 64-bit seed value for SMHasher3.
     pxor_clear(xmm12, xmm12);
     pxor_clear(xmm13, xmm13);
     pxor_clear(xmm14, xmm14);
-    movq(xmm15, Len);
+    movq(xmm15, Len, extraseed);
     palignr(xmm12, xmm15, 15);
     palignr(xmm14, xmm15, 1);
 
-    // NOTE(casey): To maintain the mix-down pattern, we always Meow Mix the less-than-32-byte residual, even if it was empty
+    // NOTE(casey): To maintain the mix-down pattern, we always Meow
+    // Mix the less-than-32-byte residual, even if it was empty
     MEOW_MIX_REG(xmm0, xmm4, xmm6, xmm1, xmm2,  xmm8, xmm9, xmm10, xmm11);
 
-    // NOTE(casey): Append the length, to avoid problems with our 32-byte padding
+    // NOTE(casey): Append the length, to avoid problems with our
+    // 32-byte padding
     MEOW_MIX_REG(xmm1, xmm5, xmm7, xmm2, xmm3,  xmm12, xmm13, xmm14, xmm15);
 
     //
@@ -360,8 +361,8 @@ REGISTER_HASH(MeowHash_32,
   $.impl_flags =
         FLAG_IMPL_LICENSE_ZLIB,
   $.bits = 32,
-  $.verification_LE = 0x8872DE1A,
-  $.verification_BE = 0x84BFBFD1,
+  $.verification_LE = 0xE9E94FF2,
+  $.verification_BE = 0xD5BF086D,
   $.hashfn_native = MeowHash32<false>,
   $.hashfn_bswap = MeowHash32<true>
 );
@@ -374,8 +375,8 @@ REGISTER_HASH(MeowHash_64,
   $.impl_flags =
         FLAG_IMPL_LICENSE_ZLIB,
   $.bits = 64,
-  $.verification_LE = 0xB04AC842,
-  $.verification_BE = 0xC27ED39C,
+  $.verification_LE = 0x4C9F52A6,
+  $.verification_BE = 0xFA21003A,
   $.hashfn_native = MeowHash64<false>,
   $.hashfn_bswap = MeowHash64<true>
 );
@@ -388,8 +389,8 @@ REGISTER_HASH(MeowHash_128,
   $.impl_flags =
         FLAG_IMPL_LICENSE_ZLIB,
   $.bits = 128,
-  $.verification_LE = 0xA0D29861,
-  $.verification_BE = 0xA13B2476,
+  $.verification_LE = 0x7C648489,
+  $.verification_BE = 0x4FD0834C,
   $.hashfn_native = MeowHash128<false>,
   $.hashfn_bswap = MeowHash128<true>
 );
