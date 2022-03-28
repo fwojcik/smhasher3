@@ -76,6 +76,7 @@ unsigned refs() {
     USE_FAMILY(fasthash);
     USE_FAMILY(khash);
     USE_FAMILY(superfasthash);
+    USE_FAMILY(meowhash);
 
     return 0;
 }

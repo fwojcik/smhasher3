@@ -122,28 +122,3 @@ inline void xxh128low_test( const void * key, int len, uint32_t seed, void * out
   *(uint64_t*)out = (uint64_t) (XXH128(key, (size_t) len, seed).low64);
 }
 #endif
-
-//-----------------------------------------------------------------------------
-
-#if defined(HAVE_AESNI) && defined(__SIZEOF_INT128__) && \
-  (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__)  || defined(_M_IX86))
-#define HAVE_MEOW_HASH
-#include "meow_hash_x64_aesni.h"
-// objsize: 0x84b0-8b94 = 1764
-inline void MeowHash128_test(const void *key, int len, unsigned seed, void *out) {
-  *(int unsigned *)MeowDefaultSeed = seed;
-  meow_u128 h = MeowHash(MeowDefaultSeed, (meow_umm)len, (void*)key);
-  ((uint64_t *)out)[0] = MeowU64From(h, 0);
-  ((uint64_t *)out)[1] = MeowU64From(h, 1);
-}
-inline void MeowHash64_test(const void *key, int len, unsigned seed, void *out) {
-  *(int unsigned *)MeowDefaultSeed = seed;
-  meow_u128 h = MeowHash(MeowDefaultSeed, (meow_umm)len, (void*)key);
-  *(uint64_t *)out = MeowU64From(h, 0);
-}
-inline void MeowHash32_test(const void *key, int len, unsigned seed, void *out) {
-  *(int unsigned *)MeowDefaultSeed = seed;
-  meow_u128 h = MeowHash(MeowDefaultSeed, (meow_umm)len, (void*)key);
-  *(uint32_t *)out = MeowU32From(h, 0);
-}
-#endif

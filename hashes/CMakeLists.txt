@@ -617,6 +617,7 @@ add_library(
   fasthash.cpp
   khash.cpp
   superfasthash.cpp
+  meowhash.cpp
 )
 
 add_library(
