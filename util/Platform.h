@@ -237,3 +237,26 @@ static FORCE_INLINE bool isBE(void) {
     const uint8_t *   lsb   = static_cast<const uint8_t *>(addr);
     return ((*lsb) == 0xb0);
 }
+
+// FIXME Make this code properly portable
+template < typename T >
+static FORCE_INLINE T BSWAP(T value) {
+    switch(sizeof(T)) {
+    case 2:  value = __builtin_bswap16((uint16_t)value); break;
+    case 4:  value = __builtin_bswap32((uint32_t)value); break;
+    case 8:  value = __builtin_bswap64((uint64_t)value); break;
+#if 0
+#ifdef HAVE_INT128
+    case 16: value = __builtin_bswap128((uint128_t)value); break;
+#endif
+#endif
+    default: break;
+    }
+    return value;
+}
+
+template < typename T >
+static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
+    if (!doit || (sizeof(T) < 2)) { return value; }
+    return BSWAP(value);
+}
