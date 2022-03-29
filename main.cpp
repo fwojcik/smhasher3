@@ -107,14 +107,6 @@ const unsigned g_NCPU  = 1;
 HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_DEFAULT;
 
 //--------
-// VCodes allow easy comparison of test results and hash inputs and outputs
-// across SMHasher3 runs, hashes (of the same width), and systems.
-uint32_t g_doVCode = 0;
-uint32_t g_inputVCode = 1;
-uint32_t g_outputVCode = 1;
-uint32_t g_resultVCode = 1;
-
-//--------
 // Overall log2-p-value statistics and test pass/fail counts
 uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE+2];
 uint32_t g_testPass, g_testFail;
@@ -666,6 +658,9 @@ int main ( int argc, const char ** argv )
         g_testExtra = true;
         continue;
       }
+      // VCodes allow easy comparison of test results and hash inputs
+      // and outputs across SMHasher3 runs, hashes (of the same width),
+      // and systems.
       if (strcmp(arg,"--vcode") == 0) {
         g_doVCode = 1;
         VCODE_INIT();

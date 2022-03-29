@@ -95,6 +95,7 @@ add_library(
   util/Analyze.cpp
   util/Stats.cpp
   util/Types.cpp
+  util/VCode.cpp
 #
   tests/SanityTest.cpp
   tests/AvalancheTest.cpp
