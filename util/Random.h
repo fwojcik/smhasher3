@@ -134,7 +134,7 @@ struct Rand
 
     while(bytes >= 4)
     {
-      uint32_t r = rand_u32();
+      uint32_t r = COND_BSWAP(rand_u32(), isBE());
       memcpy(blocks, &r, 4);
       blocks += 4;
       bytes -= 4;
