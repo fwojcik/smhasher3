@@ -88,7 +88,7 @@ static bool WindowedKeyImpl ( HashFn hash, int windowbits,
   printf("Keyset 'Window' - %3d-bit key, %3d-bit window - %d tests - %d keys\n",
          keybits,windowbits,testcount,keycount);
 
-  for(int j = 0; j <= testcount; j++)
+  for(int j = 0; j < testcount; j++)
   {
     int minbit = j;
     keytype key;
@@ -133,7 +133,7 @@ bool WindowedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
     // to get a higher collision percentage.
     int windowbits = 20;
     const int hashbits = sizeof(hashtype) * 8;
-    const int keybits = (hashbits >= 64) ? 32 : hashbits*2+2;
+    const int keybits = (hashbits >= 64) ? 32 : 72;
 
     printf("[[[ Keyset 'Window' Tests ]]]\n\n");
 
