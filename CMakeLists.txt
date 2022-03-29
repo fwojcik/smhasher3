@@ -66,9 +66,6 @@ else()
   endif()
 endif()
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_SOURCE_DIR}/util")
-
 find_package( Threads )
 if(NOT (MSVC))
   if(NOT ("${CMAKE_THREAD_LIBS_INIT}" STREQUAL ""))
@@ -117,9 +114,12 @@ add_library(
   tests/PRNGTest.cpp
   tests/SpeedTest.cpp
 )
+target_include_directories(SMHasher3Tests PRIVATE util)
 
 add_executable(SMHasher3 main.cpp)
-set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/hashes -I${CMAKE_SOURCE_DIR}/tests")
+target_include_directories(SMHasher3 PRIVATE hashes tests util)
+target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashes SMHasher3Hashlib
+                      ${THREAD_LIBS_PREFIX} ${CMAKE_THREAD_LIBS_INIT} ${THREAD_LIBS_SUFFIX})
 
 if(ipo_supported)
 #  message(STATUS "IPO / LTO enabled")
@@ -128,9 +128,6 @@ if(ipo_supported)
 else()
   message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
-
-target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashes SMHasher3Hashlib
-                      ${THREAD_LIBS_PREFIX} ${CMAKE_THREAD_LIBS_INIT} ${THREAD_LIBS_SUFFIX})
 
 if(NOT (CMAKE_CROSSCOMPILING))
   enable_testing()
