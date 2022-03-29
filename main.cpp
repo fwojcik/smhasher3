@@ -104,7 +104,7 @@ unsigned g_NCPU        = 4;
 const unsigned g_NCPU  = 1;
 #endif
 
-HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_NATIVE;
+HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_DEFAULT;
 
 //--------
 // VCodes allow easy comparison of test results and hash inputs and outputs
