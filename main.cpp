@@ -605,8 +605,8 @@ int main ( int argc, const char ** argv )
 
   set_default_tests(true);
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(_X86_64_)
-  const char * defaulthash = "xxh3";
+#if defined(HAVE_64BIT)
+  const char * defaulthash = "xxh3-64";
 #else
   const char * defaulthash = "wyhash-32";
 #endif

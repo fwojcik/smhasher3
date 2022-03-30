@@ -87,27 +87,8 @@ static LegacyHashInfo g_hashes[] =
   { MurmurOAAT_test,      32, 0x5363BD98, "MurmurOAAT",  "Murmur one-at-a-time", POOR,
     {0x0 /*, 0x5bd1e995*/} /* !! */ },
   { Crap8_test,           32, 0x743E97A1, "Crap8",       "Crap8", POOR, {/*0x83d2e73b, 0x97e1cc59*/} },
-  { xxHash32_test,        32, 0xBA88B743, "xxHash32",    "xxHash, 32-bit for x86", POOR, {} },
   // and now the quality hash funcs, slowest first
   { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
-  { xxHash64_test,        64, 0x024B7CF4, "xxHash64",    "xxHash, 64-bit", GOOD, {} },
-#if 0
-  { xxhash256_test,       64, 0x024B7CF4, "xxhash256",   "xxhash256, 64-bit unportable", GOOD, {} },
-#endif
-  { xxh3_test,            64, 0x39CD9E4A, "xxh3",        "xxHash v3, 64-bit", GOOD, // no known bad seeds
-    {0x47ebda34,             // 32bit bad seed
-     /* 0xbe4ba423396cfeb8,  // kSecret
-     0x396cfeb8, 0xbe4ba423, // kSecret
-     0x6782737bea4239b9,     // bitflip1 ^ input
-     0xaf56bc3b0996523a,     // bitflip2 ^ input[last 8]
-     */
-    }},
-  { xxh3low_test,         32, 0xFAE8467B, "xxh3low",     "xxHash v3, 64-bit, low 32-bits part", GOOD,
-    {0x47ebda34} /* !! */},
-  { xxh128_test,         128, 0xEB61B3A0, "xxh128",      "xxHash v3, 128-bit", GOOD,
-    {0x47ebda34}},
-  { xxh128low_test,       64, 0x54D1CC70, "xxh128low",   "xxHash v3, 128-bit, low 64-bits part", GOOD,
-    {0x47ebda34}},
 };
 
 size_t numLegacyHashes(void) {

@@ -1,6 +1,3 @@
-#define XXH_INLINE_ALL
-#include "xxhash.h"
-
 //----------
 // These are _not_ hash functions (even though people tend to use crc32 as one...)
 
@@ -82,43 +79,3 @@ inline void Crap8_test(const void *key, int len, uint32_t seed, void *out) {
 //----------
 // Used internally as C++
 uint32_t MurmurOAAT ( const char * key, int len, uint32_t seed );
-
-inline void xxHash32_test( const void * key, int len, uint32_t seed, void * out ) {
-  // objsize 10-104 + 3e0-5ce: 738
-  *(uint32_t*)out = (uint32_t) XXH32(key, (size_t) len, (unsigned) seed);
-}
-#ifdef HAVE_INT64
-inline void xxHash64_test( const void * key, int len, uint32_t seed, void * out ) {
-  // objsize 630-7fc + c10-1213: 1999
-  *(uint64_t*)out = (uint64_t) XXH64(key, (size_t) len, (unsigned long long) seed);
-}
-#endif
-
-#define restrict // oddly enough, seems to choke on this keyword
-#include "xxh3.h"
-
-#ifdef HAVE_INT64
-static inline uint8_t xxh3_bad_seeds(std::vector<uint64_t> &seeds) {
-  return false;
-}
-inline void xxh3_test( const void * key, int len, uint32_t seed, void * out ) {
-  // objsize 12d0-15b8: 744
-  *(uint64_t*)out = (uint64_t) XXH3_64bits_withSeed(key, (size_t) len, seed);
-}
-#endif
-
-inline void xxh3low_test( const void * key, int len, uint32_t seed, void * out ) {
-  // objsize 12d0-15b8: 744 + 1f50-1f5c: 756
-  *(uint32_t*)out = (uint32_t) XXH3_64bits_withSeed(key, (size_t) len, seed);
-}
-
-#ifdef HAVE_INT64
-inline void xxh128_test( const void * key, int len, uint32_t seed, void * out ) {
-  // objsize 1f60-2354: 1012
-  *(XXH128_hash_t*)out = XXH128(key, (size_t) len, seed);
-}
-
-inline void xxh128low_test( const void * key, int len, uint32_t seed, void * out ) {
-  *(uint64_t*)out = (uint64_t) (XXH128(key, (size_t) len, seed).low64);
-}
-#endif

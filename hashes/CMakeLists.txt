@@ -618,6 +618,7 @@ add_library(
   khash.cpp
   superfasthash.cpp
   meowhash.cpp
+  xxhash.cpp
 )
 
 add_library(
@@ -627,5 +628,4 @@ add_library(
 #
   Hashes.cpp
   lookup3.cpp
-  xxhash.c
 )

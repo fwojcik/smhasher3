@@ -74,6 +74,15 @@ static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uin
 #endif
 }
 
+// 32x32->64 multiplication [r64 = a32 * b32]
+static FORCE_INLINE void mult32_64(uint64_t & r64, uint32_t a32, uint32_t b32) {
+#if defined(_MSC_VER) && defined(_M_IX86)
+    r64 = __emulu(a32, b32);
+#else
+    r64 = (uint64_t)a32 * (uint64_t)b32;
+#endif
+}
+
 // 96-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
 static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t& addlo, uint32_t& addmi, uint32_t& addhi) {
 #if defined(NEW_HAVE_ARM_ASM)
@@ -153,7 +162,10 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
             : "r" (a), "r" (b)
             );
 #elif defined(NEW_HAVE_UMUL128)
-    rlo = _umul128((a), (b), &(rhi));
+    rlo = _umul128(a, b, &rhi);
+#elif defined(NEW_HAVE_UMULH)
+    rlo = a * b;
+    rhi = __umulh(a, b);
 #elif defined(NEW_HAVE_AVX2) && defined(NEW_HAVE_X64_ASM)
     /*
      * We want to use AVX2 insn MULX instead of generic x86-64 MULQ
@@ -190,11 +202,18 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
     uint64_t tmplo   = alo * blo;
     uint64_t t, carry = 0;
 
+#if 1
     t = tmplo + (tmpmi_0 << 32);
     carry += (t < tmplo);
     rlo = t + (tmpmi_1 << 32);
     carry += (rlo < t);
     rhi = tmphi + (tmpmi_0 >> 32) + (tmpmi_1 >> 32) + carry;
+#else
+    // From xxHash, untested
+    t   = (tmplo   >> 32) + (tmpmi_0 & 0xFFFFFFFF) + tmpmi_1;
+    rhi = (tmpmi_0 >> 32) + (t >> 32)              + tmphi;
+    rlo = (t       << 32) | (tmplo   & 0xFFFFFFFF);
+#endif
 #endif
 }
 
