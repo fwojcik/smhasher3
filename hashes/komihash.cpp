@@ -58,7 +58,11 @@ static inline uint64_t kh_lpu64ec_l3(const uint8_t* const Msg,
     const uint64_t mh = GET_U32<bswap>(Msg + MsgLen - 4, 0);
     const uint64_t ml = GET_U32<bswap>(Msg, 0);
 
-    return(fb << ml8 | ml | (mh >> (64 - ml8)) << 32);
+    if (isLE() ^ bswap) {
+        return(fb << ml8 | ml | (mh >> (64 - ml8)) << 32);
+    } else {
+        return(fb << ml8 | mh | (ml >> (64 - ml8)) << 32);
+    }
 }
 
 /*
@@ -93,7 +97,13 @@ static inline uint64_t kh_lpu64ec_nz(const uint8_t* const Msg,
     const uint64_t mh = GET_U32<bswap>(Msg + MsgLen - 4, 0);
     const uint64_t ml = GET_U32<bswap>(Msg, 0);
 
-    return(fb << ml8 | ml | (mh >> (64 - ml8)) << 32);
+    if (isLE() ^ bswap) {
+        // mh has remaining bytes from MSB, so shift off low bits
+        return (fb << ml8 | ml | (mh >> (64 - ml8)) << 32);
+    } else {
+        // mh has remaining bytes from LSB, so shift off high bits
+        return (fb << ml8 | mh | (ml >> (64 - ml8)) << 32);
+    }
 }
 
 /*
@@ -109,15 +119,26 @@ static inline uint64_t kh_lpu64ec_nz(const uint8_t* const Msg,
 template < bool bswap >
 static inline uint64_t kh_lpu64ec_l4(const uint8_t* const Msg,
         const size_t MsgLen, uint64_t fb) {
+    const int ml8 = (int) (MsgLen << 3);
+
     if (MsgLen < 5) {
-        const int ml8 = (int) (MsgLen << 3);
-
-        return(fb << ml8 |
-                (uint64_t) GET_U32<bswap>(Msg + MsgLen - 4, 0) >> (32 - ml8));
+        if (isLE() ^ bswap) {
+            return(fb << ml8 |
+                    ((uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0)) >> (32 - ml8));
+        } else {
+            // If MsgLen is 0 then "32 - ml8" is 32, and a uint32_t
+            // shifted right by 32 bits is Undefined Behavior. This
+            // odd construction avoids that.
+            return(fb << ml8 |
+                    (((uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0)) &
+                            (((uint64_t)UINT32_C(-1)) >> (32 - ml8))));
+        }
     } else {
-        const int ml8 = (int) (MsgLen << 3);
-
-        return(fb << ml8 | GET_U64<bswap>(Msg + MsgLen - 8, 0) >> (64 - ml8));
+        if (isLE() ^ bswap) {
+            return(fb << ml8 | GET_U64<bswap>(Msg + MsgLen - 8, 0) >> (64 - ml8));
+        } else {
+            return(fb << ml8 | (GET_U64<bswap>(Msg + MsgLen - 8, 0) & (UINT64_C(-1) >> (64 - ml8))));
+        }
     }
 }
 
@@ -344,7 +365,7 @@ REGISTER_HASH(komihash,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x703624A4,
-  $.verification_BE = 0x4FF14C1A,
+  $.verification_BE = 0xB954DBAB,
   $.hashfn_native = komihash<false>,
   $.hashfn_bswap = komihash<true>
 );
