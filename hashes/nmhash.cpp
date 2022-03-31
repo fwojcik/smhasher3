@@ -42,7 +42,7 @@
 #define NMH_AVX2   2
 #define NMH_AVX512 3
 
-#if defined(NEW_HAVE_AVX_512BW)
+#if defined(NEW_HAVE_AVX_512_BW)
 #define NMH_VECTOR NMH_AVX512 /* _mm512_mullo_epi16 requires AVX512BW */
 #elif defined(NEW_HAVE_AVX_2)
 #define NMH_VECTOR NMH_AVX2
