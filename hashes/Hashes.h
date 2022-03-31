@@ -63,10 +63,6 @@ uint32_t MicroOAAT(const char *key, int len, uint32_t hash);
 inline void MicroOAAT_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint32_t *) out = MicroOAAT((const char *)key, len, seed);
 }
-uint32_t lookup3(const char *key, int len, uint32_t hash);
-inline void lookup3_test(const void *key, int len, uint32_t seed, void *out) {
-  *(uint32_t *) out = lookup3((const char *)key, len, seed);
-}
 uint32_t MurmurOAAT(const char *key, int len, uint32_t hash);
 inline void MurmurOAAT_test(const void *key, int len, uint32_t seed, void *out) {
   *(uint32_t *) out = MurmurOAAT((const char *)key, len, seed);

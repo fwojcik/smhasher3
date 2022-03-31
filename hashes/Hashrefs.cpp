@@ -78,6 +78,7 @@ unsigned refs() {
     USE_FAMILY(superfasthash);
     USE_FAMILY(meowhash);
     USE_FAMILY(xxhash);
+    USE_FAMILY(lookup3);
 
     return 0;
 }

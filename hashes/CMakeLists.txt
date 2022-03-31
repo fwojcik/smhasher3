@@ -650,13 +650,11 @@ add_library(
   superfasthash.cpp
   meowhash.cpp
   xxhash.cpp
+  lookup3.cpp
 )
 
 add_library(
   SMHasher3Hashes STATIC
-#
   LegacyHashes.cpp
-#
   Hashes.cpp
-  lookup3.cpp
 )

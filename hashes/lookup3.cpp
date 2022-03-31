@@ -1,68 +1,113 @@
-// lookup3 by Bob Jekins, code is public domain.
-
+/*
+ * lookup3.c, by Bob Jenkins, May 2006, Public Domain
+ *
+ * You can use this free for any purpose.  It's in the public domain.
+ * It has no warranty.
+ */
 #include "Platform.h"
+#include "Types.h"
+#include "Hashlib.h"
 
-#define rot(x,k) (((x)<<(k)) | ((x)>>(32-(k))))
-
+//------------------------------------------------------------
 #define mix(a,b,c) \
 { \
-  a -= c;  a ^= rot(c, 4);  c += b; \
-  b -= a;  b ^= rot(a, 6);  a += c; \
-  c -= b;  c ^= rot(b, 8);  b += a; \
-  a -= c;  a ^= rot(c,16);  c += b; \
-  b -= a;  b ^= rot(a,19);  a += c; \
-  c -= b;  c ^= rot(b, 4);  b += a; \
+  a -= c;  a ^= ROTL32(c, 4);  c += b; \
+  b -= a;  b ^= ROTL32(a, 6);  a += c; \
+  c -= b;  c ^= ROTL32(b, 8);  b += a; \
+  a -= c;  a ^= ROTL32(c,16);  c += b; \
+  b -= a;  b ^= ROTL32(a,19);  a += c; \
+  c -= b;  c ^= ROTL32(b, 4);  b += a; \
 }
 
 #define final(a,b,c) \
 { \
-  c ^= b; c -= rot(b,14); \
-  a ^= c; a -= rot(c,11); \
-  b ^= a; b -= rot(a,25); \
-  c ^= b; c -= rot(b,16); \
-  a ^= c; a -= rot(c,4);  \
-  b ^= a; b -= rot(a,14); \
-  c ^= b; c -= rot(b,24); \
+  c ^= b; c -= ROTL32(b,14); \
+  a ^= c; a -= ROTL32(c,11); \
+  b ^= a; b -= ROTL32(a,25); \
+  c ^= b; c -= ROTL32(b,16); \
+  a ^= c; a -= ROTL32(c,4);  \
+  b ^= a; b -= ROTL32(a,14); \
+  c ^= b; c -= ROTL32(b,24); \
 }
 
-// objsize: 0x0-0x155: 341
-uint32_t lookup3 ( const char * key, int length, uint32_t initval )
-{
+template < bool hash64, bool bswap >
+void hashlittle(const uint8_t * key, size_t length, uint64_t seed64, uint8_t * out) {
   uint32_t a,b,c;                                          /* internal state */
 
-  a = b = c = 0xdeadbeef + ((uint32_t)length) + initval;
-
-  const uint32_t *k = (const uint32_t *)key;         /* read 32-bit chunks */
+  /* Set up the internal state */
+  a = b = c = 0xdeadbeef + ((uint32_t)length) + ((uint32_t)seed64);
+  c += (uint32_t)(seed64 >> 32);
 
   /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
-  while (length > 12)
-  {
-    a += k[0];
-    b += k[1];
-    c += k[2];
-    mix(a,b,c);
-    length -= 12;
-    k += 3;
+  while (length > 12) {
+      a += GET_U32<bswap>(key, 0);
+      b += GET_U32<bswap>(key, 4);
+      c += GET_U32<bswap>(key, 8);
+      mix(a,b,c);
+      length -= 12;
+      key += 12;
   }
 
-  switch(length)
-  {
-    case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
-    case 11: c+=k[2]&0xffffff; b+=k[1]; a+=k[0]; break;
-    case 10: c+=k[2]&0xffff; b+=k[1]; a+=k[0]; break;
-    case 9 : c+=k[2]&0xff; b+=k[1]; a+=k[0]; break;
-    case 8 : b+=k[1]; a+=k[0]; break;
-    case 7 : b+=k[1]&0xffffff; a+=k[0]; break;
-    case 6 : b+=k[1]&0xffff; a+=k[0]; break;
-    case 5 : b+=k[1]&0xff; a+=k[0]; break;
-    case 4 : a+=k[0]; break;
-    case 3 : a+=k[0]&0xffffff; break;
-    case 2 : a+=k[0]&0xffff; break;
-    case 1 : a+=k[0]&0xff; break;
-    case 0 : { return c; }              /* zero length strings require no mixing */
+  /*----------------------------- handle the last (probably partial) block */
+  switch(length) {
+    case 12: c+=GET_U32<bswap>(key, 8);
+             b+=GET_U32<bswap>(key, 4);
+             a+=GET_U32<bswap>(key, 0); break;
+    case 11: c+=((uint32_t)key[10])<<16;  /* fall through */
+    case 10: c+=((uint32_t)key[9])<<8;    /* fall through */
+    case 9 : c+=key[8];                   /* fall through */
+    case 8 : b+=GET_U32<bswap>(key, 4);
+             a+=GET_U32<bswap>(key, 0); break;
+    case 7 : b+=((uint32_t)key[6])<<16;   /* fall through */
+    case 6 : b+=((uint32_t)key[5])<<8;    /* fall through */
+    case 5 : b+=key[4];                   /* fall through */
+    case 4 : a+=GET_U32<bswap>(key, 0); break;
+    case 3 : a+=((uint32_t)key[2])<<16;   /* fall through */
+    case 2 : a+=((uint32_t)key[1])<<8;    /* fall through */
+    case 1 : a+=key[0];                  break;
+    case 0 : goto out;  /* zero length strings require no more mixing */
   }
 
   final(a,b,c);
 
-  return c;
+ out:
+  PUT_U32<bswap>(c, out, 0);
+  if (hash64) { PUT_U32<bswap>(b, out, 4); }
 }
+
+//------------------------------------------------------------
+template < bool hash64, bool bswap >
+void lookup3(const void * in, const size_t len, const seed_t seed, void * out) {
+    hashlittle<hash64,bswap>((const uint8_t *)in, len, (uint64_t)seed, (uint8_t *)out);
+}
+
+//------------------------------------------------------------
+REGISTER_FAMILY(lookup3);
+
+REGISTER_HASH(lookup3_32,
+  $.desc = "Bob Jenkins' lookup3 (32-bit output)",
+  $.hash_flags =
+        0,
+  $.impl_flags =
+        FLAG_IMPL_ROTATE                 |
+        FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+  $.bits = 32,
+  $.verification_LE = 0x3D83917A,
+  $.verification_BE = 0x18E6AA76,
+  $.hashfn_native = lookup3<false,false>,
+  $.hashfn_bswap = lookup3<false,true>
+);
+
+REGISTER_HASH(lookup3_64,
+  $.desc = "Bob Jenkins' lookup3 (64-bit output)",
+  $.hash_flags =
+        0,
+  $.impl_flags =
+        FLAG_IMPL_ROTATE                 |
+        FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+  $.bits = 64,
+  $.verification_LE = 0x6AE8AB7C,
+  $.verification_BE = 0x074EBE4E,
+  $.hashfn_native = lookup3<true,false>,
+  $.hashfn_bswap = lookup3<true,true>
+);
