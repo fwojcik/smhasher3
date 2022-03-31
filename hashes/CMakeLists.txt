@@ -597,60 +597,65 @@ add_library(
   badhash.cpp
   aesrng.cpp
 #
-  md5.cpp
-  sha1.cpp
-  sha2.cpp
-  sha3.cpp
-  rmd.cpp
-  blake2.cpp
-  blake3.cpp
-  vmac.cpp
-  ascon.cpp
-  chaskey.cpp
-  crc.cpp
+# Normal hashes are sorted biggest->smallest to try to minimize
+# parallel compilation times
 #
-  aesnihash.cpp
-  fnv.cpp
-  poly_mersenne.cpp
-  discohash.cpp
-  beamsplitter.cpp
-  murmurhash1.cpp
-  murmurhash2.cpp
-  murmurhash3.cpp
-  mum_mir.cpp
-  tabulation.cpp
-  wyhash.cpp
   pmp_multilinear.cpp
-  falkhash.cpp
-  spookyhash.cpp
-  metrohash.cpp
-  pearson.cpp
-  blockpearson.cpp
-  multiply_shift.cpp
+  xxhash.cpp
   t1ha.cpp
   farmhash.cpp
-  farsh.cpp
-  prvhash.cpp
-  cityhash.cpp
   halftimehash.cpp
-  siphash.cpp
-  seahash.cpp
-  hasshe2.cpp
-  clhash.cpp
+  blake2.cpp
+  blake3.cpp
   umash.cpp
-  o1hash.cpp
-  floppsyhash.cpp
+  mum_mir.cpp
+  cityhash.cpp
   nmhash.cpp
-  komihash.cpp
-  mx3.cpp
-  jodyhash.cpp
-  pengyhash.cpp
-  fasthash.cpp
-  khash.cpp
-  superfasthash.cpp
+  ascon.cpp
+  rmd.cpp
+  beamsplitter.cpp
+  sha2.cpp
+  sha1.cpp
+  pearson.cpp
+  vmac.cpp
+  clhash.cpp
+  spookyhash.cpp
   meowhash.cpp
-  xxhash.cpp
+  metrohash.cpp
+  farsh.cpp
+  siphash.cpp
+  crc.cpp
+  chaskey.cpp
+  tabulation.cpp
+  komihash.cpp
+  multiply_shift.cpp
+  md5.cpp
+  fnv.cpp
+  hasshe2.cpp
+  prvhash.cpp
+  murmurhash3.cpp
+  aesrng.cpp
+  wyhash.cpp
+  discohash.cpp
+  sha3.cpp
+  poly_mersenne.cpp
+  murmurhash2.cpp
+  falkhash.cpp
+  blockpearson.cpp
+  jodyhash.cpp
+  khash.cpp
+  floppsyhash.cpp
+  seahash.cpp
   lookup3.cpp
+  donothing.cpp
+  badhash.cpp
+  fasthash.cpp
+  aesnihash.cpp
+  o1hash.cpp
+  pengyhash.cpp
+  mx3.cpp
+  superfasthash.cpp
+  murmurhash1.cpp
 )
 
 add_library(
