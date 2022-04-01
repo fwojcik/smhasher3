@@ -83,7 +83,7 @@ static void printKey(const void* key, size_t len)
 void printHash(const void* key, size_t len)
 {
     const unsigned char* const p = (const unsigned char*)key;
-    assert(len < INT_MAX);
+    assert(len < 2048);
     for (int i=(int)len-1; i >= 0 ; i--) printf("%02x", p[i]);
     printf("  ");
 }
