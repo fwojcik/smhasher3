@@ -55,7 +55,7 @@ static uint32_t SuperFastHash(const uint8_t * data, size_t len, const uint32_t s
     case 3:
         hash += GET_U16<bswap>(data, 0);
         hash ^= hash << 16;
-        hash ^= ((int8_t)data[sizeof (uint16_t)]) << 18;
+        hash ^= ((uint32_t)(int8_t)data[sizeof (uint16_t)]) << 18;
         hash += hash >> 11;
         break;
     case 2:
