@@ -597,8 +597,10 @@ add_library(
   badhash.cpp
   aesrng.cpp
 #
+#########################################
 # Normal hashes are sorted biggest->smallest to try to minimize
 # parallel compilation times
+#########################################
 #
   pmp_multilinear.cpp
   xxhash.cpp
@@ -641,11 +643,15 @@ add_library(
   poly_mersenne.cpp
   murmurhash2.cpp
   falkhash.cpp
+  fletcher.cpp
+  crap.cpp
   blockpearson.cpp
+  perlhashes.cpp
   jodyhash.cpp
   khash.cpp
   floppsyhash.cpp
   seahash.cpp
+  falcon_oaat.cpp
   lookup3.cpp
   donothing.cpp
   badhash.cpp
@@ -656,6 +662,8 @@ add_library(
   mx3.cpp
   superfasthash.cpp
   murmurhash1.cpp
+  murmur_oaat.cpp
+  x17.cpp
 )
 
 add_library(

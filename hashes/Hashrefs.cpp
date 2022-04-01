@@ -79,6 +79,12 @@ unsigned refs() {
     USE_FAMILY(meowhash);
     USE_FAMILY(xxhash);
     USE_FAMILY(lookup3);
+    USE_FAMILY(perloldhashes);
+    USE_FAMILY(MurmurOAAT);
+    USE_FAMILY(x17);
+    USE_FAMILY(falcon_oaat);
+    USE_FAMILY(crap);
+    USE_FAMILY(fletcher);
 
     return 0;
 }

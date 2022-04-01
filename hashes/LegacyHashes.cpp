@@ -70,24 +70,6 @@
 // marked with !! are known bad seeds, which either hash to 0 or create collisions.
 static LegacyHashInfo g_hashes[] =
 {
- // here start the real hashes. first the problematic ones:
-
-  { fletcher2_test,       64, 0x890767C0, "fletcher2",   "fletcher2 ZFS", POOR, {0UL} /* !! */ },
-  { fletcher4_test,       64, 0x47660EB7, "fletcher4",   "fletcher4 ZFS", POOR, {0UL} /* !! */ },
-  { Bernstein_test,       32, 0xBDB4B640, "bernstein",   "Bernstein, 32-bit", POOR, {0UL} /* !! */ },
-  { sdbm_test,            32, 0x582AF769, "sdbm",        "sdbm as in perl5", POOR, {0UL} /* !! */ },
-  { x17_test,             32, 0x8128E14C, "x17",         "x17", POOR, {} },
-  // also called jhash:
-  { JenkinsOOAT_test,     32, 0x83E133DA, "JenkinsOOAT", "Bob Jenkins' OOAT as in perl 5.18", POOR, {0UL} /* !! */ },
-  { JenkinsOOAT_perl_test,32, 0xEE05869B, "JenkinsOOAT_perl", "Bob Jenkins' OOAT as in old perl5", POOR, {0UL} /* !! */},
-
-  { MicroOAAT_test,       32, 0x16F1BA97,    "MicroOAAT",   "Small non-multiplicative OAAT (by funny-falcon)", POOR,
-    {0x3b00} },
-  { MurmurOAAT_test,      32, 0x5363BD98, "MurmurOAAT",  "Murmur one-at-a-time", POOR,
-    {0x0 /*, 0x5bd1e995*/} /* !! */ },
-  { Crap8_test,           32, 0x743E97A1, "Crap8",       "Crap8", POOR, {/*0x83d2e73b, 0x97e1cc59*/} },
-  // and now the quality hash funcs, slowest first
-  { GoodOAAT_test,        32, 0x7B14EEE5, "GoodOAAT",    "Small non-multiplicative OAAT", GOOD, {0x3b00} },
 };
 
 size_t numLegacyHashes(void) {
@@ -119,14 +101,7 @@ void Hash_init (LegacyHashInfo* info) {
 // Needed for hashed with a few bad seeds, to reject this seed and generate a new one.
 // (GH #99)
 void Bad_Seed_init (pfHash hash, uint32_t &seed) {
-  // zero-seed hashes:
-  if (!seed && (hash == fletcher2_test ||
-                     hash == fletcher4_test || hash == Bernstein_test || hash == sdbm_test ||
-                     hash == JenkinsOOAT_test || hash == JenkinsOOAT_perl_test ||
-                     hash == MurmurOAAT_test))
-    seed++;
-  else if (hash == Crap8_test && (seed == 0x83d2e73b || seed == 0x97e1cc59))
-    seed++;
+    return;
 }
 
 // Optional hash seed initializer, for expensive seeding.
