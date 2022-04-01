@@ -241,7 +241,10 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo) {
 #if defined(NEW_HAVE_X64_ASM)
     __asm__("addq %2, %0\n"
             "adcq $0, %1\n"
-#if defined(__clang__)
+#if defined(DEBUG)
+            : "+r" (rlo), "+r" (rhi)
+            : "r" (addlo)
+#elif defined(__clang__)
             // clang cannot work properly with "g" and silently
             // produces hardly-workging code, if "g" is specified;
             // see, for instance, here:
@@ -266,7 +269,10 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo, ui
 #if defined(NEW_HAVE_X64_ASM)
     __asm__("addq %2, %0\n"
             "adcq %3, %1\n"
-#if defined(__clang__)
+#if defined(DEBUG)
+            : "+r" (rlo), "+r" (rhi)
+            : "r" (addlo), "r" (addhi)
+#elif defined(__clang__)
             // clang cannot work properly with "g" and silently
             // produces hardly-workging code, if "g" is specified;
             // see, for instance, here:
@@ -299,7 +305,10 @@ static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uin
     __asm__("addq %3, %0\n"
             "adcq %4, %1\n"
             "adcq %5, %2\n"
-#if defined(__clang__)
+#if defined(DEBUG)
+            : "+r" (rlo), "+r" (rmi), "+r" (rhi)
+            : "r" (addlo), "r" (addmi), "r" (addhi)
+#elif defined(__clang__)
             // clang cannot work properly with "g" and silently
             // produces hardly-workging code, if "g" is specified;
             // see, for instance, here:
@@ -334,7 +343,10 @@ static FORCE_INLINE void fma64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uin
     __asm__("mulq %4\n"
             "addq %%rax, %0\n"
             "adcq %%rdx, %1\n"
-#if defined(__clang__)
+#if defined(DEBUG)
+            : "+r" (rlo), "+r" (rhi), "=a" (dummy)
+            : "a" (a), "r" (b)
+#elif defined(__clang__)
             // clang cannot work properly with "g" and silently
             // produces hardly-workging code, if "g" is specified;
             // see, for instance, here:
@@ -367,7 +379,10 @@ static FORCE_INLINE void fma64_192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, 
             "addq %%rax, %0\n"
             "adcq %%rdx, %1\n"
             "adcq $0, %2\n"
-#if defined(__clang__)
+#if defined(DEBUG)
+            : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
+            : "a" (a), "r" (b)
+#elif defined(__clang__)
             // clang cannot work properly with "g" and silently
             // produces hardly-workging code, if "g" is specified;
             // see, for instance, here:
