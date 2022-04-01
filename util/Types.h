@@ -85,16 +85,6 @@ typedef void (*pfHash)(const void *blob, const int len, const uint32_t seed,
                        void *out);
 
 enum HashQuality             {  SKIP,   POOR,   GOOD };
-struct LegacyHashInfo
-{
-  pfHash hash;
-  int hashbits;
-  uint32_t verification;
-  const char * name;
-  const char * desc;
-  enum HashQuality quality;
-  const std::vector<uint64_t> secrets;
-};
 
 bool hash_is_slow(pfHash hash);
 bool hash_is_very_slow(pfHash hash);

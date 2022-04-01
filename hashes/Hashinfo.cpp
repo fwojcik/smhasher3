@@ -18,7 +18,6 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "LegacyHashes.h"
 #include "Hashlib.h"
 #include "VCode.h"
 
@@ -140,67 +139,4 @@ seed_t excludeBadseeds(const HashInfo * hinfo, const seed_t seed) {
 // should not be 0.
 seed_t excludeZeroSeed(const HashInfo * hinfo, const seed_t seed) {
     return (seed == 0) ? 1 : seed;
-}
-
-//-----------------------------------------------------------------------------
-// This is ugly, but it will be gone soon-ish.
-LegacyHashInfo * legacyHash;
-
-void legacyHashFnWrapper(const void * in, const size_t len, const seed_t seed, void * out) {
-    return legacyHash->hash(in, len, (uint32_t)seed, out);
-}
-
-bool legacyHashInit(void) {
-    Hash_init(legacyHash);
-    return true;
-}
-
-uintptr_t legacyHashSeed(const seed_t seed) {
-    bool exists = Hash_Seed_init(legacyHash->hash, seed);
-    return exists ? 1 : 0;
-}
-
-seed_t legacyHashSeedfix(const seed_t seed) {
-    uint32_t seed32 = seed;
-    Bad_Seed_init(legacyHash->hash, seed32);
-    return (seed_t)seed32;
-}
-
-HashInfo * convertLegacyHash(LegacyHashInfo * linfo) {
-    HashInfo * hinfo     = new HashInfo(linfo->name, "LEGACY");
-
-    hinfo->desc            = linfo->desc;
-    hinfo->bits            = linfo->hashbits;
-    hinfo->badseeds        = std::set<seed_t>(linfo->secrets.begin(), linfo->secrets.end());
-
-    hinfo->hash_flags      = FLAG_HASH_LEGACY;
-    if (linfo->quality == SKIP) {
-        hinfo->hash_flags |= FLAG_HASH_MOCK;
-    }
-    if (!Hash_Seed_init(linfo->hash, 0)) {
-        hinfo->hash_flags |= FLAG_HASH_SMALL_SEED;
-    }
-
-    hinfo->impl_flags      = 0;
-    if (hash_is_very_slow(linfo->hash)) {
-        hinfo->impl_flags |= FLAG_IMPL_VERY_SLOW;
-    } else if (hash_is_slow(linfo->hash)) {
-        hinfo->impl_flags |= FLAG_IMPL_SLOW;
-    }
-
-    hinfo->initfn          = legacyHashInit;
-    hinfo->seedfixfn       = NULL;
-    hinfo->seedfn          = legacyHashSeed;
-
-    hinfo->hashfn_native   = legacyHashFnWrapper;
-    hinfo->hashfn_bswap    = NULL;
-    hinfo->verification_LE = linfo->verification;
-    hinfo->verification_BE = 0;
-    if (isBE()) {
-        std::swap(hinfo->verification_LE, hinfo->verification_BE);
-    }
-
-    legacyHash             = linfo;
-
-    return hinfo;
 }

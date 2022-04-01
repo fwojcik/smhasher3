@@ -20,8 +20,6 @@ const HashInfo * findHash(const char * name);
 void listHashes(bool nameonly);
 bool verifyAllHashes(bool verbose);
 
-HashInfo * convertLegacyHash(LegacyHashInfo * linfo);
-
 #define CONCAT_INNER(x, y) x##y
 #define CONCAT(x,y) CONCAT_INNER(x, y)
 

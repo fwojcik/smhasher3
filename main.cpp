@@ -65,7 +65,6 @@
 #include "Types.h"
 #include "Timing.h"
 #include "Stats.h"
-#include "LegacyHashes.h"
 #include "Hashlib.h"
 #include "Analyze.h"
 #include "VCode.h"
@@ -263,28 +262,14 @@ static HashInfo::endianness parse_endian(const char * str) {
 // Self-test - verify that all installed hashes work correctly.
 
 static void HashSelfTestAll(bool verbose) {
-  const size_t numhashes = numLegacyHashes();
   bool pass = true;
 
   pass &= verifyAllHashes(verbose);
-
-  for (size_t i = 0; i < numhashes; i++) {
-    LegacyHashInfo * linfo = numLegacyHash(i);
-    HashInfo * hinfo = convertLegacyHash(linfo);
-    pass &= (hinfo->Init() && hinfo->Verify(HashInfo::ENDIAN_NATIVE, verbose));
-    delete hinfo;
-  }
 
   if (!pass) {
     printf("Self-test FAILED!\n");
     if (!verbose) {
       verifyAllHashes(true);
-      for (size_t i = 0; i < numhashes; i++) {
-        LegacyHashInfo * linfo = numLegacyHash(i);
-        HashInfo * hinfo = convertLegacyHash(linfo);
-        pass &= hinfo->Verify(HashInfo::ENDIAN_NATIVE, true);
-        delete hinfo;
-      }
     }
     exit(1);
   }
@@ -329,14 +314,11 @@ static bool test ( const HashInfo * hInfo )
   }
 
   //-----------------------------------------------------------------------------
-  // Most legacy hashes don't use Hash_Seed_init(), so they only get
-  // their seed through hash(), which has a uint32_t seed parameter,
-  // so there's no way of getting big seeds to them at all.
-  if ((g_seed >= (1ULL << (8 * sizeof(uint32_t)))) &&
-          hInfo->isLegacy() && !hInfo->Seed(g_seed)) {
-      printf("Specified global seed 0x%016" PRIx64 ""
-              " is larger than the legacy hash harness can accept\n", g_seed);
-      exit(1);
+  // Some hashes only take 32-bits of seed data, so there's no way of
+  // getting big seeds to them at all.
+  if ((g_seed >= (1ULL << (8 * sizeof(uint32_t)))) && hInfo->is32BitSeed()) {
+      printf("WARNING: Specified global seed 0x%016" PRIx64 "\n"
+              " is larger than the specified hash can accept\n", g_seed);
   }
 
   //-----------------------------------------------------------------------------
@@ -547,17 +529,11 @@ static bool test ( const HashInfo * hInfo )
 //-----------------------------------------------------------------------------
 
 static bool testHash(const char * name) {
-  LegacyHashInfo * lhInfo = NULL;
   const HashInfo * hInfo;
 
   if ((hInfo = findHash(name)) == NULL) {
-      if((lhInfo = findLegacyHash(name)) == NULL) {
-          printf("Invalid hash '%s' specified\n", name);
-          return false;
-      }
-      // This technically leaks, but all the legacy stuff will be gone
-      // soon enough.
-      hInfo = convertLegacyHash(lhInfo);
+      printf("Invalid hash '%s' specified\n", name);
+      return false;
   }
 
   // If you extend these statements by adding a new bitcount/type, you
@@ -627,20 +603,10 @@ int main ( int argc, const char ** argv )
       }
       if (strcmp(arg,"--list") == 0) {
         listHashes(false);
-        const size_t numhashes = numLegacyHashes();
-        for(size_t i = 0; i < numhashes; i++) {
-          LegacyHashInfo * h = numLegacyHash(i);
-          printf("%-16s\t\"%s\" %s\n", h->name, h->desc, h->quality == SKIP ? "MOCK" : "");
-        }
         exit(0);
       }
       if (strcmp(arg,"--listnames") == 0) {
         listHashes(true);
-        const size_t numhashes = numLegacyHashes();
-        for(size_t i = 0; i < numhashes; i++) {
-          LegacyHashInfo * h = numLegacyHash(i);
-          printf("%s\n", h->name);
-        }
         exit(0);
       }
       if (strcmp(arg,"--tests") == 0) {

@@ -18,7 +18,6 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "LegacyHashes.h"
 #include "Hashlib.h"
 #include "VCode.h"
 
@@ -75,8 +74,6 @@ HashMapOrder defaultSort(HashMap & map) {
 
 // FIXME Verify hinfo is all filled out.
 unsigned register_hash(const HashInfo * hinfo) {
-  if (strcmp(hinfo->family, "LEGACY") == 0) return 0;
-
   std::string name = hinfo->name;
   // Allow users to lookup hashes by any case
   std::transform(name.begin(), name.end(), name.begin(), ::tolower);

@@ -205,8 +205,6 @@ class HashInfo {
             return !!(seedfn(hint));
         } else if (seedfn != NULL) {
             return !!(seedfn(seed));
-        } else if (isLegacy()) {
-            return false;
         }
         return true;
     }
@@ -219,10 +217,6 @@ class HashInfo {
 
     FORCE_INLINE bool isMock(void) const {
         return !!(hash_flags & FLAG_HASH_MOCK);
-    }
-
-    FORCE_INLINE bool isLegacy(void) const {
-        return !!(hash_flags & FLAG_HASH_LEGACY);
     }
 
     FORCE_INLINE bool is32BitSeed(void) const {
