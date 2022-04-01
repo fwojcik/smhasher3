@@ -152,7 +152,7 @@ namespace {
         return Minus(zero, a);
     }
 
-    inline uint64_t Sum(u128 a) { return a[0] + a[1]; }
+    inline uint64_t Sum(u128 a) { return (uint64_t)a[0] + (uint64_t)a[1]; }
 
     template < bool bswap >
     struct BlockWrapper128 {
@@ -198,7 +198,7 @@ namespace {
         c = _mm_add_epi64(c, d);
         static_assert(sizeof(c[0]) == sizeof(uint64_t), "u256 too granular");
         static_assert(sizeof(c) == 2 * sizeof(uint64_t), "u256 too granular");
-        return c[0] + c[1];
+        return (uint64_t)c[0] + (uint64_t)c[1];
     }
 
     template < bool bswap >
