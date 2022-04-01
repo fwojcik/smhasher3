@@ -254,12 +254,20 @@ static thread_local uint64_t * state = (uint64_t *)buf;
 
 //--------
 // State mix function
-static FORCE_INLINE uint8_t ROTR8(uint8_t v, int n) {
-    n = n & 7U;
+static FORCE_INLINE uint8_t beam_ROTR8(uint8_t v, int n) {
+    n = n & 7;
     if (n)
         v = (v >> n) | (v << (8-n));
     return v;
 }
+
+static FORCE_INLINE uint64_t beam_ROTR64(uint64_t v, int n) {
+    n = n & 63;
+    if (n)
+        v = ROTR64(v, n);
+    return v;
+}
+
 
 static FORCE_INLINE void mix(const uint32_t A) {
       const uint32_t B = A+1;
@@ -271,7 +279,7 @@ static FORCE_INLINE void mix(const uint32_t A) {
       state[B] ^= state[A];
       state[A] ^= state[B];
 
-      state[B] = ROTR64(state[B], state[A]&63);
+      state[B] = beam_ROTR64(state[B], state[A]&63);
 }
 
 //---------
@@ -283,7 +291,7 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
 
     for (uint32_t Len = len >> 3; index < Len; index++) {
         uint64_t blk = GET_U64<bswap>(m8, index*8);
-        state[sindex] += ROTR64(blk + index + 1,
+        state[sindex] += beam_ROTR64(blk + index + 1,
                 (state[sindex] + index + 1)&63);
         if (sindex == 1) {
             mix(0);
@@ -300,7 +308,7 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
     sindex = index&31;
     for( ; index < len; index++) {
         const uint32_t ssindex = bswap ? (sindex^7) : sindex;
-        state8[ssindex] += ROTR8(m8[index] + index + 1,
+        state8[ssindex] += beam_ROTR8(m8[index] + index + 1,
                     (state8[ssindex] + index + 1)&7);
         // state+[0,1,2]
         mix(index%3);
