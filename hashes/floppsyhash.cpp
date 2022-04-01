@@ -30,6 +30,9 @@
 
 #include <math.h> // For M_E and M_PI
 
+#pragma fp_contract (off)
+#pragma STDC FP_CONTRACT OFF
+
 //------------------------------------------------------------
 // Q function : Continued Egyptian Fraction update function
 template < bool old>
@@ -116,8 +119,8 @@ REGISTER_HASH(floppsyhash,
         FLAG_IMPL_DIVIDE       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
-  $.verification_LE = 0x0605658C,
-  $.verification_BE = 0x986CF0C5,
+  $.verification_LE = 0x5F9F6226,
+  $.verification_BE = 0x4D4F96F0,
   $.hashfn_native = floppsyhash<false,false>,
   $.hashfn_bswap = floppsyhash<false,true>
 );
