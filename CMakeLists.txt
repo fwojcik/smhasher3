@@ -11,11 +11,20 @@ if(POLICY CMP0066) # honor per-config flags in try_compile() source-file
   cmake_policy(SET CMP0066 NEW) # since 3.7
 endif()
 
-project(SMHasher3 CXX)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# "C" needs to be enabled for some builtin CMake tests :-/
+project(SMHasher3 C CXX)
+
+include(CheckCCompilerFlag)
+# Check if the same compile family is used for both C and CXX
+if(NOT (CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID))
+  message(WARNING "CMAKE_C_COMPILER_ID (${CMAKE_C_COMPILER_ID}) is different "
+    "from CMAKE_CXX_COMPILER_ID (${CMAKE_CXX_COMPILER_ID}). "
+    "The final binary may be unusable.")
+endif()
 
 ########################################
 # Compiler flags (optimization, debug, etc.)
@@ -24,48 +33,43 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE
       "Release"
-      CACHE STRING "Choose the type of build, options are: Debug Release
-  RelWithDebInfo MinSizeRel Asan." FORCE)
+      CACHE STRING "Choose the type of build, options are: Release Debug Asan" FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
-set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
 
-set(CMAKE_CXX_FLAGS_ASAN
-    "-fsanitize=address -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -DHAVE_ASAN"
-    CACHE STRING
-          "Flags used by the C++ compiler during AddressSanitizer builds."
-          FORCE)
-
-if((CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 9)
-   AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-  cmake_policy(SET CMP0069 NEW)
-  include(CheckIPOSupported)
-  check_ipo_supported(RESULT ipo_supported OUTPUT error)
-endif()
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -g")
+set(CMAKE_CXX_FLAGS_DEBUG   "-O1 -DDEBUG  -g")
+set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_DEBUG}")
 
 if(MSVC)
   # using Visual Studio C++, already the default with VS17
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
-else()
-  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-  set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -ggdb3")
-  if(CMAKE_COMPILER_IS_GNUCC
-     OR (CMAKE_C_COMPILER_ID STREQUAL AppleClang)
-     OR (CMAKE_C_COMPILER_ID STREQUAL Clang)
-     OR (CMAKE_C_COMPILER_ID STREQUAL Intel))
-    set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined -DHAVE_ASAN -DHAVE_UBSAN"
-    )
-    set(CMAKE_LINKER_FLAGS_DEBUG
-        "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined"
-    )
-    if(NOT CMAKE_CROSSCOMPILING)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-    endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL GNU
+     OR (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+     OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+     OR (CMAKE_CXX_COMPILER_ID STREQUAL Intel))
+
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -ggdb3")
+  set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}    -ggdb3")
+  set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_ASAN} -Og -ggdb3  \
+      -fsanitize=address,undefined -fno-optimize-sibling-calls \
+      -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
+
+  if(NOT CMAKE_CROSSCOMPILING)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
   endif()
+
+  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 endif()
+
+function(whole_archive_link_flags lib var)
+  if(MSVC)
+    set(${var} -WHOLEARCHIVE:$<TARGET_FILE:${lib}> PARENT_SCOPE)
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(${var} -Wl,-force_load,$<TARGET_FILE:${lib}> PARENT_SCOPE)
+  else()
+    set(${var} -Wl,--whole-archive ${lib} -Wl,--no-whole-archive PARENT_SCOPE)
+  endif()
+endfunction()
 
 ########################################
 # General system detection
@@ -84,6 +88,8 @@ if ((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
 elseif ((CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
     OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
   set(PROCESSOR_FAMILY "Arm")
+else ()
+  set(PROCESSOR_FAMILY "Other")
 endif()
 
 ########################################
@@ -91,20 +97,12 @@ endif()
 ########################################
 
 include(CheckTypeSize)
-include(CheckCXXCompilerFlag)
-include(CheckIncludeFileCXX)
 set(CMAKE_REQUIRED_QUIET true)
 
-check_type_size(__int64 __INT64)
-check_type_size(int64_t INT64_T)
-
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  add_definitions(-DHAVE_BIT32)
-endif()
-if(HAVE_INT64_T)
-  add_definitions(-DHAVE_INT64)
-elseif(HAVE__INT64)
-  add_definitions(-DHAVE_INT64)
+  add_definitions(-DHAVE_32BIT_PLATFORM)
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  add_definitions(-DHAVE_64BIT_PLATFORM)
 endif()
 
 check_type_size(__int128 __INT128)
@@ -116,6 +114,8 @@ endif()
 ########################################
 # Platform detection things
 ########################################
+
+include(CheckIncludeFileCXX)
 
 if(PROCESSOR_FAMILY STREQUAL "Arm")
   add_definitions(-DHAVE_NEON)
@@ -229,15 +229,13 @@ else()
     add_definitions(-DNEW_HAVE_X64_ASM)
     message(STATUS "x86_64 __asm__() available")
   endif()
-endif()
 
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_neon_sha1.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SHA1_ARM)
-  message(STATUS "ARM SHA-1 intrinsics available")
-endif()
+  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_neon_sha1.cpp)
+  if(RESULT_VAR)
+    add_definitions(-DNEW_HAVE_SHA1_ARM)
+    message(STATUS "ARM SHA-1 intrinsics available")
+  endif()
 
-if(NOT MSVC)
   try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_aes.cpp)
   if(RESULT_VAR)
     add_definitions(-DNEW_HAVE_AES_ARM)
@@ -278,8 +276,11 @@ endif()
 find_package( Threads )
 if(NOT (MSVC))
   if(NOT ("${CMAKE_THREAD_LIBS_INIT}" STREQUAL ""))
-    set(THREAD_LIBS_PREFIX "-Wl,--whole-archive")
-    set(THREAD_LIBS_SUFFIX "-Wl,--no-whole-archive")
+    # Some Linux installations need the threading library linked
+    # in as "whole-archive", or required symbols get missed,
+    # leading to link failures. This shouldn't hurt to add if it
+    # is not required on this system.
+    whole_archive_link_flags("${CMAKE_THREAD_LIBS_INIT}" threads_link_command)
   endif()
 endif()
 if(Threads_FOUND)
@@ -417,13 +418,22 @@ target_include_directories(SMHasher3Tests PRIVATE util)
 
 add_executable(SMHasher3 main.cpp)
 target_include_directories(SMHasher3 PRIVATE hashes tests util)
-target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashlib
-                      ${THREAD_LIBS_PREFIX} ${CMAKE_THREAD_LIBS_INIT} ${THREAD_LIBS_SUFFIX})
+target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashlib ${threads_link_command})
 
+########################################
+# Miscellany
+########################################
+
+if((CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 9)
+   AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
+  cmake_policy(SET CMP0069 NEW)
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT ipo_supported OUTPUT error)
+endif()
 if(ipo_supported)
-#  message(STATUS "IPO / LTO enabled")
-#  set_property(TARGET SMHasher3Tests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-#  set_property(TARGET SMHasher3      PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+  message(STATUS "IPO / LTO enabled")
+  set_property(TARGET SMHasher3Tests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+  set_property(TARGET SMHasher3      PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 else()
   message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
