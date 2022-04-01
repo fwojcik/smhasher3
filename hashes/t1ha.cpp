@@ -91,7 +91,9 @@
 //------------------------------------------------------------
 #if defined(__SANITIZE_ADDRESS__)
 #undef T1HA_USE_ALIGNED_ONESHOT_READ
-#define T1HA_USE_ALIGNED_ONESHOT_READ 1
+#define T1HA_USE_ALIGNED_ONESHOT_READ 0
+#undef T1HA_SYS_UNALIGNED_ACCESS
+#define T1HA_SYS_UNALIGNED_ACCESS T1HA_UNALIGNED_ACCESS__UNABLE
 #endif
 
 #if !defined(PAGESIZE)
