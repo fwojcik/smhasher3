@@ -126,7 +126,8 @@ static int blake2_is_lastblock( const T * ctx ) {
 
 template < typename T >
 static void blake2_set_lastblock( T * ctx ) {
-  ctx->f[0] = (typeof(ctx->f[0]))-1;
+    ctx->f[0] = 0;
+    ctx->f[0]--;
 }
 
 template < typename T >
