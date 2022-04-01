@@ -624,6 +624,7 @@ REGISTER_HASH(VHASH_32,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
+        FLAG_IMPL_ASM                    |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
   $.verification_LE = 0x613E4735,
@@ -637,6 +638,7 @@ REGISTER_HASH(VHASH_64,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
+        FLAG_IMPL_ASM                    |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
   $.verification_LE = 0x7417A00F,

@@ -17,7 +17,6 @@
  * <https://www.gnu.org/licenses/>.
  */
 #define HASH_FLAGS                                     \
-    FLAG_EXPAND(HASH_LEGACY)                           \
     FLAG_EXPAND(HASH_MOCK)                             \
     FLAG_EXPAND(HASH_CRYPTOGRAPHIC)                    \
     FLAG_EXPAND(HASH_CRYPTOGRAPHIC_WEAK)               \
@@ -37,7 +36,6 @@
     FLAG_EXPAND(IMPL_SLOW)                             \
     FLAG_EXPAND(IMPL_VERY_SLOW)                        \
     FLAG_EXPAND(IMPL_READ_PAST_EOB)                    \
-    FLAG_EXPAND(IMPL_READ_UNALIGNED)                   \
     FLAG_EXPAND(IMPL_TYPE_PUNNING)                     \
     FLAG_EXPAND(IMPL_INCREMENTAL)                      \
     FLAG_EXPAND(IMPL_INCREMENTAL_DIFFERENT)            \
@@ -51,23 +49,12 @@
     FLAG_EXPAND(IMPL_DIVIDE)                           \
     FLAG_EXPAND(IMPL_MODULUS)                          \
     FLAG_EXPAND(IMPL_ASM)                              \
-    FLAG_EXPAND(IMPL_SSE2)                             \
-    FLAG_EXPAND(IMPL_SSE2_REQUIRED)                    \
-    FLAG_EXPAND(IMPL_SSE42)                            \
-    FLAG_EXPAND(IMPL_SSE42_REQUIRED)                   \
-    FLAG_EXPAND(IMPL_AVX)                              \
-    FLAG_EXPAND(IMPL_AVX_REQUIRED)                     \
-    FLAG_EXPAND(IMPL_AVX2)                             \
-    FLAG_EXPAND(IMPL_AVX2_REQUIRED)                    \
-    FLAG_EXPAND(IMPL_NEON)                             \
-    FLAG_EXPAND(IMPL_THUMB)                            \
     FLAG_EXPAND(IMPL_CANONICAL_LE)                     \
     FLAG_EXPAND(IMPL_CANONICAL_BE)                     \
     FLAG_EXPAND(IMPL_SEED_WITH_HINT)                   \
     FLAG_EXPAND(IMPL_LICENSE_PUBLIC_DOMAIN)            \
     FLAG_EXPAND(IMPL_LICENSE_BSD)                      \
     FLAG_EXPAND(IMPL_LICENSE_MIT)                      \
-    FLAG_EXPAND(IMPL_LICENSE_APACHE)                   \
     FLAG_EXPAND(IMPL_LICENSE_ZLIB)                     \
     FLAG_EXPAND(IMPL_LICENSE_GPL3)
 
