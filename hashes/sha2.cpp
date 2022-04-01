@@ -649,8 +649,7 @@ static void digest_to_hex(const uint8_t digest[32], char * output) {
             sprintf(c, "%02x", digest[i * 4 + j]);
             c += 2;
         }
-        sprintf(c, " ");
-        c += 1;
+        *c++ = ' ';
     }
     *(c - 1) = '\0';
 }
