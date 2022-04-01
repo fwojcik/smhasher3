@@ -304,7 +304,7 @@ add_library(
   hashes/Hashlib.cpp
   hashes/Hashinfo.cpp
   hashes/Hashrefs.cpp
-  hashes/lib/AES.cpp
+  hashes/lib/AEStables.cpp
 #
   hashes/donothing.cpp
   hashes/badhash.cpp
