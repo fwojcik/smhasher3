@@ -156,7 +156,10 @@ static void FNV_YoshimitsuTRIAD(const void * in, const size_t olen, const seed_t
     memcpy(out, &hash32A, 4);
 }
 
-#define _PADr_KAZE(x, n) (((x) << (n)) >> (n))
+static FORCE_INLINE uint64_t _PADr_KAZE(uint64_t x, int n) {
+    if (n >= 64) return 0;
+    return (x << n) >> n;
+}
 
 template < bool bswap >
 static void FNV_Totenschiff(const void * in, const size_t olen, const seed_t seed, void * out) {
