@@ -141,20 +141,21 @@ static bool TwoBytesTest2 ( HashFn hash, int maxlen, bool drawDiagram )
 }
 
 //-----------------------------------------------------------------------------
-
 template < typename hashtype >
 bool TwoBytesKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     int maxlen;
-    if (extra || (hinfo->bits <= 32)) {
+    if (extra) {
         maxlen = 24;
     } else if (hinfo->isVerySlow()) {
         maxlen = 8;
+    } else if (hinfo->bits <= 32) {
+        maxlen = 24;
     } else if (hinfo->bits <= 64) {
         maxlen = 20;
     } else {
-        maxlen = 15;
+        maxlen = 12;
     }
 
     printf("[[[ Keyset 'TwoBytes' Tests ]]]\n\n");
