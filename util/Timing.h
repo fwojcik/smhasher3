@@ -95,9 +95,9 @@ FORCE_INLINE uint64_t timeofday() {
 }
 
 FORCE_INLINE uint64_t rdtsc() {
-#if defined (__i386__) || defined (__x86_64__)
+#if defined (HAVE_X86_32) || defined (HAVE_X86_64)
     return __builtin_ia32_rdtsc();
-#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 6) && defined(HAVE_INT32)
+#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 6)
   // V6 is the earliest arch that has a standard cyclecount (some say V7)
   uint32_t pmccntr;
   uint32_t pmuseren;
@@ -109,11 +109,11 @@ FORCE_INLINE uint64_t rdtsc() {
     if (pmcntenset & 0x80000000ul) {  // Is it counting?
       asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(pmccntr));
       // The counter is set up to count every 64th cycle
-      return static_cast<int64_t>(pmccntr) * 64;  // Should optimize to << 6
+      return static_cast<uint64_t>(pmccntr) * 64;  // Should optimize to << 6
     }
   }
   return timeofday();
-#elif defined(__aarch64__) && defined(HAVE_INT64)
+#elif defined(__aarch64__) && defined(HAVE_64BIT_PLATFORM)
   uint64_t pmccntr;
   uint64_t pmuseren = 1UL;
   // Read the user mode perf monitor counter access permissions.
@@ -130,7 +130,7 @@ FORCE_INLINE uint64_t rdtsc() {
 
 // see https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/ia-32-ia-64-benchmark-code-execution-paper.pdf 3.2.1 The Improved Benchmarking Method
 FORCE_INLINE uint64_t timer_start() {
-#if defined (__i386__) || (defined(__x86_64__) && defined (HAVE_BIT32))
+#if defined (HAVE_X86_32) || (defined(HAVE_X86_64) && defined (HAVE_32BIT_PLATFORM))
   uint32_t cycles_high, cycles_low;
   __asm__ volatile
       ("cpuid\n\t"
@@ -139,7 +139,7 @@ FORCE_INLINE uint64_t timer_start() {
        "mov %%eax, %1\n\t": "=r" (cycles_high), "=r" (cycles_low)::
        "%eax", "%ebx", "%ecx", "%edx");
     return ((uint64_t)cycles_high << 32) | cycles_low;
-#elif defined __x86_64__
+#elif defined HAVE_X86_64
   uint32_t cycles_high, cycles_low;
   __asm__ volatile
       ("cpuid\n\t"
@@ -154,7 +154,7 @@ FORCE_INLINE uint64_t timer_start() {
 }
 
 FORCE_INLINE uint64_t timer_end() {
-#if defined (__i386__) || (defined(__x86_64__) && defined (HAVE_BIT32))
+#if defined (HAVE_X86_32) || (defined(HAVE_X86_64) && defined (HAVE_32BIT_PLATFORM))
   uint32_t cycles_high, cycles_low;
   __asm__ volatile
       ("rdtscp\n\t"
@@ -163,7 +163,7 @@ FORCE_INLINE uint64_t timer_end() {
        "cpuid\n\t": "=r" (cycles_high), "=r" (cycles_low)::
        "%eax", "%ebx", "%ecx", "%edx");
     return ((uint64_t)cycles_high << 32) | cycles_low;
-#elif defined __x86_64__
+#elif defined(HAVE_X86_64)
   uint32_t cycles_high, cycles_low;
   __asm__ volatile
       ("rdtscp\n\t"

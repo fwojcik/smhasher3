@@ -60,16 +60,12 @@ extern unsigned g_NCPU;
 extern const unsigned g_NCPU;
 #endif
 
-#ifndef __x86_64__
- #if defined(__x86_64) || defined(_M_AMD64) || defined(_M_X64)
-  #define  __x86_64__
- #endif
-#endif
-
-#ifndef HAVE_INT64
- #if (__WORDSIZE >= 64) || defined(HAVE_SSE42)
-  #define HAVE_INT64
- #endif
+#if !defined(HAVE_X86_64)
+  #if defined(__x86_64) || defined(_M_AMD64) || defined(_M_X64)
+    #define HAVE_X86_64
+  #elif defined(__i386__)
+    #define HAVE_X86_32
+  #endif
 #endif
 
 //-----------------------------------------------------------------------------
@@ -94,14 +90,14 @@ extern const unsigned g_NCPU;
 #pragma warning(disable : 4702)
 
 #define popcount4(x) __popcnt(x)
-#ifdef HAVE_BIT32
+#ifdef HAVE_32BIT_PLATFORM
 #define popcount8(x)  __popcnt(x)
 #else
 #define popcount8(x)  __popcnt64(x)
 #endif
 
 // Assumes x is not 0!!!
-#ifdef HAVE_INT64
+#ifdef HAVE_64BIT_PLATFORM
 #define clz4(x) __lzcnt(x)
 #define clz8(x) __lzcnt64(x)
 #else
@@ -141,7 +137,7 @@ static char* strndup(char const *s, size_t n)
 
 #else	//	!defined(_MSC_VER)
 
-#if !defined (__i386__) && !defined (__x86_64__)
+#if !defined (HAVE_X86_64) && !defined (HAVE_X86_32)
 #include <cstddef>
 #endif
 #include <stdlib.h>
@@ -156,7 +152,7 @@ static char* strndup(char const *s, size_t n)
 #define RESTRICT __restrict
 
 #define popcount4(x) __builtin_popcount(x)
-#ifdef HAVE_BIT32
+#ifdef HAVE_32BIT_PLATFORM
 #define popcount8(x) __builtin_popcountll(x)
 #else
 #define popcount8(x) __builtin_popcountl(x)
@@ -164,7 +160,7 @@ static char* strndup(char const *s, size_t n)
 
 // Assumes x is not 0!!!
 #define clz4(x) __builtin_clz(x)
-#ifdef HAVE_BIT32
+#ifdef HAVE_32BIT_PLATFORM
 #define clz8(x) __builtin_clzll(x)
 #else
 #define clz8(x) __builtin_clzl(x)
