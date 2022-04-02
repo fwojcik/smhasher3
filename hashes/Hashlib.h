@@ -28,6 +28,8 @@ bool verifyAllHashes(bool verbose);
     unsigned CONCAT(N,_ref)
 
 #define REGISTER_HASH(N, ...)                               \
+    static_assert(sizeof(#N) > 1,                           \
+            "REGISTER_HASH() needs a non-empty name");      \
     static HashInfo CONCAT(Details,N) = []{                 \
         HashInfo $(#N, THIS_HASH_FAMILY);                   \
         __VA_ARGS__;                                        \
