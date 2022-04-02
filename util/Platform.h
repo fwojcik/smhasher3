@@ -206,13 +206,7 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #endif	//	!defined(_MSC_VER)
 
 //-----------------------------------------------------------------------------
-
 #include <cstdio>
-
-#ifdef HAVE_INT128
-typedef unsigned __int128 uint128_t;
-typedef          __int128 int128_t;
-#endif
 
 static FORCE_INLINE bool isLE(void) {
     const uint32_t   value = 0xb000000e;
@@ -249,4 +243,45 @@ template < typename T >
 static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
     if (!doit || (sizeof(T) < 2)) { return value; }
     return BSWAP(value);
+}
+
+//-----------------------------------------------------------------------------
+// 32-bit integer manipulation functions. These move data in
+// alignment-safe ways, with optional byte swapping.
+#include <cstring>
+
+template < bool bswap >
+static FORCE_INLINE uint64_t GET_U64(const uint8_t * b, const uint32_t i) {
+    uint64_t n;
+    memcpy(&n, &b[i], 8);
+    n = COND_BSWAP(n, bswap);
+    return n;
+}
+
+template < bool bswap >
+static FORCE_INLINE uint32_t GET_U32(const uint8_t * b, const uint32_t i) {
+    uint32_t n;
+    memcpy(&n, &b[i], 4);
+    n = COND_BSWAP(n, bswap);
+    return n;
+}
+
+template < bool bswap >
+static FORCE_INLINE uint16_t GET_U16(const uint8_t * b, const uint32_t i) {
+    uint16_t n;
+    memcpy(&n, &b[i], 2);
+    n = COND_BSWAP(n, bswap);
+    return n;
+}
+
+template < bool bswap >
+static FORCE_INLINE void PUT_U32(uint32_t n, uint8_t * b, const uint32_t i) {
+    n = COND_BSWAP(n, bswap);
+    memcpy(&b[i], &n, 4);
+}
+
+template < bool bswap >
+static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
+    n = COND_BSWAP(n, bswap);
+    memcpy(&b[i], &n, 8);
 }
