@@ -113,7 +113,7 @@
 
 #define ALIGNMENT_16 2
 #define ALIGNMENT_32 4
-#if defined(HAVE_BIT32)
+#if defined(HAVE_32BIT_PLATFORM)
 #define ALIGNMENT_64 4
 #else
 #define ALIGNMENT_64 8
@@ -1018,7 +1018,7 @@ static uint64_t t1ha0_aes_impl(const void *data, size_t len, uint64_t seed) {
     }
 
     x = _mm_add_epi64(_mm_aesdec_si128(x, _mm_aesenc_si128(y, x)), y);
-#if defined(HAVE_32BIT)
+#if defined(HAVE_32BIT_PLATFORM)
 #if defined(NEW_HAVE_SSE_4_1)
     a = (uint32_t)_mm_extract_epi32(x, 0) |
         (uint64_t)_mm_extract_epi32(x, 1) << 32;
@@ -1032,7 +1032,7 @@ static uint64_t t1ha0_aes_impl(const void *data, size_t len, uint64_t seed) {
     b |= (uint64_t)_mm_cvtsi128_si32(_mm_shuffle_epi32(x, 1)) << 32;
 #endif
     _mm_empty();
-#else /* HAVE_32BIT */
+#else /* HAVE_32BIT_PLATFORM */
 #if defined(NEW_HAVE_SSE_4_1)
     a = _mm_extract_epi64(x, 0);
     b = _mm_extract_epi64(x, 1);
