@@ -222,7 +222,7 @@ static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary
   {
     double cycles = SpeedTest(hash,seed,trials,blocksize,align,maxvary,0);
 
-    double bestbpc = double(blocksize - (maxvary + 1) / 2)/cycles;
+    double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
     double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
     printf("Alignment  %2d - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n",align,bestbpc,bestbps);
