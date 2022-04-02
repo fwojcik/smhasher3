@@ -431,7 +431,7 @@ inline uint32_t window ( const uint32_t & blob, int start, int count )
 {
   if ((start + count) == 32)
     return (blob >> start);
-  return ROTR32(blob,start) & ((1<<count)-1);
+  return ((start == 0) ? blob : ROTR32(blob,start)) & ((1<<count)-1);
 }
 
 template<>
@@ -439,7 +439,7 @@ inline uint32_t window ( const uint64_t & blob, int start, int count )
 {
   if ((start + count) == 64)
     return (uint32_t)(blob >> start);
-  return (uint32_t)ROTR64(blob,start) & ((1<<count)-1);
+  return (uint32_t)((start == 0) ? blob : ROTR64(blob,start)) & ((1<<count)-1);
 }
 
 //-----------------------------------------------------------------------------
