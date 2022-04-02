@@ -259,7 +259,7 @@ static HashInfo::endianness parse_endian(const char * str) {
 }
 
 //-----------------------------------------------------------------------------
-// Self-test - verify that all installed hashes work correctly.
+// Self-tests - verify that hashes work correctly
 
 static void HashSelfTestAll(bool verbose) {
   bool pass = true;
@@ -273,6 +273,14 @@ static void HashSelfTestAll(bool verbose) {
     }
     exit(1);
   }
+}
+
+static bool HashSelfTest(const HashInfo * hinfo) {
+    bool result = verifyHash(hinfo, g_hashEndian, true, false);
+
+    recordTestResult(result, "Sanity", "Implementation verification");
+
+    return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -339,7 +347,7 @@ static bool test ( const HashInfo * hInfo )
   {
     printf("[[[ Sanity Tests ]]]\n\n");
 
-    result &=  VerifyTest(hInfo);
+    result &=  HashSelfTest(hInfo);
     result &= (SanityTest(hInfo)          || hInfo->isMock());
     result &= (AppendedZeroesTest(hInfo)  || hInfo->isMock());
     result &= (PrependedZeroesTest(hInfo) || hInfo->isMock());

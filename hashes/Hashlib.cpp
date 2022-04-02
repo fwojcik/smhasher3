@@ -119,6 +119,57 @@ void listHashes(bool nameonly) {
     printf("\n");
 }
 
+//-----------------------------------------------------------------------------
+static bool compareVerification(uint32_t expected, uint32_t actual,
+        const char * endstr, const char * name,
+        bool verbose, bool prefix) {
+    const char * result_str;
+    bool result = true;
+
+    if (expected == actual) {
+        result_str = (actual != 0) ? "PASS\n" : "INSECURE (should not be 0)\n";
+    } else if (expected == 0) {
+        result_str = "SKIP (unverifiable)\n";
+    } else {
+        result_str = "FAIL! (Expected 0x%08x)\n";
+        result = false;
+    }
+
+    if (verbose) {
+        if (prefix) {
+            printf("%25s - ", name);
+        }
+        printf("Verification value %2s 0x%08X ..... ", endstr, actual);
+        printf(result_str, expected);
+    }
+
+    return result;
+}
+
+static const char * endianstr(enum HashInfo::endianness e) {
+    switch(e) {
+    case HashInfo::ENDIAN_LITTLE     : return "LE"; // "Little endian"
+    case HashInfo::ENDIAN_BIG        : return "BE"; // "Big endian"
+    case HashInfo::ENDIAN_NATIVE     : return isLE() ? "LE" : "BE";
+    case HashInfo::ENDIAN_BYTESWAPPED: return isLE() ? "BE" : "LE";
+    case HashInfo::ENDIAN_DEFAULT    : return "CE"; // "Canonical endianness"
+    case HashInfo::ENDIAN_NONDEFAULT : return "NE"; // "Non-canonical endianness"
+    }
+    return NULL; /* unreachable */
+}
+
+bool verifyHash(const HashInfo * hinfo, enum HashInfo::endianness endian,
+        bool verbose, bool prefix = true) {
+    bool result = true;
+    const uint32_t actual = hinfo->ComputedVerify(endian);
+    const uint32_t expect = hinfo->ExpectedVerify(endian);
+
+    result &= compareVerification(expect, actual, endianstr(endian),
+          hinfo->name, verbose, prefix);
+
+    return result;
+}
+
 bool verifyAllHashes(bool verbose) {
     bool result = true;
     for (const HashInfo * h : defaultSort(hashMap())) {
@@ -127,13 +178,13 @@ bool verifyAllHashes(bool verbose) {
         } else if (h->isEndianDefined()) {
             // Verify the hash the canonical way first, and then the
             // other way.
-            result &= h->Verify(HashInfo::ENDIAN_DEFAULT, verbose);
-            result &= h->Verify(HashInfo::ENDIAN_NONDEFAULT, verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_DEFAULT, verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_NONDEFAULT, verbose);
         } else {
             // Always verify little-endian first, just for consistency
             // for humans looking at the results.
-            result &= h->Verify(HashInfo::ENDIAN_LITTLE, verbose);
-            result &= h->Verify(HashInfo::ENDIAN_BIG, verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_LITTLE, verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_BIG, verbose);
         }
     }
     printf("\n");

@@ -67,14 +67,6 @@
 
 // Assumes hash is already seeded to 0.
 
-bool VerifyTest(const HashInfo * hinfo) {
-    bool result = hinfo->Verify(g_hashEndian, true, false);
-
-    recordTestResult(result, "Sanity", "Implementation verification");
-
-    return result;
-}
-
 static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t sentinel) {
     for (size_t i = 0; i < len; i++) {
         if (buf[i] != sentinel) {

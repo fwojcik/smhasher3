@@ -105,6 +105,8 @@ class HashInfo {
     };
 
   private:
+    uint32_t _ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian) const;
+
     char * _fixup_name(const char * in) {
         // Since dashes can't be in C/C++ identifiers, but humans want them
         // in names, replace underscores with dashes.
@@ -167,12 +169,13 @@ class HashInfo {
     }
 
     // The hash will be seeded with a value of 0 before this fn returns
-    bool VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian,
-            bool verbose, bool prefix) const;
+    uint32_t ComputedVerify(enum HashInfo::endianness endian) const {
+        return _ComputedVerifyImpl(this, endian);
+    }
 
-    FORCE_INLINE bool Verify(enum HashInfo::endianness endian,
-            bool verbose, bool prefix = true) const {
-        return VerifyImpl(this, endian, verbose, prefix);
+    uint32_t ExpectedVerify(enum HashInfo::endianness endian) const {
+        const bool wantLE = isBE() ^ _is_native(endian);
+        return wantLE ? this->verification_LE : this->verification_BE;
     }
 
     FORCE_INLINE HashFn hashFn(enum HashInfo::endianness endian) const {

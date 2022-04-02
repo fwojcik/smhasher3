@@ -27,8 +27,8 @@
 // This should hopefully be a thorough and uambiguous test of whether a hash
 // is correctly implemented on a given platform.
 
-static uint32_t calcVerification(const HashInfo * hinfo, enum HashInfo::endianness end) {
-  const HashFn hash = hinfo->hashFn(end);
+uint32_t HashInfo::_ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian) const {
+  const HashFn hash = hinfo->hashFn(endian);
   const uint32_t hashbits = hinfo->bits;
   const uint32_t hashbytes = hashbits / 8;
 
@@ -67,59 +67,6 @@ static uint32_t calcVerification(const HashInfo * hinfo, enum HashInfo::endianne
   delete [] key;
 
   return verification;
-}
-
-static bool compareVerification(uint32_t expected, uint32_t actual,
-        const char * endstr, const char * name,
-        bool verbose, bool prefix) {
-    const char * result_str;
-    bool result = true;
-
-    if (expected == actual) {
-        result_str = (actual != 0) ? "PASS\n" : "INSECURE (should not be 0)\n";
-    } else if (expected == 0) {
-        result_str = "SKIP (unverifiable)\n";
-    } else {
-        result_str = "FAIL! (Expected 0x%08x)\n";
-        result = false;
-    }
-
-    if (verbose) {
-        if (prefix) {
-            printf("%25s - ", name);
-        }
-        printf("Verification value %2s 0x%08X ..... ", endstr, actual);
-        printf(result_str, expected);
-    }
-
-    return result;
-}
-
-static const char * endianstr(enum HashInfo::endianness e) {
-    switch(e) {
-    case HashInfo::ENDIAN_LITTLE     : return "LE"; // "Little endian"
-    case HashInfo::ENDIAN_BIG        : return "BE"; // "Big endian"
-    case HashInfo::ENDIAN_NATIVE     : return isLE() ? "LE" : "BE";
-    case HashInfo::ENDIAN_BYTESWAPPED: return isLE() ? "BE" : "LE";
-    case HashInfo::ENDIAN_DEFAULT    : return "CE"; // "Canonical endianness"
-    case HashInfo::ENDIAN_NONDEFAULT : return "NE"; // "Non-canonical endianness"
-    }
-    return NULL; /* unreachable */
-}
-
-bool HashInfo::VerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian,
-        bool verbose, bool prefix) const {
-  bool result = true;
-
-  const bool wantLE = isBE() ^ _is_native(endian);
-  const uint32_t actual = calcVerification(hinfo, endian);
-  const uint32_t expected = wantLE ?
-      hinfo->verification_LE : hinfo->verification_BE;
-
-  result &= compareVerification(expected, actual, endianstr(endian),
-          hinfo->name, verbose, prefix);
-
-  return result;
 }
 
 //-----------------------------------------------------------------------------
