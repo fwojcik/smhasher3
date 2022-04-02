@@ -92,7 +92,7 @@ namespace {
         static uint64_t LoadOne(uint64_t entropy) { return entropy; }
     };
 
-#if defined(HAVE_ARM_INTRIN)
+#if defined(NEW_HAVE_ARM_NEON)
     using u128 = uint64x2_t;
 
     inline u128 LeftShift(u128 a, int i) { return vshlq_s64(a, vdupq_n_s64(i)); }
@@ -298,7 +298,7 @@ namespace {
         return Plus(summand, Times(factor1, factor2));
     }
 
-#if defined(HAVE_ARM_INTRIN)
+#if defined(NEW_HAVE_ARM_NEON)
     template <>
     u128 MultiplyAdd(const u128 & summand, const u128 & factor1, const u128 & factor2) {
         return vmlal_u32(summand, vmovn_u64(factor1), vmovn_u64(factor2));
@@ -1090,7 +1090,7 @@ inline void V1Scalar(const uint64_t* entropy, const uint8_t* uint8_t_input, size
       entropy, uint8_t_input, length, output);
 }
 
-#if defined(HAVE_ARM_INTRIN)
+#if defined(NEW_HAVE_ARM_NEON)
 template <unsigned dimension, unsigned in_width, unsigned encoded_dimension,
           unsigned out_width, bool bswap>
 inline void V2Neon(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
@@ -1114,7 +1114,7 @@ inline void V4Neon(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t
   return Hash<RepeatWrapper<BlockWrapper128<bswap>, 4>, dimension, in_width, encoded_dimension,
               out_width>(entropy, uint8_t_input, length, output);
 }
-#else // HAVE_ARM_INTRIN
+#else // NEW_HAVE_ARM_NEON
 #if defined(NEW_HAVE_SSE_2)
 template <unsigned dimension, unsigned in_width, unsigned encoded_dimension,
           unsigned out_width, bool bswap>
@@ -1169,7 +1169,7 @@ inline void V4Avx512(const uint64_t* entropy, const uint8_t* uint8_t_input, size
 }
 #endif
 
-#endif // HAVE_ARM_INTRIN
+#endif // NEW_HAVE_ARM_NEON
 
 template <unsigned out_width, bool bswap>
 inline void V4(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
@@ -1208,7 +1208,7 @@ inline void V1(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t len
 
 // XXX Assumes (e.g.) AVX512F implies having AVX2 and SSE2
 
-#if defined(HAVE_ARM_INTRIN)
+#if defined(NEW_HAVE_ARM_NEON)
 
 SPECIALIZE_4(4, Neon)
 SPECIALIZE_4(3, Neon)
