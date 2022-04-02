@@ -378,10 +378,18 @@ inline void rrot ( T & blob, int c )
   }
 }
 
-template<> inline void lrot ( uint32_t & blob, int c ) { blob = ROTL32(blob,c); }
-template<> inline void lrot ( uint64_t & blob, int c ) { blob = ROTL64(blob,c); }
-template<> inline void rrot ( uint32_t & blob, int c ) { blob = ROTR32(blob,c); }
-template<> inline void rrot ( uint64_t & blob, int c ) { blob = ROTR64(blob,c); }
+template<> inline void lrot ( uint32_t & blob, int c ) {
+    if (c > 0) { blob = ROTL32(blob,c&31); }
+}
+template<> inline void lrot ( uint64_t & blob, int c ) {
+    if (c > 0) { blob = ROTL64(blob,c&63); }
+}
+template<> inline void rrot ( uint32_t & blob, int c ) {
+    if (c > 0) { blob = ROTR32(blob,c&31); }
+}
+template<> inline void rrot ( uint64_t & blob, int c ) {
+    if (c > 0) { blob = ROTR64(blob,c&63); }
+}
 
 //-----------------------------------------------------------------------------
 // Bit-windowing functions - select some N-bit subset of the input blob
