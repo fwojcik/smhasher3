@@ -294,8 +294,13 @@ endif()
 if(NOT MSVC)
   set_source_files_properties(hashes/halftimehash.cpp PROPERTIES
     COMPILE_FLAGS "-flax-vector-conversions -Wno-ignored-attributes")
-  set_source_files_properties(hashes/floppsyhash.cpp PROPERTIES
-    COMPILE_FLAGS "-ffp-contract=off")
+  if (CMAKE_CXX_COMPILER_ID STREQUAL Intel)
+    set_source_files_properties(hashes/floppsyhash.cpp PROPERTIES
+      COMPILE_FLAGS "-fp-model strict")
+  else()
+    set_source_files_properties(hashes/floppsyhash.cpp PROPERTIES
+      COMPILE_FLAGS "-ffp-contract=off")
+  endif()
 endif(NOT MSVC)
 
 ########################################
