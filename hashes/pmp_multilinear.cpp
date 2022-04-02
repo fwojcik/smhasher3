@@ -29,6 +29,13 @@
 #include "Types.h"
 #include "Hashlib.h"
 
+#if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE4_1) || defined(NEW_HAVE_SSE_2)
+#undef NEW_HAVE_AVX2
+#undef NEW_HAVE_SSE4_1
+#undef NEW_HAVE_SSE_2
+//#include "lib/Intrinsics.h"
+#endif
+
 #include "lib/Mathmult.h"
 
 #include <functional>
@@ -792,7 +799,7 @@ class PMP_Multilinear_Hasher_32
   FORCE_INLINE uint64_t hash_of_string_chunk_compact( const uint32_t* coeff, ULARGE_INTEGER__XX constTerm, const uint32_t* x ) const {
 	PMPML_CHUNK_LOOP_INTRO_L0
 
-#if defined(HAVE_AVX2) && (PMPML_32_CHUNK_SIZE_LOG2 >= 3)
+#if defined(NEW_HAVE_AVX2) && (PMPML_32_CHUNK_SIZE_LOG2 >= 3)
         __m256i ctr0, ctr1, mask_low;
 	__m256i a, data, product, temp;
 	uint64_t temp_fin;
@@ -967,7 +974,7 @@ class PMP_Multilinear_Hasher_32
 	ctr += constTerm.QuadPart < lo;
 	ctr += hi >> 32;
 
-#elif defined(HAVE_SSE) && (PMPML_32_CHUNK_SIZE_LOG2 >= 2)
+#elif defined(NEW_HAVE_SSE_2) && (PMPML_32_CHUNK_SIZE_LOG2 >= 2)
 
 	__m128i ctr0, ctr1, mask_low;
 	__m128i a, data, product, temp;
@@ -1291,7 +1298,7 @@ class PMP_Multilinear_Hasher_32
 #if defined(_MSC_VER)
 	constTerm.QuadPart += ctr1.m128i_u32[0]; // Microsoft specific
 	ctr.QuadPart += ctr1.m128i_u64[1] + ctr1.m128i_u32[1];
-#elif defined(HAVE_SSE4_1)
+#elif defined(NEW_HAVE_SSE4_1)
 	constTer.QuadPart += _mm_extract_epi32(ctr1,0);
 	ctr.QuadPart += _mm_extract_epi64(ctr1,0) + _mm_extract_epi32(ctr1,1);
 #elif (defined __arm__ || defined __aarch64__)
@@ -1345,7 +1352,7 @@ class PMP_Multilinear_Hasher_32
 	uint32_t size = tail_size >> PMPML_32_WORD_SIZE_BYTES_LOG2;
 	const uint32_t* x = (const uint32_t*)tail;
 
-#if defined(HAVE_SSE)
+#if defined(NEW_HAVE_SSE_2)
 	__m128i ctr0, ctr1, a, data, product, temp, mask_low;
 	int i;
 
@@ -1381,10 +1388,10 @@ class PMP_Multilinear_Hasher_32
 #if defined(_MSC_VER)
         constTerm.QuadPart += ctr1.m128i_u32[0]; // Microsoft specific
         ctr.QuadPart += ctr1.m128i_u64[1] + ctr1.m128i_u32[1];
-#elif defined( __SSE4_1__)
-        constTer.QuadPart += _mm_extract_epi32(ctr1,0);
+#elif 0 && defined( __SSE4_1__)
+        constTerm.QuadPart += _mm_extract_epi32(ctr1,0);
         ctr.QuadPart += _mm_extract_epi64(ctr1,0) + _mm_extract_epi32(ctr1,1);
-#elif defined(IDK?!?!?)
+#elif 0 && defined(IDEK)
         uint32_t b[4];
         _mm_storeu_si128((__m128i *)b,ctr1);
         constTerm.QuadPart += b[0];
@@ -1581,7 +1588,7 @@ class PMP_Multilinear_Hasher_32
 	}
   }
 
-#if defined(_MSC_VER) && defined(HAVE_32BIT)
+#if defined(_MSC_VER) && defined(HAVE_32BIT_PLATFORM)
   template < uint32_t N, bool bswap >
   FORCE_INLINE uint32_t hash_size_SMALL_N( const unsigned char* chars ) const
   {
@@ -1639,7 +1646,7 @@ HASH_SIZE_XXX_END
 
 #endif // PMPML_MSC_32_WORKAROUND
 
-  template < bool bswap > 
+  template < bool bswap >
   NEVER_INLINE uint32_t _hash_noRecursionNoInline_forLessThanChunk(const unsigned char* chars, unsigned int cnt) const
   {
 			unsigned int i;
@@ -1653,7 +1660,7 @@ HASH_SIZE_XXX_END
 			return tmp_hash.LowPart;
   }
 
-  template < bool bswap > 
+  template < bool bswap >
   NEVER_INLINE uint32_t _hash_noRecursionNoInline_type2(const unsigned char* chars, unsigned int cnt) const
   {
 			uint64_t allValues[ PMPML_32_LEVELS * PMPML_32_CHUNK_SIZE ];
@@ -1703,7 +1710,7 @@ public:
 
 		const uint32_t* x = (const uint32_t*)chars;
 
-#if defined(_MSC_VER) && defined(HAVE_32BIT)
+#if defined(_MSC_VER) && defined(HAVE_32BIT_PLATFORM)
 // enables MSVC-specific code that appears to be more efficient than a regular one; comment out, if not desired
 		switch ( cnt )
 		{
@@ -2030,7 +2037,7 @@ class PMP_Multilinear_Hasher_64
   {
 	PMPML_CHUNK_LOOP_INTRO_L0_64
 
-#if defined(HAVE_AVX2) && (PMPML_64_CHUNK_SIZE_LOG2 >= 3)
+#if defined(NEW_HAVE_AVX2) && (PMPML_64_CHUNK_SIZE_LOG2 >= 3)
 	__m256i sse_ctr0_0, sse_ctr0_1, sse_ctr1, sse_ctr2, sse_ctr3_0, sse_ctr3_1, a, a_shifted, a_low, data, data_low, product, temp, mask_low;
 	sse_ctr0_0 = _mm256_setzero_si256 (); // Sets the 128-bit value to zero.
 	sse_ctr0_1 = _mm256_setzero_si256 (); // Sets the 128-bit value to zero.
@@ -2058,7 +2065,8 @@ class PMP_Multilinear_Hasher_64
 		sse_ctr0_1 = _mm256_add_epi64 ( sse_ctr0_1, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
 
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_FIRST( 4 + i )
+        PMPML_64_CHUNK_LOOP_BODY_ULI_T1_FIRST( 4 + i )
+
 		// first cross
 		a_shifted = _mm256_srli_epi64( a, 32 );
 		product = _mm256_mul_epu32 ( data_low, a_shifted ); // A 128-bit value that contains two 64-bit unsigned integers. The result can be expressed by the following equations. r0 := a0 * b0; r1 := a2 * b2
@@ -2067,7 +2075,7 @@ class PMP_Multilinear_Hasher_64
 		sse_ctr2 = _mm256_add_epi64 ( sse_ctr2, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
 
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_SECOND( 5 + i )
+		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_SECOND( 5 + i )
 		// second cross
 		data = _mm256_srli_epi64( data, 32 );
 		product = _mm256_mul_epu32 ( data, a_low ); // A 128-bit value that contains two 64-bit unsigned integers. The result can be expressed by the following equations. r0 := a0 * b0; r1 := a2 * b2
@@ -2076,14 +2084,14 @@ class PMP_Multilinear_Hasher_64
 		sse_ctr2 = _mm256_add_epi64 ( sse_ctr2, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
 
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_FIRST( 6 + i )
+		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_FIRST( 6 + i )
 		// upper 32 bits
 		product = _mm256_mul_epu32 ( data, a_shifted ); // A 128-bit value that contains two 64-bit unsigned integers. The result can be expressed by the following equations. r0 := a0 * b0; r1 := a2 * b2
 		sse_ctr3_0 = _mm256_add_epi64 ( sse_ctr3_0, product );//sse_ctr2 = _mm256_add_epi64 ( sse_ctr2, temp );
 		temp = _mm256_srli_epi64( product, 32 ); // Shifts the 2 signed or unsigned 64-bit integers in a right by count bits while shifting in zeros.
 		sse_ctr3_1 = _mm256_add_epi64 ( sse_ctr3_1, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_SECOND( 7 + i )
+		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_SECOND( 7 + i )
 
 #if (PMPML_64_CHUNK_SIZE_LOG2 >= 4)
 		a = _mm256_load_si256 ((__m256i *)(coeff+i+8)); // Loads 128-bit value. Address p must be 16-byte aligned.
@@ -2098,7 +2106,7 @@ class PMP_Multilinear_Hasher_64
 		sse_ctr0_1 = _mm256_add_epi64 ( sse_ctr0_1, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
 
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_FIRST( 12 + i )
+		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_FIRST( 12 + i )
 
 		// first cross
 		a_shifted = _mm256_srli_epi64( a, 32 );
@@ -2108,7 +2116,7 @@ class PMP_Multilinear_Hasher_64
 		sse_ctr2 = _mm256_add_epi64 ( sse_ctr2, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
 
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_SECOND( 13 + i )
+		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_SECOND( 13 + i )
 
 		// second cross
 		data = _mm256_srli_epi64( data, 32 );
@@ -2118,14 +2126,14 @@ class PMP_Multilinear_Hasher_64
 		sse_ctr2 = _mm256_add_epi64 ( sse_ctr2, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
 
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_FIRST( 14 + i )
+		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_FIRST( 14 + i )
 		// upper 32 bits
 		product = _mm256_mul_epu32 ( data, a_shifted ); // A 128-bit value that contains two 64-bit unsigned integers. The result can be expressed by the following equations. r0 := a0 * b0; r1 := a2 * b2
 		sse_ctr3_0 = _mm256_add_epi64 ( sse_ctr3_0, product );//sse_ctr2 = _mm256_add_epi64 ( sse_ctr2, temp );
 		temp = _mm256_srli_epi64( product, 32 ); // Shifts the 2 signed or unsigned 64-bit integers in a right by count bits while shifting in zeros.
 		sse_ctr3_1 = _mm256_add_epi64 ( sse_ctr3_1, temp );
 		//temp = _mm256_and_si256 ( mask_low, product );
-		PMPML_CHUNK_LOOP_BODY_ULI_T1_64_SECOND( 15 + i )
+		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_SECOND( 15 + i )
 #endif
 	}
 
@@ -2169,7 +2177,7 @@ class PMP_Multilinear_Hasher_64
 
 	ctr2.QuadPart = (upper64>>32) + (t3_1>>32);*/
 
-#else // defined(HAVE_AVX2) && (PMPML_64_CHUNK_SIZE_LOG2 >= 3)
+#else // defined(NEW_HAVE_AVX2) && (PMPML_64_CHUNK_SIZE_LOG2 >= 3)
 
 	for (uint64_t i=0; i<(PMPML_64_CHUNK_SIZE); i+=32) {
 		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_FIRST( 0 + i )
@@ -2211,7 +2219,7 @@ class PMP_Multilinear_Hasher_64
 		PMPML_64_CHUNK_LOOP_BODY_ULI_T1_SECOND( 31 + i )
 #endif
 	}
-#endif  // defined(HAVE_AVX2) && (PMPML_64_CHUNK_SIZE_LOG2 >= 3)
+#endif  // defined(NEW_HAVE_AVX2) && (PMPML_64_CHUNK_SIZE_LOG2 >= 3)
 
 	PMPML_CHUNK_LOOP_PRE_REDUCE_L0_64
 
