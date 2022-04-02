@@ -78,7 +78,7 @@ static bool TestSecret(const HashInfo * hinfo, const seed_t secret) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   uint8_t key[128];
   HashSet<hashtype> collisions_dummy;
-  if (!hinfo->Seed(secret) && (secret > UINT64_C(0xffffffff)))
+  if (hinfo->is32BitSeed() && (secret > UINT64_C(0xffffffff)))
       return true;
   printf("0x%" PRIx64 "  ", secret);
   for (int len : std::vector<int> {1,2,4,8,12,16,32,64,128}) {
@@ -302,7 +302,7 @@ static bool BadSeedsImpl(const HashInfo * hinfo, bool testAll) {
   result &= TestSecret32<hashtype>(hinfo, UINT64_C(0x0), newresult);
 #ifdef HAVE_INT64
   // and the upper half 32bit range
-  if (!hinfo->is32BitSeed() || hinfo->Seed(0)) {
+  if (!hinfo->is32BitSeed()) {
     if (sizeof(hashtype) > 4) {
       if (have_lower) {
         for (auto secret : secrets) {
