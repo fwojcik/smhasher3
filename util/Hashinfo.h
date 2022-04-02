@@ -189,8 +189,8 @@ class HashInfo {
         return true;
     }
 
-    FORCE_INLINE seed_t Seed(seed_t seed, uint64_t hint = 0, bool force = false) const {
-        if (impl_flags & FLAG_IMPL_SEED_WITH_HINT) {
+    FORCE_INLINE seed_t Seed(seed_t seed, bool force = false, uint64_t hint = 0) const {
+        if (unlikely(impl_flags & FLAG_IMPL_SEED_WITH_HINT)) {
             seedfixfn(NULL, hint);
             return seed;
         }
