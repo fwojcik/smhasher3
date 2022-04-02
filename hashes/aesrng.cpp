@@ -87,13 +87,15 @@ static uint64_t hash_mode;
 // same results if threading is enabled or not. It makes the following
 // assumptions about the rest of the code:
 //
-// 1) aesrng_seed() will always be called (at the least) before each
-//    group of tests, before any hash() invocation is made in those tests.
-// 2) aesrng_seed() may be called in each worker thread or the main thread.
-// 3) The hint passed to aesrng_seed() will indicate the start of a
+// 1) aesrng_seedfix() will always be called (at the least) before
+//    each group of tests, before any hash() invocation is made in
+//    those tests.
+// 2) aesrng_seedfix() may be called in each worker thread or the main
+//    thread.
+// 3) The hint passed to aesrng_seedfix() will indicate the start of a
 //    possibly-threaded set of tests.
 // 4) If threading is being used, the main thread WILL NOT call hash()
-//    until another aesrng_seed() call with hint set appropriately.
+//    until another aesrng_seedfix() call with hint set appropriately.
 // 5) The work done by threaded tests is identical to the work done if
 //    threading is disabled, but threading may arbitrarily re-order
 //    that work.
@@ -106,7 +108,7 @@ static uint64_t hash_mode;
 // thread's results should be unaffected if threading is enabled or
 // disabled, or if the possibly-threaded tests are skipped, and the
 // per-thread results should be unaffected by the number of threads.
-uintptr_t aesrng_seed(const uint64_t hint) {
+seed_t aesrng_seedfix(const HashInfo * hinfo, const seed_t hint) {
     if (hash_mode == hint) {
         oldctr[0] = ctr[0];
         oldctr[1] = ctr[1];
@@ -198,7 +200,7 @@ REGISTER_HASH(aesrng32,
   $.hashfn_native = aesrng<32>,
   $.hashfn_bswap = aesrng<32>,
   $.initfn = aesrng_init,
-  $.seedfn = aesrng_seed,
+  $.seedfixfn = aesrng_seedfix,
   $.sort_order = 50
 );
 
@@ -219,7 +221,7 @@ REGISTER_HASH(aesrng64,
   $.hashfn_native = aesrng<64>,
   $.hashfn_bswap = aesrng<64>,
   $.initfn = aesrng_init,
-  $.seedfn = aesrng_seed,
+  $.seedfixfn = aesrng_seedfix,
   $.sort_order = 50
 );
 
@@ -240,7 +242,7 @@ REGISTER_HASH(aesrng128,
   $.hashfn_native = aesrng<128>,
   $.hashfn_bswap = aesrng<128>,
   $.initfn = aesrng_init,
-  $.seedfn = aesrng_seed,
+  $.seedfixfn = aesrng_seedfix,
   $.sort_order = 50
 );
 
@@ -261,7 +263,7 @@ REGISTER_HASH(aesrng160,
   $.hashfn_native = aesrng<160>,
   $.hashfn_bswap = aesrng<160>,
   $.initfn = aesrng_init,
-  $.seedfn = aesrng_seed,
+  $.seedfixfn = aesrng_seedfix,
   $.sort_order = 50
 );
 
@@ -282,7 +284,7 @@ REGISTER_HASH(aesrng224,
   $.hashfn_native = aesrng<224>,
   $.hashfn_bswap = aesrng<224>,
   $.initfn = aesrng_init,
-  $.seedfn = aesrng_seed,
+  $.seedfixfn = aesrng_seedfix,
   $.sort_order = 50
 );
 
@@ -303,6 +305,6 @@ REGISTER_HASH(aesrng256,
   $.hashfn_native = aesrng<256>,
   $.hashfn_bswap = aesrng<256>,
   $.initfn = aesrng_init,
-  $.seedfn = aesrng_seed,
+  $.seedfixfn = aesrng_seedfix,
   $.sort_order = 50
 );
