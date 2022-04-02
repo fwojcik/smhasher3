@@ -120,6 +120,11 @@ void listHashes(bool nameonly) {
 }
 
 //-----------------------------------------------------------------------------
+static void reportInitFailure(const HashInfo * hinfo) {
+    printf("%25s - Hash initialization failed!      ..... FAIL!\n",
+            hinfo->name);
+}
+
 static bool compareVerification(uint32_t expected, uint32_t actual,
         const char * endstr, const char * name,
         bool verbose, bool prefix) {
@@ -174,6 +179,9 @@ bool verifyAllHashes(bool verbose) {
     bool result = true;
     for (const HashInfo * h : defaultSort(hashMap())) {
         if (!h->Init()) {
+            if (verbose) {
+                reportInitFailure(h);
+            }
             result = false;
         } else if (h->isEndianDefined()) {
             // Verify the hash the canonical way first, and then the
