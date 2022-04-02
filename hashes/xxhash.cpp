@@ -761,7 +761,7 @@ static FORCE_INLINE XXH128_hash_t XXH3_len_9to16_128b(const uint8_t* input,
      * The best approach to this operation is different on 32-bit and
      * 64-bit, but the mathematical results are the same.
      */
-#if defined(HAVE_BIT32)
+#if defined(HAVE_32BIT_PLATFORM)
     /*
      * 32-bit optimized version, which is more readable.
      *
