@@ -518,6 +518,12 @@ static bool test ( const HashInfo * hInfo )
           }
           printf("]\n\n");
       } else {
+          // Sometimes failures are recorded even for overall
+          // successes. The only example I know of is Mock hashes
+          // failing sanity tests.
+          for (auto x: g_testFailures) {
+              free(x.second);
+          }
           printf("\n");
       }
       printf("-------------------------------------------------------------------------------\n");
