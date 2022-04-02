@@ -44,7 +44,6 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <cstring>
 #include <vector>
 #include <map>
 #include <set>
@@ -54,15 +53,6 @@
 #include "Hashinfo.h"
 #include "Bitvec.h"
 
-//-----------------------------------------------------------------------------
-// If the optimizer detects that a value in a speed test is constant or unused,
-// the optimizer may remove references to it or otherwise create code that
-// would not occur in a real-world application. To prevent the optimizer from
-// doing this we declare two trivial functions that either sink or source data,
-// and bar the compiler from optimizing them.
-
-void     blackhole ( uint64_t x );
-uint32_t whitehole ( void );
 
 //-----------------------------------------------------------------------------
 template< typename hashtype >
@@ -81,18 +71,6 @@ extern seed_t g_seed;
 extern HashInfo::endianness g_hashEndian;
 
 //-----------------------------------------------------------------------------
-typedef void (*pfHash)(const void *blob, const int len, const uint32_t seed,
-                       void *out);
-
-enum HashQuality             {  SKIP,   POOR,   GOOD };
-
-bool hash_is_slow(pfHash hash);
-bool hash_is_very_slow(pfHash hash);
-bool Hash_Seed_init (pfHash hash, size_t seed);
-void Bad_Seed_init (pfHash hash, uint32_t &seed);
-
-//-----------------------------------------------------------------------------
-
 template < int _bits >
 class Blob
 {

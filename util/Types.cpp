@@ -48,25 +48,6 @@
 
 #include <stdio.h>
 
-uint32_t MurmurOAAT ( const char * blob, int len, uint32_t seed );
-
-//-----------------------------------------------------------------------------
-
-#if defined(_MSC_VER)
-#pragma optimize( "", off )
-#endif
-
-void blackhole ( uint64_t ) {
-}
-
-uint32_t whitehole ( void ) {
-  return 0;
-}
-
-#if defined(_MSC_VER)
-#pragma optimize( "", on ) 
-#endif
-
 uint64_t g_seed = 0;
 
 //-----------------------------------------------------------------------------
