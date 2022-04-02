@@ -29,7 +29,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_2)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 #define FARSH_MAX_HASHES             32  /* number of 32-bit hashes supported by the built-in key */
@@ -100,13 +100,10 @@ static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
     __m256i sum = _mm256_setzero_si256();  __m128i sum128;  int i;
     const __m256i *xdata = (const __m256i *) data;
     const __m256i *xkey  = (const __m256i *) key;
-    /* Shuffle mask for 32-bit byteswap */
-    const __m256i mask = _mm256_set_epi8(28,29,30,31,24,25,26,27,20,21,22,23,16,17,18,19,
-            12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3);
 
     for (i=0; i < STRIPE/sizeof(__m256i); i++) {
         __m256i d = _mm256_loadu_si256 (xdata+i);
-        if (bswap) { d = _mm256_shuffle_epi8(d, mask); }
+        if (bswap) { d = mm256_bswap32(d); }
         __m256i k = _mm256_loadu_si256 (xkey+i);
         __m256i dk = _mm256_add_epi32(d,k);                                     // uint32 dk[8]  = {d0+k0, d1+k1 .. d7+k7}
         __m256i res = _mm256_mul_epu32 (dk, _mm256_shuffle_epi32 (dk,0x31));    // uint64 res[4] = {dk0*dk1, dk2*dk3, dk4*dk5, dk6*dk7}
@@ -119,12 +116,10 @@ static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
     __m128i sum = _mm_setzero_si128();  int i;
     const __m128i *xdata = (const __m128i *) data;
     const __m128i *xkey  = (const __m128i *) key;
-    /* Shuffle mask for 32-bit byteswap */
-    const __m128i mask = _mm_set_epi8(12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3);
 
     for (i=0; i < STRIPE/sizeof(__m128i); i++) {
         __m128i d = _mm_loadu_si128 (xdata+i);
-        if (bswap) { d = _mm_shuffle_epi8(d, mask); }
+        if (bswap) { d = mm_bswap32(d); }
         __m128i k = _mm_load_si128 (xkey+i);
         __m128i dk = _mm_add_epi32(d,k);                                        // uint32 dk[4]  = {d0+k0, d1+k1, d2+k2, d3+k3}
         __m128i res = _mm_mul_epu32 (dk, _mm_shuffle_epi32 (dk,0x31));          // uint64 res[2] = {dk0*dk1,dk2*dk3}

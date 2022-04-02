@@ -34,7 +34,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SSE_2)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 //------------------------------------------------------------

@@ -30,8 +30,7 @@
 #include <cassert>
 
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_4_1) || defined(NEW_HAVE_CRC32C_X86_64) || defined(NEW_HAVE_AES_X86_64) || defined(NEW_HAVE_AVX)
-#define FARMHASH_HAVE_X64_INTRIN 1
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 using namespace std;
@@ -65,7 +64,7 @@ static inline uint64_t Fetch64(const uint8_t * p) {
     return GET_U64<bswap>(p, 0);
 }
 
-#if defined(FARMHASH_HAVE_X64_INTRIN)
+#if defined(HAVE_X64_INTRIN)
 template < bool bswap >
 static inline __m128i Fetch128(const uint8_t * s) {
     __m128i d = _mm_loadu_si128(reinterpret_cast<const __m128i*>(s));
@@ -81,7 +80,7 @@ static inline __m128i Fetch128(const uint8_t * s) {
 #define PERMUTE3(a, b, c) do { std::swap(a, b); std::swap(a, c); } while (0)
 
 //------------------------------------------------------------
-#if defined(FARMHASH_HAVE_X64_INTRIN)
+#if defined(HAVE_X64_INTRIN)
 // Helpers for data-parallel operations (1x 128 bits or 2x 64 or 4x 32).
 static inline __m128i Add64(__m128i x, __m128i y) { return _mm_add_epi64(x, y); }
 static inline __m128i Add32(__m128i x, __m128i y) { return _mm_add_epi32(x, y); }

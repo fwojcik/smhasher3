@@ -32,6 +32,8 @@
 
 // Only 128-bit AES is currently supported!!
 
+#include "Intrinsics.h"
+
 #if defined(NEW_HAVE_AES_X86_64)
 #  include "AES-aesni.h"
 #elif defined(NEW_HAVE_AES_ARM)

@@ -5,16 +5,6 @@
 // It is generally assumed that supporting a later/higher instruction
 // set includes support for previous/lower instruction sets.
 
-#if defined(NEW_HAVE_XOP)
-#  if defined(_MSC_VER)
-#    include <ammintrin.h>
-#  else
-#    include <x86intrin.h>
-#  endif
-#else
-#include <immintrin.h>
-#endif
-
 #define LOADU(p)  _mm_loadu_si128( (const __m128i *)(p) )
 #define STOREU(p,r) _mm_storeu_si128((__m128i *)(p), r)
 
@@ -245,7 +235,6 @@
 
 template < bool bswap >
 static void blake2_compress(blake2b_context * ctx, const uint8_t * in) {
-  const __m128i MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020304050607ULL);
   __m128i row1l, row1h;
   __m128i row2l, row2h;
   __m128i row3l, row3h;
@@ -256,14 +245,14 @@ static void blake2_compress(blake2b_context * ctx, const uint8_t * in) {
   const __m128i r16 = _mm_setr_epi8( 2, 3, 4, 5, 6, 7, 0, 1, 10, 11, 12, 13, 14, 15, 8, 9 );
   const __m128i r24 = _mm_setr_epi8( 3, 4, 5, 6, 7, 0, 1, 2, 11, 12, 13, 14, 15, 8, 9, 10 );
 
-  const __m128i m0 = bswap ? _mm_shuffle_epi8(LOADU(in + 00), MASK) : LOADU( in + 00 );
-  const __m128i m1 = bswap ? _mm_shuffle_epi8(LOADU(in + 16), MASK) : LOADU( in + 16 );
-  const __m128i m2 = bswap ? _mm_shuffle_epi8(LOADU(in + 32), MASK) : LOADU( in + 32 );
-  const __m128i m3 = bswap ? _mm_shuffle_epi8(LOADU(in + 48), MASK) : LOADU( in + 48 );
-  const __m128i m4 = bswap ? _mm_shuffle_epi8(LOADU(in + 64), MASK) : LOADU( in + 64 );
-  const __m128i m5 = bswap ? _mm_shuffle_epi8(LOADU(in + 80), MASK) : LOADU( in + 80 );
-  const __m128i m6 = bswap ? _mm_shuffle_epi8(LOADU(in + 96), MASK) : LOADU( in + 96 );
-  const __m128i m7 = bswap ? _mm_shuffle_epi8(LOADU(in + 112), MASK) : LOADU( in + 112 );
+  const __m128i m0 = bswap ? mm_bswap64(LOADU(in +  00)) : LOADU( in +  00 );
+  const __m128i m1 = bswap ? mm_bswap64(LOADU(in +  16)) : LOADU( in +  16 );
+  const __m128i m2 = bswap ? mm_bswap64(LOADU(in +  32)) : LOADU( in +  32 );
+  const __m128i m3 = bswap ? mm_bswap64(LOADU(in +  48)) : LOADU( in +  48 );
+  const __m128i m4 = bswap ? mm_bswap64(LOADU(in +  64)) : LOADU( in +  64 );
+  const __m128i m5 = bswap ? mm_bswap64(LOADU(in +  80)) : LOADU( in +  80 );
+  const __m128i m6 = bswap ? mm_bswap64(LOADU(in +  96)) : LOADU( in +  96 );
+  const __m128i m7 = bswap ? mm_bswap64(LOADU(in + 112)) : LOADU( in + 112 );
 
   row1l = LOADU( &(ctx->h[0]) );
   row1h = LOADU( &(ctx->h[2]) );
@@ -675,7 +664,6 @@ static void blake2_compress(blake2b_context * ctx, const uint8_t * in) {
 
 template < bool bswap >
 static void blake2_compress(blake2s_context * ctx, const uint8_t * in) {
-  const __m128i MASK = _mm_set_epi64x(0x0c0d0e0f08090a0bULL, 0x0405060700010203ULL);
   __m128i row1, row2, row3, row4;
   __m128i buf1, buf2, buf3, buf4;
   __m128i t0, t1, t2;
@@ -684,10 +672,10 @@ static void blake2_compress(blake2s_context * ctx, const uint8_t * in) {
   const __m128i r8 = _mm_set_epi8( 12, 15, 14, 13, 8, 11, 10, 9, 4, 7, 6, 5, 0, 3, 2, 1 );
   const __m128i r16 = _mm_set_epi8( 13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2 );
 
-  const __m128i m0 = bswap ? _mm_shuffle_epi8(LOADU(in + 00), MASK) : LOADU( in + 00 );
-  const __m128i m1 = bswap ? _mm_shuffle_epi8(LOADU(in + 16), MASK) : LOADU( in + 16 );
-  const __m128i m2 = bswap ? _mm_shuffle_epi8(LOADU(in + 32), MASK) : LOADU( in + 32 );
-  const __m128i m3 = bswap ? _mm_shuffle_epi8(LOADU(in + 48), MASK) : LOADU( in + 48 );
+  const __m128i m0 = bswap ? mm_bswap32(LOADU(in + 00)) : LOADU( in + 00 );
+  const __m128i m1 = bswap ? mm_bswap32(LOADU(in + 16)) : LOADU( in + 16 );
+  const __m128i m2 = bswap ? mm_bswap32(LOADU(in + 32)) : LOADU( in + 32 );
+  const __m128i m3 = bswap ? mm_bswap32(LOADU(in + 48)) : LOADU( in + 48 );
 
   row1 = ff0 = LOADU( &ctx->h[0] );
   row2 = ff1 = LOADU( &ctx->h[4] );

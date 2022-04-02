@@ -62,7 +62,7 @@
 #include "lib/Mathmult.h"
 
 #if defined(NEW_HAVE_AES_X86_64)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 #include <cassert>

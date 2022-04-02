@@ -29,12 +29,6 @@
  *
  * For more information, please refer to <http://unlicense.org/>
  */
-#include <arm_neon.h>
-
-#if defined(NEW_HAVE_ARM_ACLE)
-#include <arm_acle.h>
-#endif
-
 template < int Nr >
 static inline void AES_Encrypt_ARM(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t pt[16], uint8_t ct[16]) {
     uint8x16_t block = vld1q_u8(pt);

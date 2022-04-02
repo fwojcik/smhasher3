@@ -30,38 +30,6 @@
  *   - xxHash homepage: https://www.xxhash.com
  *   - xxHash source repository: https://github.com/Cyan4973/xxHash
  */
-#include <immintrin.h>
-
-#if defined(NEW_HAVE_AVX512_BW)
-    static FORCE_INLINE __m512i mm512_bswap64(__m512i v) {
-        const __m512i MASK = _mm512_set_epi64(0x08090a0b0c0d0e0fULL,
-                                              0x0001020304050607ULL,
-                                              0x08090a0b0c0d0e0fULL,
-                                              0x0001020304050607ULL,
-                                              0x08090a0b0c0d0e0fULL,
-                                              0x0001020304050607ULL,
-                                              0x08090a0b0c0d0e0fULL,
-                                              0x0001020304050607ULL);
-        return _mm512_shuffle_epi8(v, MASK);
-    }
-#else
-    static FORCE_INLINE __m512i mm512_bswap64(__m512i v) {
-        // Byteswapping 256 bits at a time, since _mm512_shuffle_epi8()
-        // requires AVX512-BW in addition to AVX512-F.
-        const __m256i MASK = _mm256_set_epi64x(0x08090a0b0c0d0e0fULL,
-                                               0x0001020304050607ULL,
-                                               0x08090a0b0c0d0e0fULL,
-                                               0x0001020304050607ULL);
-        __m256i blk1 = _mm512_extracti64x4_epi64(v, 0);
-        __m256i blk2 = _mm512_extracti64x4_epi64(v, 1);
-        blk1 = _mm256_shuffle_epi8(blk1, MASK);
-        blk2 = _mm256_shuffle_epi8(blk2, MASK);
-        v = _mm512_inserti64x4(v, blk1, 0);
-        v = _mm512_inserti64x4(v, blk2, 1);
-        return v;
-    }
-#endif
-
 template < bool bswap >
 static FORCE_INLINE void XXH3_accumulate_512_avx512(
         void * RESTRICT acc, const void * RESTRICT input,

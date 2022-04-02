@@ -59,11 +59,10 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AES_X86_64)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 
 template < uint32_t version, bool bswap >
 void falkhash(const void * in, const size_t olen, const seed_t seed64, void * out) {
-  const __m128i BSWAP_MASK = _mm_set_epi8(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
   const uint8_t * buf = (const uint8_t *)in;
   uint64_t len = (uint64_t)olen;
   __m128i hash, seed;
@@ -97,9 +96,9 @@ void falkhash(const void * in, const size_t olen, const seed_t seed64, void * ou
     if (len < CHUNK_LEN) {
       memcpy(tmp, buf, len);
       if (version == 1) {
-	memset(tmp + len, 0xff, CHUNK_LEN - len);
+          memset(tmp + len, 0xff, CHUNK_LEN - len);
       } else {
-	memset(tmp + len, 0, CHUNK_LEN - len);
+          memset(tmp + len, 0, CHUNK_LEN - len);
       }
       buf = tmp;
       len = CHUNK_LEN;
@@ -113,11 +112,12 @@ void falkhash(const void * in, const size_t olen, const seed_t seed64, void * ou
     piece[4] = _mm_loadu_si128((__m128i*)(buf + 4*0x10));
 
     if (bswap) {
-      piece[0] = _mm_shuffle_epi8(piece[0], BSWAP_MASK);
-      piece[1] = _mm_shuffle_epi8(piece[1], BSWAP_MASK);
-      piece[2] = _mm_shuffle_epi8(piece[2], BSWAP_MASK);
-      piece[3] = _mm_shuffle_epi8(piece[3], BSWAP_MASK);
-      piece[4] = _mm_shuffle_epi8(piece[4], BSWAP_MASK);
+      // Arbitrarily chose 64-bit chunks
+      piece[0] = mm_bswap64(piece[0]);
+      piece[1] = mm_bswap64(piece[1]);
+      piece[2] = mm_bswap64(piece[2]);
+      piece[3] = mm_bswap64(piece[3]);
+      piece[4] = mm_bswap64(piece[4]);
     }
 
     if (version == 2) {
@@ -203,7 +203,7 @@ REGISTER_HASH(falkhash_v2,
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
   $.verification_LE = 0x7FA15220,
-  $.verification_BE = 0x7DD60A5F,
+  $.verification_BE = 0x0A8285F2,
   $.hashfn_native = falkhash<2,false>,
   $.hashfn_bswap = falkhash<2,true>
 );

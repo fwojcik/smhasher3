@@ -30,7 +30,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_CRC32C_X86_64)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 using namespace std;

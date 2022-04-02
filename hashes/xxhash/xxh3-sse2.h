@@ -30,8 +30,6 @@
  *   - xxHash homepage: https://www.xxhash.com
  *   - xxHash source repository: https://github.com/Cyan4973/xxHash
  */
-#include <immintrin.h>
-
 template < bool bswap >
 static FORCE_INLINE void XXH3_accumulate_512_sse2(
         void * RESTRICT acc, const void * RESTRICT input,
@@ -44,18 +42,16 @@ static FORCE_INLINE void XXH3_accumulate_512_sse2(
     /* Unaligned. This is mainly for pointer arithmetic, and because
      * _mm_loadu_si128 requires a const __m128i * pointer for some reason. */
     const         __m128i* const xsecret = (const __m128i *) secret;
-    const         __m128i MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL,
-                                                0x0001020304050607ULL);
 
     for (size_t i = 0; i < XXH_STRIPE_LEN/sizeof(__m128i); i++) {
         /* data_vec    = xinput[i]; */
         __m128i const data_vec    = bswap ?
-            _mm_shuffle_epi8(_mm_loadu_si128(xinput+i), MASK) :
-                             _mm_loadu_si128(xinput+i);
+                         mm_bswap64(_mm_loadu_si128(xinput+i)) :
+                                    _mm_loadu_si128(xinput+i);
         /* key_vec     = xsecret[i]; */
         __m128i const key_vec     = bswap ?
-            _mm_shuffle_epi8(_mm_loadu_si128(xsecret+i), MASK) :
-                             _mm_loadu_si128(xsecret+i);
+                         mm_bswap64(_mm_loadu_si128(xsecret+i)) :
+                                    _mm_loadu_si128(xsecret+i);
         /* data_key    = data_vec ^ key_vec; */
         __m128i const data_key    = _mm_xor_si128     (data_vec, key_vec);
         /* data_key_lo = data_key >> 32; */
@@ -78,8 +74,6 @@ static FORCE_INLINE void XXH3_scrambleAcc_sse2(void * RESTRICT acc,
      * _mm_loadu_si128 requires a const __m128i * pointer for some reason. */
     const         __m128i* const xsecret = (const __m128i *) secret;
     const __m128i prime32 = _mm_set1_epi32((int)XXH_PRIME32_1);
-    const __m128i MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL,
-                                        0x0001020304050607ULL);
 
     for (size_t i = 0; i < XXH_STRIPE_LEN/sizeof(__m128i); i++) {
         /* xacc[i] ^= (xacc[i] >> 47) */
@@ -88,8 +82,8 @@ static FORCE_INLINE void XXH3_scrambleAcc_sse2(void * RESTRICT acc,
         __m128i const data_vec    = _mm_xor_si128     (acc_vec, shifted);
         /* xacc[i] ^= xsecret[i]; */
         __m128i const key_vec     = bswap ?
-            _mm_shuffle_epi8(_mm_loadu_si128(xsecret+i), MASK) :
-                             _mm_loadu_si128(xsecret+i);
+                         mm_bswap64(_mm_loadu_si128(xsecret+i)) :
+                                    _mm_loadu_si128(xsecret+i);
         __m128i const data_key    = _mm_xor_si128     (data_vec, key_vec);
 
         /* xacc[i] *= XXH_PRIME32_1; */
@@ -120,8 +114,6 @@ static FORCE_INLINE void XXH3_initCustomSecret_sse2(void * RESTRICT customSecret
 #endif
     const void * const src16 = XXH3_kSecret;
     __m128i* dst16 = (__m128i*) customSecret;
-    const __m128i MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL,
-                                        0x0001020304050607ULL);
 
 #if defined(__GNUC__) || defined(__clang__)
     XXH_COMPILER_GUARD(dst16);
@@ -129,7 +121,7 @@ static FORCE_INLINE void XXH3_initCustomSecret_sse2(void * RESTRICT customSecret
 
     for (int i = 0; i < nbRounds; ++i) {
         if (bswap) {
-            dst16[i] = _mm_shuffle_epi8(_mm_add_epi64(_mm_shuffle_epi8(_mm_load_si128((const __m128i *)src16+i), MASK), seed), MASK);
+            dst16[i] = mm_bswap64(_mm_add_epi64(mm_bswap64(_mm_load_si128((const __m128i *)src16+i)), seed));
         } else {
             dst16[i] = _mm_add_epi64(_mm_load_si128((const __m128i *)src16+i), seed);
         }

@@ -30,7 +30,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 //------------------------------------------------------------
@@ -134,7 +134,6 @@ static uint64_t siphash_sse(const uint64_t key[2], const uint8_t * m, size_t len
 	uint64_t last7;
 	uint32_t lo, hi;
 	size_t i, blocks;
-    const xmmi MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020304050607ULL);
 
 	k = _mm_loadu_si128((xmmi *)key);
 	v02 = siphash_init[0].v;
@@ -185,7 +184,7 @@ static uint64_t siphash_sse(const uint64_t key[2], const uint8_t * m, size_t len
 	for (i = 0, blocks = (len & ~7); i < blocks; i += 8) {
 		mi = _mm_loadl_epi64((xmmi *)(m + i));
         if (bswap) {
-            mi = _mm_shuffle_epi8(mi, MASK);
+            mi = mm_bswap64(mi);
         }
 		v13 = _mm_xor_si128(v13, _mm_slli_si128(mi, 8));
 		sipcompress();

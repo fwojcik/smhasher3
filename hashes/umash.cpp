@@ -29,8 +29,8 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_CLMUL_X86_64)
+#include "lib/Intrinsics.h"
 #include <cassert>
-#include <immintrin.h>
 
 /* We only use 128-bit vector, as pairs of 64-bit integers. */
 typedef __m128i v128;

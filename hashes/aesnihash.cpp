@@ -37,7 +37,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AES_X86_64)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 
 // based on https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a
 template < bool bswap >
@@ -50,15 +50,12 @@ void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out
     __m128i rk1 = {0x1231236570743245ULL, 0x126f12321321456dULL};
     __m128i seed128 = {(int64_t)seed, 0};
     __m128i hash = _mm_xor_si128(rk0, seed128);
-    // Arbitrarily chose 64-bit wordlen
-    const __m128i MASK = _mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020304050607ULL);
 
     while (src_sz >= 16) {
     onemoretry:
         __m128i piece = _mm_loadu_si128((__m128i *)in);
-        if (bswap) {
-            piece = _mm_shuffle_epi8(piece, MASK);
-        }
+        // Arbitrarily chose 64-bit wordlen
+        if (bswap) { piece = mm_bswap64(piece); }
         in += 16;
         src_sz -= 16;
         hash = _mm_aesenc_si128(_mm_xor_si128(hash, piece), rk0);

@@ -35,15 +35,8 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SHA2_X86_64)
-#  include <immintrin.h>
-#endif
-
-#if defined(NEW_HAVE_SHA2_ARM)
-#  include <arm_neon.h>
-#  if defined(NEW_HAVE_ARM_ACLE)
-#    include <arm_acle.h>
-#  endif
+#if defined(NEW_HAVE_SHA2_X86_64) || defined(NEW_HAVE_SHA2_ARM)
+#include "lib/Intrinsics.h"
 #endif
 
 //-----------------------------------------------------------------------------
@@ -182,9 +175,6 @@ static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
   __m128i MSG, TMP;
   __m128i MSG0, MSG1, MSG2, MSG3;
   __m128i ABEF_SAVE, CDGH_SAVE;
-  const __m128i MASK = bswap ?
-    _mm_set_epi64x(0x0c0d0e0f08090a0bULL, 0x0405060700010203ULL) :
-    _mm_set_epi64x(0x0f0e0d0c0b0a0908ULL, 0x0706050403020100ULL);
 
   /* Load initial values */
   TMP = _mm_loadu_si128((const __m128i*) &state[0]);
@@ -200,8 +190,8 @@ static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
   CDGH_SAVE = STATE1;
 
   /* Rounds 0-3 */
-  MSG = _mm_loadu_si128((const __m128i*) (data+0));
-  MSG0 = _mm_shuffle_epi8(MSG, MASK);
+  MSG0 = _mm_loadu_si128((const __m128i*) (data+0));
+  if (bswap) { MSG0 = mm_bswap32(MSG0); }
   MSG = _mm_add_epi32(MSG0, _mm_set_epi64x(0xE9B5DBA5B5C0FBCFULL, 0x71374491428A2F98ULL));
   STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
   MSG = _mm_shuffle_epi32(MSG, 0x0E);
@@ -209,7 +199,7 @@ static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
 
   /* Rounds 4-7 */
   MSG1 = _mm_loadu_si128((const __m128i*) (data+16));
-  MSG1 = _mm_shuffle_epi8(MSG1, MASK);
+  if (bswap) { MSG1 = mm_bswap32(MSG1); }
   MSG = _mm_add_epi32(MSG1, _mm_set_epi64x(0xAB1C5ED5923F82A4ULL, 0x59F111F13956C25BULL));
   STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
   MSG = _mm_shuffle_epi32(MSG, 0x0E);
@@ -218,7 +208,7 @@ static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
 
   /* Rounds 8-11 */
   MSG2 = _mm_loadu_si128((const __m128i*) (data+32));
-  MSG2 = _mm_shuffle_epi8(MSG2, MASK);
+  if (bswap) { MSG2 = mm_bswap32(MSG2); }
   MSG = _mm_add_epi32(MSG2, _mm_set_epi64x(0x550C7DC3243185BEULL, 0x12835B01D807AA98ULL));
   STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
   MSG = _mm_shuffle_epi32(MSG, 0x0E);
@@ -227,7 +217,7 @@ static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
 
   /* Rounds 12-15 */
   MSG3 = _mm_loadu_si128((const __m128i*) (data+48));
-  MSG3 = _mm_shuffle_epi8(MSG3, MASK);
+  if (bswap) { MSG3 = mm_bswap32(MSG3); }
   MSG = _mm_add_epi32(MSG3, _mm_set_epi64x(0xC19BF1749BDC06A7ULL, 0x80DEB1FE72BE5D74ULL));
   STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
   TMP = _mm_alignr_epi8(MSG3, MSG2, 4);

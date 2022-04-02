@@ -30,8 +30,6 @@
  *   - xxHash homepage: https://www.xxhash.com
  *   - xxHash source repository: https://github.com/Cyan4973/xxHash
  */
-#include <immintrin.h>
-
 template < bool bswap >
 static FORCE_INLINE void XXH3_accumulate_512_avx2(
         void* RESTRICT acc, const void* RESTRICT input,
@@ -43,19 +41,15 @@ static FORCE_INLINE void XXH3_accumulate_512_avx2(
     /* Unaligned. This is mainly for pointer arithmetic, and because
      * _mm256_loadu_si256 requires a const __m256i * pointer for some reason. */
     const         __m256i* const xsecret = (const __m256i *) secret;
-    const         __m256i MASK = _mm256_set_epi64x(0x08090a0b0c0d0e0fULL,
-                                                   0x0001020304050607ULL,
-                                                   0x08090a0b0c0d0e0fULL,
-                                                   0x0001020304050607ULL);
 
     for (size_t i = 0; i < XXH_STRIPE_LEN/sizeof(__m256i); i++) {
         /* data_vec    = xinput[i]; */
         __m256i const data_vec    = bswap ?
-            _mm256_shuffle_epi8(_mm256_loadu_si256(xinput+i), MASK) :
+                  mm256_bswap64(_mm256_loadu_si256(xinput+i)) :
                                 _mm256_loadu_si256(xinput+i);
         /* key_vec     = xsecret[i]; */
         __m256i const key_vec     = bswap ?
-            _mm256_shuffle_epi8(_mm256_loadu_si256(xsecret+i), MASK) :
+                  mm256_bswap64(_mm256_loadu_si256(xsecret+i)) :
                                 _mm256_loadu_si256(xsecret+i);
         /* data_key    = data_vec ^ key_vec; */
         __m256i const data_key    = _mm256_xor_si256     (data_vec, key_vec);
@@ -79,10 +73,6 @@ static FORCE_INLINE void XXH3_scrambleAcc_avx2(void * RESTRICT acc,
      * _mm256_loadu_si256 requires a const __m256i * pointer for some reason. */
     const         __m256i* const xsecret = (const __m256i *) secret;
     const __m256i prime32 = _mm256_set1_epi32((int)XXH_PRIME32_1);
-    const         __m256i MASK = _mm256_set_epi64x(0x08090a0b0c0d0e0fULL,
-                                                   0x0001020304050607ULL,
-                                                   0x08090a0b0c0d0e0fULL,
-                                                   0x0001020304050607ULL);
 
     for (size_t i = 0; i < XXH_STRIPE_LEN/sizeof(__m256i); i++) {
         /* xacc[i] ^= (xacc[i] >> 47) */
@@ -91,7 +81,7 @@ static FORCE_INLINE void XXH3_scrambleAcc_avx2(void * RESTRICT acc,
         __m256i const data_vec    = _mm256_xor_si256     (acc_vec, shifted);
         /* xacc[i] ^= xsecret; */
         __m256i const key_vec     = bswap ?
-            _mm256_shuffle_epi8(_mm256_loadu_si256(xsecret+i), MASK) :
+                  mm256_bswap64(_mm256_loadu_si256(xsecret+i)) :
                                 _mm256_loadu_si256(xsecret+i);
         __m256i const data_key    = _mm256_xor_si256     (data_vec, key_vec);
 
@@ -113,10 +103,6 @@ static FORCE_INLINE void XXH3_initCustomSecret_avx2(void * RESTRICT customSecret
         uint64_t seed64) {
     _mm_prefetch((const char*)customSecret, _MM_HINT_T0);
     __m256i const seed = _mm256_set_epi64x((int64_t)(UINT64_C(0) - seed64), (int64_t)seed64, (int64_t)(UINT64_C(0) - seed64), (int64_t)seed64);
-    const         __m256i MASK = _mm256_set_epi64x(0x08090a0b0c0d0e0fULL,
-                                                   0x0001020304050607ULL,
-                                                   0x08090a0b0c0d0e0fULL,
-                                                   0x0001020304050607ULL);
 
     const __m256i* const src  = (const __m256i*) ((const void*) XXH3_kSecret);
           __m256i*       dest = (      __m256i*) customSecret;
@@ -127,12 +113,12 @@ static FORCE_INLINE void XXH3_initCustomSecret_avx2(void * RESTRICT customSecret
 
     /* GCC -O2 need unroll loop manually */
     if (bswap) {
-        dest[0] = _mm256_shuffle_epi8(_mm256_add_epi64(_mm256_shuffle_epi8(_mm256_stream_load_si256(src+0), MASK), seed), MASK);
-        dest[1] = _mm256_shuffle_epi8(_mm256_add_epi64(_mm256_shuffle_epi8(_mm256_stream_load_si256(src+1), MASK), seed), MASK);
-        dest[2] = _mm256_shuffle_epi8(_mm256_add_epi64(_mm256_shuffle_epi8(_mm256_stream_load_si256(src+2), MASK), seed), MASK);
-        dest[3] = _mm256_shuffle_epi8(_mm256_add_epi64(_mm256_shuffle_epi8(_mm256_stream_load_si256(src+3), MASK), seed), MASK);
-        dest[4] = _mm256_shuffle_epi8(_mm256_add_epi64(_mm256_shuffle_epi8(_mm256_stream_load_si256(src+4), MASK), seed), MASK);
-        dest[5] = _mm256_shuffle_epi8(_mm256_add_epi64(_mm256_shuffle_epi8(_mm256_stream_load_si256(src+5), MASK), seed), MASK);
+        dest[0] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src+0)), seed));
+        dest[1] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src+1)), seed));
+        dest[2] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src+2)), seed));
+        dest[3] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src+3)), seed));
+        dest[4] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src+4)), seed));
+        dest[5] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src+5)), seed));
     } else {
         dest[0] = _mm256_add_epi64(_mm256_stream_load_si256(src+0), seed);
         dest[1] = _mm256_add_epi64(_mm256_stream_load_si256(src+1), seed);

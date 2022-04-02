@@ -3,8 +3,6 @@
 
 #define DEGREE 4
 
-#include <immintrin.h>
-
 #define _mm_shuffle_ps2(a, b, c)                                               \
   (_mm_castps_si128(                                                           \
       _mm_shuffle_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(b), (c))))

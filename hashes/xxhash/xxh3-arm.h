@@ -30,6 +30,7 @@
  *   - xxHash homepage: https://www.xxhash.com
  *   - xxHash source repository: https://github.com/Cyan4973/xxHash
  */
+
 /*
  * The NEON code path is actually partially scalar when running on AArch64. This
  * is to optimize the pipelining and can have up to 15% speedup depending on the
@@ -37,26 +38,6 @@
  *
  * See XXH3_NEON_LANES for configuring this and details about this optimization.
  */
-
-#if defined(__GNUC__) || defined(__clang__)
-#  if defined(__ARM_NEON__) || defined(__ARM_NEON) || \
-      defined(__aarch64__)  || defined(_M_ARM)     || \
-      defined(_M_ARM64)     || defined(_M_ARM64EC)
-#         define inline __inline__  /* circumvent a clang bug */
-#  endif
-#endif
-#include <arm_neon.h>
-#if defined(__GNUC__) || defined(__clang__)
-#  if defined(__ARM_NEON__) || defined(__ARM_NEON) || \
-      defined(__aarch64__)  || defined(_M_ARM)     || \
-      defined(_M_ARM64)     || defined(_M_ARM64EC)
-#         undef inline
-#  endif
-#endif
-#if defined(NEW_HAVE_ARM_ACLE)
-#  include <arm_acle.h>
-#endif
-
 /*
  * NEON's setup for vmlal_u32 is a little more complicated than it is on
  * SSE2, AVX2, and VSX.
@@ -239,8 +220,8 @@ static FORCE_INLINE void XXH3_accumulate_512_neon(void * RESTRICT acc,
         /* key_vec  = xsecret[i];  */
         uint64x2_t key_vec  = XXH_vld1q_u64(xsecret + (i * 16));
         if (bswap) {
-            data_vec = vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(data_vec)));
-            key_vec  = vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(key_vec)));
+            data_vec        = Vbswap64_u64(data_vec);
+            key_vec         = Vbswap64_u64(key_vec);
         }
         uint64x2_t data_key;
         uint32x2_t data_key_lo, data_key_hi;

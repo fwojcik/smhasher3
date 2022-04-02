@@ -1083,26 +1083,31 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar(void * RESTRICT customSecr
 #define XXH_VECTOR    XXH_NEON
 #define XXH_ACC_ALIGN 16
 #define XXH_SEC_ALIGN 8
+#include "lib/Intrinsics.h"
 #include "xxhash/xxh3-arm.h"
 #elif defined(NEW_HAVE_PPC_VSX)
 #define XXH_VECTOR    XXH_VSX
 #define XXH_ACC_ALIGN 16
 #define XXH_SEC_ALIGN 8
+#include "lib/Intrinsics.h"
 #include "xxhash/xxh3-ppc.h"
 #elif defined(NEW_HAVE_AVX512_F)
 #define XXH_VECTOR    XXH_AVX512
 #define XXH_ACC_ALIGN 64
 #define XXH_SEC_ALIGN 64
+#include "lib/Intrinsics.h"
 #include "xxhash/xxh3-avx512.h"
 #elif defined(NEW_HAVE_AVX2)
 #define XXH_VECTOR    XXH_AVX2
 #define XXH_ACC_ALIGN 32
 #define XXH_SEC_ALIGN 32
+#include "lib/Intrinsics.h"
 #include "xxhash/xxh3-avx2.h"
 #elif defined(NEW_HAVE_SSE_2)
 #define XXH_VECTOR    XXH_SSE2
 #define XXH_ACC_ALIGN 16
 #define XXH_SEC_ALIGN 16
+#include "lib/Intrinsics.h"
 #include "xxhash/xxh3-sse2.h"
 #else
 #define XXH_VECTOR    XXH_SCALAR

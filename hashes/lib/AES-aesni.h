@@ -29,8 +29,6 @@
  *
  * For more information, please refer to <http://unlicense.org/>
  */
-#include <immintrin.h>
-
 static inline __m128i _expand_key_helper( __m128i rkey, __m128i assist ) {
     __m128i temp;
     temp = _mm_slli_si128(rkey, 0x4);

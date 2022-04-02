@@ -18,35 +18,6 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
-# include <altivec.h>
-# undef vector
-# undef pixel
-# undef bool
-
-#if defined(__ibmxl__) || (defined(_AIX) && defined(__xlC__))
-typedef  __vector unsigned char vec_t;
-#define vec_encrypt(a,b) __vcipher(a,b);
-#define vec_encryptlast(a,b) __vcipherlast(a,b);
-#define vec_decrypt(a,b) __vncipher(a,b);
-#define vec_encryptlast(a,b) __vncipherlast(a,b);
-#elif defined(__clang__)
-typedef  __vector unsigned long long vec_t;
-#define vec_encrypt(a,b) __builtin_altivec_crypto_vcipher(a, b);
-#define vec_encryptlast(a,b) __builtin_altivec_crypto_vcipherlast(a, b);
-#define vec_decrypt(a,b) __builtin_altivec_crypto_vncipher(a, b);
-#define vec_decryptlast(a,b) __builtin_altivec_crypto_vncipherlast(a, b);
-#elif defined(__GNUC__)
-typedef  __vector unsigned long long vec_t;
-#define vec_encrypt(a,b) __builtin_crypto_vcipher(a,b);
-#define vec_encryptlast(a,b) __builtin_crypto_vcipherlast(a,b);
-#define vec_decrypt(a,b) __builtin_crypto_vncipher(a,b);
-#define vec_decryptlast(a,b) __builtin_crypto_vncipherlast(a,b);
-#else
-#error "unimplemented"
-#endif
-
 template < int Nr >
 static inline void AES_Encrypt_PPC(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t pt[16], uint8_t ct[16]) {
     const uint8_t * keys = (const uint8_t *)rk;

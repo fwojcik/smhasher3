@@ -37,7 +37,7 @@ typedef struct {
 // This allegedly falls into a MSVC CL 14.16.27023 32-bit compiler
 // bug. 14.28.29910 allegedly works fine.
 #if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 
 // Fancy hardware version
 

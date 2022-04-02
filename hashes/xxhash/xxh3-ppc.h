@@ -40,33 +40,6 @@
  * inconsistent intrinsics, spotty coverage, and multiple endiannesses.
  */
 
-/* Annoyingly, these headers _may_ define three macros: `bool`, `vector`,
- * and `pixel`. This is a problem for obvious reasons.
- *
- * These keywords are unnecessary; the spec literally says they are
- * equivalent to `__bool`, `__vector`, and `__pixel` and may be undef'd
- * after including the header.
- *
- * We use pragma push_macro/pop_macro to keep the namespace clean. */
-#pragma push_macro("bool")
-#pragma push_macro("vector")
-#pragma push_macro("pixel")
-/* silence potential macro redefined warnings */
-#undef bool
-#undef vector
-#undef pixel
-
-#if defined(__s390x__)
-#  include <s390intrin.h>
-#else
-#  include <altivec.h>
-#endif
-
-/* Restore the original macro values, if applicable. */
-#pragma pop_macro("pixel")
-#pragma pop_macro("vector")
-#pragma pop_macro("bool")
-
 typedef __vector unsigned long long xxh_u64x2;
 typedef __vector unsigned char xxh_u8x16;
 typedef __vector unsigned int xxh_u32x4;

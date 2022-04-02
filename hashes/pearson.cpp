@@ -33,7 +33,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SSSE3)
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 // AES S-Box table -- allows for eventually supported hardware accelerated look-up

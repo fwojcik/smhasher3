@@ -53,7 +53,7 @@
 #endif
 
 #if NMH_VECTOR > NMH_SCALAR
-#include <immintrin.h>
+#include "lib/Intrinsics.h"
 #endif
 
 //------------------------------------------------------------
@@ -100,12 +100,6 @@ alignas(alignof(max_align_t)) static const uint32_t __NMH_M3_V[32] = {
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
-};
-alignas(alignof(max_align_t)) static const uint64_t __NMH_BSWAP_MASK[8] = {
-    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
-    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
-    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
-    UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
 };
 
 //------------------------------------------------------------
@@ -251,7 +245,6 @@ static inline uint32_t NMHASH32_9to255(const uint8_t* const RESTRICT p,
         __m128i const m1   = _mm_set1_epi32((int)__NMH_M1);
         __m128i const m2   = _mm_set1_epi32((int)__NMH_M2);
         __m128i const m3   = _mm_set1_epi32((int)__NMH_M3);
-        __m128i const mask = _mm_loadu_si128((const __m128i *)__NMH_BSWAP_MASK);
         __m128i          x = h0;
         __m128i          y = sl;
         const uint32_t *const px = (const uint32_t*)&x;
@@ -262,8 +255,8 @@ static inline uint32_t NMHASH32_9to255(const uint8_t* const RESTRICT p,
             size_t i;
             for (i = 0; i < r; ++i) {
                 if (bswap) {
-                    x = _mm_xor_si128(x, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + i * 32)), mask));
-                    y = _mm_xor_si128(y, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + i * 32 + 16)), mask));
+                    x = _mm_xor_si128(x, mm_bswap32(_mm_loadu_si128((const __m128i *)(p + i * 32))));
+                    y = _mm_xor_si128(y, mm_bswap32(_mm_loadu_si128((const __m128i *)(p + i * 32 + 16))));
                 } else {
                     x = _mm_xor_si128(x, _mm_loadu_si128((const __m128i *)(p + i * 32)));
                     y = _mm_xor_si128(y, _mm_loadu_si128((const __m128i *)(p + i * 32 + 16)));
@@ -278,8 +271,8 @@ static inline uint32_t NMHASH32_9to255(const uint8_t* const RESTRICT p,
                 x = _mm_xor_si128(_mm_xor_si128(x, _mm_srli_epi32(x, 10)), _mm_srli_epi32(x, 20));
             }
             if (bswap) {
-                x = _mm_xor_si128(x, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + len - 32)), mask));
-                y = _mm_xor_si128(y, _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(p + len - 16)), mask));
+                x = _mm_xor_si128(x, mm_bswap32(_mm_loadu_si128((const __m128i *)(p + len - 32))));
+                y = _mm_xor_si128(y, mm_bswap32(_mm_loadu_si128((const __m128i *)(p + len - 16))));
             } else {
                 x = _mm_xor_si128(x, _mm_loadu_si128((const __m128i *)(p + len - 32)));
                 y = _mm_xor_si128(y, _mm_loadu_si128((const __m128i *)(p + len - 16)));
@@ -382,14 +375,17 @@ static inline void NMHASH32_long_round_scalar(uint32_t * const RESTRICT accX,
 #if NMH_VECTOR > NMH_SCALAR
 
 #if NMH_VECTOR == NMH_SSE2
+#  define _NMH_M_(F) mm_ ## F
 #  define _NMH_MM_(F) _mm_ ## F
 #  define _NMH_MMW_(F) _mm_ ## F ## 128
 #  define _NMH_MM_T __m128i
 #elif NMH_VECTOR == NMH_AVX2
+#  define _NMH_M_(F) mm256_ ## F
 #  define _NMH_MM_(F) _mm256_ ## F
 #  define _NMH_MMW_(F) _mm256_ ## F ## 256
 #  define _NMH_MM_T __m256i
 #elif NMH_VECTOR == NMH_AVX512
+#  define _NMH_M_(F) mm512_ ## F
 #  define _NMH_MM_(F) _mm512_ ## F
 #  define _NMH_MMW_(F) _mm512_ ## F ## 512
 #  define _NMH_MM_T __m512i
@@ -403,7 +399,7 @@ static inline void NMHASH32_long_round_sse(uint32_t * const RESTRICT accX,
     const _NMH_MM_T *const RESTRICT m1    = (const _NMH_MM_T * RESTRICT)__NMH_M1_V;
     const _NMH_MM_T *const RESTRICT m2    = (const _NMH_MM_T * RESTRICT)__NMH_M2_V;
     const _NMH_MM_T *const RESTRICT m3    = (const _NMH_MM_T * RESTRICT)__NMH_M3_V;
-    const _NMH_MM_T *const RESTRICT mask  = (const _NMH_MM_T * RESTRICT)__NMH_BSWAP_MASK;
+
           _NMH_MM_T *const              xaccX = (      _NMH_MM_T *             )accX;
           _NMH_MM_T *const              xaccY = (      _NMH_MM_T *             )accY;
           _NMH_MM_T *const              xp    = (      _NMH_MM_T *             )p;
@@ -411,14 +407,14 @@ static inline void NMHASH32_long_round_sse(uint32_t * const RESTRICT accX,
 
     for (i = 0; i < NMH_VECTOR_NB_GROUP; ++i) {
         if (bswap) {
-            xaccX[i] = _NMH_MMW_(xor_si)(xaccX[i], _NMH_MM_(shuffle_epi8)(_NMH_MMW_(loadu_si)(xp + i), *mask));
+            xaccX[i] = _NMH_MMW_(xor_si)(xaccX[i], _NMH_M_(bswap32)(_NMH_MMW_(loadu_si)(xp + i)));
         } else {
             xaccX[i] = _NMH_MMW_(xor_si)(xaccX[i], _NMH_MMW_(loadu_si)(xp + i));
         }
     }
     for (i = 0; i < NMH_VECTOR_NB_GROUP; ++i) {
         if (bswap) {
-            xaccY[i] = _NMH_MMW_(xor_si)(xaccY[i], _NMH_MM_(shuffle_epi8)(_NMH_MMW_(loadu_si)(xp + i + NMH_VECTOR_NB_GROUP), *mask));
+            xaccY[i] = _NMH_MMW_(xor_si)(xaccY[i], _NMH_M_(bswap32)(_NMH_MMW_(loadu_si)(xp + i + NMH_VECTOR_NB_GROUP)));
         } else {
             xaccY[i] = _NMH_MMW_(xor_si)(xaccY[i], _NMH_MMW_(loadu_si)(xp + i + NMH_VECTOR_NB_GROUP));
         }

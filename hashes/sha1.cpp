@@ -40,15 +40,8 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SHA1_X86_64)
-#  include <immintrin.h>
-#endif
-
-#if defined(NEW_HAVE_SHA1_ARM)
-#  include <arm_neon.h>
-#  if defined(NEW_HAVE_ARM_ACLE)
-#    include <arm_acle.h>
-#  endif
+#if defined(NEW_HAVE_SHA1_X86_64) || defined(NEW_HAVE_SHA1_ARM)
+#include "lib/Intrinsics.h"
 #endif
 
 //-----------------------------------------------------------------------------
@@ -415,10 +408,10 @@ static void SHA1_Transform_neon(uint32_t state[5], const uint8_t buffer[64]) {
 
     if (bswap) {
         /* Reverse for little endian */
-        MSG0 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(MSG0)));
-        MSG1 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(MSG1)));
-        MSG2 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(MSG2)));
-        MSG3 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(MSG3)));
+        MSG0 = Vbswap32_u32(MSG0);
+        MSG1 = Vbswap32_u32(MSG1);
+        MSG2 = Vbswap32_u32(MSG2);
+        MSG3 = Vbswap32_u32(MSG3);
     }
 
     TMP0 = vaddq_u32(MSG0, vdupq_n_u32(0x5A827999));
