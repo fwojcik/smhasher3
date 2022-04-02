@@ -247,7 +247,7 @@ unsigned int FindCollisions ( std::vector<hashtype> & hashes,
           collcount++;
           if(collcount < maxCollisions)
             {
-#ifdef DEBUG
+#if 0 && defined(DEBUG)
               printf ("\n%zu: ", hnb);
               printHash(&hashes[hnb], sizeof(hashtype));
 #endif
@@ -257,7 +257,7 @@ unsigned int FindCollisions ( std::vector<hashtype> & hashes,
         }
     }
 
-#ifdef DEBUG
+#if 0 && defined(DEBUG)
     if (collcount)
       printf ("\n");
 #endif
@@ -281,7 +281,7 @@ unsigned int FindCollisions ( std::vector<hashtype> & hashes,
           collcount++;
           if((int)collisions.size() < maxCollisions)
             {
-#ifdef DEBUG
+#if 0 && defined(DEBUG)
               printf ("\n%zu <=> %zu: ", pairs[hnb-1].second, pairs[hnb].second);
               printHash(&h1, sizeof(hashtype));
 #endif
