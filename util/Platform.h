@@ -140,8 +140,9 @@ static char* strndup(char const *s, size_t n)
 #if !defined (HAVE_X86_64) && !defined (HAVE_X86_32)
 #include <cstddef>
 #endif
-#include <stdlib.h>
-#include <stdint.h>
+
+#include <cstdlib>
+#include <cstdint>
 
 #ifdef HAVE_THREADS
 #include <pthread.h>
@@ -166,6 +167,7 @@ static char* strndup(char const *s, size_t n)
 #define clz8(x) __builtin_clzl(x)
 #endif
 
+// Deliberately unsafe! Assumes r is not 0 or >=8*sizeof(x)
 inline uint32_t rotl32 ( uint32_t x, int8_t r )
 {
   return (x << r) | (x >> (32 - r));
@@ -210,14 +212,6 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #ifdef HAVE_INT128
 typedef unsigned __int128 uint128_t;
 typedef          __int128 int128_t;
-#endif
-
-#ifndef __WORDSIZE
-# ifdef HAVE_BIT32
-#  define __WORDSIZE 32
-# else
-#  define __WORDSIZE 64
-# endif
 #endif
 
 static FORCE_INLINE bool isLE(void) {
