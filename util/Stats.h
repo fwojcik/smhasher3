@@ -92,17 +92,17 @@ static inline void recordTestResult(bool pass, const char * suitename, const cha
   if (testname != NULL) {
     testname += strspn(testname, " ");
     ntestname = strdup(testname);
+    if (!ntestname) {
+        printf("OOM\n");
+        exit(1);
+    }
   }
   g_testFailures.push_back(std::pair<const char *, char *>(suitename, ntestname));
 }
 
 static inline void recordTestResult(bool pass, const char * suitename, uint64_t testnum) {
   const uint64_t maxlen = sizeof("18446744073709551615"); // UINT64_MAX
-  char * testname = (char *)malloc(maxlen);
-  if (!testname) {
-    printf("OOM\n");
-    exit(1);
-  }
-  snprintf(testname, 21, "%llu", testnum);
+  char testname[maxlen];
+  snprintf(testname, maxlen, "%llu", testnum);
   recordTestResult(pass, suitename, testname);
 }
