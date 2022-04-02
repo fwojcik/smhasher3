@@ -34,11 +34,11 @@ uint32_t HashInfo::_ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::en
 
   uint8_t * key    = new uint8_t[256];
   uint8_t * hashes = new uint8_t[hashbytes * 256];
-  uint8_t * final  = new uint8_t[hashbytes];
+  uint8_t * total  = new uint8_t[hashbytes];
 
   memset(key,0,256);
   memset(hashes,0,hashbytes*256);
-  memset(final,0,hashbytes);
+  memset(total,0,hashbytes);
 
   // Hash keys of the form {0}, {0,1}, {0,1,2}... up to N=255, using
   // 256-N as the seed
@@ -46,23 +46,23 @@ uint32_t HashInfo::_ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::en
     seed_t seed = 256 - i;
     hinfo->Seed(seed, 1);
     key[i] = (uint8_t)i;
-    hash(key,i,seed,&hashes[i*hashbytes]);
+    hash(key, i, seed, &hashes[i*hashbytes]);
     addVCodeInput(key, i);
   }
 
   // Then hash the result array
   hinfo->Seed(0, 1);
-  hash(hashes,hashbytes*256,0,final);
+  hash(hashes, hashbytes*256, seed, total);
   addVCodeOutput(hashes, 256*hashbytes);
-  addVCodeOutput(final, hashbytes);
+  addVCodeOutput(total, hashbytes);
 
   // The first four bytes of that hash, interpreted as a little-endian
   // integer, is our verification value
-  uint32_t verification =
-      (final[0] << 0) | (final[1] << 8) | (final[2] << 16) | (final[3] << 24);
+  uint32_t verification = (total[0] <<  0) | (total[1] <<  8) |
+                          (total[2] << 16) | (total[3] << 24) ;
   addVCodeResult(verification);
 
-  delete [] final;
+  delete [] total;
   delete [] hashes;
   delete [] key;
 
