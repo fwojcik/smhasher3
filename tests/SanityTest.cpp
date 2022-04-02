@@ -323,7 +323,7 @@ bool AppendedZeroesTest (const HashInfo * hinfo) {
     // Sort in little-endian order, for human friendliness
     std::sort(hashes.begin(), hashes.end(),
             [](const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
-                for (int i = a.size(); i >= 0; i--) {
+                for (int i = a.size() - 1; i >= 0; i--) {
                     if (a[i] != b[i]) {
                         return a[i] < b[i];
                     }
@@ -333,8 +333,8 @@ bool AppendedZeroesTest (const HashInfo * hinfo) {
 
     for(int i = 1; i < 32; i++) {
         if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
-	    result = false;
-	    goto done;
+            result = false;
+            goto done;
         }
     }
   }
@@ -391,7 +391,7 @@ bool PrependedZeroesTest (const HashInfo * hinfo) {
     // Sort in little-endian order, for human friendliness
     std::sort(hashes.begin(), hashes.end(),
             [](const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
-                for (int i = a.size(); i >= 0; i--) {
+                for (int i = a.size() - 1; i >= 0; i--) {
                     if (a[i] != b[i]) {
                         return a[i] < b[i];
                     }
