@@ -97,7 +97,6 @@ static void PopcountThread(const HashInfo * hinfo, const int inputSize,
   assert(start < end);
   //assert(step > 0);
 
-  hinfo->FixupSeed(seed);
   hinfo->Seed(seed, 1);
 
   uint64_t i = start - step;

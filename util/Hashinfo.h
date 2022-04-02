@@ -189,20 +189,21 @@ class HashInfo {
         return true;
     }
 
-    // Returns true if seeding was done
-    FORCE_INLINE bool Seed(seed_t seed, uint64_t hint = 0) const {
+    FORCE_INLINE seed_t Seed(seed_t seed, uint64_t hint = 0, bool force = false) const {
         if (impl_flags & FLAG_IMPL_SEED_WITH_HINT) {
-            return !!(seedfn(hint));
-        } else if (seedfn != NULL) {
-            return !!(seedfn(seed));
+            seedfixfn(NULL, hint);
+            return seed;
         }
-        return true;
-    }
-
-    FORCE_INLINE void FixupSeed(seed_t & seed) const {
-        if (seedfixfn != NULL) {
+        if (!force && seedfixfn != NULL) {
             seed = seedfixfn(this, seed);
         }
+        if (seedfn != NULL) {
+            seed_t newseed = (seed_t)seedfn(seed);
+            if (newseed != 0) {
+                seed = newseed;
+            }
+        }
+        return seed;
     }
 
     FORCE_INLINE bool isMock(void) const {
