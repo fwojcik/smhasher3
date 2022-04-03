@@ -123,7 +123,7 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
     uint8_t * hash1 = new uint8_t[buflen];
     uint8_t * hash2 = new uint8_t[buflen];
 
-    printf("Running sanity check 1      ");
+    printf("Running sanity check 1       ");
 
     memset(hash1, sentinel1, buflen);
     memset(hash2, sentinel2, buflen);
@@ -223,7 +223,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
     uint8_t * hash1 = new uint8_t[hashbytes];
     uint8_t * hash2 = new uint8_t[hashbytes];
 
-    printf("Running sanity check 2      ");
+    printf("Running sanity check 2       ");
 
     for (int irep = 0; irep < reps; irep++) {
         if(irep % (reps/10) == 0) printf(".");
@@ -327,7 +327,7 @@ bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
   const int hashbytes = hinfo->bits / 8;
   bool result = true;
 
-  printf("Running AppendedZeroesTest  ");
+  printf("Running append zeroes test   ");
 
   for(int rep = 0; rep < 100; rep++)
   {
@@ -391,7 +391,7 @@ bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
   const int hashbytes = hinfo->bits / 8;
   bool result = true;
 
-  printf("Running PrependedZeroesTest ");
+  printf("Running prepend zeroes test  ");
 
   for(int rep = 0; rep < 100; rep++)
   {

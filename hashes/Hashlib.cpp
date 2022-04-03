@@ -121,7 +121,7 @@ void listHashes(bool nameonly) {
 
 //-----------------------------------------------------------------------------
 static void reportInitFailure(const HashInfo * hinfo) {
-    printf("%25s - Hash initialization failed!      ..... FAIL!\n",
+    printf("%25s - Hash initialization failed!      ...... FAIL!\n",
             hinfo->name);
 }
 
@@ -144,7 +144,7 @@ static bool compareVerification(uint32_t expected, uint32_t actual,
         if (prefix) {
             printf("%25s - ", name);
         }
-        printf("Verification value %2s 0x%08X ..... ", endstr, actual);
+        printf("Verification value %2s 0x%08X ...... ", endstr, actual);
         printf(result_str, expected);
     }
 
