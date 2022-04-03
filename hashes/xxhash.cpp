@@ -389,7 +389,10 @@ alignas(64) static const uint8_t XXH3_kSecret[XXH3_SECRET_DEFAULT_SIZE] = {
 };
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_AVX2)
+// fwojcik: This is NOT true on my Ryzen 2 chip with gcc 9.3. Enabling
+// this actually makes xxh3-64 go from 15.5 bytes/cycle down to 7.1!!!
+// It's over twice as fast without this!
+#if 0 && defined(NEW_HAVE_AVX2)
 /*
  * UGLY HACK:
  * GCC usually generates the best code with -O3 for xxHash.
