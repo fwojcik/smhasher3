@@ -348,9 +348,7 @@ static bool test ( const HashInfo * hInfo )
     printf("[[[ Sanity Tests ]]]\n\n");
 
     result &=  HashSelfTest(hInfo);
-    result &= (SanityTest(hInfo)          || hInfo->isMock());
-    result &= (AppendedZeroesTest(hInfo)  || hInfo->isMock());
-    result &= (PrependedZeroesTest(hInfo) || hInfo->isMock());
+    result &= (SanityTest(hInfo)   || hInfo->isMock());
     printf("\n");
   }
 

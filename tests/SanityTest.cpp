@@ -53,19 +53,24 @@
 
 #include "SanityTest.h"
 
+// These sentinel bytes MUST be different values
+static const uint8_t sentinel1 = 0x5c;
+static const uint8_t sentinel2 = 0x36;
+static_assert(sentinel1 != sentinel2,
+        "valid sentinel bytes in SanityTest");
+
 //----------------------------------------------------------------------------
 // Basic sanity checks -
-
-// A hash function should not be reading outside the bounds of the key.
-
-// Flipping a bit of a key should, with overwhelmingly high probability,
-// result in a different hash.
-
+//
+// A hash function should not be reading outside the bounds of the
+// key.
+//
+// Flipping a bit of a key should, with overwhelmingly high
+// probability, result in a different hash.
+//
 // Hashing the same key twice should always produce the same result.
-
+//
 // The memory alignment of the key should not affect the hash result.
-
-// Assumes hash is already seeded to 0.
 
 static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t sentinel) {
     for (size_t i = 0; i < len; i++) {
@@ -77,218 +82,249 @@ static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t senti
     return true;
 }
 
-bool SanityTest (const HashInfo * hinfo) {
-  Rand r(883743);
-  bool result = true;
-  bool didpart2 = false;
-
-  const HashFn hash = hinfo->hashFn(g_hashEndian);
-  const int hashbytes = hinfo->bits / 8;
-  const int reps = 10;
-  const int keymax = 256;
-  const int pad = 16;
-  const int buflen = keymax + pad*3;
-  const seed_t seed = 0;
-
-  uint8_t * buffer1 = new uint8_t[buflen];
-  uint8_t * buffer2 = new uint8_t[buflen];
-
-  uint8_t * hash1 = new uint8_t[buflen];
-  uint8_t * hash2 = new uint8_t[buflen];
-  uint8_t * hash3 = new uint8_t[hashbytes];
-  uint8_t * hash4 = new uint8_t[hashbytes];
-
-  //----------
-  // Test that the hash written is equal to the length promised, and
-  // that hashing the same thing gives the same result.
-
-  hinfo->Seed(seed);
-
-  printf("Running sanity check 1      ");
-
-  // These sentinels MUST be different values
-  const uint8_t sentinel1 = 0x5c;
-  const uint8_t sentinel2 = 0x36;
-
-  memset(hash1, sentinel1, buflen);
-  memset(hash2, sentinel2, buflen);
-
-  for(int irep = 0; irep < reps; irep++)
-  {
-    if(irep % (reps/10) == 0) printf(".");
-
-    for(int len = 0; len <= keymax; len++)
-    {
-      r.rand_p(buffer1,buflen);
-      memcpy(buffer2,buffer1,buflen);
-
-      // This test can halt early, so don't add input bytes to the VCode.
-      hash(buffer1,len,seed,hash1);
-      addVCodeOutput(hash1, hashbytes);
-
-      // See if input data changed
-      if (memcmp(buffer1,buffer2,buflen) != 0) {
-          printf(" hash altered input buffer:");
-          result = false;
-          goto end_sanity;
-      }
-
-      // See if hash overflowed output buffer
-      if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes, sentinel1)) {
-          printf(" hash overflowed output buffer (pass 1):");
-          result = false;
-          goto end_sanity;
-      }
-
-      hash(buffer1,len,seed,hash2);
-
-      // See if hash overflowed output buffer again
-      if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes, sentinel2)) {
-          printf(" hash overflowed output buffer (pass 2):");
-          result = false;
-          goto end_sanity;
-      }
-
-      // See if the hashes match, and if not then characterize the failure
-      if (memcmp(hash1, hash2, hashbytes) != 0) {
-          result = false;
-          for (int i = 0; i < hashbytes; i++) {
-              if (hash1[i] == hash2[i]) { continue; }
-              if ((hash1[i] == sentinel1) && (hash2[i] == sentinel2)) {
-                  printf(" output byte %d unchanged:", i);
-              } else {
-                  printf(" output byte %d inconsistent (0x%02X != 0x%02X):",
-                          i, hash1[i], hash2[i]);
-              }
-              goto end_sanity;
-          }
-      }
-
+template < bool checksentinels >
+static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t len) {
+    if (likely(memcmp(buf1, buf2, len) == 0)) {
+        return true;
     }
-  }
+    for (size_t i = 0; i < len; i++) {
+        if (buf1[i] == buf2[i]) { continue; }
+        if (checksentinels &&
+                (buf1[i] == sentinel1) && (buf2[i] == sentinel2)) {
+            printf(" output byte %d not altered:", i);
+        } else {
+            printf(" output byte %d inconsistent (0x%02X != 0x%02X):",
+                    i, buf1[i], buf2[i]);
+        }
+        break;
+    }
+    return false;
+}
 
-  printf(" PASS\n");
+//----------
+// Test that the hash written is equal to the length promised, and
+// that hashing the same thing gives the same result.
+//
+// This test can halt early, so don't add input bytes to the VCode.
+bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
+    Rand r(883743);
+    bool result = true;
+    bool danger = false;
 
-  //----------
-  // Test that changing any input bit changes at least one output bit,
-  // that changing bits outside the input does not change the output,
-  // and that hashing the same thing gives the same result, even if
-  // it's at a different alignment.
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    const int hashbytes = hinfo->bits / 8;
+    const int reps = 10;
+    const int keymax = 256;
+    const int pad = 16*3;
+    const int buflen = keymax + pad;
 
-  printf("Running sanity check 2      ");
+    uint8_t * buffer1 = new uint8_t[buflen];
+    uint8_t * buffer2 = new uint8_t[buflen];
+    uint8_t * hash1 = new uint8_t[buflen];
+    uint8_t * hash2 = new uint8_t[buflen];
 
-  didpart2 = true;
+    printf("Running sanity check 1      ");
 
-  for(int irep = 0; irep < reps; irep++)
-  {
-    if(irep % (reps/10) == 0) printf(".");
+    memset(hash1, sentinel1, buflen);
+    memset(hash2, sentinel2, buflen);
 
-    for(int len = 4; len <= keymax; len++)
-    {
-      for(int offset = pad; offset < pad*2; offset++)
-      {
-        uint8_t * key1 = &buffer1[pad];
-        uint8_t * key2 = &buffer2[pad+offset];
+    for(int irep = 0; irep < reps; irep++) {
+        if(irep % (reps/10) == 0) printf(".");
 
-        r.rand_p(buffer1,buflen);
-        r.rand_p(buffer2,buflen);
+        for(int len = 0; len <= keymax; len++) {
+            // Make 2 copies of some random input data, and hash one
+            // of them.
+            r.rand_p(buffer1, buflen);
+            memcpy(buffer2, buffer1, buflen);
+            hash(buffer1, len, seed, hash1);
+            addVCodeOutput(hash1, hashbytes);
 
-        memcpy(key2,key1,len);
-
-        // This test can halt early, so don't add input bytes to the VCode.
-        hash (key1,len,seed,hash3);
-        addVCodeOutput(hash3, hashbytes);
-
-        for(int bit = 0; bit < (len * 8); bit++)
-        {
-          // Flip a bit, hash the key -> we should get a different result.
-
-          flipbit(key2,len,bit);
-          hash(key2,len,seed,hash4);
-          addVCodeOutput(hash4, hashbytes);
-
-          if(memcmp(hash3,hash4,hashbytes) == 0) {
-              printf(" flipped bit %d, got identical output:", bit);
-              result = false;
-              goto end_sanity;
+            // See if the hash somehow changed the input data
+            if (memcmp(buffer1, buffer2, buflen) != 0) {
+                printf(" hash altered input buffer:");
+                result = false;
+                danger = true;
+                goto end_sanity;
             }
 
-          // Flip it back, hash again -> we should get the original result.
+            // See if the hash overflowed its output buffer
+            if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes, sentinel1)) {
+                printf(" hash overflowed output buffer (pass 1):");
+                result = false;
+                danger = true;
+                goto end_sanity;
+            }
 
-          flipbit(key2,len,bit);
-          hash(key2,len,seed,hash4);
+            // Hash the same data again
+            hash(buffer1, len, seed, hash2);
 
-          if(memcmp(hash3,hash4,hashbytes) != 0) {
-              for(int i=0; i < hashbytes; i++){
-                if (hash3[i] != hash4[i]) {
-                  printf(" %d: 0x%02X != 0x%02X: output byte inconsistent:", i, hash3[i], hash4[i]);
-                  break;
-                }
-              }
-              result = false;
-              goto end_sanity;
-          }
-        }
+            // See if the hash overflowed output buffer this time
+            if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes, sentinel2)) {
+                printf(" hash overflowed output buffer (pass 2):");
+                result = false;
+                danger = true;
+                goto end_sanity;
+            }
 
-        // Try altering every byte in buffer2 that isn't a key byte,
-        // and make sure the hash doesn't change, to try catching
-        // hashes that depend on out-of-bounds key bytes.
-        //
-        // I don't know how to catch hashes that merely read
-        // out-of-bounds key bytes, but doing that isn't necessarily
-        // an error or even unsafe; see:
-        // https://stackoverflow.com/questions/37800739/is-it-safe-to-read-past-the-end-of-a-buffer-within-the-same-page-on-x86-and-x64
-        for(uint8_t * ptr = &buffer2[0]; ptr < &buffer2[buflen]; ptr++) {
-            if ((ptr >= &key2[0]) && (ptr < &key2[len])) { continue; }
-            *ptr ^= 0xFF;
-            hash(key2,len,seed,hash4);
-            if(memcmp(hash3,hash4,hashbytes) != 0) {
-                printf(" changing non-key byte altered hash: ");
+            // See if the hashes match, and if not then characterize the failure
+            if (!verify_hashmatch<true>(hash1, hash2, hashbytes)) {
                 result = false;
                 goto end_sanity;
             }
         }
-      }
     }
-  }
 
  end_sanity:
-  if(result == false)
-  {
-    printf(" FAIL  !!!!!\n");
-  }
-  else
-  {
-    printf(" PASS\n");
-  }
+    if(result == false) {
+        printf(" FAIL  !!!!!\n");
+    } else {
+        printf(" PASS\n");
+    }
 
-  recordTestResult(result, "Sanity", didpart2 ? "Basic 2" : "Basic 1");
+    if (danger) {
+        printf("ERROR: Dangerous hash behavior detected!\n");
+        printf("       Cannot continue, since hash may corrupt memory.\n");
+        exit(13);
+    }
 
-  addVCodeResult(result);
+    recordTestResult(result, "Sanity", "Basic 1");
 
-  delete [] buffer1;
-  delete [] buffer2;
+    addVCodeResult(result);
 
-  delete [] hash1;
-  delete [] hash2;
-  delete [] hash3;
-  delete [] hash4;
+    delete [] buffer1;
+    delete [] buffer2;
+    delete [] hash1;
+    delete [] hash2;
 
-  return result;
+    return result;
+}
+
+//----------
+// Test that changing any input bit changes at least one output bit,
+// that changing bits outside the input does not change the output,
+// and that hashing the same thing gives the same result, even if
+// it's at a different alignment.
+//
+// This test can halt early, so don't add input bytes to the VCode.
+bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
+    Rand r(883744);
+    bool result = true;
+
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    const int hashbytes = hinfo->bits / 8;
+    const int reps = 10;
+    const int keymax = 256;
+    const int pad = 16; // Max alignment offset tested
+    const int buflen = keymax + pad*3;
+
+    // XXX Check alignment!?!
+    uint8_t * buffer1 = new uint8_t[buflen];
+    uint8_t * buffer2 = new uint8_t[buflen];
+    uint8_t * hash1 = new uint8_t[hashbytes];
+    uint8_t * hash2 = new uint8_t[hashbytes];
+
+    printf("Running sanity check 2      ");
+
+    for (int irep = 0; irep < reps; irep++) {
+        if(irep % (reps/10) == 0) printf(".");
+
+        for(int len = 4; len <= keymax; len++) {
+            for(int offset = pad; offset < pad*2; offset++) {
+                // Fill the two buffers with different random data
+                r.rand_p(buffer1, buflen);
+                r.rand_p(buffer2, buflen);
+
+                // Make 2 key pointers to the same data with different
+                // alignments. The rest of buffer2 is still random
+                // data that differs from buffer1, including data
+                // before the key pointers.
+                uint8_t * key1 = &buffer1[pad];
+                uint8_t * key2 = &buffer2[pad + offset];
+                memcpy(key2, key1, len);
+
+                hash(key1, len, seed, hash1);
+                addVCodeOutput(hash1, hashbytes);
+
+                for(int bit = 0; bit < (len * 8); bit++) {
+                    // Flip a bit, hash the key -> we should get a different result.
+                    flipbit(key2, len, bit);
+                    hash(key2, len, seed, hash2);
+                    addVCodeOutput(hash2, hashbytes);
+
+                    if (unlikely(memcmp(hash1, hash2, hashbytes) == 0)) {
+                        printf(" flipped bit %d, got identical output:", bit);
+                        result = false;
+                        goto end_sanity;
+                    }
+
+                    // Flip it back
+                    flipbit(key2, len, bit);
+                    // hash again -> we should get the original result.
+                    //
+                    // This is actually expensive enough that doing
+                    // this for more than one complete set of (len,
+                    // offset) values isn't worth it.
+                    if (irep == 0) {
+                        hash(key2, len, seed, hash2);
+
+                        if (!verify_hashmatch<false>(hash1, hash2, hashbytes)) {
+                            result = false;
+                            goto end_sanity;
+                        }
+                    }
+                }
+
+                // Try altering every byte in buffer2 that isn't a key
+                // byte, and make sure the hash doesn't change, to try
+                // catching hashes that depend on out-of-bounds key
+                // bytes.
+                //
+                // I don't know how to catch hashes that merely read
+                // out-of-bounds key bytes, but doing that isn't
+                // necessarily an error or even unsafe; see:
+                // https://stackoverflow.com/questions/37800739/is-it-safe-to-read-past-the-end-of-a-buffer-within-the-same-page-on-x86-and-x64
+                for(uint8_t * ptr = &buffer2[0]; ptr < &buffer2[buflen]; ptr++) {
+                    if ((ptr >= &key2[0]) && (ptr < &key2[len])) { continue; }
+                    *ptr ^= 0xFF;
+                    hash(key2, len, seed, hash2);
+                    if (memcmp(hash1, hash2, hashbytes) != 0) {
+                        printf(" changing non-key byte altered hash: ");
+                        result = false;
+                        goto end_sanity;
+                    }
+                }
+            }
+        }
+    }
+
+ end_sanity:
+    if(result == false) {
+        printf(" FAIL  !!!!!\n");
+    } else {
+        printf(" PASS\n");
+    }
+
+    recordTestResult(result, "Sanity", "Basic 2");
+
+    addVCodeResult(result);
+
+    delete [] buffer1;
+    delete [] buffer2;
+
+    delete [] hash1;
+    delete [] hash2;
+
+    return result;
 }
 
 //----------------------------------------------------------------------------
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
-
-// Assumes hash is already seeded to 0.
-
-bool AppendedZeroesTest (const HashInfo * hinfo) {
+bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
   Rand r(173994);
 
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const int hashbytes = hinfo->bits / 8;
-  const seed_t seed = 0;
   bool result = true;
 
   printf("Running AppendedZeroesTest  ");
@@ -348,15 +384,11 @@ bool AppendedZeroesTest (const HashInfo * hinfo) {
 //----------------------------------------------------------------------------
 // Prepending zero bytes to a key should also always cause it to
 // produce a different hash value
-
-// Assumes hash is already seeded to 0.
-
-bool PrependedZeroesTest (const HashInfo * hinfo) {
+bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
   Rand r(534281);
 
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const int hashbytes = hinfo->bits / 8;
-  const seed_t seed = 0;
   bool result = true;
 
   printf("Running PrependedZeroesTest ");
@@ -411,4 +443,18 @@ bool PrependedZeroesTest (const HashInfo * hinfo) {
   addVCodeResult(result);
 
   return result;
+}
+
+bool SanityTest(const HashInfo * hinfo) {
+    bool result = true;
+
+    // Sanity tests are all done with seed of 0
+    const seed_t seed = hinfo->Seed(0, true);
+
+    result &= SanityTest1(hinfo, seed);
+    result &= SanityTest2(hinfo, seed);
+    result &= AppendedZeroesTest(hinfo, seed);
+    result &= PrependedZeroesTest(hinfo, seed);
+
+    return result;
 }

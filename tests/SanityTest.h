@@ -47,5 +47,3 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 bool SanityTest         (const HashInfo * hinfo);
-bool AppendedZeroesTest (const HashInfo * hinfo);
-bool PrependedZeroesTest(const HashInfo * hinfo);
