@@ -552,6 +552,7 @@ bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
 
 bool SanityTest(const HashInfo * hinfo) {
     bool result = true;
+    bool threadresult = true;
 
     // Sanity tests are all done with seed of 0
     const seed_t seed = hinfo->Seed(0, true);
@@ -560,9 +561,14 @@ bool SanityTest(const HashInfo * hinfo) {
     result &= SanityTest2(hinfo, seed);
     result &= AppendedZeroesTest(hinfo, seed);
     result &= PrependedZeroesTest(hinfo, seed);
+
     // These should be last, as they re-seed
-    result &= ThreadingTest(hinfo, false);
-    result &= ThreadingTest(hinfo, true);
+    threadresult &= ThreadingTest(hinfo, false);
+    threadresult &= ThreadingTest(hinfo, true);
+    if (!threadresult) {
+        DisableThreads();
+    }
+    result &= threadresult;
 
     return result;
 }

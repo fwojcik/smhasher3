@@ -60,6 +60,8 @@ extern unsigned g_NCPU;
 extern const unsigned g_NCPU;
 #endif
 
+void DisableThreads(void);
+
 #if !defined(HAVE_X86_64)
   #if defined(__x86_64) || defined(_M_AMD64) || defined(_M_X64)
     #define HAVE_X86_64

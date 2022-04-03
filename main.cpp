@@ -97,12 +97,6 @@
 
 //-----------------------------------------------------------------------------
 // Globally-visible configuration
-#ifdef HAVE_THREADS
-unsigned g_NCPU        = 4;
-#else
-const unsigned g_NCPU  = 1;
-#endif
-
 HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_DEFAULT;
 
 //--------

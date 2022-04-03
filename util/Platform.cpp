@@ -44,11 +44,22 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#if 0 /* FILE IS CURRENTLY UNUSED */
-
 #include "Platform.h"
 
-#include <stdio.h>
+#ifdef HAVE_THREADS
+unsigned g_NCPU        = 4;
+#else
+const unsigned g_NCPU  = 1;
+#endif
+
+void DisableThreads(void) {
+#ifdef HAVE_THREADS
+    printf("WARNING: disabling threaded mode\n");
+    g_NCPU = 1;
+#endif
+}
+
+#if 0 /* REMAINDER OF FILE IS CURRENTLY UNUSED */
 
 #if defined(_WIN32)
 
@@ -102,4 +113,4 @@ void SetThreadAffinity ( std::thread &t, int cpu )
 
 #endif
 
-#endif /* FILE IS CURRENTLY UNUSED */
+#endif /* MOST OF FILE IS CURRENTLY UNUSED */
