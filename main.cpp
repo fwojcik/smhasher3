@@ -593,7 +593,7 @@ int main ( int argc, const char ** argv )
 
   set_default_tests(true);
 
-#if defined(HAVE_64BIT)
+#if defined(HAVE_64BIT_PLATFORM)
   const char * defaulthash = "xxh3-64";
 #else
   const char * defaulthash = "wyhash-32";
