@@ -318,6 +318,111 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
 }
 
 //----------------------------------------------------------------------------
+// Make sure results are consistent across threads, both 1) when
+// Seed() is first called once in the main process, and 2) when Seed()
+// is called per-hash inside each thread.
+
+static void hashthings(const HashInfo * hinfo, seed_t seed,
+        uint32_t reps, uint32_t order, bool reseed,
+        std::vector<uint8_t> &keys, std::vector<uint8_t> &hashes) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    const uint32_t hashbytes = hinfo->bits / 8;
+
+    // Each thread should hash the keys in a different, random order
+    std::vector<int> idxs(reps);
+    if (order != 0) {
+        Rand r(46742 + order);
+        for (int i = 0; i < reps; i++) { idxs[i] = i; }
+        for(int i = reps - 1; i > 0; i--) {
+            std::swap(idxs[i], idxs[r.rand_range(i + 1)]);
+        }
+    }
+
+    // Hash each key, and put the result into its spot in hashes[].
+    // If we're testing #2 above, then reseed per-key.
+    // Add each key to the input VCode.
+    for (int i = 0; i < reps; i++) {
+        const int idx = (order == 0) ? i : idxs[i];
+        if (reseed) { seed = hinfo->Seed(idx * UINT64_C(0xa5), true, 1); }
+        hash(&keys[idx * reps], idx + 1, seed, &hashes[idx * hashbytes]);
+        if (order == 0) { addVCodeInput(&keys[idx * reps], idx + 1); }
+    }
+}
+
+static bool ThreadingTest (const HashInfo * hinfo, bool seedthread) {
+    Rand r(609163);
+
+    const uint32_t hashbytes = hinfo->bits / 8;
+    const uint32_t reps = 1024*16;
+    bool verbose = true;
+    bool result = true;
+#if !defined(HAVE_THREADS)
+    verbose = false;
+#endif
+
+    if (verbose) {
+        printf("Running thread-safety test %d ", seedthread ? 2 : 1);
+    }
+
+    // Generate a bunch of key data. Key 0 is 1 byte, key 2 is 1
+    // bytes, etc. We really only need (reps*(reps+1)/2) bytes, but
+    // this is just easier to code and slightly easier to understand.
+    const uint32_t keybytes = (reps * reps);
+    std::vector<uint8_t> keys(keybytes);
+    r.rand_p(&keys[0], keybytes);
+
+    // Compute all the hashes in order on the main process in order
+    std::vector<uint8_t> mainhashes(reps * hashbytes);
+    const seed_t seed = seedthread ? 0 : hinfo->Seed(0, true, 1);
+    hashthings(hinfo, seed, reps, 0, seedthread, keys, mainhashes);
+    addVCodeOutput(&mainhashes[0], reps * hashbytes);
+    if (verbose) { printf("."); }
+
+#if defined(HAVE_THREADS)
+    // Compute all the hashes in different random orders in threads
+    std::vector<std::vector<uint8_t> > threadhashes(g_NCPU, std::vector<uint8_t>(reps * hashbytes));
+    std::thread t[g_NCPU];
+    for (int i = 0; i < g_NCPU; i++) {
+        t[i] = std::thread {hashthings,hinfo,seed,reps,i+1,seedthread,std::ref(keys),std::ref(threadhashes[i])};
+    }
+    for (int i = 0; i < g_NCPU; i++) {
+        t[i].join();
+    }
+    // Make sure all thread results match the main process
+    for (int i = 0; i < g_NCPU; i++) {
+        if (i < 9) { printf("."); }
+        if (memcmp(&mainhashes[0], &threadhashes[i][0], reps * hashbytes) != 0) {
+            for (int j = 0; j < reps; j++) {
+                if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
+                    printf("\nMismatch between main process and thread #%d at index %d\n  main   :", i, j);
+                    printHash(&mainhashes[j * hashbytes], hashbytes);
+                    printf("\n  thread :");
+                    printHash(&threadhashes[i][j * hashbytes], hashbytes);
+                    printf("\n");
+                    result = false;
+                    break; // Only breaks out of j loop
+                }
+            }
+        }
+    }
+    for (int i = g_NCPU; i < 9; i++) { printf("."); }
+
+    if(result == false) {
+        printf(" FAIL  !!!!!\n");
+    } else {
+        printf(" PASS\n");
+    }
+
+    recordTestResult(result, "Sanity", "Thread safety");
+
+#endif // HAVE_THREADS
+
+    addVCodeResult(result);
+
+    return result;
+}
+
+//----------------------------------------------------------------------------
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
 bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
@@ -455,6 +560,9 @@ bool SanityTest(const HashInfo * hinfo) {
     result &= SanityTest2(hinfo, seed);
     result &= AppendedZeroesTest(hinfo, seed);
     result &= PrependedZeroesTest(hinfo, seed);
+    // These should be last, as they re-seed
+    result &= ThreadingTest(hinfo, false);
+    result &= ThreadingTest(hinfo, true);
 
     return result;
 }
