@@ -57,9 +57,7 @@
 
 //-----------------------------------------------------------------------------
 // Keyset 'Sparse' - generate all possible N-bit keys with up to K bits set
-
-static void printSparseKey(const void* buffer, size_t size)
-{
+static void printSparseKey(const void* buffer, size_t size) {
     const char* const p = (const char*)buffer;
     size_t s;
     printf("bits:");
@@ -73,39 +71,36 @@ static void printSparseKey(const void* buffer, size_t size)
 }
 
 template < typename keytype, typename hashtype >
-static void SparseKeygenRecurse ( HashFn hash, int start, int bitsleft, bool inclusive, keytype & k, std::vector<hashtype> & hashes )
-{
-  const int nbytes = sizeof(keytype);
-  const int nbits = nbytes * 8;
+static void SparseKeygenRecurse(HashFn hash, const seed_t seed,
+        int start, int bitsleft, bool inclusive,
+        keytype & k, std::vector<hashtype> & hashes) {
+    const int nbytes = sizeof(keytype);
+    const int nbits = nbytes * 8;
 
-  hashtype h;
+    hashtype h;
 
-  for(int i = start; i < nbits; i++)
-  {
-    flipbit(k, i);
+    for (int i = start; i < nbits; i++) {
+        flipbit(k, i);
 
-    if(inclusive || (bitsleft == 1))
-    {
-      hash(&k, sizeof(keytype), g_seed, &h);
-      addVCodeInput(&k, sizeof(keytype));
-      hashes.push_back(h);
+        if (inclusive || (bitsleft == 1)) {
+            hash(&k, sizeof(keytype), seed, &h);
+            addVCodeInput(&k, sizeof(keytype));
+            hashes.push_back(h);
+        }
+
+        if (bitsleft > 1) {
+            SparseKeygenRecurse(hash, seed, i+1, bitsleft-1, inclusive, k, hashes);
+        }
+
+        flipbit(k, i);
     }
-
-    if(bitsleft > 1)
-    {
-      SparseKeygenRecurse(hash, i+1, bitsleft-1, inclusive, k, hashes);
-    }
-
-    flipbit(k, i);
-  }
 }
 
 //----------
-
 template < int keybits, typename hashtype >
-static bool SparseKeyImpl ( HashFn hash, const int setbits, bool inclusive,
-                     bool testColl, bool testDist, bool drawDiagram )
-{
+static bool SparseKeyImpl(HashFn hash, const seed_t seed,
+        const int setbits, bool inclusive,
+        bool testColl, bool testDist, bool drawDiagram) {
   printf("Keyset 'Sparse' - %d-bit keys with %s %d bits set - ",keybits,
          inclusive ? "up to" : "exactly", setbits);
 
@@ -116,13 +111,12 @@ static bool SparseKeyImpl ( HashFn hash, const int setbits, bool inclusive,
   keytype k;
   memset(&k,0,sizeof(k));
 
-  if(inclusive)
-  {
+  if (inclusive) {
     hashes.resize(1);
-    hash(&k,sizeof(keytype),g_seed,&hashes[0]);
+    hash(&k, sizeof(keytype), seed, &hashes[0]);
   }
 
-  SparseKeygenRecurse(hash,0,setbits,inclusive,k,hashes);
+  SparseKeygenRecurse(hash,seed,0,setbits,inclusive,k,hashes);
 
   printf("%d keys\n",(int)hashes.size());
 
@@ -145,53 +139,53 @@ bool SparseKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra)
 
     printf("[[[ Keyset 'Sparse' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= SparseKeyImpl<  16,hashtype>(hash,9,true,true,true,verbose);
-    result &= SparseKeyImpl<  24,hashtype>(hash,8,true,true,true,verbose);
-    result &= SparseKeyImpl<  32,hashtype>(hash,7,true,true,true,verbose);
-    result &= SparseKeyImpl<  40,hashtype>(hash,6,true,true,true,verbose);
-    result &= SparseKeyImpl<  48,hashtype>(hash,6,true,true,true,verbose);
-    result &= SparseKeyImpl<  56,hashtype>(hash,5,true,true,true,verbose);
-    result &= SparseKeyImpl<  64,hashtype>(hash,5,true,true,true,verbose);
-    result &= SparseKeyImpl<  72,hashtype>(hash,5,true,true,true,verbose);
-    result &= SparseKeyImpl<  96,hashtype>(hash,4,true,true,true,verbose);
+    result &= SparseKeyImpl<  16,hashtype>(hash,seed,9,true,true,true,verbose);
+    result &= SparseKeyImpl<  24,hashtype>(hash,seed,8,true,true,true,verbose);
+    result &= SparseKeyImpl<  32,hashtype>(hash,seed,7,true,true,true,verbose);
+    result &= SparseKeyImpl<  40,hashtype>(hash,seed,6,true,true,true,verbose);
+    result &= SparseKeyImpl<  48,hashtype>(hash,seed,6,true,true,true,verbose);
+    result &= SparseKeyImpl<  56,hashtype>(hash,seed,5,true,true,true,verbose);
+    result &= SparseKeyImpl<  64,hashtype>(hash,seed,5,true,true,true,verbose);
+    result &= SparseKeyImpl<  72,hashtype>(hash,seed,5,true,true,true,verbose);
+    result &= SparseKeyImpl<  96,hashtype>(hash,seed,4,true,true,true,verbose);
     if (extra) {
-        result &= SparseKeyImpl< 112,hashtype>(hash,4,true,true,true,verbose);
-        result &= SparseKeyImpl< 128,hashtype>(hash,4,true,true,true,verbose);
-        result &= SparseKeyImpl< 144,hashtype>(hash,4,true,true,true,verbose);
+        result &= SparseKeyImpl< 112,hashtype>(hash,seed,4,true,true,true,verbose);
+        result &= SparseKeyImpl< 128,hashtype>(hash,seed,4,true,true,true,verbose);
+        result &= SparseKeyImpl< 144,hashtype>(hash,seed,4,true,true,true,verbose);
     }
-    result &= SparseKeyImpl< 160,hashtype>(hash,4,true,true,true,verbose);
+    result &= SparseKeyImpl< 160,hashtype>(hash,seed,4,true,true,true,verbose);
     if (extra) {
-        result &= SparseKeyImpl< 192,hashtype>(hash,4,true,true,true,verbose);
+        result &= SparseKeyImpl< 192,hashtype>(hash,seed,4,true,true,true,verbose);
     }
-    result &= SparseKeyImpl< 256,hashtype>(hash,3,true,true,true,verbose);
+    result &= SparseKeyImpl< 256,hashtype>(hash,seed,3,true,true,true,verbose);
     if (extra) {
-        result &= SparseKeyImpl< 288,hashtype>(hash,3,true,true,true,verbose);
-        result &= SparseKeyImpl< 320,hashtype>(hash,3,true,true,true,verbose);
-        result &= SparseKeyImpl< 384,hashtype>(hash,3,true,true,true,verbose);
-        result &= SparseKeyImpl< 448,hashtype>(hash,3,true,true,true,verbose);
+        result &= SparseKeyImpl< 288,hashtype>(hash,seed,3,true,true,true,verbose);
+        result &= SparseKeyImpl< 320,hashtype>(hash,seed,3,true,true,true,verbose);
+        result &= SparseKeyImpl< 384,hashtype>(hash,seed,3,true,true,true,verbose);
+        result &= SparseKeyImpl< 448,hashtype>(hash,seed,3,true,true,true,verbose);
     } else if (hinfo->bits > 64) {
         goto END_Sparse;
     }
-    result &= SparseKeyImpl< 512,hashtype>(hash,3,true,true,true,verbose);
+    result &= SparseKeyImpl< 512,hashtype>(hash,seed,3,true,true,true,verbose);
     if (extra) {
-        result &= SparseKeyImpl< 640,hashtype>(hash,3,true,true,true,verbose);
-        result &= SparseKeyImpl< 768,hashtype>(hash,3,true,true,true,verbose);
-        result &= SparseKeyImpl< 896,hashtype>(hash,2,true,true,true,verbose);
+        result &= SparseKeyImpl< 640,hashtype>(hash,seed,3,true,true,true,verbose);
+        result &= SparseKeyImpl< 768,hashtype>(hash,seed,3,true,true,true,verbose);
+        result &= SparseKeyImpl< 896,hashtype>(hash,seed,2,true,true,true,verbose);
     }
-    result &= SparseKeyImpl<1024,hashtype>(hash,2,true,true,true,verbose);
+    result &= SparseKeyImpl<1024,hashtype>(hash,seed,2,true,true,true,verbose);
     if (extra) {
-        result &= SparseKeyImpl<1280,hashtype>(hash,2,true,true,true,verbose);
-        result &= SparseKeyImpl<1536,hashtype>(hash,2,true,true,true,verbose);
+        result &= SparseKeyImpl<1280,hashtype>(hash,seed,2,true,true,true,verbose);
+        result &= SparseKeyImpl<1536,hashtype>(hash,seed,2,true,true,true,verbose);
     }
-    result &= SparseKeyImpl<2048,hashtype>(hash,2,true,true,true,verbose);
+    result &= SparseKeyImpl<2048,hashtype>(hash,seed,2,true,true,true,verbose);
     if (extra) {
-        result &= SparseKeyImpl<3072,hashtype>(hash,2,true,true,true,verbose);
-        result &= SparseKeyImpl<4096,hashtype>(hash,2,true,true,true,verbose);
-        result &= SparseKeyImpl<6144,hashtype>(hash,2,true,true,true,verbose);
-        result &= SparseKeyImpl<8192,hashtype>(hash,2,true,true,true,verbose);
-        result &= SparseKeyImpl<9992,hashtype>(hash,2,true,true,true,verbose);
+        result &= SparseKeyImpl<3072,hashtype>(hash,seed,2,true,true,true,verbose);
+        result &= SparseKeyImpl<4096,hashtype>(hash,seed,2,true,true,true,verbose);
+        result &= SparseKeyImpl<6144,hashtype>(hash,seed,2,true,true,true,verbose);
+        result &= SparseKeyImpl<8192,hashtype>(hash,seed,2,true,true,true,verbose);
+        result &= SparseKeyImpl<9992,hashtype>(hash,seed,2,true,true,true,verbose);
     }
 
  END_Sparse:

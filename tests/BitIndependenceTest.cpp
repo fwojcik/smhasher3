@@ -65,7 +65,7 @@
 // chosen in anticipation of threading this test.
 
 template< typename keytype, typename hashtype >
-static bool BicTest3 ( HashFn hash, const int reps, bool verbose = false )
+static bool BicTest3(HashFn hash, const seed_t seed, const int reps, bool verbose = false )
 {
   const int keybytes = sizeof(keytype);
   const int keybits = keybytes * 8;
@@ -93,12 +93,13 @@ static bool BicTest3 ( HashFn hash, const int reps, bool verbose = false )
 
     for(int irep = 0; irep < reps; irep++)
     {
-      r.rand_p(&key,keybytes);
-      hash(&key,keybytes,g_seed,&h1);
+      r.rand_p(&key, keybytes);
       addVCodeInput(&key, keybytes);
       addVCodeInput(keybit);
-      flipbit(key,keybit);
-      hash(&key,keybytes,g_seed,&h2);
+
+      hash(&key, keybytes, seed, &h1);
+      flipbit(key, keybit);
+      hash(&key, keybytes, seed, &h2);
 
       hashtype d = h1 ^ h2;
 
@@ -188,14 +189,14 @@ bool BicTest(const HashInfo * hinfo, const bool verbose) {
 
     printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
     if (fewerreps) {
-      result &= BicTest3<Blob<128>,hashtype>(hash,100000,verbose);
+        result &= BicTest3<Blob<128>,hashtype>(hash,seed,100000,verbose);
     } else {
-      const long reps = 64000000/hinfo->bits;
-      //result &= BicTest<uint64_t,hashtype>(hash,2000000);
-      result &= BicTest3<Blob<88>,hashtype>(hash,(int)reps,verbose);
+        const long reps = 64000000/hinfo->bits;
+        //result &= BicTest<uint64_t,hashtype>(hash,2000000);
+        result &= BicTest3<Blob<88>,hashtype>(hash,seed,(int)reps,verbose);
     }
 
     recordTestResult(result, "BIC", (const char *)NULL);

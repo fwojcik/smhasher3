@@ -189,15 +189,6 @@ static double HashMapSpeedTest ( HashFn hash, const int hashbits,
 
   printf("\ngreg7mdp/parallel-hashmap\n");
   printf("Init fast HashMapTest:    ");
-#if 0
-#ifndef NDEBUG
-  if ((pfhash == VHASH_32 || pfhash == VHASH_64) && !verbose)
-    {
-      printf("SKIP");
-      return 0.;
-    }
-#endif
-#endif
   fflush(NULL);
   times.reserve(trials);
   { // hash inserts and 1% deletes
@@ -288,12 +279,14 @@ bool HashMapTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     }
 
     std::vector<std::string> words = HashMapInit(verbose);
-    if (words.size()) {
-        Rand r(477537);
-        const seed_t seed = r.rand_u32();
-        hinfo->Seed(seed);
-        result &= HashMapImpl(hash,hinfo->bits,words,seed,trials,verbose);
+    if (!words.size()) {
+        printf("WARNING: Hashmap initialization failed! Skipping Hashmap test.\n");
+        return result;
     }
+
+    Rand r(477537);
+    const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
+    result &= HashMapImpl(hash,hinfo->bits,words,seed,trials,verbose);
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

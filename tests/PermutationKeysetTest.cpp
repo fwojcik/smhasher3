@@ -61,10 +61,9 @@
 // Keyset 'Combination' - all possible combinations of input blocks
 
 template< typename hashtype >
-static void CombinationKeygenRecurse ( uint8_t * key, int len, int maxlen,
-                                const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
-                                HashFn hash, std::vector<hashtype> & hashes )
-{
+static void CombinationKeygenRecurse(uint8_t * key, int len, int maxlen,
+        const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
+        HashFn hash, const seed_t seed, std::vector<hashtype> & hashes) {
   if(len == maxlen) return;  // end recursion
 
   for(int i = 0; i < blockcount; i++)
@@ -72,19 +71,18 @@ static void CombinationKeygenRecurse ( uint8_t * key, int len, int maxlen,
     memcpy(&key[len * blocksz], &blocks[i * blocksz], blocksz);
 
     hashtype h;
-    hash(key, (len+1) * blocksz, g_seed, &h);
+    hash(key, (len+1) * blocksz, seed, &h);
     addVCodeInput(key, (len+1) * blocksz);
     hashes.push_back(h);
 
-    CombinationKeygenRecurse(key,len+1,maxlen,blocks,blockcount,blocksz,hash,hashes);
+    CombinationKeygenRecurse(key,len+1,maxlen,blocks,blockcount,blocksz,hash,seed,hashes);
   }
 }
 
 template< typename hashtype >
-static bool CombinationKeyTest ( HashFn hash, int maxlen,
-                          const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
-                          bool testColl, bool testDist, bool drawDiagram )
-{
+static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen,
+        const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
+        bool testColl, bool testDist, bool drawDiagram) {
   printf("Keyset 'Combination' - up to %d blocks from a set of %d - ",maxlen,blockcount);
 
   //----------
@@ -93,7 +91,7 @@ static bool CombinationKeyTest ( HashFn hash, int maxlen,
 
   uint8_t * key = new uint8_t[maxlen*blocksz];
 
-  CombinationKeygenRecurse(key,0,maxlen,blocks,blockcount,blocksz,hash,hashes);
+  CombinationKeygenRecurse(key,0,maxlen,blocks,blockcount,blocksz,hash,seed,hashes);
 
   delete [] key;
 
@@ -241,7 +239,7 @@ bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
 
     printf("[[[ Keyset 'Permutation' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
     for (auto test: keytests) {
         printf("Combination %s Tests:\n", test.desc);
@@ -250,16 +248,16 @@ bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
         int maxlen = test.maxlen > 0 ? test.maxlen : default_maxlen;
 
         assert(test.blocks.size() == test.nrBlocks * test.szBlock);
-        curresult &= CombinationKeyTest<hashtype>(hash, maxlen,
+        curresult &= CombinationKeyTest<hashtype>(hash, seed, maxlen,
                 &(test.blocks[0]), test.nrBlocks, test.szBlock,
                 true, true, verbose);
 
         if(!curresult) printf("*********FAIL*********\n");
         printf("\n");
 
-	recordTestResult(curresult, "Permutation", test.desc);
+        recordTestResult(curresult, "Permutation", test.desc);
 
-	addVCodeResult(curresult);
+        addVCodeResult(curresult);
 
         result &= curresult;
     }

@@ -44,14 +44,15 @@ uint32_t HashInfo::_ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::en
   // 256-N as the seed
   for(int i = 0; i < 256; i++) {
     seed_t seed = 256 - i;
-    hinfo->Seed(seed, 1);
+    seed = hinfo->Seed(seed, true, 1);
     key[i] = (uint8_t)i;
     hash(key, i, seed, &hashes[i*hashbytes]);
     addVCodeInput(key, i);
   }
 
   // Then hash the result array
-  hinfo->Seed(0, 1);
+  seed_t seed = 0;
+  seed = hinfo->Seed(0, true, 1);
   hash(hashes, hashbytes*256, seed, total);
   addVCodeOutput(hashes, 256*hashbytes);
   addVCodeOutput(total, hashbytes);

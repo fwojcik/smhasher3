@@ -122,7 +122,7 @@ static bool ProcessDifferentials ( std::map<keytype, uint32_t> & diffcounts, int
 // them.
 
 template < bool recursemore, typename keytype, typename hashtype >
-static void DiffTestRecurse ( HashFn hash, keytype & k1, keytype & k2, hashtype & h1, hashtype & h2, int start, int bitsleft, std::map<keytype, uint32_t> & diffcounts )
+static void DiffTestRecurse(const HashFn hash, const seed_t seed, keytype & k1, keytype & k2, hashtype & h1, hashtype & h2, int start, int bitsleft, std::map<keytype, uint32_t> & diffcounts )
 {
   const int bits = sizeof(keytype)*8;
 
@@ -131,11 +131,11 @@ static void DiffTestRecurse ( HashFn hash, keytype & k1, keytype & k2, hashtype 
   {
     keytype k2_prev = k2;
 
-    flipbit(&k2,sizeof(k2),i);
+    flipbit(&k2, sizeof(k2), i);
 
     bitsleft--;
 
-    hash(&k2,sizeof(k2),g_seed,&h2);
+    hash(&k2, sizeof(k2), seed, &h2);
 
     if(h1 == h2)
     {
@@ -145,9 +145,9 @@ static void DiffTestRecurse ( HashFn hash, keytype & k1, keytype & k2, hashtype 
     if(recursemore && likely((i+1) < bits))
     {
       if (bitsleft > 1)
-        DiffTestRecurse<true>(hash,k1,k2,h1,h2,i+1,bitsleft,diffcounts);
+          DiffTestRecurse<true>(hash,seed,k1,k2,h1,h2,i+1,bitsleft,diffcounts);
       else
-        DiffTestRecurse<false>(hash,k1,k2,h1,h2,i+1,bitsleft,diffcounts);
+          DiffTestRecurse<false>(hash,seed,k1,k2,h1,h2,i+1,bitsleft,diffcounts);
     }
 
     //flipbit(&k2,sizeof(k2),i);
@@ -159,7 +159,7 @@ static void DiffTestRecurse ( HashFn hash, keytype & k1, keytype & k2, hashtype 
 //-----------------------------------------------------------------------------
 
 template < typename keytype, typename hashtype >
-static void DiffTestImplThread(const HashFn hash, std::map<keytype, uint32_t> &diffcounts, const uint8_t * keys, int diffbits, a_int & irepp, const int reps) {
+static void DiffTestImplThread(const HashFn hash, const seed_t seed, std::map<keytype, uint32_t> &diffcounts, const uint8_t * keys, int diffbits, a_int & irepp, const int reps) {
   const int keybytes = sizeof(keytype);
 
   keytype k1,k2;
@@ -173,17 +173,16 @@ static void DiffTestImplThread(const HashFn hash, std::map<keytype, uint32_t> &d
     memcpy(&k1, &keys[keybytes * irep], sizeof(k1));
     k2 = k1;
 
-    hash(&k1,sizeof(k1),g_seed,(void*)&h1);
+    hash(&k1, sizeof(k1), seed, (void*)&h1);
 
-    DiffTestRecurse<true,keytype,hashtype>(hash,k1,k2,h1,h2,0,diffbits,diffcounts);
+    DiffTestRecurse<true,keytype,hashtype>(hash,seed,k1,k2,h1,h2,0,diffbits,diffcounts);
   }
 }
 
 //-----------------------------------------------------------------------------
 
 template < typename keytype, typename hashtype >
-static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisions )
-{
+static bool DiffTestImpl(HashFn hash, const seed_t seed, int diffbits, int reps, bool dumpCollisions) {
   const int keybytes = sizeof(keytype);
   const int keybits = sizeof(keytype) * 8;
   const int hashbits = sizeof(hashtype) * 8;
@@ -209,12 +208,12 @@ static bool DiffTestImpl ( HashFn hash, int diffbits, int reps, bool dumpCollisi
   std::vector<std::map<keytype, uint32_t> > diffcounts(g_NCPU);
 
   if ((g_NCPU == 1) || (reps < 10)) {
-      DiffTestImplThread<keytype,hashtype>(hash,diffcounts[0],&keys[0],diffbits,irep,reps);
+      DiffTestImplThread<keytype,hashtype>(hash,seed,diffcounts[0],&keys[0],diffbits,irep,reps);
   } else {
 #ifdef HAVE_THREADS
       std::thread t[g_NCPU];
       for (int i=0; i < g_NCPU; i++) {
-	  t[i] = std::thread {DiffTestImplThread<keytype,hashtype>,hash,std::ref(diffcounts[i]),&keys[0],diffbits,std::ref(irep),reps};
+          t[i] = std::thread {DiffTestImplThread<keytype,hashtype>,hash,seed,std::ref(diffcounts[i]),&keys[0],diffbits,std::ref(irep),reps};
       }
       for (int i=0; i < g_NCPU; i++) {
           t[i].join();
@@ -255,11 +254,11 @@ bool DiffTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
 
     printf("[[[ Diff 'Differential' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffTestImpl< Blob<64>,  hashtype >(hash,5,reps,dumpCollisions);
-    result &= DiffTestImpl< Blob<128>, hashtype >(hash,4,reps,dumpCollisions);
-    result &= DiffTestImpl< Blob<256>, hashtype >(hash,3,reps,dumpCollisions);
+    result &= DiffTestImpl< Blob<64>,  hashtype >(hash,seed,5,reps,dumpCollisions);
+    result &= DiffTestImpl< Blob<128>, hashtype >(hash,seed,4,reps,dumpCollisions);
+    result &= DiffTestImpl< Blob<256>, hashtype >(hash,seed,3,reps,dumpCollisions);
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

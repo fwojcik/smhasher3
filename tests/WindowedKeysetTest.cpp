@@ -62,9 +62,8 @@
 // all possible keys with bits set in that window
 
 template < typename keytype, typename hashtype >
-static bool WindowedKeyImpl ( HashFn hash, int windowbits,
-                       bool testCollision, bool testDistribution, bool drawDiagram )
-{
+static bool WindowedKeyImpl(HashFn hash, const seed_t seed, int windowbits,
+        bool testCollision, bool testDistribution, bool drawDiagram) {
   const int keybits = sizeof(keytype) * 8;
   const int hashbits = sizeof(hashtype) * 8;
   // calc keycount to expect min. 0.5 collisions: EstimateNbCollisions, except for 64++bit.
@@ -97,8 +96,8 @@ static bool WindowedKeyImpl ( HashFn hash, int windowbits,
     {
       key = i;
       //key = key << minbit;
-      lrot(key,minbit);
-      hash(&key,sizeof(keytype),g_seed,&hashes[i]);
+      lrot(key, minbit);
+      hash(&key, sizeof(keytype), seed, &hashes[i]);
       addVCodeInput(&key, sizeof(keytype));
     }
 
@@ -137,10 +136,10 @@ bool WindowedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
 
     printf("[[[ Keyset 'Window' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= WindowedKeyImpl< Blob<keybits>, hashtype >
-        ( hash, windowbits, testCollision, testDistribution, verbose );
+    result &= WindowedKeyImpl< Blob<keybits>, hashtype >(hash, seed,
+            windowbits, testCollision, testDistribution, verbose);
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

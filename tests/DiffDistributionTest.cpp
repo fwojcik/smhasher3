@@ -62,8 +62,7 @@
 // hash differentials
 
 template < typename keytype, typename hashtype >
-static bool DiffDistTest2 ( HashFn hash, bool drawDiagram )
-{
+static bool DiffDistTest2(HashFn hash, const seed_t seed, bool drawDiagram) {
   Rand r(857374);
 
   int keybits = sizeof(keytype) * 8;
@@ -81,12 +80,12 @@ static bool DiffDistTest2 ( HashFn hash, bool drawDiagram )
 
     for(int i = 0; i < keycount; i++)
     {
-      r.rand_p(&k,sizeof(keytype));
-      hash(&k,sizeof(keytype),g_seed,&h1);
+      r.rand_p(&k, sizeof(keytype));
+      hash(&k, sizeof(keytype), seed, &h1);
       addVCodeInput(&k, sizeof(keytype));
 
-      flipbit(&k,sizeof(keytype),keybit);
-      hash(&k,sizeof(keytype),g_seed,&h2);
+      flipbit(&k, sizeof(keytype), keybit);
+      hash(&k, sizeof(keytype), seed, &h2);
       addVCodeInput(&k, sizeof(keytype));
 
       hashes[i] = h1 ^ h2;
@@ -115,9 +114,9 @@ bool DiffDistTest(const HashInfo * hinfo, const bool verbose) {
 
     printf("[[[ DiffDist 'Differential Distribution' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffDistTest2<uint64_t,hashtype>(hash, verbose);
+    result &= DiffDistTest2<uint64_t,hashtype>(hash, seed, verbose);
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

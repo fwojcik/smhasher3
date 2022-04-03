@@ -128,7 +128,8 @@ static int maxBias ( uint32_t * counts, int buckets, int reps )
 // hash function to fail to create an even, random distribution of hash values.
 
 template < typename hashtype >
-static void calcBiasRange ( const HashFn hash, std::vector<uint32_t> &bins,
+static void calcBiasRange ( const HashFn hash, const seed_t seed,
+                     std::vector<uint32_t> &bins,
                      const int keybytes, const uint8_t * keys,
                      a_int & irepp, const int reps, const bool verbose )
 {
@@ -165,14 +166,14 @@ static void calcBiasRange ( const HashFn hash, std::vector<uint32_t> &bins,
     }
 
     memcpy(K,&keys[keybytes * irep],keybytes);
-    hash(K,keybytes,g_seed,&A);
+    hash(K, keybytes, seed, &A);
 
     uint32_t * cursor = &bins[0];
 
     for(int iBit = 0; iBit < keybits; iBit++)
     {
       flipbit(K,keybytes,iBit);
-      hash(K,keybytes,g_seed,&B);
+      hash(K, keybytes, seed, &B);
       flipbit(K,keybytes,iBit);
 
       B ^= A;
@@ -247,8 +248,8 @@ static void calcBiasRange ( const HashFn hash, std::vector<uint32_t> &bins,
 //-----------------------------------------------------------------------------
 
 template < typename hashtype >
-static bool AvalancheImpl ( HashFn hash, const int keybits, const int reps, bool drawDiagram, bool drawdots )
-{
+static bool AvalancheImpl(HashFn hash, const seed_t seed, const int keybits,
+         const int reps, bool drawDiagram, bool drawdots) {
   Rand r(48273);
 
   assert((keybits & 7)==0);
@@ -276,12 +277,12 @@ static bool AvalancheImpl ( HashFn hash, const int keybits, const int reps, bool
   }
 
   if (g_NCPU == 1) {
-      calcBiasRange<hashtype>(hash,bins[0],keybytes,&keys[0],irep,reps,drawdots);
+      calcBiasRange<hashtype>(hash,seed,bins[0],keybytes,&keys[0],irep,reps,drawdots);
   } else {
 #ifdef HAVE_THREADS
       std::thread t[g_NCPU];
       for (int i=0; i < g_NCPU; i++) {
-          t[i] = std::thread {calcBiasRange<hashtype>,hash,std::ref(bins[i]),keybytes,&keys[0],std::ref(irep),reps,drawdots};
+          t[i] = std::thread {calcBiasRange<hashtype>,hash,seed,std::ref(bins[i]),keybytes,&keys[0],std::ref(irep),reps,drawdots};
       }
       for (int i=0; i < g_NCPU; i++) {
           t[i].join();
@@ -320,7 +321,7 @@ bool AvalancheTest(const HashInfo * hinfo, const bool verbose, const bool extra)
 
     printf("[[[ Avalanche Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed, 2);
+    const seed_t seed = hinfo->Seed(g_seed, false, 2);
 
     std::vector<int> testBitsvec =
         { 24, 32, 40, 48, 56, 64, 72, 80, 96, 112, 128, 160 };
@@ -336,7 +337,7 @@ bool AvalancheTest(const HashInfo * hinfo, const bool verbose, const bool extra)
     testBitsvec.erase(std::unique(testBitsvec.begin(), testBitsvec.end()), testBitsvec.end());
 
     for (int testBits : testBitsvec) {
-        result &= AvalancheImpl<hashtype> (hash,testBits,300000,verbose,drawdots);
+        result &= AvalancheImpl<hashtype>(hash,seed,testBits,300000,verbose,drawdots);
     }
 
     if(!result) printf("*********FAIL*********\n");

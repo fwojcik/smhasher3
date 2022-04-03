@@ -81,12 +81,13 @@ static bool TestSecret(const HashInfo * hinfo, const seed_t secret) {
   if (hinfo->is32BitSeed() && (secret > UINT64_C(0xffffffff)))
       return true;
   printf("0x%" PRIx64 "  ", secret);
+  const seed_t hseed = hinfo->Seed(secret, true);
   for (int len : std::vector<int> {1,2,4,8,12,16,32,64,128}) {
     std::vector<hashtype> hashes;
     for (int c : std::vector<int> {0,32,'0',127,128,255}) {
       hashtype h;
       memset(&key, c, len);
-      hash(key, len, secret, &h);
+      hash(key, len, hseed, &h);
       if (h == 0 && c == 0) {
         printf("Confirmed broken seed 0x%" PRIx64 " => 0 with key[%d] of all %d bytes => hash 0\n",
                secret, len, c);
@@ -156,12 +157,12 @@ static void TestSecretRangeThread(const HashInfo * hinfo, const uint64_t hi,
       printf (progress_fmt, seed, spacer);
     }
     hashes.clear();
-    hinfo->Seed(seed, 1);
+    const seed_t hseed = hinfo->Seed(seed, true, 1);
     for (int x : std::vector<int> {0,32,127,255}) {
       hashtype h;
       uint8_t key[64]; // for crc32_pclmul, otherwie we would need only 16 byte
       memset(&key, x, sizeof(key));
-      hash(key, 16, seed, &h);
+      hash(key, 16, hseed, &h);
       hashes.push_back(h);
       if (h == 0 && x == 0) {
         bool known_seed = (std::find(secrets.begin(), secrets.end(), seed) != secrets.end());

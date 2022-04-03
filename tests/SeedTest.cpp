@@ -84,11 +84,11 @@ static bool SeedTestImpl(const HashInfo * hinfo, bool drawDiagram) {
   hashes.resize(totalkeys);
 
   for(seed_t i = 0; i < (1 << hibits); i++) {
-    for(seed_t j = 0; j < (1 << lobits); j++) {
-      seed_t seed = (i << shiftbits) + j;
-      hinfo->Seed(seed);
-      hash(text,len,seed,&hashes[(i<<lobits)+j]);
-    }
+      for(seed_t j = 0; j < (1 << lobits); j++) {
+          const seed_t seed = (i << shiftbits) + j;
+          const seed_t hseed = hinfo->Seed(seed, true);
+          hash(text, len, hseed, &hashes[(i << lobits) + j]);
+      }
   }
 
   bool result = TestHashList(hashes,drawDiagram);
@@ -126,29 +126,31 @@ static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool dr
   hashes.resize(totalkeys);
 
   size_t cnt = 0;
+  seed_t seed;
 
-  hinfo->Seed(0);
-  hash(text,len,0,&hashes[cnt++]);
+  seed = hinfo->Seed(0, true);
+  hash(text, len, seed, &hashes[cnt++]);
 
-  hinfo->Seed(~0);
-  hash(text,len,~0,&hashes[cnt++]);
+  seed = hinfo->Seed(~0, true);
+  hash(text, len, seed, &hashes[cnt++]);
 
   for(seed_t i = 1; i <= maxbits; i++) {
-    uint64_t seed = (UINT64_C(1) << i) - 1;
-    bool done;
+      uint64_t seed = (UINT64_C(1) << i) - 1;
+      bool done;
 
-    do {
-      hinfo->Seed(seed);
-      hash(text,len,seed,&hashes[cnt++]);
+      do {
+          seed_t hseed;
+          hseed = hinfo->Seed(seed, true);
+          hash(text, len, hseed, &hashes[cnt++]);
 
-      hinfo->Seed(~seed);
-      hash(text,len,~seed,&hashes[cnt++]);
+          hseed = hinfo->Seed(~seed, true);
+          hash(text, len, hseed, &hashes[cnt++]);
 
-      /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
-      uint64_t t = (seed | (seed - 1)) + 1;
-      seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
-      done = bigseed ? (seed == ~0) : ((seed >> 32) != 0);
-    } while (!done);
+          /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
+          uint64_t t = (seed | (seed - 1)) + 1;
+          seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
+          done = bigseed ? (seed == ~0) : ((seed >> 32) != 0);
+      } while (!done);
   }
 
   bool result = TestHashList(hashes,drawDiagram);

@@ -61,8 +61,7 @@
 // Keyset 'Prng'
 
 template< typename hashtype >
-static void Prn_gen (int nbRn, HashFn hash, std::vector<hashtype> & hashes )
-{
+static void Prn_gen(int nbRn, HashFn hash, const seed_t seed, std::vector<hashtype> & hashes) {
   assert(nbRn > 0);
 
   printf("Generating random numbers by hashing previous output - %d keys\n", nbRn);
@@ -79,7 +78,7 @@ static void Prn_gen (int nbRn, HashFn hash, std::vector<hashtype> & hashes )
   // a generated random number becomes the input for the next one
   for (int i=0; i< nbRn; i++) {
       hashtype h;
-      hash(&hcopy, sizeof(hcopy), g_seed, &h);
+      hash(&hcopy, sizeof(hcopy), seed, &h);
       hashes.push_back(h);
       memcpy(&hcopy, &h, sizeof(h));
   }
@@ -102,9 +101,9 @@ bool PRNGTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
         return result;
     }
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    Prn_gen(32 << 20, hash, hashes);
+    Prn_gen(32 << 20, hash, seed, hashes);
 
     result &= TestHashList(hashes, verbose, testCollision, testDistribution);
 

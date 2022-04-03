@@ -84,10 +84,10 @@ static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
       memcpy(key, &x, inputLen);  // Note : only works with Little Endian
       addVCodeInput(key, inputLen);
       addVCodeInput(yMax);
-      for (size_t y=0; y < yMax; y++) {
+      for (uint64_t y = 0; y < yMax; y++) {
           hashtype h;
-          hinfo->Seed(y);
-          hash(key, inputLen, y, &h);
+          const seed_t seed = hinfo->Seed(y, true);
+          hash(key, inputLen, seed, &h);
           hashes.push_back(h);
       }
   }

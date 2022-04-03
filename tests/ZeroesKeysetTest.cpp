@@ -60,26 +60,23 @@
 // We reuse one block of empty bytes, otherwise the RAM cost is enormous.
 
 template < typename hashtype >
-static bool ZeroKeyImpl ( HashFn hash, bool drawDiagram )
-{
+static bool ZeroKeyImpl(HashFn hash, const seed_t seed, bool drawDiagram) {
   int keycount = 200*1024;
 
   printf("Keyset 'Zeroes' - %d keys\n",keycount);
 
-  unsigned char * nullblock = new unsigned char[keycount];
+  uint8_t * nullblock = new uint8_t[keycount];
   memset(nullblock,0,keycount);
 
   addVCodeInput(nullblock, keycount);
 
   //----------
-
   std::vector<hashtype> hashes;
 
   hashes.resize(keycount);
 
-  for(int i = 0; i < keycount; i++)
-  {
-    hash(nullblock,i,g_seed,&hashes[i]);
+  for(int i = 0; i < keycount; i++) {
+      hash(nullblock, i, seed, &hashes[i]);
   }
 
   bool result = TestHashList(hashes,drawDiagram);
@@ -103,9 +100,9 @@ bool ZeroKeyTest(const HashInfo * hinfo, const bool verbose) {
 
     printf("[[[ Keyset 'Zeroes' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= ZeroKeyImpl<hashtype>( hash, verbose );
+    result &= ZeroKeyImpl<hashtype>(hash, seed, verbose);
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

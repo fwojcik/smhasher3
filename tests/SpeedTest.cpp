@@ -76,17 +76,17 @@
 // possible by marking the function as NEVER_INLINE (to keep the optimizer from
 // moving it) and marking the timing variables as "volatile register".
 
-NEVER_INLINE static int64_t timehash ( HashFn hash, const void * key, int len, seed_t seed )
-{
+NEVER_INLINE static int64_t timehash(HashFn hash, const seed_t seed,
+        const void * const key, int len) {
   volatile int64_t begin, end;
   uint32_t temp[16];
 
   begin = timer_start();
-  
+
   hash(key,len,seed,temp);
-  
+
   end = timer_end();
-  
+
   return end - begin;
 }
 
@@ -94,44 +94,45 @@ NEVER_INLINE static int64_t timehash ( HashFn hash, const void * key, int len, s
 // Specialized procedure for small lengths. Serialize invocations of the hash
 // function. Make sure they would not be computed in parallel on an out-of-order CPU.
 
-NEVER_INLINE static int64_t timehash_small ( HashFn hash, const void * key, int len, seed_t seed )
-{
+NEVER_INLINE static int64_t timehash_small(HashFn hash, const seed_t seed,
+        uint8_t * const key, int len) {
   const int NUM_TRIALS = 200;
   volatile unsigned long long int begin, end;
   uint32_t hash_temp[16] = {0};
-  uint32_t *buf;
-  if (1 /*!need_minlen64_align16(hash)*/) {
-    buf = new uint32_t[1 + (len + 3) / 4]();
-  } else {
-    assert(len < 64);
-    buf = new uint32_t[64/4]();
-  }
-  memcpy(buf,key,len);
 
   begin = timer_start();
 
   for(int i = 0; i < NUM_TRIALS; i++) {
-    hash(buf + (hash_temp[0] & 1),len,seed,hash_temp);
-    // XXX Add dependency between invocations of hash-function to prevent parallel
-    // evaluation of them. However this way the invocations still would not be
-    // fully serialized. Another option is to use lfence instruction (load-from-memory
-    // serialization instruction) or mfence (load-from-memory AND store-to-memory
-    // serialization instruction):
-    //   __asm volatile ("lfence");
-    // It's hard to say which one is the most realistic and sensible approach.
-    seed += hash_temp[0];
+      hash(key, len, seed, hash_temp);
+      // XXX Add more dependency between invocations of hash-function
+      // to prevent parallel evaluation of them. However this way the
+      // invocations still would not be fully serialized. Another
+      // option is to use lfence instruction (load-from-memory
+      // serialization instruction) or mfence (load-from-memory AND
+      // store-to-memory serialization instruction):
+      //   __asm volatile ("lfence");
+      // It's hard to say which one is the most realistic and sensible
+      // approach.
+
+      // XXX Can't do this particular thing anymore, since hashes
+      // might have expensive seeding, and we don't want to/can't call
+      // hInfo->Seed() every speedtest loop!
+      //seed += hash_temp[0];
+
+      // This seems to be good enough, maybe?
+      key[0] = (i & 0xFF) ^ hash_temp[0];
   }
 
   end = timer_end();
-  delete[] buf;
 
   return (int64_t)((end - begin) / (double)NUM_TRIALS);
 }
 
 //-----------------------------------------------------------------------------
 
-static double SpeedTest ( HashFn hash, seed_t seed, const int trials, const int blocksize, const int align, const int varysize, const int varyalign )
-{
+static double SpeedTest(HashFn hash, seed_t seed, const int trials,
+        const int blocksize, const int align,
+        const int varysize, const int varyalign) {
   Rand r(seed);
   uint8_t *buf = new uint8_t[blocksize + 512]; // assumes (align + varyalign) <= 257
   uintptr_t t1 = reinterpret_cast<uintptr_t>(buf);
@@ -177,14 +178,10 @@ static double SpeedTest ( HashFn hash, seed_t seed, const int trials, const int 
     r.rand_p(block,testsize);
 
     double t;
-
-    if(testsize < 100)
-    {
-      t = (double)timehash_small(hash,block,testsize,itrial);
-    }
-    else
-    {
-      t = (double)timehash(hash,block,testsize,itrial);
+    if (testsize < 100) {
+        t = (double)timehash_small(hash,seed,block,testsize);
+    } else {
+        t = (double)timehash(hash,seed,block,testsize);
     }
 
     if(t > 0) times.push_back(t);
@@ -278,11 +275,10 @@ bool SpeedTest(const HashInfo * hinfo) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
     Rand r(633692);
-    const seed_t seed = r.rand_u32();
 
     printf("[[[ Speed Tests ]]]\n\n");
 
-    hinfo->Seed(seed);
+    const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
     BulkSpeedTest(hash, seed, true, false);
     printf("\n");

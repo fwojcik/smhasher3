@@ -74,8 +74,7 @@ static inline uint32_t f3mix ( uint32_t k )
 }
 
 template < typename hashtype >
-static bool CyclicKeyImpl ( HashFn hash, int cycleLen, int cycleReps, const int keycount, bool drawDiagram )
-{
+static bool CyclicKeyImpl(HashFn hash, const seed_t seed, int cycleLen, int cycleReps, const int keycount, bool drawDiagram) {
   printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n",cycleReps,cycleLen,keycount);
 
   Rand r(483723);
@@ -101,7 +100,7 @@ static bool CyclicKeyImpl ( HashFn hash, int cycleLen, int cycleReps, const int 
       key[j] = cycle[j % cycleLen];
     }
 
-    hash(key,keyLen,g_seed,&hashes[i]);
+    hash(key, keyLen, seed, &hashes[i]);
     addVCodeInput(key, keyLen);
   }
 
@@ -134,14 +133,14 @@ bool CyclicKeyTest(const HashInfo * hinfo, const bool verbose) {
 
     printf("[[[ Keyset 'Cyclic' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+0,8,reps,verbose);
-    result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+1,8,reps,verbose);
-    result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+2,8,reps,verbose);
-    result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+3,8,reps,verbose);
-    result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+4,8,reps,verbose);
-    result &= CyclicKeyImpl<hashtype>(hash,sizeof(hashtype)+8,8,reps,verbose);
+    result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+0,8,reps,verbose);
+    result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+1,8,reps,verbose);
+    result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+2,8,reps,verbose);
+    result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+3,8,reps,verbose);
+    result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+4,8,reps,verbose);
+    result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+8,8,reps,verbose);
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

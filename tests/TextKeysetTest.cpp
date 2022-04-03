@@ -66,7 +66,7 @@
 // set of length N.
 
 template < typename hashtype >
-static bool TextKeyImpl ( HashFn hash, const char * prefix, const char * coreset, const int corelen, const char * suffix, bool drawDiagram )
+static bool TextKeyImpl(HashFn hash, const seed_t seed, const char * prefix, const char * coreset, const int corelen, const char * suffix, bool drawDiagram )
 {
   const int prefixlen = (int)strlen(prefix);
   const int suffixlen = (int)strlen(suffix);
@@ -99,7 +99,7 @@ static bool TextKeyImpl ( HashFn hash, const char * prefix, const char * coreset
       key[prefixlen+j] = coreset[t % corecount]; t /= corecount;
     }
 
-    hash(key,keybytes,g_seed,&hashes[i]);
+    hash(key,keybytes,seed,&hashes[i]);
     addVCodeInput(key, keybytes);
   }
 
@@ -121,11 +121,9 @@ static bool TextKeyImpl ( HashFn hash, const char * prefix, const char * coreset
 // Keyset 'Words' - pick random chars from coreset (alnum or password chars)
 
 template < typename hashtype >
-static bool WordsKeyImpl ( HashFn hash, const long keycount,
-                    const int minlen, const int maxlen,
-                    const char * coreset,
-                    const char* name, bool drawDiagram )
-{
+static bool WordsKeyImpl(HashFn hash, const seed_t seed,
+        const long keycount, const int minlen, const int maxlen,
+        const char * coreset, const char* name, bool drawDiagram) {
   const int corecount = (int)strlen(coreset);
   printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n", minlen, maxlen, name, keycount);
   assert (minlen >= 0);
@@ -154,7 +152,7 @@ static bool WordsKeyImpl ( HashFn hash, const long keycount,
     }
     words.insert(key_str);
 
-    hash(key,len,g_seed,&hashes[i]);
+    hash(key, len, seed, &hashes[i]);
     addVCodeInput(key, len);
 
 #if 0 && defined DEBUG
@@ -177,9 +175,8 @@ static bool WordsKeyImpl ( HashFn hash, const long keycount,
 }
 
 template < typename hashtype >
-static bool WordsStringImpl ( HashFn hash, std::vector<std::string> & words,
-                       bool drawDiagram )
-{
+static bool WordsStringImpl(HashFn hash, const seed_t seed,
+        std::vector<std::string> & words, bool drawDiagram) {
   long wordscount = words.size();
   printf("Keyset 'Words' - dictionary words - %d keys\n", wordscount);
 
@@ -188,18 +185,15 @@ static bool WordsStringImpl ( HashFn hash, std::vector<std::string> & words,
   Rand r(483723);
   HashSet<std::string> wordset; // need to be unique, otherwise we report collisions
 
-  for(int i = 0; i < (int)wordscount; i++)
-  {
+  for(int i = 0; i < (int)wordscount; i++) {
     if (wordset.count(words[i]) > 0) { // not unique
       i--;
       continue;
     }
-    if (0 /*need_minlen64_align16(hash) && words[i].capacity() < 64*/)
-      words[i].resize(64);
     wordset.insert(words[i]);
     const int len = words[i].length();
     const char *key = words[i].c_str();
-    hash(key, len, g_seed, &hashes[i]);
+    hash(key, len, seed, &hashes[i]);
     addVCodeInput(key, len);
   }
 
@@ -226,18 +220,18 @@ bool TextKeyTest(const HashInfo * hinfo, const bool verbose) {
 
     printf("[[[ Keyset 'Text' Tests ]]]\n\n");
 
-    hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= TextKeyImpl<hashtype>( hash, "Foo",    alnum, 4, "Bar",    verbose );
-    result &= TextKeyImpl<hashtype>( hash, "FooBar", alnum, 4, "",       verbose );
-    result &= TextKeyImpl<hashtype>( hash, "",       alnum, 4, "FooBar", verbose );
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foo",    alnum, 4, "Bar",    verbose );
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alnum, 4, "",       verbose );
+    result &= TextKeyImpl<hashtype>(hash, seed, "",       alnum, 4, "FooBar", verbose );
 
     // maybe use random-len vector of strings here, from len 6-16
-    result &= WordsKeyImpl<hashtype>( hash, 4000000L, 6, 16, alnum, "alnum", verbose );
-    result &= WordsKeyImpl<hashtype>( hash, 4000000L, 6, 16, passwordchars, "password", verbose );
+    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000L, 6, 16, alnum, "alnum", verbose );
+    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000L, 6, 16, passwordchars, "password", verbose );
 
     std::vector<std::string> words = HashMapInit(verbose);
-    result &= WordsStringImpl<hashtype>( hash, words, verbose );
+    result &= WordsStringImpl<hashtype>(hash, seed, words, verbose );
 
     if(!result) printf("*********FAIL*********\n");
     printf("\n");

@@ -78,12 +78,10 @@
 typedef uint32_t popcnt_hist[65];
 
 // Copy the results into g_NCPU ranges of 2^32
-static void PopcountThread(const HashInfo * hinfo, const int inputSize,
-                        const unsigned start, const unsigned end, const unsigned step,
-			popcnt_hist &hist1, popcnt_hist &hist2)
-{
+static void PopcountThread(const HashInfo * hinfo, const seed_t seed, const int inputSize,
+        const unsigned start, const unsigned end, const unsigned step,
+        popcnt_hist &hist1, popcnt_hist &hist2) {
   const HashFn hash = hinfo->hashFn(g_hashEndian);
-  seed_t seed = g_seed;
   long double const n = (end-(start+1)) / step;
   uint64_t previous = 0;
 #define INPUT_SIZE_MAX 256
@@ -96,8 +94,6 @@ static void PopcountThread(const HashInfo * hinfo, const int inputSize,
   assert(sizeof(unsigned) <= inputSize);
   assert(start < end);
   //assert(step > 0);
-
-  hinfo->Seed(seed, 1);
 
   uint64_t i = start - step;
   memcpy(key, &i, sizeof(i));
@@ -231,8 +227,10 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   memset(rawhash, 0, sizeof(rawhash));
   memset(xorhash, 0, sizeof(xorhash));
 
+  const seed_t seed = hinfo->Seed(g_seed, false, 1);
+
   if (g_NCPU == 1) {
-      PopcountThread(hinfo, inputSize, 0, 0xffffffff, step, rawhash[0], xorhash[0]);
+      PopcountThread(hinfo, seed, inputSize, 0, 0xffffffff, step, rawhash[0], xorhash[0]);
   } else {
 #ifdef HAVE_THREADS
       // split into g_NCPU threads
@@ -244,7 +242,7 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
           const uint32_t start = i * len * step;
           const uint32_t end = (i < (g_NCPU - 1)) ? start + (len * step - 1) : 0xffffffff;
           //printf("thread[%d]: %d, 0x%x - 0x%x %d\n", i, inputSize, start, end, step);
-          t[i] = std::thread {PopcountThread, hinfo, inputSize, start, end, step, std::ref(rawhash[i]), std::ref(xorhash[i]) };
+          t[i] = std::thread {PopcountThread, hinfo, seed, inputSize, start, end, step, std::ref(rawhash[i]), std::ref(xorhash[i]) };
       }
 
       std::this_thread::sleep_for(std::chrono::seconds(1));
