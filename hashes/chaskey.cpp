@@ -153,9 +153,11 @@ static uintptr_t seed_subkeys(uint64_t seed) {
 
 template < uint32_t rounds, uint32_t tagwords,bool bswap >
 void chaskey(const void * in, const size_t len, const seed_t seed, void * out) {
-    chaskey_impl<rounds,tagwords,bswap>((uint8_t *)out, (const uint8_t *)in, len,
-            chaskeys.k, chaskeys.k1, chaskeys.k2);
+    const keys_t * keys = (const keys_t *)(uintptr_t)seed;
+    chaskey_impl<rounds,tagwords,bswap>((uint8_t *)out, (const uint8_t *)in,
+            len, keys->k, keys->k1, keys->k2);
 }
+
 //------------------------------------------------------------
 // Test vectors from chaskey-12 reference implementation
 static const uint8_t vectors[64][8] = {
