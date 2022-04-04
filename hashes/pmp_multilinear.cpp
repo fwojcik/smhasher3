@@ -130,7 +130,7 @@ typedef struct alignas(32) _random_data_for_PMPML_32 {
     uint32_t random_coeff[1 << PMPML_32_CHUNK_SIZE_LOG2];
 } random_data_for_PMPML_32;
 
-static random_data_for_PMPML_32 rd_for_PMPML_32[PMPML_32_LEVELS] = {
+static thread_local random_data_for_PMPML_32 rd_for_PMPML_32[PMPML_32_LEVELS] = {
   // Level 0
   {
     UINT64_C(0xb5ae35fa), UINT64_C(0x45dfdab824), {UINT64_C(0), UINT64_C(0)}, // dummy
@@ -332,7 +332,7 @@ typedef struct alignas(32) _random_data_for_PMPML_64 {
   uint64_t random_coeff[1 << PMPML_64_CHUNK_SIZE_LOG2];
 } random_data_for_PMPML_64;
 
-static random_data_for_PMPML_64 rd_for_PMPML_64[PMPML_64_LEVELS] = {
+static thread_local random_data_for_PMPML_64 rd_for_PMPML_64[PMPML_64_LEVELS] = {
   // Level 0
   {
     UINT64_C(0x4a29bfabe82f3abe), UINT64_C(0x2ccb0e578cfa99b), UINT64_C(0x000000041), 0, // sum of coeff and dummy
@@ -2569,28 +2569,30 @@ public:
 //-------------------------------------------------------------
 // SMHasher3 API functions
 
-static PMP_Multilinear_Hasher_32 pmpml_hasher_32;
-static PMP_Multilinear_Hasher_64 pmpml_hasher_64;
+static thread_local PMP_Multilinear_Hasher_32 pmpml_hasher_32;
+static thread_local PMP_Multilinear_Hasher_64 pmpml_hasher_64;
 
 uintptr_t PMPML_32_seed(const seed_t seed) {
   pmpml_hasher_32.seed((uint64_t)seed);
-  return 0;
+  return (uintptr_t)(&pmpml_hasher_32);
 }
 
 uintptr_t PMPML_64_seed(const seed_t seed) {
   pmpml_hasher_64.seed((uint64_t)seed);
-  return 0;
+  return (uintptr_t)(&pmpml_hasher_64);
 }
 
 template < bool bswap >
 void PMPML_32(const void * in, const size_t len, const seed_t seed, void * out) {
-  uint32_t h = pmpml_hasher_32.hash<bswap>((const uint8_t *)in, len);
+  PMP_Multilinear_Hasher_32 * p = (PMP_Multilinear_Hasher_32 *)(uintptr_t)seed;
+  uint32_t h = p->hash<bswap>((const uint8_t *)in, len);
   PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
 void PMPML_64(const void * in, const size_t len, const seed_t seed, void * out) {
-  uint64_t h = pmpml_hasher_64.hash<bswap>((const uint8_t *)in, len);
+  PMP_Multilinear_Hasher_64 * p = (PMP_Multilinear_Hasher_64 *)(uintptr_t)seed;
+  uint64_t h = p->hash<bswap>((const uint8_t *)in, len);
   PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
