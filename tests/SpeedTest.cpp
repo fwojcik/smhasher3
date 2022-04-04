@@ -201,7 +201,7 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
 //-----------------------------------------------------------------------------
 // 256k blocks seem to give the best results.
 
-static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary_size )
+static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary_size)
 {
   const int trials = 2999;
   const int blocksize = 256 * 1024;
@@ -289,4 +289,59 @@ bool SpeedTest(const HashInfo * hinfo) {
     printf("\n");
 
     return result;
+}
+
+//-----------------------------------------------------------------------------
+// Does 5 different speed tests to try to summarize hash performance
+
+void ShortSpeedTestHeader(void) {
+    printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n\n");
+    printf("%-25s  %11s  %11s  %11s  %11s  %11s  \n",
+            "Name", "   Bulk    ", " 1-8 bytes ", "9-16 bytes",
+            "17-24 bytes", "25-32 bytes");
+    printf("%-25s  %11s  %11s  %11s  %11s  %11s  \n",
+            "-------------------------", "-----------",
+            "-----------", "-----------",
+            "-----------", "-----------");
+}
+
+void ShortSpeedTest(const HashInfo * hinfo) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    bool result = true;
+    Rand r(321321);
+
+    const int trials = 2000;
+    const int maxvaryalign = 7;
+    const int basealignoffset = 0;
+
+    printf("%-25s", hinfo->name);
+
+    const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
+
+    {
+        const int baselen = 256 * 1024;
+        const int maxvarylen = 127;
+
+        // Do a warmup to get things into cache
+        volatile double warmup_cycles =
+            SpeedTest(hash,seed,trials,baselen,0,0,0);
+
+        // Do a bulk speed test, varying precise block size and alignment
+        double cycles = SpeedTest(hash, seed, trials,
+                baselen, basealignoffset, maxvarylen, maxvaryalign);
+        double curbpc = ((double)baselen - ((double)maxvarylen / 2)) / cycles;
+        printf("    %7.2f  ", curbpc);
+    }
+
+    // Do 4 different small block speed tests, averaging over each
+    // group of 8 byte lengths (1-8, 9-16, 17-24, 25-31), varying the
+    // alignment during each test.
+    for (int i = 1; i <= 4; i++) {
+        const int baselen = i * 8;
+        double cycles = SpeedTest(hash, seed, trials,
+                baselen, basealignoffset, 7, maxvaryalign);
+        printf("    %7.2f  ", cycles);
+    }
+
+    printf("\n");
 }

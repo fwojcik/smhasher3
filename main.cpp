@@ -114,6 +114,7 @@ static bool g_testExtra   = false;
 
 static bool g_testAll;
 static bool g_testVerifyAll;
+static bool g_testSpeedAll;
 static bool g_testSanity;
 static bool g_testSpeed;
 static bool g_testHashmap;
@@ -142,7 +143,8 @@ struct TestOpts {
 };
 static TestOpts g_testopts[] =
 {
-  { g_testVerifyAll,    false,     false,    "VerifyAll" }, // Overrides all others
+  { g_testVerifyAll,    false,     false,    "VerifyAll" }, // Overrides all others below
+  { g_testSpeedAll,     false,     false,    "SpeedAll" }, // Overrides all others below
   { g_testAll,           true,     false,    "All" },
   { g_testSanity,        true,     false,    "Sanity" },
   { g_testSpeed,         true,      true,    "Speed" },
@@ -258,6 +260,8 @@ static HashInfo::endianness parse_endian(const char * str) {
 static void HashSelfTestAll(bool verbose) {
   bool pass = true;
 
+  printf("[[[ VerifyAll Tests ]]]\n\n");
+
   pass &= verifyAllHashes(verbose);
 
   if (!pass) {
@@ -267,6 +271,8 @@ static void HashSelfTestAll(bool verbose) {
     }
     exit(1);
   }
+
+  printf("PASS\n\n");
 }
 
 static bool HashSelfTest(const HashInfo * hinfo) {
@@ -275,6 +281,47 @@ static bool HashSelfTest(const HashInfo * hinfo) {
     recordTestResult(result, "Sanity", "Implementation verification");
 
     return result;
+}
+
+//-----------------------------------------------------------------------------
+// Quickly speed test all hashes
+
+static void HashSpeedTestAll(void) {
+    std::vector<const HashInfo *> allHashes = findAllHashes();
+
+    printf("[[[ Short Speed Tests ]]]\n\n");
+
+    ShortSpeedTestHeader();
+    // Do all the real, non-crypto hashes first
+    for (const HashInfo * h : allHashes) {
+        if (h->isMock() || h->isCrypto()) { continue; }
+        if (!h->Init()) {
+            printf("%s : hash initialization failed!", h->name);
+            continue;
+        }
+        ShortSpeedTest(h);
+    }
+    printf("\n");
+    // Then the crypto hashes
+    for (const HashInfo * h : allHashes) {
+        if (!h->isCrypto()) { continue; }
+        if (!h->Init()) {
+            printf("%s : hash initialization failed!", h->name);
+            continue;
+        }
+        ShortSpeedTest(h);
+    }
+    printf("\n");
+    // Then the mock hashes
+    for (const HashInfo * h : allHashes) {
+        if (!h->isMock()) { continue; }
+        if (!h->Init()) {
+            printf("%s : hash initialization failed!", h->name);
+            continue;
+        }
+        ShortSpeedTest(h);
+    }
+    printf("\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -704,9 +751,9 @@ int main ( int argc, const char ** argv )
   size_t timeBegin = monotonic_clock();
 
   if (g_testVerifyAll) {
-      printf("[[[ VerifyAll Tests ]]]\n\n");
       HashSelfTestAll(g_drawDiagram);
-      printf("PASS\n\n");
+  } else if (g_testSpeedAll) {
+      HashSpeedTestAll();
   } else {
       testHash(hashToTest);
   }

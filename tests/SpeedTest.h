@@ -44,3 +44,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 bool SpeedTest(const HashInfo * info);
+void ShortSpeedTest(const HashInfo * hinfo);
+void ShortSpeedTestHeader(void);
