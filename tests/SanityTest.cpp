@@ -53,11 +53,52 @@
 
 #include "SanityTest.h"
 
+#include <cassert>
+
 // These sentinel bytes MUST be different values
 static const uint8_t sentinel1 = 0x5c;
 static const uint8_t sentinel2 = 0x36;
 static_assert(sentinel1 != sentinel2,
         "valid sentinel bytes in SanityTest");
+
+//----------------------------------------------------------------------------
+// Helper for printing out the right number of progress dots
+
+static void progressdots(int cur, int min, int max, int totaldots) {
+    // cur goes from [min, max]. When cur is max, totaldots should
+    // have been printed. Print out enough dots, assuming either we
+    // were called for cur-1, or that we are being called for the
+    // first time with cur==min.
+    assert(totaldots > 0);
+    assert(min < max);
+    assert(cur >= min);
+    assert(cur <= max);
+
+    int count = 0;
+    int span = max - min + 1;
+    if (span > totaldots) {
+        // Possibly zero dots per call.
+        // Always print out one dot the first time through.
+        // Treat the range as one smaller, to spread out that first
+        // dot's "stolen time slice".
+        if (cur == min) {
+            count = 1;
+        } else {
+            totaldots--;
+            min++;
+            span--;
+        }
+    }
+    if (count == 0) {
+        int expect = (cur - min + 1) * totaldots / span;
+        int sofar =  (cur - min    ) * totaldots / span;
+        count = expect - sofar;
+    }
+
+    for (int i = 0; i < count; i++) {
+        printf(".");
+    }
+}
 
 //----------------------------------------------------------------------------
 // Basic sanity checks -
