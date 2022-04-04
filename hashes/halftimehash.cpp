@@ -1238,7 +1238,7 @@ inline uint64_t HalftimeHashStyle64(
 }  // namespace halftime_hash
 
 //------------------------------------------------------------
-alignas(64) static uint64_t
+alignas(64) static thread_local uint64_t
     halftime_hash_random[8 * ((halftime_hash::kEntropyBytesNeeded / 64) + 1)];
 
 // romu random number generator for seeding the HalftimeHash entropy
@@ -1258,31 +1258,35 @@ uintptr_t halftime_hash_seed_init(const seed_t seed) {
         halftime_hash_random[i] = xp;
     }
 
-    return 0;
+    return (uintptr_t)(halftime_hash_random);
 }
 
 //------------------------------------------------------------
 template < bool bswap >
 void HalftimeHash64(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t h = halftime_hash::HalftimeHashStyle64<bswap>(halftime_hash_random, (const uint8_t *)in, (size_t)len);
+    const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
+    uint64_t h = halftime_hash::HalftimeHashStyle64<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
 void HalftimeHash128(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t h = halftime_hash::HalftimeHashStyle128<bswap>(halftime_hash_random, (const uint8_t *)in, (size_t)len);
+    const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
+    uint64_t h = halftime_hash::HalftimeHashStyle128<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
 void HalftimeHash256(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t h = halftime_hash::HalftimeHashStyle256<bswap>(halftime_hash_random, (const uint8_t *)in, (size_t)len);
+    const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
+    uint64_t h = halftime_hash::HalftimeHashStyle256<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
 void HalftimeHash512(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t h = halftime_hash::HalftimeHashStyle512<bswap>(halftime_hash_random, (const uint8_t *)in, (size_t)len);
+    const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
+    uint64_t h = halftime_hash::HalftimeHashStyle512<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
