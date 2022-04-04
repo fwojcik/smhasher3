@@ -398,71 +398,78 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
 
     const uint32_t hashbytes = hinfo->bits / 8;
     const uint32_t reps = 1024*16;
+    const uint32_t keybytes = (reps * reps);
+    std::vector<uint8_t> keys(keybytes);
+    std::vector<uint8_t> mainhashes(reps * hashbytes);
+    const seed_t seed = seedthread ? 0 : hinfo->Seed(0, true, 1);
     bool result = true;
-#if !defined(HAVE_THREADS)
-    verbose = false;
-#endif
 
     maybeprintf("Running thread-safety test %d ", seedthread ? 2 : 1);
 
-    // Generate a bunch of key data. Key 0 is 1 byte, key 2 is 1
-    // bytes, etc. We really only need (reps*(reps+1)/2) bytes, but
-    // this is just easier to code and slightly easier to understand.
-    const uint32_t keybytes = (reps * reps);
-    std::vector<uint8_t> keys(keybytes);
-    r.rand_p(&keys[0], keybytes);
-    maybeprintf(".");
+    if ((g_NCPU > 1) || g_doVCode) {
+        // Generate a bunch of key data. Key 0 is 1 byte, key 2 is 1
+        // bytes, etc. We really only need (reps*(reps+1)/2) bytes,
+        // but this is just easier to code and slightly easier to
+        // understand.
+        r.rand_p(&keys[0], keybytes);
+        maybeprintf(".");
 
-    // Compute all the hashes in order on the main process in order
-    std::vector<uint8_t> mainhashes(reps * hashbytes);
-    const seed_t seed = seedthread ? 0 : hinfo->Seed(0, true, 1);
-    hashthings(hinfo, seed, reps, 0, seedthread, verbose, keys, mainhashes);
-    addVCodeOutput(&mainhashes[0], reps * hashbytes);
+        // Compute all the hashes in order on the main process in order
+        hashthings(hinfo, seed, reps, 0, seedthread, verbose, keys, mainhashes);
+        addVCodeOutput(&mainhashes[0], reps * hashbytes);
+    }
 
+    if (g_NCPU > 1) {
 #if defined(HAVE_THREADS)
-    // Compute all the hashes in different random orders in threads
-    std::vector<std::vector<uint8_t> > threadhashes(g_NCPU, std::vector<uint8_t>(reps * hashbytes));
-    std::thread t[g_NCPU];
-    for (int i = 0; i < g_NCPU; i++) {
-        t[i] = std::thread {hashthings,hinfo,seed,reps,i+1,seedthread,verbose,std::ref(keys),std::ref(threadhashes[i])};
-    }
-    for (int i = 0; i < g_NCPU; i++) {
-        t[i].join();
-    }
-    // Make sure all thread results match the main process
-    maybeprintf(".");
-    for (int i = 0; i < g_NCPU; i++) {
-        if (!memcmp(&mainhashes[0], &threadhashes[i][0], reps * hashbytes)) {
-            continue;
+        // Compute all the hashes in different random orders in threads
+        std::vector<std::vector<uint8_t> > threadhashes(g_NCPU, std::vector<uint8_t>(reps * hashbytes));
+        std::thread t[g_NCPU];
+        for (int i = 0; i < g_NCPU; i++) {
+            t[i] = std::thread {hashthings,hinfo,seed,reps,i+1,seedthread,verbose,std::ref(keys),std::ref(threadhashes[i])};
         }
-        if (!verbose) {
-            result = false;
-            break;
+        for (int i = 0; i < g_NCPU; i++) {
+            t[i].join();
         }
-        for (int j = 0; j < reps; j++) {
-            if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
-                maybeprintf("\nMismatch between main process and thread #%d at index %d\n  main   :", i, j);
-                if (verbose) { printHash(&mainhashes[j * hashbytes], hashbytes); }
-                maybeprintf("\n  thread :");
-                if (verbose) { printHash(&threadhashes[i][j * hashbytes], hashbytes); }
-                maybeprintf("\n");
+        // Make sure all thread results match the main process
+        maybeprintf(".");
+        for (int i = 0; i < g_NCPU; i++) {
+            if (!memcmp(&mainhashes[0], &threadhashes[i][0], reps * hashbytes)) {
+                continue;
+            }
+            if (!verbose) {
                 result = false;
-                break; // Only breaks out of j loop
+                break;
+            }
+            for (int j = 0; j < reps; j++) {
+                if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
+                    maybeprintf("\nMismatch between main process and thread #%d at index %d\n  main   :", i, j);
+                    if (verbose) { printHash(&mainhashes[j * hashbytes], hashbytes); }
+                    maybeprintf("\n  thread :");
+                    if (verbose) { printHash(&threadhashes[i][j * hashbytes], hashbytes); }
+                    maybeprintf("\n");
+                    result = false;
+                    break; // Only breaks out of j loop
+                }
             }
         }
-    }
 
-    if(result == false) {
-        printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
+        if(result == false) {
+            printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
+        } else {
+            printf("%s", verbose ? " PASS\n"        : " ... pass");
+        }
+
+        recordTestResult(result, "Sanity", "Thread safety");
     } else {
-        printf("%s", verbose ? " PASS\n"        : " ... pass");
+        printf("%s", verbose ? "..... SKIPPED (ncpu set to 1)\n" : " ... skip");
+#else
+    } else {
+        printf("%s", verbose ? "..... SKIPPED (compiled without threads)\n" : " ... skip");
+#endif // HAVE_THREADS
     }
 
-    recordTestResult(result, "Sanity", "Thread safety");
-
-#endif // HAVE_THREADS
-
-    addVCodeResult(result);
+    // Don't add the result to the vcode, because it's too
+    // platform-dependent.
 
     return result;
 }
