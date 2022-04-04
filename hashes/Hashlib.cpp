@@ -43,7 +43,6 @@ HashMap& hashMap() {
   return *map;
 }
 
-
 // The sort_order field is intended to be used for people adding
 // hashes which should appear inside their family in
 // other-than-alphabetical order.
@@ -69,6 +68,12 @@ HashMapOrder defaultSort(HashMap & map) {
                 if ((r = strcmp(a->name, b->name)) != 0)      return (r < 0);
                 return false;
             });
+    return hashes;
+}
+
+std::vector<const HashInfo *> findAllHashes(void) {
+    HashMapOrder hashes;
+    hashes = defaultSort(hashMap());
     return hashes;
 }
 

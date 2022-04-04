@@ -17,6 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 const HashInfo * findHash(const char * name);
+std::vector<const HashInfo *> findAllHashes(void);
 void listHashes(bool nameonly);
 bool verifyAllHashes(bool verbose);
 bool verifyHash(const HashInfo * hinfo, enum HashInfo::endianness endian,
