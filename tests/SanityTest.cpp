@@ -72,10 +72,12 @@ static_assert(sentinel1 != sentinel2,
 //
 // The memory alignment of the key should not affect the hash result.
 
-static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t sentinel) {
+#define maybeprintf(...) if (verbose) { printf(__VA_ARGS__); }
+
+static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t sentinel, bool verbose) {
     for (size_t i = 0; i < len; i++) {
         if (buf[i] != sentinel) {
-            printf(" %d: 0x%02X != 0x%02X: ", i, buf[i], sentinel);
+            maybeprintf(" %d: 0x%02X != 0x%02X: ", i, buf[i], sentinel);
             return false;
         }
     }
@@ -83,7 +85,7 @@ static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t senti
 }
 
 template < bool checksentinels >
-static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t len) {
+static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t len, bool verbose) {
     if (likely(memcmp(buf1, buf2, len) == 0)) {
         return true;
     }
@@ -91,9 +93,9 @@ static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t 
         if (buf1[i] == buf2[i]) { continue; }
         if (checksentinels &&
                 (buf1[i] == sentinel1) && (buf2[i] == sentinel2)) {
-            printf(" output byte %d not altered:", i);
+            maybeprintf(" output byte %d not altered:", i);
         } else {
-            printf(" output byte %d inconsistent (0x%02X != 0x%02X):",
+            maybeprintf(" output byte %d inconsistent (0x%02X != 0x%02X):",
                     i, buf1[i], buf2[i]);
         }
         break;
@@ -106,7 +108,7 @@ static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t 
 // that hashing the same thing gives the same result.
 //
 // This test can halt early, so don't add input bytes to the VCode.
-bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
+bool SanityTest1(const HashInfo * hinfo, const seed_t seed, bool verbose) {
     Rand r(883743);
     bool result = true;
     bool danger = false;
@@ -123,13 +125,13 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
     uint8_t * hash1 = new uint8_t[buflen];
     uint8_t * hash2 = new uint8_t[buflen];
 
-    printf("Running sanity check 1       ");
+    maybeprintf("Running sanity check 1       ");
 
     memset(hash1, sentinel1, buflen);
     memset(hash2, sentinel2, buflen);
 
     for(int irep = 0; irep < reps; irep++) {
-        if(irep % (reps/10) == 0) printf(".");
+        if (irep % (reps/10) == 0) maybeprintf(".");
 
         for(int len = 0; len <= keymax; len++) {
             // Make 2 copies of some random input data, and hash one
@@ -141,15 +143,16 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
 
             // See if the hash somehow changed the input data
             if (memcmp(buffer1, buffer2, buflen) != 0) {
-                printf(" hash altered input buffer:");
+                maybeprintf(" hash altered input buffer:");
                 result = false;
                 danger = true;
                 goto end_sanity;
             }
 
             // See if the hash overflowed its output buffer
-            if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes, sentinel1)) {
-                printf(" hash overflowed output buffer (pass 1):");
+            if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes,
+                            sentinel1, verbose)) {
+                maybeprintf(" hash overflowed output buffer (pass 1):");
                 result = false;
                 danger = true;
                 goto end_sanity;
@@ -159,15 +162,16 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
             hash(buffer1, len, seed, hash2);
 
             // See if the hash overflowed output buffer this time
-            if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes, sentinel2)) {
-                printf(" hash overflowed output buffer (pass 2):");
+            if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes,
+                            sentinel2, verbose)) {
+                maybeprintf(" hash overflowed output buffer (pass 2):");
                 result = false;
                 danger = true;
                 goto end_sanity;
             }
 
             // See if the hashes match, and if not then characterize the failure
-            if (!verify_hashmatch<true>(hash1, hash2, hashbytes)) {
+            if (!verify_hashmatch<true>(hash1, hash2, hashbytes, verbose)) {
                 result = false;
                 goto end_sanity;
             }
@@ -176,13 +180,14 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
 
  end_sanity:
     if(result == false) {
-        printf(" FAIL  !!!!!\n");
+        printf("%s", verbose ? " FAIL  !!!!!\n" : " FAIL");
     } else {
-        printf(" PASS\n");
+        printf("%s", verbose ? " PASS\n"        : " pass");
     }
 
     if (danger) {
-        printf("ERROR: Dangerous hash behavior detected!\n");
+        // This is always fatal in any context
+        printf("\nERROR: Dangerous hash behavior detected!\n");
         printf("       Cannot continue, since hash may corrupt memory.\n");
         exit(13);
     }
@@ -206,7 +211,7 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed) {
 // it's at a different alignment.
 //
 // This test can halt early, so don't add input bytes to the VCode.
-bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
+bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
     Rand r(883744);
     bool result = true;
 
@@ -223,10 +228,10 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
     uint8_t * hash1 = new uint8_t[hashbytes];
     uint8_t * hash2 = new uint8_t[hashbytes];
 
-    printf("Running sanity check 2       ");
+    maybeprintf("Running sanity check 2       ");
 
     for (int irep = 0; irep < reps; irep++) {
-        if(irep % (reps/10) == 0) printf(".");
+        if(irep % (reps/10) == 0) maybeprintf(".");
 
         for(int len = 4; len <= keymax; len++) {
             for(int offset = pad; offset < pad*2; offset++) {
@@ -252,7 +257,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
                     addVCodeOutput(hash2, hashbytes);
 
                     if (unlikely(memcmp(hash1, hash2, hashbytes) == 0)) {
-                        printf(" flipped bit %d, got identical output:", bit);
+                        maybeprintf(" flipped bit %d, got identical output:", bit);
                         result = false;
                         goto end_sanity;
                     }
@@ -267,7 +272,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
                     if (irep == 0) {
                         hash(key2, len, seed, hash2);
 
-                        if (!verify_hashmatch<false>(hash1, hash2, hashbytes)) {
+                        if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
                             result = false;
                             goto end_sanity;
                         }
@@ -288,7 +293,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
                     *ptr ^= 0xFF;
                     hash(key2, len, seed, hash2);
                     if (memcmp(hash1, hash2, hashbytes) != 0) {
-                        printf(" changing non-key byte altered hash: ");
+                        maybeprintf(" changing non-key byte altered hash: ");
                         result = false;
                         goto end_sanity;
                     }
@@ -299,9 +304,9 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed) {
 
  end_sanity:
     if(result == false) {
-        printf(" FAIL  !!!!!\n");
+        printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
     } else {
-        printf(" PASS\n");
+        printf("%s", verbose ? " PASS\n"        : " ... pass");
     }
 
     recordTestResult(result, "Sanity", "Basic 2");
@@ -349,20 +354,17 @@ static void hashthings(const HashInfo * hinfo, seed_t seed,
     }
 }
 
-static bool ThreadingTest (const HashInfo * hinfo, bool seedthread) {
+static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose) {
     Rand r(609163);
 
     const uint32_t hashbytes = hinfo->bits / 8;
     const uint32_t reps = 1024*16;
-    bool verbose = true;
     bool result = true;
 #if !defined(HAVE_THREADS)
     verbose = false;
 #endif
 
-    if (verbose) {
-        printf("Running thread-safety test %d ", seedthread ? 2 : 1);
-    }
+    maybeprintf("Running thread-safety test %d ", seedthread ? 2 : 1);
 
     // Generate a bunch of key data. Key 0 is 1 byte, key 2 is 1
     // bytes, etc. We really only need (reps*(reps+1)/2) bytes, but
@@ -376,7 +378,7 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread) {
     const seed_t seed = seedthread ? 0 : hinfo->Seed(0, true, 1);
     hashthings(hinfo, seed, reps, 0, seedthread, keys, mainhashes);
     addVCodeOutput(&mainhashes[0], reps * hashbytes);
-    if (verbose) { printf("."); }
+    maybeprintf(".");
 
 #if defined(HAVE_THREADS)
     // Compute all the hashes in different random orders in threads
@@ -390,27 +392,32 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread) {
     }
     // Make sure all thread results match the main process
     for (int i = 0; i < g_NCPU; i++) {
-        if (i < 9) { printf("."); }
-        if (memcmp(&mainhashes[0], &threadhashes[i][0], reps * hashbytes) != 0) {
-            for (int j = 0; j < reps; j++) {
-                if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
-                    printf("\nMismatch between main process and thread #%d at index %d\n  main   :", i, j);
-                    printHash(&mainhashes[j * hashbytes], hashbytes);
-                    printf("\n  thread :");
-                    printHash(&threadhashes[i][j * hashbytes], hashbytes);
-                    printf("\n");
-                    result = false;
-                    break; // Only breaks out of j loop
-                }
+        if (i < 9) { maybeprintf("."); }
+        if (!memcmp(&mainhashes[0], &threadhashes[i][0], reps * hashbytes)) {
+            continue;
+        }
+        if (!verbose) {
+            result = false;
+            break;
+        }
+        for (int j = 0; j < reps; j++) {
+            if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
+                maybeprintf("\nMismatch between main process and thread #%d at index %d\n  main   :", i, j);
+                printHash(&mainhashes[j * hashbytes], hashbytes);
+                maybeprintf("\n  thread :");
+                printHash(&threadhashes[i][j * hashbytes], hashbytes);
+                maybeprintf("\n");
+                result = false;
+                break; // Only breaks out of j loop
             }
         }
     }
-    for (int i = g_NCPU; i < 9; i++) { printf("."); }
+    for (int i = g_NCPU; i < 9; i++) { maybeprintf("."); }
 
     if(result == false) {
-        printf(" FAIL  !!!!!\n");
+        printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
     } else {
-        printf(" PASS\n");
+        printf("%s", verbose ? " PASS\n"        : " ... pass");
     }
 
     recordTestResult(result, "Sanity", "Thread safety");
@@ -425,18 +432,18 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread) {
 //----------------------------------------------------------------------------
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
-bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
+bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed, bool verbose) {
   Rand r(173994);
 
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const int hashbytes = hinfo->bits / 8;
   bool result = true;
 
-  printf("Running append zeroes test   ");
+  maybeprintf("Running append zeroes test   ");
 
   for(int rep = 0; rep < 100; rep++)
   {
-    if(rep % 10 == 0) printf(".");
+    if(rep % 10 == 0) maybeprintf(".");
 
     unsigned char key[256];
     memset(key,0,sizeof(key));
@@ -473,10 +480,10 @@ bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
   }
 
  done:
-  if (result) {
-    printf(" PASS\n");
+  if(result == false) {
+      printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
   } else {
-    printf(" FAIL !!!!!\n");
+      printf("%s", verbose ? " PASS\n"        : " ... pass");
   }
 
   recordTestResult(result, "Sanity", "Append zeroes");
@@ -489,18 +496,18 @@ bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
 //----------------------------------------------------------------------------
 // Prepending zero bytes to a key should also always cause it to
 // produce a different hash value
-bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
+bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed, bool verbose) {
   Rand r(534281);
 
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   const int hashbytes = hinfo->bits / 8;
   bool result = true;
 
-  printf("Running prepend zeroes test  ");
+  maybeprintf("Running prepend zeroes test  ");
 
   for(int rep = 0; rep < 100; rep++)
   {
-    if(rep % 10 == 0) printf(".");
+    if(rep % 10 == 0) maybeprintf(".");
 
     unsigned char key[256];
     memset(key,0,sizeof(key));
@@ -537,10 +544,10 @@ bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
   }
 
  done:
-  if (result) {
-    printf(" PASS\n");
+  if(result == false) {
+      printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
   } else {
-    printf(" FAIL !!!!!\n");
+      printf("%s", verbose ? " PASS\n"        : " ... pass");
   }
 
   recordTestResult(result, "Sanity", "Prepend zeroes");
@@ -550,22 +557,36 @@ bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed) {
   return result;
 }
 
-bool SanityTest(const HashInfo * hinfo) {
+void SanityTestHeader(void) {
+    printf("%-25s   %13s     %13s     %13s\n",
+            "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
+    printf("%-25s   %13s     %13s     %13s\n",
+            "-------------------------", "-------------",
+            "-------------", "-------------");
+}
+
+bool SanityTest(const HashInfo * hinfo, bool oneline) {
+    bool verbose = !oneline;
     bool result = true;
     bool threadresult = true;
+
+    if (oneline) { printf("%-25s  ", hinfo->name); }
 
     // Sanity tests are all done with seed of 0
     const seed_t seed = hinfo->Seed(0, true);
 
-    result &= SanityTest1(hinfo, seed);
-    result &= SanityTest2(hinfo, seed);
-    result &= AppendedZeroesTest(hinfo, seed);
-    result &= PrependedZeroesTest(hinfo, seed);
+    result &= SanityTest1(hinfo, seed, verbose);
+    result &= SanityTest2(hinfo, seed, verbose);
+    result &= AppendedZeroesTest(hinfo, seed, verbose);
+    result &= PrependedZeroesTest(hinfo, seed, verbose);
 
     // These should be last, as they re-seed
-    threadresult &= ThreadingTest(hinfo, false);
-    threadresult &= ThreadingTest(hinfo, true);
-    if (!threadresult) {
+    threadresult &= ThreadingTest(hinfo, false, verbose);
+    threadresult &= ThreadingTest(hinfo, true, verbose);
+
+    if (oneline) { printf("\n"); }
+
+    if (!oneline && !threadresult) {
         DisableThreads();
     }
     result &= threadresult;

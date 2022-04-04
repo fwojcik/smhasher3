@@ -114,6 +114,7 @@ static bool g_testExtra   = false;
 
 static bool g_testAll;
 static bool g_testVerifyAll;
+static bool g_testSanityAll;
 static bool g_testSpeedAll;
 static bool g_testSanity;
 static bool g_testSpeed;
@@ -144,7 +145,8 @@ struct TestOpts {
 static TestOpts g_testopts[] =
 {
   { g_testVerifyAll,    false,     false,    "VerifyAll" }, // Overrides all others below
-  { g_testSpeedAll,     false,     false,    "SpeedAll" }, // Overrides all others below
+  { g_testSanityAll,    false,     false,    "SanityAll" }, // Overrides all others below
+  { g_testSpeedAll,     false,     false,    "SpeedAll" },  // Overrides all others below
   { g_testAll,           true,     false,    "All" },
   { g_testSanity,        true,     false,    "Sanity" },
   { g_testSpeed,         true,      true,    "Speed" },
@@ -283,6 +285,22 @@ static bool HashSelfTest(const HashInfo * hinfo) {
     return result;
 }
 
+static void HashSanityTestAll(void) {
+    std::vector<const HashInfo *> allHashes = findAllHashes();
+
+    printf("[[[ SanityAll Tests ]]]\n\n");
+
+    SanityTestHeader();
+    for (const HashInfo * h : allHashes) {
+        if (!h->Init()) {
+            printf("%s : hash initialization failed!", h->name);
+            continue;
+        }
+        SanityTest(h, true);
+    }
+    printf("\n");
+}
+
 //-----------------------------------------------------------------------------
 // Quickly speed test all hashes
 
@@ -389,7 +407,7 @@ static bool test ( const HashInfo * hInfo )
     printf("[[[ Sanity Tests ]]]\n\n");
 
     result &=  HashSelfTest(hInfo);
-    result &= (SanityTest(hInfo)   || hInfo->isMock());
+    result &= (SanityTest(hInfo) || hInfo->isMock());
     printf("\n");
   }
 
@@ -752,6 +770,8 @@ int main ( int argc, const char ** argv )
 
   if (g_testVerifyAll) {
       HashSelfTestAll(g_drawDiagram);
+  } else if (g_testSanityAll) {
+      HashSanityTestAll();
   } else if (g_testSpeedAll) {
       HashSpeedTestAll();
   } else {
