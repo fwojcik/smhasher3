@@ -319,29 +319,7 @@ static void HashSpeedTestAll(void) {
     printf("[[[ Short Speed Tests ]]]\n\n");
 
     ShortSpeedTestHeader();
-    // Do all the real, non-crypto hashes first
     for (const HashInfo * h : allHashes) {
-        if (h->isMock() || h->isCrypto()) { continue; }
-        if (!h->Init()) {
-            printf("%s : hash initialization failed!", h->name);
-            continue;
-        }
-        ShortSpeedTest(h);
-    }
-    printf("\n");
-    // Then the crypto hashes
-    for (const HashInfo * h : allHashes) {
-        if (!h->isCrypto()) { continue; }
-        if (!h->Init()) {
-            printf("%s : hash initialization failed!", h->name);
-            continue;
-        }
-        ShortSpeedTest(h);
-    }
-    printf("\n");
-    // Then the mock hashes
-    for (const HashInfo * h : allHashes) {
-        if (!h->isMock()) { continue; }
         if (!h->Init()) {
             printf("%s : hash initialization failed!", h->name);
             continue;
