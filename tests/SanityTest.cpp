@@ -251,6 +251,8 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed, bool verbose) {
 // and that hashing the same thing gives the same result, even if
 // it's at a different alignment.
 //
+// This test is expensive, so only run 1 rep.
+//
 // This test can halt early, so don't add input bytes to the VCode.
 bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
     Rand r(883744);
@@ -258,8 +260,8 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
 
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     const int hashbytes = hinfo->bits / 8;
-    const int reps = 10;
-    const int keymax = 256;
+    const int reps = 1;
+    const int keymax = 128;
     const int pad = 16; // Max alignment offset tested
     const int buflen = keymax + pad*3;
 
@@ -272,9 +274,10 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
     maybeprintf("Running sanity check 2       ");
 
     for (int irep = 0; irep < reps; irep++) {
-        if(irep % (reps/10) == 0) maybeprintf(".");
 
         for(int len = 4; len <= keymax; len++) {
+            if (verbose) { progressdots(len + irep*keymax, 4, keymax + irep*keymax, 10); }
+
             for(int offset = pad; offset < pad*2; offset++) {
                 // Fill the two buffers with different random data
                 r.rand_p(buffer1, buflen);
@@ -303,20 +306,13 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                         goto end_sanity;
                     }
 
-                    // Flip it back
+                    // Flip it back, hash again -> we should get the original result.
                     flipbit(key2, len, bit);
-                    // hash again -> we should get the original result.
-                    //
-                    // This is actually expensive enough that doing
-                    // this for more than one complete set of (len,
-                    // offset) values isn't worth it.
-                    if (irep == 0) {
-                        hash(key2, len, seed, hash2);
+                    hash(key2, len, seed, hash2);
 
-                        if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
-                            result = false;
-                            goto end_sanity;
-                        }
+                    if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
+                        result = false;
+                        goto end_sanity;
                     }
                 }
 
