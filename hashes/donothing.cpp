@@ -36,14 +36,12 @@ template < uint32_t hashlen, bool bswap >
 void DoNothingOAATHash(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t *       data = (const uint8_t *)in;
     const uint8_t * const end  = &data[len];
-    uint32_t h                 = seed;
+    uint32_t h                 = seed >> 32;
 
     while (data < end) {
-        h = *data++;
+        h &= *data++;
     }
-    h = COND_BSWAP(h, bswap);
-    memset(out, 0, hashlen/8);
-    memcpy(out, &h, sizeof(h));
+    *(uint8_t *)out = (uint8_t)h;
 }
 
 REGISTER_FAMILY(donothing);
@@ -99,7 +97,7 @@ REGISTER_HASH(donothingOAAT32,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x0,
-  $.verification_BE = 0xFE000000,
+  $.verification_BE = 0x0,
   $.hashfn_native = DoNothingOAATHash<32, false>,
   $.hashfn_bswap = DoNothingOAATHash<32, true>,
   $.sort_order = 10
