@@ -189,43 +189,52 @@ static void parse_tests(const char * str, bool enable_tests) {
             len = p - str;
         }
 
-        bool found = false;
+        struct TestOpts * found = NULL;
+        bool foundmultiple = false;
         for (size_t i = 0; i < sizeof(g_testopts) / sizeof(TestOpts); i++) {
             const char * testname = g_testopts[i].name;
             // Allow the user to specify test names by case-agnostic
             // unique prefix.
             if (strncasecmp(str, testname, len) == 0) {
-                if (found) {
-                    printf("Ambiguous test name: --%stest=%*s\n",
-                            enable_tests ? "" : "no", len, str);
-                    goto error;
+                if (found != NULL) {
+                    foundmultiple = true;
                 }
-                found = true;
-                //printf("%sabling test %s\n", enable_tests ? "en" : "dis", testname);
-                g_testopts[i].var = enable_tests;
-                // If "All" tests are being enabled or disabled, then
-                // adjust the individual test variables as
-                // instructed. Otherwise, if a material "All" test
-                // (not just a speed-testing test) is being
-                // specifically disabled, then don't consider "All"
-                // tests as being run.
-                if (&g_testopts[i].var == &g_testAll) {
-                    set_default_tests(enable_tests);
-                } else if (!enable_tests                 &&
-                        g_testopts[i].defaultvalue       &&
-                        !g_testopts[i].testspeedonly) {
-                    g_testAll = false;
-                }
+                found = &g_testopts[i];
+                // Exact match found, don't bother looking further,
+                // and don't error out.
                 if (testname[len] == '\0') {
-                    //printf("Exact match\n");
+                    foundmultiple = false;
                     break;
                 }
             }
         }
-        if (!found) {
-            printf("Invalid option: --test=%*s\n", len, str);
+        if (foundmultiple) {
+            printf("Ambiguous test name: --%stest=%*s\n",
+                    enable_tests ? "" : "no", len, str);
             goto error;
         }
+        if (found == NULL) {
+            printf("Invalid option: --%stest=%*s\n",
+                    enable_tests ? "" : "no", len, str);
+            goto error;
+        }
+
+        //printf("%sabling test %s\n", enable_tests ? "en" : "dis", testname);
+        found->var = enable_tests;
+        // If "All" tests are being enabled or disabled, then
+        // adjust the individual test variables as
+        // instructed. Otherwise, if a material "All" test
+        // (not just a speed-testing test) is being
+        // specifically disabled, then don't consider "All"
+        // tests as being run.
+        if (&found->var == &g_testAll) {
+            set_default_tests(enable_tests);
+        } else if (!enable_tests                 &&
+                found->defaultvalue       &&
+                !found->testspeedonly) {
+            g_testAll = false;
+        }
+
         if (p == NULL) {
             break;
         }
