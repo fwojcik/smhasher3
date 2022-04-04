@@ -365,7 +365,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
 // is called per-hash inside each thread.
 
 static void hashthings(const HashInfo * hinfo, seed_t seed,
-        uint32_t reps, uint32_t order, bool reseed,
+        uint32_t reps, uint32_t order, bool reseed, bool verbose,
         std::vector<uint8_t> &keys, std::vector<uint8_t> &hashes) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     const uint32_t hashbytes = hinfo->bits / 8;
@@ -382,12 +382,14 @@ static void hashthings(const HashInfo * hinfo, seed_t seed,
 
     // Hash each key, and put the result into its spot in hashes[].
     // If we're testing #2 above, then reseed per-key.
-    // Add each key to the input VCode.
+    // Add each key to the input VCode, but only on the main proc.
+    // Print out progress dots on the main proc AND thread #0.
     for (int i = 0; i < reps; i++) {
         const int idx = (order == 0) ? i : idxs[i];
         if (reseed) { seed = hinfo->Seed(idx * UINT64_C(0xa5), true, 1); }
         hash(&keys[idx * reps], idx + 1, seed, &hashes[idx * hashbytes]);
-        if (order == 0) { addVCodeInput(&keys[idx * reps], idx + 1); }
+        if (verbose && (order < 2)) { progressdots(i, 0, reps - 1, 4); }
+        if (order == 0) { addVCodeInput(&keys[idx * reps], idx + 1);}
     }
 }
 
@@ -409,27 +411,27 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
     const uint32_t keybytes = (reps * reps);
     std::vector<uint8_t> keys(keybytes);
     r.rand_p(&keys[0], keybytes);
+    maybeprintf(".");
 
     // Compute all the hashes in order on the main process in order
     std::vector<uint8_t> mainhashes(reps * hashbytes);
     const seed_t seed = seedthread ? 0 : hinfo->Seed(0, true, 1);
-    hashthings(hinfo, seed, reps, 0, seedthread, keys, mainhashes);
+    hashthings(hinfo, seed, reps, 0, seedthread, verbose, keys, mainhashes);
     addVCodeOutput(&mainhashes[0], reps * hashbytes);
-    maybeprintf(".");
 
 #if defined(HAVE_THREADS)
     // Compute all the hashes in different random orders in threads
     std::vector<std::vector<uint8_t> > threadhashes(g_NCPU, std::vector<uint8_t>(reps * hashbytes));
     std::thread t[g_NCPU];
     for (int i = 0; i < g_NCPU; i++) {
-        t[i] = std::thread {hashthings,hinfo,seed,reps,i+1,seedthread,std::ref(keys),std::ref(threadhashes[i])};
+        t[i] = std::thread {hashthings,hinfo,seed,reps,i+1,seedthread,verbose,std::ref(keys),std::ref(threadhashes[i])};
     }
     for (int i = 0; i < g_NCPU; i++) {
         t[i].join();
     }
     // Make sure all thread results match the main process
+    maybeprintf(".");
     for (int i = 0; i < g_NCPU; i++) {
-        if (i < 9) { maybeprintf("."); }
         if (!memcmp(&mainhashes[0], &threadhashes[i][0], reps * hashbytes)) {
             continue;
         }
@@ -440,16 +442,15 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
         for (int j = 0; j < reps; j++) {
             if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
                 maybeprintf("\nMismatch between main process and thread #%d at index %d\n  main   :", i, j);
-                printHash(&mainhashes[j * hashbytes], hashbytes);
+                if (verbose) { printHash(&mainhashes[j * hashbytes], hashbytes); }
                 maybeprintf("\n  thread :");
-                printHash(&threadhashes[i][j * hashbytes], hashbytes);
+                if (verbose) { printHash(&threadhashes[i][j * hashbytes], hashbytes); }
                 maybeprintf("\n");
                 result = false;
                 break; // Only breaks out of j loop
             }
         }
     }
-    for (int i = g_NCPU; i < 9; i++) { maybeprintf("."); }
 
     if(result == false) {
         printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
