@@ -288,7 +288,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                 // data that differs from buffer1, including data
                 // before the key pointers.
                 uint8_t * key1 = &buffer1[pad];
-                uint8_t * key2 = &buffer2[pad + offset];
+                uint8_t * key2 = &buffer2[offset];
                 memcpy(key2, key1, len);
 
                 hash(key1, len, seed, hash1);
@@ -325,8 +325,8 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                 // out-of-bounds key bytes, but doing that isn't
                 // necessarily an error or even unsafe; see:
                 // https://stackoverflow.com/questions/37800739/is-it-safe-to-read-past-the-end-of-a-buffer-within-the-same-page-on-x86-and-x64
-                for(uint8_t * ptr = &buffer2[0]; ptr < &buffer2[buflen]; ptr++) {
-                    if ((ptr >= &key2[0]) && (ptr < &key2[len])) { continue; }
+                for(uint8_t * ptr = key2 - pad; ptr < key2 + len + pad; ptr++) {
+                    if ((ptr >= key2) && (ptr < key2 + len)) { continue; }
                     *ptr ^= 0xFF;
                     hash(key2, len, seed, hash2);
                     if (memcmp(hash1, hash2, hashbytes) != 0) {
