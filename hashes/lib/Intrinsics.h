@@ -130,7 +130,7 @@ typedef  __vector unsigned long long vec_t;
 static FORCE_INLINE uint64x2_t Vbswap64_u64(const uint64x2_t v) {
     return vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(v)));
 }
-static FORCE_INLINE uint64x2_t Vbswap32_u32(const uint32x4_t v) {
+static FORCE_INLINE uint32x4_t Vbswap32_u32(const uint32x4_t v) {
     return vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(v)));
 }
 #endif

@@ -97,7 +97,17 @@ FORCE_INLINE uint64_t timeofday() {
 FORCE_INLINE uint64_t rdtsc() {
 #if defined (HAVE_X86_32) || defined (HAVE_X86_64)
     return __builtin_ia32_rdtsc();
-#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 6)
+#elif defined(__aarch64__) && defined(HAVE_64BIT_PLATFORM)
+  uint64_t pmccntr;
+  uint64_t pmuseren = 1UL;
+  // Read the user mode perf monitor counter access permissions.
+  //asm volatile("mrs cntv_ctl_el0,  %0" : "=r" (pmuseren));
+  if (pmuseren & 1) {  // Allows reading perfmon counters for user mode code.
+    asm volatile("mrs %0, cntvct_el0" : "=r" (pmccntr));
+    return (uint64_t)(pmccntr) * 64;  // Should optimize to << 6
+  }
+  return timeofday();
+#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 6) && (__ARM_ARCH < 8)
   // V6 is the earliest arch that has a standard cyclecount (some say V7)
   uint32_t pmccntr;
   uint32_t pmuseren;
@@ -111,16 +121,6 @@ FORCE_INLINE uint64_t rdtsc() {
       // The counter is set up to count every 64th cycle
       return static_cast<uint64_t>(pmccntr) * 64;  // Should optimize to << 6
     }
-  }
-  return timeofday();
-#elif defined(__aarch64__) && defined(HAVE_64BIT_PLATFORM)
-  uint64_t pmccntr;
-  uint64_t pmuseren = 1UL;
-  // Read the user mode perf monitor counter access permissions.
-  //asm volatile("mrs cntv_ctl_el0,  %0" : "=r" (pmuseren));
-  if (pmuseren & 1) {  // Allows reading perfmon counters for user mode code.
-    asm volatile("mrs %0, cntvct_el0" : "=r" (pmccntr));
-    return (uint64_t)(pmccntr) * 64;  // Should optimize to << 6
   }
   return timeofday();
 #else
