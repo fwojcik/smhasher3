@@ -401,7 +401,7 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
     const uint32_t keybytes = (reps * reps);
     std::vector<uint8_t> keys(keybytes);
     std::vector<uint8_t> mainhashes(reps * hashbytes);
-    const seed_t seed = seedthread ? 0 : hinfo->Seed(0, true, 1);
+    const seed_t seed = seedthread ? 0 : hinfo->Seed(0x12345, true, 1);
     bool result = true;
 
     maybeprintf("Running thread-safety test %d ", seedthread ? 2 : 1);
