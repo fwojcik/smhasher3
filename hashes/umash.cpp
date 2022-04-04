@@ -154,6 +154,14 @@ struct umash_params {
      * 128-bit constant stored in the last two elements.
      */
     uint64_t oh[UMASH_OH_PARAM_COUNT + UMASH_OH_TWISTING_COUNT];
+    /*
+     * The seed value that the params were derived from. This is added
+     * for SMHasher3, so that the seed input parameter to the hash
+     * invocation can be used instead for a pointer to the
+     * thread-local umash_params table. It lets this umash
+     * implementation be thread-safe.
+     */
+    uint64_t base_seed;
 };
 
 /**
@@ -1079,6 +1087,8 @@ static bool umash_params_prepare(struct umash_params *params) {
 static void umash_params_derive(struct umash_params *params, uint64_t bits, const void *key) {
     uint8_t umash_key[33] = "Do not use UMASH VS adversaries.";
 
+    params->base_seed = bits;
+
     if (key != NULL)
         memcpy(umash_key, key, sizeof(umash_key));
 
@@ -1088,7 +1098,12 @@ static void umash_params_derive(struct umash_params *params, uint64_t bits, cons
         for (size_t i = 0; i < 8; i++)
             nonce[i] = bits >> (8 * i);
 
-        salsa20_stream(params, sizeof(*params), nonce, umash_key);
+        /*
+         * The "- sizeof(uint64_t)" is so that params->base_seed
+         * doesn't get overwritten.
+         */
+        salsa20_stream(params, sizeof(*params) - sizeof(uint64_t),
+                nonce, umash_key);
         if (umash_params_prepare(params))
             return;
 
@@ -1102,25 +1117,44 @@ static void umash_params_derive(struct umash_params *params, uint64_t bits, cons
 }
 
 //------------------------------------------------------------
-static struct umash_params umash_params;
+// Because use of umash_slow_reseed() is optional here, it needs a
+// separate thread-local table. If the global one were used instead,
+// it would need to become thread-local, which would break it for the
+// case where the (reseed == false) versions are used in threaded
+// mode. This is because the (now) thread-local global table would
+// never be initialized in the thread, and so would be all zeroes.
+
+static uintptr_t umash_slow_reseed(const seed_t seed) {
+    static thread_local struct umash_params umash_params_local;
+    umash_params_derive(&umash_params_local, seed, NULL);
+    return (uintptr_t)(&umash_params_local);
+}
+
+static struct umash_params umash_params_global;
 
 static bool umash_init(void) {
-    umash_params_derive(&umash_params, 0, NULL);
+    umash_params_derive(&umash_params_global, 0, NULL);
+    umash_slow_reseed(0);
     return true;
 }
 
-static uintptr_t umash_slow_reseed(const seed_t seed) {
-    umash_params_derive(&umash_params, seed, NULL);
-    return 0;
-}
-
+template < bool reseed >
 void UMASH(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t hash = umash_full(&umash_params, (uint64_t)seed, in, len);
+    const struct umash_params * params = reseed ?
+        (const struct umash_params *)(uintptr_t)seed :
+        &umash_params_global;
+    const uint64_t hseed = reseed ? params->base_seed : (uint64_t)seed;
+    uint64_t hash = umash_full(params, hseed, in, len);
     PUT_U64<false>(hash, (uint8_t *)out, 0);
 }
 
+template < bool reseed >
 void UMASH_FP(const void * in, const size_t len, const seed_t seed, void * out) {
-    struct umash_fp hash = umash_fprint(&umash_params, (uint64_t)seed, in, len);
+    const struct umash_params * params = reseed ?
+        (const struct umash_params *)(uintptr_t)seed :
+        &umash_params_global;
+    const uint64_t hseed = reseed ? params->base_seed : (uint64_t)seed;
+    struct umash_fp hash = umash_fprint(params, hseed, in, len);
     PUT_U64<false>(hash.hash[0], (uint8_t *)out, 0);
     PUT_U64<false>(hash.hash[1], (uint8_t *)out, 8);
 }
@@ -1141,8 +1175,8 @@ REGISTER_HASH(umash_64,
   $.bits = 64,
   $.verification_LE = 0x36A264CD,
   $.verification_BE = 0x0,
-  $.hashfn_native = UMASH,
-  $.hashfn_bswap = UMASH,
+  $.hashfn_native = UMASH<false>,
+  $.hashfn_bswap = UMASH<false>,
   $.initfn = umash_init
 );
 
@@ -1156,8 +1190,8 @@ REGISTER_HASH(umash_reseed_64,
   $.bits = 64,
   $.verification_LE = 0x161495C6,
   $.verification_BE = 0x0,
-  $.hashfn_native = UMASH,
-  $.hashfn_bswap = UMASH,
+  $.hashfn_native = UMASH<true>,
+  $.hashfn_bswap = UMASH<true>,
   $.seedfn = umash_slow_reseed,
   $.initfn = umash_init
 );
@@ -1172,8 +1206,8 @@ REGISTER_HASH(umash_128,
   $.bits = 128,
   $.verification_LE = 0x63857D05,
   $.verification_BE = 0x0,
-  $.hashfn_native = UMASH_FP,
-  $.hashfn_bswap = UMASH_FP,
+  $.hashfn_native = UMASH_FP<false>,
+  $.hashfn_bswap = UMASH_FP<false>,
   $.initfn = umash_init
 );
 
@@ -1187,8 +1221,8 @@ REGISTER_HASH(umash_reseed_128,
   $.bits = 128,
   $.verification_LE = 0x36D4EC95,
   $.verification_BE = 0x0,
-  $.hashfn_native = UMASH_FP,
-  $.hashfn_bswap = UMASH_FP,
+  $.hashfn_native = UMASH_FP<true>,
+  $.hashfn_bswap = UMASH_FP<true>,
   $.seedfn = umash_slow_reseed,
   $.initfn = umash_init
 );
