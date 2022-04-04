@@ -76,18 +76,23 @@ static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
 
 #define INPUT_LEN_MAX 256
   assert(inputLen <= INPUT_LEN_MAX);
-  char key[INPUT_LEN_MAX] = {0};
+  uint8_t key[INPUT_LEN_MAX] = {0};
 
   printf("Generating coordinates from %3i-byte keys - %d keys\n", inputLen, xMax * yMax);
 
-  for(uint64_t x = 0; x < xMax; x++) {
-      memcpy(key, &x, inputLen);  // Note : only works with Little Endian
-      addVCodeInput(key, inputLen);
-      addVCodeInput(yMax);
-      for (uint64_t y = 0; y < yMax; y++) {
+  addVCodeInput(yMax);
+  // Since seeding can be expensive, loop over the seed-dependent
+  // variable first.
+  for (uint64_t y = 0; y < yMax; y++) {
+      const seed_t seed = hinfo->Seed(y, true);
+      for (uint64_t x = 0; x < xMax; x++) {
+          // Put x in little-endian order
+          uint64_t xin = COND_BSWAP(x, isBE());
+          memcpy(key, &xin, sizeof(xin));
+              
           hashtype h;
-          const seed_t seed = hinfo->Seed(y, true);
           hash(key, inputLen, seed, &h);
+          addVCodeInput(key, inputLen);
           hashes.push_back(h);
       }
   }
