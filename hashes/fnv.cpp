@@ -169,7 +169,7 @@ static void FNV_Totenschiff(const void * in, const size_t olen, const seed_t see
     uint64_t hash64 = (uint64_t)seed ^ UINT64_C(14695981039346656037);
     uint64_t PADDEDby8;
     size_t len = olen;
-    
+
     for (; len > 8; len -= 8, p += 8) {
         PADDEDby8 = GET_U64<bswap>(p, 0);
         hash64 = (hash64 ^ PADDEDby8) * PRIME;
@@ -247,8 +247,8 @@ REGISTER_HASH(fibonacci64,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |        
-        FLAG_IMPL_MULTIPLY_64_64,
+        FLAG_IMPL_64BIT          |
+        FLAG_IMPL_MULTIPLY_64_64 |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xFE3BD380,
@@ -279,8 +279,8 @@ REGISTER_HASH(fnv1a_64,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |        
-        FLAG_IMPL_MULTIPLY_64_64,
+        FLAG_IMPL_64BIT          |
+        FLAG_IMPL_MULTIPLY_64_64 |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x103455FC,
@@ -310,8 +310,8 @@ REGISTER_HASH(fnv2_64,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |        
-        FLAG_IMPL_MULTIPLY_64_64,
+        FLAG_IMPL_64BIT           |
+        FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x1967C625,
