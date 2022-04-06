@@ -239,7 +239,8 @@ unsigned int FindCollisions(std::vector<hashtype> & hashes,
     unsigned int collcount = 0;
     blobsort(hashes.begin(),hashes.end());
 
-    for(size_t hnb = 1; hnb < hashes.size(); hnb++) {
+    const size_t sz = hashes.size();
+    for(size_t hnb = 1; hnb < sz; hnb++) {
         if(hashes[hnb] == hashes[hnb-1]) {
             collcount++;
             if(collcount < maxCollisions) {

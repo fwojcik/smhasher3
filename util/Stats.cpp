@@ -60,16 +60,15 @@
 
 //-----------------------------------------------------------------------------
 
-double CalcMean ( std::vector<double> & v )
-{
+double CalcMean(std::vector<double> & v) {
+  const size_t sz = v.size();
   double mean = 0;
 
-  for(int i = 0; i < (int)v.size(); i++)
-  {
-    mean += v[i];
+  for(size_t i = 0; i < sz; i++) {
+      mean += v[i];
   }
 
-  mean /= double(v.size());
+  mean /= double(sz);
 
   return mean;
 }
@@ -148,10 +147,11 @@ void FilterOutliers ( std::vector<double> & v )
   std::sort(v.begin(),v.end());
 
   size_t len = 0;
+  const size_t sz = v.size();
 
   for(size_t x = 0x40000000; x; x = x >> 1 )
   {
-    if((len | x) >= v.size()) continue;
+    if((len | x) >= sz) continue;
 
     if(!ContainsOutlier(v,len | x))
     {
