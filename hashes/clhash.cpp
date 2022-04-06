@@ -196,6 +196,7 @@ static uint64_t simple128to64hashwithlength(const __m128i value, const __m128i k
 }
 
 // we expect length to have value 128 or, at least, to be divisible by 4.
+template < bool bswap >
 static __m128i clmulhalfscalarproductwithoutreduction(const __m128i * randomsource,
         const uint64_t * string, const size_t length) {
     const uint64_t * const endstring = string + length;
@@ -203,39 +204,45 @@ static __m128i clmulhalfscalarproductwithoutreduction(const __m128i * randomsour
     // we expect length = 128
     for (; string + 3 < endstring; randomsource += 2, string += 4) {
         const __m128i temp1 = _mm_load_si128( randomsource);
-        const __m128i temp2 = _mm_lddqu_si128((__m128i *) string);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_lddqu_si128((const __m128i *) string);
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
         const __m128i temp12 = _mm_load_si128(randomsource + 1);
-        const __m128i temp22 = _mm_lddqu_si128((__m128i *) (string + 2));
-        const __m128i add12 = _mm_xor_si128(temp12, temp22);
+        const __m128i temp22 = _mm_lddqu_si128((const __m128i *) (string + 2));
+        const __m128i temp32 = bswap ? mm_bswap64(temp22) : temp22;
+        const __m128i add12 = _mm_xor_si128(temp12, temp32);
         const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
         acc = _mm_xor_si128(clprod12, acc);
     }
     return acc;
 }
 
+template < bool bswap >
 static __m128i clmulhalfscalarproductwithtailwithoutreduction(const __m128i * randomsource,
         const uint64_t * string, const size_t length) {
     const uint64_t * const endstring = string + length;
     __m128i acc = _mm_setzero_si128();
     for (; string + 3 < endstring; randomsource += 2, string += 4) {
         const __m128i temp1 = _mm_load_si128(randomsource);
-        const __m128i temp2 = _mm_lddqu_si128((__m128i *) string);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_lddqu_si128((const __m128i *) string);
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
         const __m128i temp12 = _mm_load_si128(randomsource+1);
-        const __m128i temp22 = _mm_lddqu_si128((__m128i *) (string + 2));
-        const __m128i add12 = _mm_xor_si128(temp12, temp22);
+        const __m128i temp22 = _mm_lddqu_si128((const __m128i *) (string + 2));
+        const __m128i temp32 = bswap ? mm_bswap64(temp22) : temp22;
+        const __m128i add12 = _mm_xor_si128(temp12, temp32);
         const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
         acc = _mm_xor_si128(clprod12, acc);
     }
     if (string + 1 < endstring) {
         const __m128i temp1 = _mm_load_si128(randomsource);
-        const __m128i temp2 = _mm_lddqu_si128((__m128i *) string);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_lddqu_si128((const __m128i *) string);
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
         randomsource += 1;
@@ -243,34 +250,39 @@ static __m128i clmulhalfscalarproductwithtailwithoutreduction(const __m128i * ra
     }
     if (string < endstring) {
         const __m128i temp1 = _mm_load_si128(randomsource);
-        const __m128i temp2 = _mm_loadl_epi64((__m128i const*)string);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_loadl_epi64((const __m128i *)string);
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
     }
     return acc;
 }
 
+template < bool bswap >
 static __m128i clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(const __m128i * randomsource,
         const uint64_t * string, const size_t length, const uint64_t extraword) {
     const uint64_t * const endstring = string + length;
     __m128i acc = _mm_setzero_si128();
     for (; string + 3 < endstring; randomsource += 2, string += 4) {
         const __m128i temp1 = _mm_load_si128(randomsource);
-        const __m128i temp2 = _mm_lddqu_si128((__m128i *) string);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_lddqu_si128((const __m128i *) string);
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
         const __m128i temp12 = _mm_load_si128(randomsource+1);
-        const __m128i temp22 = _mm_lddqu_si128((__m128i *) (string + 2));
-        const __m128i add12 = _mm_xor_si128(temp12, temp22);
+        const __m128i temp22 = _mm_lddqu_si128((const __m128i *) (string + 2));
+        const __m128i temp32 = bswap ? mm_bswap64(temp22) : temp22;
+        const __m128i add12 = _mm_xor_si128(temp12, temp32);
         const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
         acc = _mm_xor_si128(clprod12, acc);
     }
     if (string + 1 < endstring) {
         const __m128i temp1 = _mm_load_si128(randomsource);
-        const __m128i temp2 = _mm_lddqu_si128((__m128i *) string);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_lddqu_si128((const __m128i *) string);
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
         randomsource += 1;
@@ -279,25 +291,29 @@ static __m128i clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(const
     // we have to append an extra 1
     if (string < endstring) {
         const __m128i temp1 = _mm_load_si128(randomsource);
-        const __m128i temp2 = _mm_set_epi64x(extraword,*string);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_set_epi64x(extraword,GET_U64<bswap>((const uint8_t *)string, 0));
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
         acc = _mm_xor_si128(clprod1, acc);
     } else {
         const __m128i temp1 = _mm_load_si128(randomsource);
-        const __m128i temp2 = _mm_loadl_epi64((__m128i const*)&extraword);
-        const __m128i add1 = _mm_xor_si128(temp1, temp2);
+        const __m128i temp2 = _mm_loadl_epi64((const __m128i *)&extraword);
+        const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+        const __m128i add1 = _mm_xor_si128(temp1, temp3);
         const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x01);
         acc = _mm_xor_si128(clprod1, acc);
     }
     return acc;
 }
 
+template < bool bswap >
 static __m128i clmulhalfscalarproductOnlyExtraWord(const __m128i * randomsource,
         const uint64_t extraword) {
     const __m128i temp1 = _mm_load_si128(randomsource);
-    const __m128i temp2 = _mm_loadl_epi64((__m128i const*)&extraword);
-    const __m128i add1 = _mm_xor_si128(temp1, temp2);
+    const __m128i temp2 = _mm_loadl_epi64((const __m128i *)&extraword);
+    const __m128i temp3 = bswap ? mm_bswap64(temp2) : temp2;
+    const __m128i add1 = _mm_xor_si128(temp1, temp3);
     const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x01);
     return clprod1;
 }
@@ -316,7 +332,8 @@ static inline uint64_t fmix64 ( uint64_t k ) {
 }
 
 // there always remain an incomplete word that has 1,2, 3, 4, 5, 6, 7
-// used bytes.  we append 0s to it
+// used bytes.  we append 0s to it. The result is really a fancy 8-byte buffer, so
+// this routine does not care about byteswapping.
 static inline uint64_t createLastWord(const size_t lengthbyte, const uint64_t * lastw) {
     const int significantbytes = lengthbyte % sizeof(uint64_t);
     uint64_t lastword = 0;
@@ -325,7 +342,7 @@ static inline uint64_t createLastWord(const size_t lengthbyte, const uint64_t * 
 }
 
 // The seeding here is homegrown for SMHasher3
-template < bool bitmix >
+template < bool bitmix, bool bswap >
 static uint64_t clhash(const void * random, const uint8_t * stringbyte, const size_t lengthbyte, const uint64_t seed) {
     assert(((uintptr_t) random & 15) == 0);// we expect cache line alignment for the keys
 
@@ -346,7 +363,7 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
 
     // long strings // modified from length to lengthinc to address issue #3 raised by Eik List
     if (m < lengthinc) {
-        __m128i acc = clmulhalfscalarproductwithoutreduction(rs64, string, m);
+        __m128i acc = clmulhalfscalarproductwithoutreduction<bswap>(rs64, string, m);
         // Mix the seed in using a non-commuting operation with all the xors and clmuls.
         acc = _mm_sub_epi8(acc, seed128);
 
@@ -355,7 +372,7 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
             // we compute something like
             // acc+= polyvalue * acc + h1
             acc =  mul128by128to128_lazymod127(polyvalue,acc);
-            const __m128i h1 =  clmulhalfscalarproductwithoutreduction(rs64, string + t, m);
+            const __m128i h1 =  clmulhalfscalarproductwithoutreduction<bswap>(rs64, string + t, m);
             acc = _mm_xor_si128(acc, h1);
         }
         const uint32_t remain = length - t;  // number of completely filled words
@@ -366,12 +383,12 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
             acc = mul128by128to128_lazymod127(polyvalue, acc);
             if (lengthbyte % sizeof(uint64_t) == 0) {
                 const __m128i h1 =
-                    clmulhalfscalarproductwithtailwithoutreduction(rs64, string + t, remain);
+                    clmulhalfscalarproductwithtailwithoutreduction<bswap>(rs64, string + t, remain);
                 acc = _mm_xor_si128(acc, h1);
             } else {
                 const uint64_t lastword = createLastWord(lengthbyte, (string + length));
                 const __m128i h1 =
-                    clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(
+                    clmulhalfscalarproductwithtailwithoutreductionWithExtraWord<bswap>(
                         rs64, string + t, remain, lastword);
                 acc = _mm_xor_si128(acc, h1);
             }
@@ -379,7 +396,7 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
             // there are no completely filled words left, but there is one partial word.
             acc = mul128by128to128_lazymod127(polyvalue, acc);
             const uint64_t lastword = createLastWord(lengthbyte, (string + length));
-            const __m128i h1 = clmulhalfscalarproductOnlyExtraWord(rs64, lastword);
+            const __m128i h1 = clmulhalfscalarproductOnlyExtraWord<bswap>(rs64, lastword);
             acc = _mm_xor_si128(acc, h1);
         }
 
@@ -392,10 +409,10 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
         __m128i acc;
 
         if(lengthbyte % sizeof(uint64_t) == 0) {
-            acc = clmulhalfscalarproductwithtailwithoutreduction(rs64, string, length);
+            acc = clmulhalfscalarproductwithtailwithoutreduction<bswap>(rs64, string, length);
         } else {
             const uint64_t lastword = createLastWord(lengthbyte, (string + length));
-            acc = clmulhalfscalarproductwithtailwithoutreductionWithExtraWord(
+            acc = clmulhalfscalarproductwithtailwithoutreductionWithExtraWord<bswap>(
                           rs64, string, length, lastword);
         }
         // Mix the seed in using a non-commuting operation with all the xors and clmuls.
@@ -408,14 +425,16 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
 }
 
 //------------------------------------------------------------
+template < bool bswap >
 void CLHash(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t h = clhash<true>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
-    PUT_U64<false>(h, (uint8_t *)out, 0);
+    uint64_t h = clhash<true, bswap>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
+    PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
+template < bool bswap >
 void CLHashNomix(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t h = clhash<false>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
-    PUT_U64<false>(h, (uint8_t *)out, 0);
+    uint64_t h = clhash<false, bswap>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
+    PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 #endif
@@ -436,9 +455,9 @@ REGISTER_HASH(clhash,
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 64,
   $.verification_LE = 0x578865A5,
-  $.verification_BE = 0,
-  $.hashfn_native = CLHash,
-  $.hashfn_bswap = CLHash,
+  $.verification_BE = 0x0D2B93FA,
+  $.hashfn_native = CLHash<false>,
+  $.hashfn_bswap = CLHash<true>,
   $.initfn = clhash_init
 );
 
@@ -453,9 +472,9 @@ REGISTER_HASH(clhash_nomix,
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 64,
   $.verification_LE = 0xDD8248E4,
-  $.verification_BE = 0,
-  $.hashfn_native = CLHashNomix,
-  $.hashfn_bswap = CLHashNomix,
+  $.verification_BE = 0x25DDBEC2,
+  $.hashfn_native = CLHashNomix<false>,
+  $.hashfn_bswap = CLHashNomix<true>,
   $.initfn = clhash_init
 );
 
