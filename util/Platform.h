@@ -207,6 +207,14 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 //-----------------------------------------------------------------------------
 #include <cstdio>
 
+// isLE() and isBE() should NOT be constexpr
+#if defined(FORCE_LITTLE_ENDIAN)
+static FORCE_INLINE bool isLE(void) { return true; }
+static FORCE_INLINE bool isBE(void) { return false; }
+#elif defined(FORCE_BIG_ENDIAN)
+static FORCE_INLINE bool isLE(void) { return false; }
+static FORCE_INLINE bool isBE(void) { return true; }
+#else
 static FORCE_INLINE bool isLE(void) {
     const uint32_t   value = 0xb000000e;
     const void *      addr = static_cast<const void *>(&value);
@@ -220,6 +228,7 @@ static FORCE_INLINE bool isBE(void) {
     const uint8_t *   lsb  = static_cast<const uint8_t *>(addr);
     return ((*lsb) == 0xb0);
 }
+#endif
 
 // FIXME Make this code properly portable
 template < typename T >
