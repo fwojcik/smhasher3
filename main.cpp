@@ -210,12 +210,12 @@ static void parse_tests(const char * str, bool enable_tests) {
         }
         if (foundmultiple) {
             printf("Ambiguous test name: --%stest=%*s\n",
-                    enable_tests ? "" : "no", len, str);
+                    enable_tests ? "" : "no", (int)len, str);
             goto error;
         }
         if (found == NULL) {
             printf("Invalid option: --%stest=%*s\n",
-                    enable_tests ? "" : "no", len, str);
+                    enable_tests ? "" : "no", (int)len, str);
             goto error;
         }
 
