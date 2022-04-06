@@ -847,7 +847,7 @@ void Hash(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
 }
 
 template <typename Block, unsigned count>
-struct alignas(sizeof(Block) * count) Repeat {
+struct alignas(alignof(Block)) Repeat {
   Block it[count];
 };
 
@@ -858,7 +858,7 @@ struct RepeatWrapper {
   using Block = Repeat<InnerBlock, count>;
 
   static Block LoadOne(uint64_t entropy) {
-    alignas(16) Block result;
+    Block result;
     for (unsigned i = 0; i < count; ++i) {
       result.it[i] = InnerBlockWrapper::LoadOne(entropy);
     }
@@ -867,7 +867,7 @@ struct RepeatWrapper {
 
   static Block LoadBlock(const void* x) {
     auto y = reinterpret_cast<const uint8_t*>(x);
-    alignas(16) Block result;
+    Block result;
     for (unsigned i = 0; i < count; ++i) {
         result.it[i] = InnerBlockWrapper::LoadBlock(y + i * sizeof(InnerBlock));
     }
@@ -876,7 +876,7 @@ struct RepeatWrapper {
 
   static Block LoadBlockNative(const void* x) {
     auto y = reinterpret_cast<const uint8_t*>(x);
-    alignas(16) Block result;
+    Block result;
     for (unsigned i = 0; i < count; ++i) {
         result.it[i] = InnerBlockWrapper::LoadBlockNative(y + i * sizeof(InnerBlock));
     }
