@@ -330,7 +330,7 @@ void ShortSpeedTest(const HashInfo * hinfo) {
         double cycles = SpeedTest(hash, seed, trials,
                 baselen, basealignoffset, maxvarylen, maxvaryalign);
         double curbpc = ((double)baselen - ((double)maxvarylen / 2)) / cycles;
-        printf("    %7.2f  ", curbpc);
+        printf("    %8.2f  ", curbpc);
     }
 
     // Do 4 different small block speed tests, averaging over each
