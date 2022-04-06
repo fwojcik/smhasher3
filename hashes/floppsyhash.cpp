@@ -32,16 +32,19 @@
 
 #pragma fp_contract (off)
 #pragma STDC FP_CONTRACT OFF
+static_assert(std::numeric_limits<double>::is_iec559, "IEEE 754 floating point required");
 
 //------------------------------------------------------------
 // Q function : Continued Egyptian Fraction update function
 template < bool old>
 static FORCE_INLINE void q(double * state, double key_val,
         double numerator, double denominator) {
-    state[0] += numerator / denominator;
+    double frac = numerator / denominator;
+    state[0] += frac;
     state[0] = 1.0 / state[0];
 
-    state[1] += old ? key_val : key_val + M_PI;
+    if (!old) { key_val += M_PI; }
+    state[1] += key_val;
     state[1] = numerator / state[1];
 }
 
@@ -53,7 +56,14 @@ static FORCE_INLINE void round(const uint8_t * msg, size_t len, double * state) 
     // Loop
     for (size_t i = 0; i < len; i++ ) {
         double val = (double)msg[i];
-        double denominator = ((old ? val : (M_E * val)) + i + 1.0) / state[1];
+        double tmp;
+        if (old) {
+            tmp = (double)(msg[i] + i + 1);
+        } else {
+            tmp = val * M_E;
+            tmp += (double)(i + 1);
+        }
+        double denominator = tmp / state[1];
 
         q<old>(state, val, numerator, denominator);
 
@@ -61,15 +71,25 @@ static FORCE_INLINE void round(const uint8_t * msg, size_t len, double * state) 
     }
 
     if (old) {
-        state[0] *= M_PI + state[1];
-        state[1] *= M_E + state[0];
+        double tmp;
+        tmp = M_PI + state[1];
+        state[0] *= tmp;
+        tmp = M_E + state[0];
+        state[1] *= tmp;
     }
 }
 
 // setup function : setup the state
 static FORCE_INLINE void setup(double * state, double init = 0) {
-  state[0] += init != 0 ? pow(init + 1.0/init, 1.0/3) : 3.0;
-  state[1] += init != 0 ? pow(init + 1.0/init, 1.0/7) : 1.0/7;
+    if (init == 0) {
+        state[0] = (double)3.0;
+        state[1] = (double)1.0/7.0;
+    } else {
+        double tmp = 1.0 / init;
+        tmp += init;
+        state[0] = pow(tmp, 1.0/3.0);
+        state[1] = pow(tmp, 1.0/7.0);
+    }
 }
 
 //------------------------------------------------------------
