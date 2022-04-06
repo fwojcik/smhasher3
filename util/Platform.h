@@ -139,10 +139,7 @@ static char* strndup(char const *s, size_t n)
 
 #else	//	!defined(_MSC_VER)
 
-#if !defined (HAVE_X86_64) && !defined (HAVE_X86_32)
 #include <cstddef>
-#endif
-
 #include <cstdlib>
 #include <cstdint>
 
