@@ -109,7 +109,8 @@ template < typename hashtype, bool bigseed >
 static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool drawDiagram) {
   assert(maxbits < 16);
   const HashFn hash = hinfo->hashFn(g_hashEndian);
-  size_t totalkeys = 2 + 2*chooseUpToK(bigseed ? 64 : 32, maxbits);
+  uint64_t totalkeys = 2 + 2*chooseUpToK(bigseed ? 64 : 32, maxbits);
+  uint64_t cnt = 0;
 
   printf("Keyset 'SparseSeed' - %ld keys\n", totalkeys);
 
@@ -122,10 +123,8 @@ static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool dr
   //----------
 
   std::vector<hashtype> hashes;
-
   hashes.resize(totalkeys);
 
-  size_t cnt = 0;
   seed_t seed;
 
   seed = hinfo->Seed(0, true);

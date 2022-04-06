@@ -107,7 +107,7 @@ bool ReportBias(const int worstbiascnt, const int coinflips, const int trials, c
 
 //-----------------------------------------------------------------------------
 
-static bool ReportCollisions( size_t const nbH, int collcount, unsigned hashsize, bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram )
+static bool ReportCollisions(uint64_t const nbH, int collcount, unsigned hashsize, bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram )
 {
   bool largehash = hashsize > (8 * sizeof(uint32_t));
 
@@ -239,8 +239,8 @@ unsigned int FindCollisions(std::vector<hashtype> & hashes,
     unsigned int collcount = 0;
     blobsort(hashes.begin(),hashes.end());
 
-    const size_t sz = hashes.size();
-    for(size_t hnb = 1; hnb < sz; hnb++) {
+    const uint64_t sz = hashes.size();
+    for (uint64_t hnb = 1; hnb < sz; hnb++) {
         if(hashes[hnb] == hashes[hnb-1]) {
             collcount++;
             if(collcount < maxCollisions) {
@@ -297,7 +297,7 @@ INSTANTIATE(PrintCollisions, HASHTYPELIST);
 //
 // This requires the vector of hashes to be sorted.
 template< typename hashtype >
-static void CountRangedNbCollisions ( std::vector<hashtype> & hashes, size_t const nbH, int minHBits, int maxHBits, int threshHBits, int * collcounts)
+static void CountRangedNbCollisions ( std::vector<hashtype> & hashes, uint64_t const nbH, int minHBits, int maxHBits, int threshHBits, int * collcounts)
 {
   const int origBits = sizeof(hashtype) * 8;
   assert(minHBits >= 1);
@@ -315,8 +315,7 @@ static void CountRangedNbCollisions ( std::vector<hashtype> & hashes, size_t con
   memset(prevcoll, 0, sizeof(prevcoll[0])*maxcollbins);
   memset(maxcoll, 0, sizeof(maxcoll[0])*maxcollbins);
 
-  for (size_t hnb = 1; hnb < nbH; hnb++)
-  {
+  for (uint64_t hnb = 1; hnb < nbH; hnb++) {
     hashtype hdiff = hashes[hnb-1] ^ hashes[hnb];
     int hzb = highzerobits(hdiff);
     if (hzb > maxHBits)
@@ -361,7 +360,7 @@ static void CountRangedNbCollisions ( std::vector<hashtype> & hashes, size_t con
 //-----------------------------------------------------------------------------
 //
 
-static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, int maxBits, bool highbits, bool drawDiagram )
+static bool ReportBitsCollisions (uint64_t nbH, int * collcounts, int minBits, int maxBits, bool highbits, bool drawDiagram )
 {
   if (maxBits <= 1 || minBits > maxBits) return true;
 
@@ -435,7 +434,7 @@ static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, in
 // Measure the distribution "score" for each possible N-bit span, with
 // N going from 8 to 20 inclusive.
 
-static int MaxDistBits ( const size_t nbH )
+static int MaxDistBits ( const uint64_t nbH )
 {
   // If there aren't 5 keys per bin over 8 bins, then don't bother
   // testing distribution at all.
@@ -453,7 +452,7 @@ template< typename hashtype >
 static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram )
 {
   const int hashbits = sizeof(hashtype) * 8;
-  const uint32_t nbH = hashes.size();
+  const uint64_t nbH = hashes.size();
   int maxwidth = MaxDistBits(nbH);
   int minwidth = 8;
 
@@ -476,7 +475,7 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
 
     memset(&bins[0],0,sizeof(int)*bincount);
 
-    for(size_t j = 0; j < nbH; j++)
+    for(uint64_t j = 0; j < nbH; j++)
     {
       uint32_t index = window(hashes[j],start,width);
 
@@ -558,7 +557,7 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
 // comparing them to a list of i.i.d. random numbers across the full
 // origBits range.
 
-static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, int nbH, int & minBits, int & maxBits, int & threshBits )
+static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, uint64_t nbH, int & minBits, int & maxBits, int & threshBits )
 {
   const int nlognBits = GetNLogNBound(nbH);
 
@@ -591,7 +590,7 @@ static void ComputeCollBitBounds ( std::vector<int> & nbBitsvec, int origBits, i
   }
 }
 
-static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
+static int FindMinBits_TargetCollisionShare(uint64_t nbHashes, double share)
 {
     int nb;
     for (nb=2; nb<64; nb++) {
@@ -603,7 +602,7 @@ static int FindMinBits_TargetCollisionShare(int nbHashes, double share)
     return nb;
 }
 
-static int FindMaxBits_TargetCollisionNb(int nbHashes, int minCollisions, int maxbits)
+static int FindMaxBits_TargetCollisionNb(uint64_t nbHashes, int minCollisions, int maxbits)
 {
     int nb;
     for (nb=maxbits; nb>2; nb--) {
@@ -625,7 +624,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
   if (testCollision)
   {
     unsigned const hashbits = sizeof(hashtype) * 8;
-    size_t const nbH = hashes.size();
+    uint64_t const nbH = hashes.size();
     if (verbose)
       printf("Testing all collisions (     %3i-bit)", hashbits);
 
@@ -831,7 +830,7 @@ double TestDistributionBytepairs ( std::vector<hashtype> & hashes, bool drawDiag
       bins.clear();
       bins.resize(nbins,0);
 
-      for(size_t i = 0; i < hashes.size(); i++)
+      for(uint64_t i = 0; i < hashes.size(); i++)
       {
         uint32_t pa = window(hashes[i],a,8);
         uint32_t pb = window(hashes[i],b,8);
@@ -874,7 +873,7 @@ void TestDistributionFast ( std::vector<hashtype> & hashes, double & dworst, dou
     bins.clear();
     bins.resize(nbins,0);
 
-    for(size_t j = 0; j < hashes.size(); j++)
+    for(uint64_t j = 0; j < hashes.size(); j++)
     {
       uint32_t index = window(hashes[j],start,16);
 

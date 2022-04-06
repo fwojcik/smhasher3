@@ -58,14 +58,14 @@
 //-----------------------------------------------------------------------------
 // Keyset 'Sparse' - generate all possible N-bit keys with up to K bits set
 static void printSparseKey(const void* buffer, size_t size) {
-    const char* const p = (const char*)buffer;
-    size_t s;
+    const uint8_t * const p = (const uint8_t *)buffer;
+
     printf("bits:");
-    for (s=0; s<size; s++) {
-        int b;
-        for (b=0; b<8; b++) {
-            if ((p[s] >> b) & 1)
+    for (size_t s = 0; s < size; s++) {
+        for (int b = 0; b < 8; b++) {
+            if ((p[s] >> b) & 1) {
                 printf(" %2u.%2i,", (unsigned)s, b);
+            }
         }
     }
 }

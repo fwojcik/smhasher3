@@ -451,14 +451,14 @@ inline uint32_t window ( const uint64_t & blob, int start, int count )
 }
 
 //-----------------------------------------------------------------------------
-static const size_t    RADIX_BITS   = 8;
-static const size_t    RADIX_SIZE   = (size_t)1 << RADIX_BITS;
-static const size_t    RADIX_MASK   = RADIX_SIZE - 1;
+static const uint32_t    RADIX_BITS   = 8;
+static const uint32_t    RADIX_SIZE   = (uint32_t)1 << RADIX_BITS;
+static const uint32_t    RADIX_MASK   = RADIX_SIZE - 1;
 
 template< typename T >
 static void radixsort( T * begin, T * end )
 {
-  const size_t RADIX_LEVELS = sizeof(T);
+  const uint32_t RADIX_LEVELS = sizeof(T);
   const size_t count = end - begin;
 
   size_t freqs [RADIX_LEVELS][RADIX_SIZE] = {};
@@ -466,7 +466,7 @@ static void radixsort( T * begin, T * end )
   // Record byte frequencies in each position over all items except
   // the last one.
   do {
-    for (size_t pass = 0; pass < RADIX_LEVELS; pass++) {
+    for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
       uint32_t value = getbyte(*ptr, pass);
       ++freqs[pass][value];
     }
@@ -474,8 +474,8 @@ static void radixsort( T * begin, T * end )
   // Process the last item separately, so that we can record which
   // passes (if any) would do no reordering of items, and which can
   // therefore be skipped entirely.
-  size_t trivial_passes = 0;
-  for (size_t pass = 0; pass < RADIX_LEVELS; pass++) {
+  uint32_t trivial_passes = 0;
+  for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
     uint32_t value = getbyte(*ptr, pass);
     if (++freqs[pass][value] == count)
       trivial_passes |= 1UL << pass;
@@ -485,7 +485,7 @@ static void radixsort( T * begin, T * end )
   T * from = begin;
   T * to   = queue_area.get();
 
-  for (size_t pass = 0; pass < RADIX_LEVELS; pass++) {
+  for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
     // If this pass would do nothing, just skip it.
     if (trivial_passes & (1UL << pass))
       continue;
@@ -495,7 +495,7 @@ static void radixsort( T * begin, T * end )
     // way all the entries end up contiguous with no gaps.
     T * queue_ptrs[RADIX_SIZE];
     T * next = to;
-    for (size_t i = 0; i < RADIX_SIZE; i++) {
+    for (uint32_t i = 0; i < RADIX_SIZE; i++) {
       queue_ptrs[i] = next;
       next += freqs[pass][i];
     }
@@ -518,7 +518,7 @@ static void radixsort( T * begin, T * end )
 }
 
 //-----------------------------------------------------------------------------
-static const size_t    SORT_CUTOFF  = 60;
+static const uint32_t    SORT_CUTOFF  = 60;
 
 #if 0
 #define expectp(x, p)  __builtin_expect_with_probability(!!(x), 1, (p))
@@ -534,7 +534,7 @@ static const size_t    SORT_CUTOFF  = 60;
 template< typename T >
 static void flagsort( T * begin, T * end, int idx )
 {
-  const size_t DIGITS = sizeof(T);
+  const uint32_t DIGITS = sizeof(T);
   const size_t count = end - begin;
   assume(idx >= 0);
   assume(idx < DIGITS);
@@ -562,7 +562,7 @@ static void flagsort( T * begin, T * end, int idx )
 
   T * block_ptrs[RADIX_SIZE];
   ptr = begin;
-  for (size_t i = 0; i < RADIX_SIZE; i++) {
+  for (uint32_t i = 0; i < RADIX_SIZE; i++) {
     block_ptrs[i] = ptr;
     ptr += freqs[i];
   }

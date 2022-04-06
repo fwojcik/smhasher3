@@ -66,9 +66,9 @@
 #define timer_end()   __rdtsc()
 
 // From portable-snippets
-FORCE_INLINE static size_t monotonic_clock(void) {
+FORCE_INLINE static uint64_t monotonic_clock(void) {
   LARGE_INTEGER t, f;
-  size_t result;
+  uint64_t result;
 
   if (QueryPerformanceCounter(&t) == 0)
     return -12;
@@ -181,9 +181,9 @@ FORCE_INLINE uint64_t timer_end() {
 
 #include <time.h>
 // From portable-snippets
-FORCE_INLINE static size_t monotonic_clock(void) {
+FORCE_INLINE static uint64_t monotonic_clock(void) {
   struct timespec ts;
-  size_t result;
+  uint64_t result;
 
   if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
     return -10;

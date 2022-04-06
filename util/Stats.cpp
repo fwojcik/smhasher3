@@ -1084,11 +1084,11 @@ double calcScore ( const unsigned * bins, const int bincount, const int keycount
   const double k = keycount;
   const double lambda = k/n;
 
-  size_t sumsq = 0;
+  uint64_t sumsq = 0;
 
   assume(bincount >= 8);
   for(int i = 0; i < (bincount>>3)<<3; i++)
-    sumsq += (size_t)bins[i] * (size_t)bins[i];
+    sumsq += (uint64_t)bins[i] * (uint64_t)bins[i];
 
   double sumsqe = (double)sumsq - lambda * k;
   double rmse = sqrt(sumsqe/n);
