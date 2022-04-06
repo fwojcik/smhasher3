@@ -146,9 +146,9 @@ template < uint32_t hashsize, bool bswap, bool oldver >
 void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * key8Arr = (uint8_t *)in;
 
-    const uint8_t seedbuf[16] = {0};
-    const uint8_t * seed8Arr = (uint8_t *)seedbuf;
+    uint8_t seedbuf[16] = {0};
     uint32_t * seed32Arr = (uint32_t *)seedbuf;
+    const uint8_t * seed8Arr = (uint8_t *)seedbuf;
 
     uint8_t * out8 = (uint8_t *)out;
 
