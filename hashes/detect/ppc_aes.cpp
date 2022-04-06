@@ -1,4 +1,6 @@
 #include <cstdint>
+#define NEW_HAVE_PPC_VSX
+#include "../lib/Intrinsics.h"
 #include "../lib/AES-ppc.h"
 
 uint32_t RK[100];

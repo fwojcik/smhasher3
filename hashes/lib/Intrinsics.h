@@ -70,7 +70,7 @@
 #endif
 
 
-#if defined(NEW_HAVE_AES_PPC)
+#if defined(NEW_HAVE_PPC_VSX)
 /*
  * Annoyingly, these headers _may_ define three macros: `bool`,
  * `vector`, and `pixel`. This is a problem for obvious reasons.
