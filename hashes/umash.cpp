@@ -112,6 +112,14 @@ static inline v128 v128_create(uint64_t lo, uint64_t hi) {
 	return _mm_set_epi64x(hi, lo);
 }
 
+static inline uint64_t v128_getlo(v128 x) {
+    return _mm_cvtsi128_si64(x);
+}
+
+static inline uint64_t v128_gethi(v128 x) {
+    return _mm_extract_epi64(x, 1);
+}
+
 /* Shift each 64-bit lane left by one bit. */
 static inline v128 v128_shift(v128 x) {
 	return _mm_add_epi64(x, x);
@@ -313,10 +321,7 @@ static struct umash_fp umash_fp_medium(const uint64_t multipliers[2][2],
 	struct umash_fp ret;
 	const uint64_t offset = seed ^ n_bytes;
 	uint64_t enh_hi, enh_lo;
-	union {
-		v128 v;
-		uint64_t u64[2];
-	} mixed_lrc;
+    v128 v;
 	uint64_t lrc[2] = { oh[UMASH_OH_PARAM_COUNT], oh[UMASH_OH_PARAM_COUNT + 1] };
 	uint64_t x, y;
 	uint64_t a, b;
@@ -330,7 +335,7 @@ static struct umash_fp umash_fp_medium(const uint64_t multipliers[2][2],
 
 	lrc[0] ^= x ^ a;
 	lrc[1] ^= y ^ b;
-	mixed_lrc.v = v128_clmul(lrc[0], lrc[1]);
+	v = v128_clmul(lrc[0], lrc[1]);
 
 	a += x;
 	b += y;
@@ -342,8 +347,9 @@ static struct umash_fp umash_fp_medium(const uint64_t multipliers[2][2],
 	ret.hash[0] = finalize(horner_double_update(
 	    /*acc=*/0, multipliers[0][0], multipliers[0][1], enh_lo, enh_hi));
 
-	ret.hash[1] = finalize(horner_double_update(/*acc=*/0, multipliers[1][0],
-	    multipliers[1][1], enh_lo ^ mixed_lrc.u64[0], enh_hi ^ mixed_lrc.u64[1]));
+	ret.hash[1] = finalize(horner_double_update(/*acc=*/0,
+                    multipliers[1][0], multipliers[1][1],
+                    enh_lo ^ v128_getlo(v), enh_hi ^ v128_gethi(v)));
 
 	return ret;
 }
@@ -1201,7 +1207,6 @@ REGISTER_HASH(umash_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x63857D05,
@@ -1216,7 +1221,6 @@ REGISTER_HASH(umash_reseed_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x36D4EC95,
