@@ -433,10 +433,6 @@ inline void Combine4(const Block input[10], Block output[3]);
 template <typename Badger, typename Block>
 inline void Combine5(const Block input[9], Block output[3]);
 
-constexpr inline int CeilingLog2(size_t n) {
-  return (n <= 1) ? 0 : 1 + CeilingLog2(n / 2 + n % 2);
-}
-
 constexpr inline uint64_t FloorLog(uint64_t a, uint64_t b) {
   return (0 == a) ? 0 : ((b < a) ? 0 : (1 + (FloorLog(a, b / a))));
 }

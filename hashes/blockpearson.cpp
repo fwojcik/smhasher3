@@ -107,10 +107,10 @@ static void blockpearson_hash_256(const void * in, const size_t org_len, const s
   hash3 = ~hash3;
   hash4 = ~hash4;
 
-  hash_round(hash, org_len, 1);
-  hash_round(hash, org_len, 2);
-  hash_round(hash, org_len, 3);
-  hash_round(hash, org_len, 4);
+  hash_round(hash, (uint64_t)org_len, 1);
+  hash_round(hash, (uint64_t)org_len, 2);
+  hash_round(hash, (uint64_t)org_len, 3);
+  hash_round(hash, (uint64_t)org_len, 4);
 
   PUT_U64<!bswap>(hash4, (uint8_t *)out, 0);
   PUT_U64<!bswap>(hash3, (uint8_t *)out, 8);
@@ -154,8 +154,8 @@ static void blockpearson_hash_128(const void * in, const size_t org_len, const s
   hash1 = ~hash1;
   hash2 = ~hash2;
 
-  hash_round(hash, org_len, 1);
-  hash_round(hash, org_len, 2);
+  hash_round(hash, (uint64_t)org_len, 1);
+  hash_round(hash, (uint64_t)org_len, 2);
 
   PUT_U64<!bswap>(hash2, (uint8_t *)out, 0);
   PUT_U64<!bswap>(hash1, (uint8_t *)out, 8);
@@ -191,7 +191,7 @@ static void blockpearson_hash_64(const void * in, const size_t org_len, const se
   // digest length
   hash1 = ~hash1;
 
-  hash_round(hash, org_len, 1);
+  hash_round(hash, (uint64_t)org_len, 1);
 
   // Previous SMHasher implementation didn't byteswap this properly
   PUT_U64<!bswap>(hash1, (uint8_t *)out, 0);
