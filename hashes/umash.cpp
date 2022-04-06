@@ -54,7 +54,7 @@ static inline bool add_overflow(uint64_t x, uint64_t y, uint64_t * sumlo) {
     c += (x < y);
     *sumlo = x;
     return (c == 0) ? false : true;
-//#endif    
+//#endif
 }
 
 static NEVER_INLINE uint64_t add_mod_slow_slow_path(uint64_t sum, uint64_t fixup) {
@@ -109,7 +109,7 @@ static inline uint64_t horner_double_update(uint64_t acc, uint64_t m0, uint64_t 
 }
 
 static inline v128 v128_create(uint64_t lo, uint64_t hi) {
-	return _mm_set_epi64x(hi, lo);
+    return _mm_set_epi64x(hi, lo);
 }
 
 static inline uint64_t v128_getlo(v128 x) {
@@ -122,12 +122,12 @@ static inline uint64_t v128_gethi(v128 x) {
 
 /* Shift each 64-bit lane left by one bit. */
 static inline v128 v128_shift(v128 x) {
-	return _mm_add_epi64(x, x);
+    return _mm_add_epi64(x, x);
 }
 
 /* Computes the 128-bit carryless product of x and y. */
 static inline v128 v128_clmul(uint64_t x, uint64_t y) {
-	return _mm_clmulepi64_si128(_mm_cvtsi64_si128(x), _mm_cvtsi64_si128(y), 0x00);
+    return _mm_clmulepi64_si128(_mm_cvtsi64_si128(x), _mm_cvtsi64_si128(y), 0x00);
 }
 
 /* Computes the 128-bit carryless product of the high and low halves of x. */
@@ -176,7 +176,7 @@ struct umash_params {
  * A fingerprint consists of two independent `UMASH` hash values.
  */
 struct umash_fp {
-	uint64_t hash[2];
+    uint64_t hash[2];
 };
 
 /**
@@ -187,14 +187,14 @@ struct umash_fp {
 static inline const void * select_ptr(bool cond, const void * then, const void * otherwise) {
     const void * ret;
 
-#if defined(NEW_HAVE_X64_ASM) 
+#if defined(NEW_HAVE_X64_ASM)
     /* Force strict evaluation of both arguments. */
-	__asm__("" ::"r"(then), "r"(otherwise));   
+    __asm__("" ::"r"(then), "r"(otherwise));
 #endif
 
     ret = (cond) ? then : otherwise;
 
-#if defined(NEW_HAVE_X64_ASM) 
+#if defined(NEW_HAVE_X64_ASM)
     /* And also force the result to be materialised with a blackhole. */
     __asm__("" : "+r"(ret));
 #endif
@@ -264,29 +264,29 @@ static uint64_t umash_short(const uint64_t *params, uint64_t seed,
 
 static struct umash_fp umash_fp_short(const uint64_t *params, uint64_t seed,
         const void *data, size_t n_bytes) {
-	struct umash_fp ret;
-	uint64_t h;
+    struct umash_fp ret;
+    uint64_t h;
 
-	ret.hash[0] = seed + params[n_bytes];
-	ret.hash[1] = seed + params[n_bytes + OH_SHORT_HASH_SHIFT];
+    ret.hash[0] = seed + params[n_bytes];
+    ret.hash[1] = seed + params[n_bytes + OH_SHORT_HASH_SHIFT];
 
-	h = vec_to_u64(data, n_bytes);
-	h ^= h >> 30;
-	h *= 0xbf58476d1ce4e5b9ULL;
-	h ^= h >> 27;
+    h = vec_to_u64(data, n_bytes);
+    h ^= h >> 30;
+    h *= 0xbf58476d1ce4e5b9ULL;
+    h ^= h >> 27;
 
 #define TAIL(i)                                 \
-	do {                                        \
-		ret.hash[i] ^= h;                       \
-		ret.hash[i] *= 0x94d049bb133111ebULL;   \
-		ret.hash[i] ^= ret.hash[i] >> 31;       \
-	} while (0)
+    do {                                        \
+        ret.hash[i] ^= h;                       \
+        ret.hash[i] *= 0x94d049bb133111ebULL;   \
+        ret.hash[i] ^= ret.hash[i] >> 31;       \
+    } while (0)
 
-	TAIL(0);
-	TAIL(1);
+    TAIL(0);
+    TAIL(1);
 #undef TAIL
 
-	return ret;
+    return ret;
 }
 
 //------------------------------------------------------------
@@ -318,40 +318,40 @@ static uint64_t umash_medium(const uint64_t multipliers[2], const uint64_t *oh, 
 
 static struct umash_fp umash_fp_medium(const uint64_t multipliers[2][2],
         const uint64_t *oh, uint64_t seed, const void *data, size_t n_bytes) {
-	struct umash_fp ret;
-	const uint64_t offset = seed ^ n_bytes;
-	uint64_t enh_hi, enh_lo;
+    struct umash_fp ret;
+    const uint64_t offset = seed ^ n_bytes;
+    uint64_t enh_hi, enh_lo;
     v128 v;
-	uint64_t lrc[2] = { oh[UMASH_OH_PARAM_COUNT], oh[UMASH_OH_PARAM_COUNT + 1] };
-	uint64_t x, y;
-	uint64_t a, b;
+    uint64_t lrc[2] = { oh[UMASH_OH_PARAM_COUNT], oh[UMASH_OH_PARAM_COUNT + 1] };
+    uint64_t x, y;
+    uint64_t a, b;
 
 	/* Expand the 9-16 bytes to 16. */
 	memcpy(&x, data, sizeof(x));
 	memcpy(&y, (const char *)data + n_bytes - sizeof(y), sizeof(y));
 
-	a = oh[0];
-	b = oh[1];
+    a = oh[0];
+    b = oh[1];
 
-	lrc[0] ^= x ^ a;
-	lrc[1] ^= y ^ b;
-	v = v128_clmul(lrc[0], lrc[1]);
+    lrc[0] ^= x ^ a;
+    lrc[1] ^= y ^ b;
+    v = v128_clmul(lrc[0], lrc[1]);
 
-	a += x;
-	b += y;
+    a += x;
+    b += y;
 
-	mul128(a, b, enh_hi, enh_lo);
-	enh_hi += offset;
-	enh_hi ^= enh_lo;
+    mul128(a, b, enh_hi, enh_lo);
+    enh_hi += offset;
+    enh_hi ^= enh_lo;
 
-	ret.hash[0] = finalize(horner_double_update(
-	    /*acc=*/0, multipliers[0][0], multipliers[0][1], enh_lo, enh_hi));
+    ret.hash[0] = finalize(horner_double_update(
+        /*acc=*/0, multipliers[0][0], multipliers[0][1], enh_lo, enh_hi));
 
-	ret.hash[1] = finalize(horner_double_update(/*acc=*/0,
+    ret.hash[1] = finalize(horner_double_update(/*acc=*/0,
                     multipliers[1][0], multipliers[1][1],
                     enh_lo ^ v128_getlo(v), enh_hi ^ v128_gethi(v)));
 
-	return ret;
+    return ret;
 }
 
 //------------------------------------------------------------
@@ -361,12 +361,12 @@ struct umash_oh {
 };
 
 struct split_accumulator {
-	uint64_t base;
-	uint64_t fixup;
+    uint64_t base;
+    uint64_t fixup;
 };
 
 static inline uint64_t split_accumulator_eval(struct split_accumulator acc) {
-	return add_mod_slow(acc.base, 8 * acc.fixup);
+    return add_mod_slow(acc.base, 8 * acc.fixup);
 }
 
 static inline struct split_accumulator split_accumulator_update(
@@ -374,44 +374,44 @@ static inline struct split_accumulator split_accumulator_update(
     const uint64_t m1, uint64_t h0, const uint64_t h1) {
 
     uint64_t partial;
-	uint64_t lo0, hi0, lo1, hi1;
-	uint64_t hi, sum;	
-	int8_t fixup;
+    uint64_t lo0, hi0, lo1, hi1;
+    uint64_t hi, sum;
+    int8_t fixup;
 
-	mul128(m1, h1, hi1, lo1);
+    mul128(m1, h1, hi1, lo1);
 
-	/* partial \eqv (acc.base + h0 + 8 * acc.fixup)  mod 2**64 - 8 */
-	if (unlikely(h0 > -8ULL * (SPLIT_ACCUMULATOR_MAX_FIXUP + 1))) {
-		h0 = add_mod_slow(h0, 8 * acc.fixup);
-	} else {
-		/*
-		 * h0 is a hash value, so it's unlikely to be
-		 * extremely high.  In the common case, this addition
-		 * doesn't overflows.
-		 */
-		h0 += 8 * acc.fixup;
-	}
+    /* partial \eqv (acc.base + h0 + 8 * acc.fixup)  mod 2**64 - 8 */
+    if (unlikely(h0 > -8ULL * (SPLIT_ACCUMULATOR_MAX_FIXUP + 1))) {
+        h0 = add_mod_slow(h0, 8 * acc.fixup);
+    } else {
+        /*
+         * h0 is a hash value, so it's unlikely to be
+         * extremely high.  In the common case, this addition
+         * doesn't overflows.
+         */
+        h0 += 8 * acc.fixup;
+    }
 
-	partial = add_mod_fast(acc.base, h0);
+    partial = add_mod_fast(acc.base, h0);
 
-	mul128(partial, m0, hi0, lo0);
+    mul128(partial, m0, hi0, lo0);
 
-	fixup = add_overflow(lo0, lo1, &sum);
+    fixup = add_overflow(lo0, lo1, &sum);
 
-	assert(hi0 < (1UL << 61));
-	assert(hi1 < (1UL << 61));
-	/* hi0 and hi1 < 2**61, so this addition never overflows. */
-	hi = hi0 + hi1;
+    assert(hi0 < (1UL << 61));
+    assert(hi1 < (1UL << 61));
+    /* hi0 and hi1 < 2**61, so this addition never overflows. */
+    hi = hi0 + hi1;
 
-	fixup += (hi & (1ULL << 61)) != 0;
-	hi *= 8;
+    fixup += (hi & (1ULL << 61)) != 0;
+    hi *= 8;
 
     fixup += add_overflow(sum, hi, &sum);
 
-	return (struct split_accumulator) {
-		.base = sum,
+    return (struct split_accumulator) {
+        .base = sum,
             /* Avoid sign extension: we know `fixup` is non-negative. */
-		.fixup = (uint8_t)fixup,
+        .fixup = (uint8_t)fixup,
     };
 }
 
@@ -419,28 +419,28 @@ static inline struct split_accumulator split_accumulator_update(
 static uint64_t umash_multiple_blocks(uint64_t initial,
         const uint64_t multipliers[2], const uint64_t *oh_ptr, uint64_t seed,
         const void *blocks, size_t n_blocks) {
-	const uint64_t m0 = multipliers[0];
-	const uint64_t m1 = multipliers[1];
-	const uint64_t kx = oh_ptr[UMASH_OH_PARAM_COUNT - 2];
-	const uint64_t ky = oh_ptr[UMASH_OH_PARAM_COUNT - 1];
-	struct split_accumulator ret = { .base = initial };
+    const uint64_t m0 = multipliers[0];
+    const uint64_t m1 = multipliers[1];
+    const uint64_t kx = oh_ptr[UMASH_OH_PARAM_COUNT - 2];
+    const uint64_t ky = oh_ptr[UMASH_OH_PARAM_COUNT - 1];
+    struct split_accumulator ret = { .base = initial };
 
-	assert(n_blocks > 0);
+    assert(n_blocks > 0);
 
-	do {
-		const void *data = blocks;
-		struct umash_oh oh;
-		v128 acc = { 0, 0 };
+    do {
+        const void *data = blocks;
+        struct umash_oh oh;
+        v128 acc = { 0, 0 };
 
-		blocks = (const char *)blocks + BLOCK_SIZE;
+        blocks = (const char *)blocks + BLOCK_SIZE;
 
-		/*
-		 * FORCE() makes sure the compiler computes the value
-		 * of `acc` at that program points.  Forcing a full
-		 * computation prevents the compiler from evaluating
-		 * the inner loop's xor-reduction tree widely: the
-		 * bottleneck is in the carryless multiplications.
-		 */
+        /*
+         * FORCE() makes sure the compiler computes the value
+         * of `acc` at that program points.  Forcing a full
+         * computation prevents the compiler from evaluating
+         * the inner loop's xor-reduction tree widely: the
+         * bottleneck is in the carryless multiplications.
+         */
 #define FORCE() ((void)0)
 
 #define PH(I)                                       \
@@ -455,63 +455,63 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
             acc ^= v128_clmul_cross(x);             \
         } while (0)
 
-		PH(0);
-		PH(2);
-		FORCE();
+        PH(0);
+        PH(2);
+        FORCE();
 
-		PH(4);
-		PH(6);
-		FORCE();
+        PH(4);
+        PH(6);
+        FORCE();
 
-		PH(8);
-		PH(10);
-		FORCE();
+        PH(8);
+        PH(10);
+        FORCE();
 
-		PH(12);
-		PH(14);
-		FORCE();
+        PH(12);
+        PH(14);
+        FORCE();
 
-		PH(16);
-		PH(18);
-		FORCE();
+        PH(16);
+        PH(18);
+        FORCE();
 
-		PH(20);
-		PH(22);
-		FORCE();
+        PH(20);
+        PH(22);
+        FORCE();
 
-		PH(24);
-		PH(26);
-		FORCE();
+        PH(24);
+        PH(26);
+        FORCE();
 
-		PH(28);
+        PH(28);
 
 #undef PH
 #undef FORCE
 
         memcpy(&oh, &acc, sizeof(oh));
 
-		/* Final ENH chunk. */
-		{
-			uint64_t x, y, enh_hi, enh_lo;
+        /* Final ENH chunk. */
+        {
+            uint64_t x, y, enh_hi, enh_lo;
 
-			memcpy(&x, data, sizeof(x));
-			data = (const char *)data + sizeof(x);
-			memcpy(&y, data, sizeof(y));
-			data = (const char *)data + sizeof(y);
+            memcpy(&x, data, sizeof(x));
+            data = (const char *)data + sizeof(x);
+            memcpy(&y, data, sizeof(y));
+            data = (const char *)data + sizeof(y);
 
-			x += kx;
-			y += ky;
+            x += kx;
+            y += ky;
 
-			mul128(x, y, enh_hi, enh_lo);
-			enh_hi += seed;
+            mul128(x, y, enh_hi, enh_lo);
+            enh_hi += seed;
 
-			oh.bits[0] ^= enh_lo;
-			oh.bits[1] ^= enh_hi ^ enh_lo;
-		}
+            oh.bits[0] ^= enh_lo;
+            oh.bits[1] ^= enh_hi ^ enh_lo;
+        }
 
-		ret = split_accumulator_update(ret, m0, m1, oh.bits[0], oh.bits[1]);
+        ret = split_accumulator_update(ret, m0, m1, oh.bits[0], oh.bits[1]);
 
-	} while (--n_blocks);
+    } while (--n_blocks);
 
     return split_accumulator_eval(ret);
 }
@@ -519,21 +519,21 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
 static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         const uint64_t multipliers[2][2], const uint64_t *oh, uint64_t seed,
         const void *data, size_t n_blocks) {
-	const v128 lrc_init =
-	    v128_create(oh[UMASH_OH_PARAM_COUNT], oh[UMASH_OH_PARAM_COUNT + 1]);
-	const uint64_t m00 = multipliers[0][0];
-	const uint64_t m01 = multipliers[0][1];
-	const uint64_t m10 = multipliers[1][0];
-	const uint64_t m11 = multipliers[1][1];
-	struct split_accumulator acc0 = { .base = initial.hash[0] };
-	struct split_accumulator acc1 = { .base = initial.hash[1] };
+    const v128 lrc_init =
+        v128_create(oh[UMASH_OH_PARAM_COUNT], oh[UMASH_OH_PARAM_COUNT + 1]);
+    const uint64_t m00 = multipliers[0][0];
+    const uint64_t m01 = multipliers[0][1];
+    const uint64_t m10 = multipliers[1][0];
+    const uint64_t m11 = multipliers[1][1];
+    struct split_accumulator acc0 = { .base = initial.hash[0] };
+    struct split_accumulator acc1 = { .base = initial.hash[1] };
 
-	do {
-		struct umash_oh compressed[2];
-		v128 acc = { 0, 0 }; /* Base umash */
-		v128 acc_shifted = { 0, 0 }; /* Accumulates shifted values */
-		v128 lrc = lrc_init;
-		const void *block = data;
+    do {
+        struct umash_oh compressed[2];
+        v128 acc = { 0, 0 }; /* Base umash */
+        v128 acc_shifted = { 0, 0 }; /* Accumulates shifted values */
+        v128 lrc = lrc_init;
+        const void *block = data;
 
         data = (const char *)data + BLOCK_SIZE;
 
@@ -562,85 +562,85 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
             acc_shifted = v128_shift(acc_shifted);      \
         } while (0)
 
-		TWIST(0);
-		FORCE();
-		TWIST(2);
-		FORCE();
-		TWIST(4);
-		FORCE();
-		TWIST(6);
-		FORCE();
-		TWIST(8);
-		FORCE();
-		TWIST(10);
-		FORCE();
-		TWIST(12);
-		FORCE();
-		TWIST(14);
-		FORCE();
-		TWIST(16);
-		FORCE();
-		TWIST(18);
-		FORCE();
-		TWIST(20);
-		FORCE();
-		TWIST(22);
-		FORCE();
-		TWIST(24);
-		FORCE();
-		TWIST(26);
-		FORCE();
-		TWIST(28);
-		FORCE();
+        TWIST(0);
+        FORCE();
+        TWIST(2);
+        FORCE();
+        TWIST(4);
+        FORCE();
+        TWIST(6);
+        FORCE();
+        TWIST(8);
+        FORCE();
+        TWIST(10);
+        FORCE();
+        TWIST(12);
+        FORCE();
+        TWIST(14);
+        FORCE();
+        TWIST(16);
+        FORCE();
+        TWIST(18);
+        FORCE();
+        TWIST(20);
+        FORCE();
+        TWIST(22);
+        FORCE();
+        TWIST(24);
+        FORCE();
+        TWIST(26);
+        FORCE();
+        TWIST(28);
+        FORCE();
 
 #undef TWIST
 #undef FORCE
 
-		{
-			v128 x, k;
+        {
+            v128 x, k;
 
-			memcpy(&x, block, sizeof(x));
-			memcpy(&k, &oh[30], sizeof(k));
+            memcpy(&x, block, sizeof(x));
+            memcpy(&k, &oh[30], sizeof(k));
 
-			lrc ^= x ^ k;
-		}
+            lrc ^= x ^ k;
+        }
 
-		acc_shifted ^= acc;
-		acc_shifted = v128_shift(acc_shifted);
+        acc_shifted ^= acc;
+        acc_shifted = v128_shift(acc_shifted);
 
-		acc_shifted ^= v128_clmul_cross(lrc);
+        acc_shifted ^= v128_clmul_cross(lrc);
 
-		memcpy(&compressed[0], &acc, sizeof(compressed[0]));
-		memcpy(&compressed[1], &acc_shifted, sizeof(compressed[1]));
+        memcpy(&compressed[0], &acc, sizeof(compressed[0]));
+        memcpy(&compressed[1], &acc_shifted, sizeof(compressed[1]));
 
-		{
-			uint64_t x, y, kx, ky, enh_hi, enh_lo;
+        {
+            uint64_t x, y, kx, ky, enh_hi, enh_lo;
 
-			memcpy(&x, block, sizeof(x));
-			block = (const char *)block + sizeof(x);
-			memcpy(&y, block, sizeof(y));
+            memcpy(&x, block, sizeof(x));
+            block = (const char *)block + sizeof(x);
+            memcpy(&y, block, sizeof(y));
 
-			kx = x + oh[30];
-			ky = y + oh[31];
+            kx = x + oh[30];
+            ky = y + oh[31];
 
-			mul128(kx, ky, enh_hi, enh_lo);
-			enh_hi += seed;
+            mul128(kx, ky, enh_hi, enh_lo);
+            enh_hi += seed;
 
-			enh_hi ^= enh_lo;
-			compressed[0].bits[0] ^= enh_lo;
-			compressed[0].bits[1] ^= enh_hi;
+            enh_hi ^= enh_lo;
+            compressed[0].bits[0] ^= enh_lo;
+            compressed[0].bits[1] ^= enh_hi;
 
-			compressed[1].bits[0] ^= enh_lo;
-			compressed[1].bits[1] ^= enh_hi;
-		}
+            compressed[1].bits[0] ^= enh_lo;
+            compressed[1].bits[1] ^= enh_hi;
+        }
 
-		acc0 = split_accumulator_update(
+        acc0 = split_accumulator_update(
                                         acc0, m00, m01, compressed[0].bits[0], compressed[0].bits[1]);
-		acc1 = split_accumulator_update(
+        acc1 = split_accumulator_update(
                                         acc1, m10, m11, compressed[1].bits[0], compressed[1].bits[1]);
-	} while (--n_blocks);
+    } while (--n_blocks);
 
-	return (struct umash_fp) {
+    return (struct umash_fp) {
                 .hash = {
                         split_accumulator_eval(acc0),
                         split_accumulator_eval(acc1),
@@ -694,78 +694,78 @@ static struct umash_oh oh_varblock(const uint64_t *params, uint64_t tag,
 
 static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
          uint64_t tag, const void * block, size_t n_bytes) {
-	v128 acc = { 0, 0 }; /* Base umash */
-	v128 acc_shifted = { 0, 0 }; /* Accumulates shifted values */
-	v128 lrc;
-	/* The final block processes `remaining > 0` bytes. */
-	size_t remaining = 1 + ((n_bytes - 1) % sizeof(v128));
-	size_t end_full_pairs = (n_bytes - remaining) / sizeof(uint64_t);
-	const void *last_ptr = (const char *)block + n_bytes - sizeof(v128);
-	size_t i;
+    v128 acc = { 0, 0 }; /* Base umash */
+    v128 acc_shifted = { 0, 0 }; /* Accumulates shifted values */
+    v128 lrc;
+    /* The final block processes `remaining > 0` bytes. */
+    size_t remaining = 1 + ((n_bytes - 1) % sizeof(v128));
+    size_t end_full_pairs = (n_bytes - remaining) / sizeof(uint64_t);
+    const void *last_ptr = (const char *)block + n_bytes - sizeof(v128);
+    size_t i;
 
-	lrc = v128_create(params[UMASH_OH_PARAM_COUNT], params[UMASH_OH_PARAM_COUNT + 1]);
-	for (i = 0; i < end_full_pairs; i += 2) {
-		v128 x, k;
+    lrc = v128_create(params[UMASH_OH_PARAM_COUNT], params[UMASH_OH_PARAM_COUNT + 1]);
+    for (i = 0; i < end_full_pairs; i += 2) {
+        v128 x, k;
 
-		memcpy(&x, block, sizeof(x));
-		block = (const char *)block + sizeof(x);
+        memcpy(&x, block, sizeof(x));
+        block = (const char *)block + sizeof(x);
 
-		memcpy(&k, &params[i], sizeof(k));
+        memcpy(&k, &params[i], sizeof(k));
 
-		x ^= k;
-		lrc ^= x;
+        x ^= k;
+        lrc ^= x;
 
-		x = v128_clmul_cross(x);
+        x = v128_clmul_cross(x);
 
-		acc ^= x;
-		if (i + 2 >= end_full_pairs)
-			break;
+        acc ^= x;
+        if (i + 2 >= end_full_pairs)
+            break;
 
-		acc_shifted ^= x;
-		acc_shifted = v128_shift(acc_shifted);
-	}
+        acc_shifted ^= x;
+        acc_shifted = v128_shift(acc_shifted);
+    }
 
-	/*
-	 * Update the LRC for the last chunk before treating it
-	 * specially.
-	 */
-	{
-		v128 x, k;
+    /*
+     * Update the LRC for the last chunk before treating it
+     * specially.
+     */
+    {
+        v128 x, k;
 
-		memcpy(&x, last_ptr, sizeof(x));
-		memcpy(&k, &params[end_full_pairs], sizeof(k));
+        memcpy(&x, last_ptr, sizeof(x));
+        memcpy(&k, &params[end_full_pairs], sizeof(k));
 
-		lrc ^= x ^ k;
-	}
+        lrc ^= x ^ k;
+    }
 
-	acc_shifted ^= acc;
-	acc_shifted = v128_shift(acc_shifted);
+    acc_shifted ^= acc;
+    acc_shifted = v128_shift(acc_shifted);
 
-	acc_shifted ^= v128_clmul_cross(lrc);
+    acc_shifted ^= v128_clmul_cross(lrc);
 
-	memcpy(&dst[0], &acc, sizeof(dst[0]));
-	memcpy(&dst[1], &acc_shifted, sizeof(dst[1]));
+    memcpy(&dst[0], &acc, sizeof(dst[0]));
+    memcpy(&dst[1], &acc_shifted, sizeof(dst[1]));
 
-	{
-		uint64_t x, y, kx, ky, enh_hi, enh_lo;
+    {
+        uint64_t x, y, kx, ky, enh_hi, enh_lo;
 
-		memcpy(&x, last_ptr, sizeof(x));
-		last_ptr = (const char *)last_ptr + sizeof(x);
-		memcpy(&y, last_ptr, sizeof(y));
+        memcpy(&x, last_ptr, sizeof(x));
+        last_ptr = (const char *)last_ptr + sizeof(x);
+        memcpy(&y, last_ptr, sizeof(y));
 
-		kx = x + params[end_full_pairs];
-		ky = y + params[end_full_pairs + 1];
+        kx = x + params[end_full_pairs];
+        ky = y + params[end_full_pairs + 1];
 
-		mul128(kx, ky, enh_hi, enh_lo);
-		enh_hi += tag;
+        mul128(kx, ky, enh_hi, enh_lo);
+        enh_hi += tag;
 
-		enh_hi ^= enh_lo;
-		dst[0].bits[0] ^= enh_lo;
-		dst[0].bits[1] ^= enh_hi;
+        enh_hi ^= enh_lo;
+        dst[0].bits[0] ^= enh_lo;
+        dst[0].bits[1] ^= enh_hi;
 
-		dst[1].bits[0] ^= enh_lo;
-		dst[1].bits[1] ^= enh_hi;
-	}
+        dst[1].bits[0] ^= enh_lo;
+        dst[1].bits[1] ^= enh_hi;
+    }
 }
 
 static uint64_t umash_long(const uint64_t multipliers[2], const uint64_t *oh,
@@ -816,8 +816,8 @@ finalize:
 
 static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uint64_t *oh,
         uint64_t seed, const void *data, size_t n_bytes) {
-	struct umash_oh compressed[2];
-	struct umash_fp ret;
+    struct umash_oh compressed[2];
+    struct umash_fp ret;
     uint64_t acc[2] = { 0, 0 };
 
     // This invokes the optional routines for very long inputs
@@ -831,7 +831,7 @@ static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uin
         poly = umash_fprint_multiple_blocks(poly, multipliers, oh, seed, data, n_block);
 
         acc[0] = poly.hash[0];
-		acc[1] = poly.hash[1];
+        acc[1] = poly.hash[1];
 
         data = remaining;
         if (n_bytes == 0)
@@ -847,12 +847,12 @@ static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uin
         acc[i] = horner_double_update(acc[i], multipliers[i][0], multipliers[i][1], \
                 compressed[i].bits[0], compressed[i].bits[1])
 
-		UPDATE(0);
-		UPDATE(1);
+        UPDATE(0);
+        UPDATE(1);
 #undef UPDATE
 
-		data = (const char *)data + BLOCK_SIZE;
-		n_bytes -= BLOCK_SIZE;
+        data = (const char *)data + BLOCK_SIZE;
+        n_bytes -= BLOCK_SIZE;
     }
 
 last_block:
@@ -860,18 +860,18 @@ last_block:
 
 #define FINAL(i)                                                        \
     do {                                                                \
-		acc[i] = horner_double_update(acc[i], multipliers[i][0],        \
+        acc[i] = horner_double_update(acc[i], multipliers[i][0],        \
                 multipliers[i][1], compressed[i].bits[0],               \
                 compressed[i].bits[1]);                                 \
-	} while (0)
+    } while (0)
 
-	FINAL(0);
-	FINAL(1);
+    FINAL(0);
+    FINAL(1);
 #undef FINAL
 
 finalize:
-	ret.hash[0] = finalize(acc[0]);
-	ret.hash[1] = finalize(acc[1]);
+    ret.hash[0] = finalize(acc[0]);
+    ret.hash[1] = finalize(acc[1]);
     return ret;
 }
 
