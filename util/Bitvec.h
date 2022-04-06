@@ -552,11 +552,13 @@ static void flagsort( T * begin, T * end, int idx )
   // only likely to hit in degenerate cases (e.g. donothing64), just
   // devolve into radixsort since that performs better on lists of
   // many similar values.
-  if (++freqs[getbyte(*ptr, idx)] == count)
-    if (idx == 0)
-      return;
-    else
+  if (++freqs[getbyte(*ptr, idx)] == count) {
+      // If there are no more passes, then we're just done.
+      if (idx == 0) {
+          return;
+      }
       return radixsort(begin, end);
+  }
 
   T * block_ptrs[RADIX_SIZE];
   ptr = begin;

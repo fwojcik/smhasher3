@@ -130,11 +130,12 @@ seed_t aesrng_seedfix(const HashInfo * hinfo, const seed_t hint) {
 // consistent way, so we have some magic knowledge of how it calls us.
 static thread_local uint64_t callcount;
 static void rng_keyseq(const void * key, size_t len, uint64_t seed) {
-    if (hash_mode == 2)
-        if (callcount-- != 0)
+    if (hash_mode == 2) {
+        if (callcount-- != 0) {
             return;
-        else
-            callcount = (8 * len);
+        }
+        callcount = (8 * len);
+    }
     uint64_t s = 0;
     memcpy(&s, key, len > 8 ? 8 : len);
     s = COND_BSWAP(s, isBE());
