@@ -88,12 +88,21 @@ FORCE_INLINE static uint64_t monotonic_clock(void) {
 
 #else	//	!defined(_MSC_VER)
 
+#include <time.h>
 #include <sys/time.h>
 
-FORCE_INLINE uint64_t timeofday() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return (int64_t)((tv.tv_sec) * 1000000 + tv.tv_usec);
+// From portable-snippets
+FORCE_INLINE static uint64_t monotonic_clock(void) {
+  struct timespec ts;
+  uint64_t result;
+
+  if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+    return -10;
+
+  result = ts.tv_sec * NSEC_PER_SEC;
+  result += ts.tv_nsec;
+
+  return result;
 }
 
 FORCE_INLINE uint64_t rdtsc() {
@@ -108,7 +117,7 @@ FORCE_INLINE uint64_t rdtsc() {
     asm volatile("mrs %0, cntvct_el0" : "=r" (pmccntr));
     return (uint64_t)(pmccntr) * 64;  // Should optimize to << 6
   }
-  return timeofday();
+  return monotonic_clock();
 #elif defined(__ARM_ARCH) && (__ARM_ARCH >= 6) && (__ARM_ARCH < 8)
   // V6 is the earliest arch that has a standard cyclecount (some say V7)
   uint32_t pmccntr;
@@ -124,9 +133,9 @@ FORCE_INLINE uint64_t rdtsc() {
       return static_cast<uint64_t>(pmccntr) * 64;  // Should optimize to << 6
     }
   }
-  return timeofday();
+  return monotonic_clock();
 #else
-  return timeofday();
+  return monotonic_clock();
 #endif
 }
 
@@ -177,21 +186,6 @@ FORCE_INLINE uint64_t timer_end() {
 #else
   return rdtsc();
 #endif
-}
-
-#include <time.h>
-// From portable-snippets
-FORCE_INLINE static uint64_t monotonic_clock(void) {
-  struct timespec ts;
-  uint64_t result;
-
-  if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
-    return -10;
-
-  result = ts.tv_sec * NSEC_PER_SEC;
-  result += ts.tv_nsec;
-
-  return result;
 }
 
 #endif	//	!defined(_MSC_VER)
