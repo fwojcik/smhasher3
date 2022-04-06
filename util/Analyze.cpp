@@ -556,7 +556,7 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
   double mult = normalizeScore(worstN, worstWidth, tests);
 
   if (worstStart == -1)
-      printf("No positive bias detected            %5.3fx  ", 0);
+      printf("No positive bias detected            %5.3fx  ", 0.0);
   else if (mult < 9.0)
       printf("Worst bias is %2d bits at bit %3d:    %5.3fx  ",
               worstWidth, worstStart, mult);
