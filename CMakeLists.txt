@@ -11,6 +11,9 @@ if(POLICY CMP0066) # honor per-config flags in try_compile() source-file
   cmake_policy(SET CMP0066 NEW) # since 3.7
 endif()
 
+# Cmake sometimes caches this variable :-{
+unset(RESULT_VAR CACHE)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
