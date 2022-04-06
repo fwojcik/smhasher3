@@ -111,7 +111,7 @@ static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool dr
   const HashFn hash = hinfo->hashFn(g_hashEndian);
   size_t totalkeys = 2 + 2*chooseUpToK(bigseed ? 64 : 32, maxbits);
 
-  printf("Keyset 'SparseSeed' - %d keys\n", totalkeys);
+  printf("Keyset 'SparseSeed' - %ld keys\n", totalkeys);
 
   const char text[64] = "Sphinx of black quartz, judge my vow";
   const int len = (int)strlen(text);

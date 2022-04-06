@@ -63,7 +63,7 @@
 static void warn_if ( bool x, const char * s, const char * fn, uint64_t ln )
 {
   if (!x)
-    printf("Statement %s is not true: %s:%d\n", s, fn, ln);
+    printf("Statement %s is not true: %s:%ld\n", s, fn, ln);
 }
 #define verify(x) warn_if(x, #x, __FILE__, __LINE__)
 #endif

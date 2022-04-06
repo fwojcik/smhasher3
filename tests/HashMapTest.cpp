@@ -94,7 +94,7 @@ std::vector<std::string> HashMapInit(bool verbose) {
   }
 
   if (verbose) {
-    printf ("Read %d words from internal list, ", wordvec.size());
+    printf ("Read %ld words from internal list, ", wordvec.size());
     printf ("avg len: %0.3f\n\n", (sum+0.0)/wordvec.size());
   }
   return wordvec;

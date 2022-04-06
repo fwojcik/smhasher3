@@ -103,6 +103,6 @@ static inline void recordTestResult(bool pass, const char * suitename, const cha
 static inline void recordTestResult(bool pass, const char * suitename, uint64_t testnum) {
   const uint64_t maxlen = sizeof("18446744073709551615"); // UINT64_MAX
   char testname[maxlen];
-  snprintf(testname, maxlen, "%llu", testnum);
+  snprintf(testname, maxlen, "%lu", testnum);
   recordTestResult(pass, suitename, testname);
 }

@@ -125,7 +125,7 @@ static bool WordsKeyImpl(HashFn hash, const seed_t seed,
         const long keycount, const int minlen, const int maxlen,
         const char * coreset, const char* name, bool drawDiagram) {
   const int corecount = (int)strlen(coreset);
-  printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n", minlen, maxlen, name, keycount);
+  printf("Keyset 'Words' - %d-%d random chars from %s charset - %ld keys\n", minlen, maxlen, name, keycount);
   assert (minlen >= 0);
   assert (maxlen > minlen);
 
@@ -178,7 +178,7 @@ template < typename hashtype >
 static bool WordsStringImpl(HashFn hash, const seed_t seed,
         std::vector<std::string> & words, bool drawDiagram) {
   long wordscount = words.size();
-  printf("Keyset 'Words' - dictionary words - %d keys\n", wordscount);
+  printf("Keyset 'Words' - dictionary words - %ld keys\n", wordscount);
 
   std::vector<hashtype> hashes;
   hashes.resize(wordscount);
