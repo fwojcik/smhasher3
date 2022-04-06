@@ -300,10 +300,11 @@ static uint64_t umash_medium(const uint64_t multipliers[2], const uint64_t *oh, 
     uint64_t enh_hi, enh_lo;
 
     {
+        const uint8_t * data8 = (const uint8_t *)data;
         uint64_t x, y;
 
-        memcpy(&x, data, sizeof(x));
-        memcpy(&y, (const uint8_t *)data + n_bytes - sizeof(y), sizeof(y));
+        x = GET_U64<false>(data8, 0);
+        y = GET_U64<false>(data8, n_bytes - 8);
         x += oh[0];
         y += oh[1];
 
@@ -326,9 +327,10 @@ static struct umash_fp umash_fp_medium(const uint64_t multipliers[2][2],
     uint64_t x, y;
     uint64_t a, b;
 
-	/* Expand the 9-16 bytes to 16. */
-	memcpy(&x, data, sizeof(x));
-	memcpy(&y, (const char *)data + n_bytes - sizeof(y), sizeof(y));
+    /* Expand the 9-16 bytes to 16. */
+    const uint8_t * data8 = (const uint8_t *)data;
+    x = GET_U64<false>(data8, 0);
+    y = GET_U64<false>(data8, n_bytes - 8);
 
     a = oh[0];
     b = oh[1];
@@ -428,11 +430,11 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
     assert(n_blocks > 0);
 
     do {
-        const void *data = blocks;
+        const uint8_t * data = (const uint8_t *)blocks;
         struct umash_oh oh;
         v128 acc = { 0, 0 };
 
-        blocks = (const char *)blocks + BLOCK_SIZE;
+        blocks = (const uint8_t *)blocks + BLOCK_SIZE;
 
         /*
          * FORCE() makes sure the compiler computes the value
@@ -443,16 +445,17 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
          */
 #define FORCE() ((void)0)
 
-#define PH(I)                                       \
-        do {                                        \
-            v128 x, k;                              \
-                                                    \
-            memcpy(&x, data, sizeof(x));            \
-            data = (const char *)data + sizeof(x);  \
-                                                    \
-            memcpy(&k, &oh_ptr[I], sizeof(k));      \
-            x ^= k;                                 \
-            acc ^= v128_clmul_cross(x);             \
+#define PH(I)                                               \
+        do {                                                \
+            v128 x, k;                                      \
+                                                            \
+            x = _mm_loadu_si128((const v128 *)data);        \
+            if (false) { x = mm_bswap64(x); }               \
+            data = data + sizeof(x);                        \
+                                                            \
+            k = _mm_loadu_si128((const v128 *)&oh_ptr[I]);  \
+            x ^= k;                                         \
+            acc ^= v128_clmul_cross(x);                     \
         } while (0)
 
         PH(0);
@@ -494,10 +497,9 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
         {
             uint64_t x, y, enh_hi, enh_lo;
 
-            memcpy(&x, data, sizeof(x));
-            data = (const char *)data + sizeof(x);
-            memcpy(&y, data, sizeof(y));
-            data = (const char *)data + sizeof(y);
+            x = GET_U64<false>(data, 0);
+            y = GET_U64<false>(data, 8);
+            data += 16;
 
             x += kx;
             y += ky;
@@ -518,7 +520,7 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
 
 static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         const uint64_t multipliers[2][2], const uint64_t *oh, uint64_t seed,
-        const void *data, size_t n_blocks) {
+        const void * blocks, size_t n_blocks) {
     const v128 lrc_init =
         v128_create(oh[UMASH_OH_PARAM_COUNT], oh[UMASH_OH_PARAM_COUNT + 1]);
     const uint64_t m00 = multipliers[0][0];
@@ -533,9 +535,9 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         v128 acc = { 0, 0 }; /* Base umash */
         v128 acc_shifted = { 0, 0 }; /* Accumulates shifted values */
         v128 lrc = lrc_init;
-        const void *block = data;
+        const uint8_t * data = (const uint8_t *)blocks;
 
-        data = (const char *)data + BLOCK_SIZE;
+        blocks = (const uint8_t *)blocks + BLOCK_SIZE;
 
 #define FORCE() ((void)0)
 
@@ -543,10 +545,11 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         do {                                            \
             v128 x, k;                                  \
                                                         \
-            memcpy(&x, block, sizeof(x));               \
-            block = (const char *)block + sizeof(x);    \
+            x = _mm_loadu_si128((const v128 *)data);    \
+            if (false) { x = mm_bswap64(x); }           \
+            data = data + sizeof(x);                    \
                                                         \
-            memcpy(&k, &oh[I], sizeof(k));              \
+            k = _mm_loadu_si128((const v128 *)&oh[I]);  \
                                                         \
             x ^= k;                                     \
             lrc ^= x;                                   \
@@ -599,8 +602,9 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         {
             v128 x, k;
 
-            memcpy(&x, block, sizeof(x));
-            memcpy(&k, &oh[30], sizeof(k));
+            x = _mm_loadu_si128((const v128 *)data);
+            if (false) { x = mm_bswap64(x); }
+            k = _mm_loadu_si128((const v128 *)&oh[30]);
 
             lrc ^= x ^ k;
         }
@@ -616,9 +620,8 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         {
             uint64_t x, y, kx, ky, enh_hi, enh_lo;
 
-            memcpy(&x, block, sizeof(x));
-            block = (const char *)block + sizeof(x);
-            memcpy(&y, block, sizeof(y));
+            x = GET_U64<false>(data, 0);
+            y = GET_U64<false>(data, 8);
 
             kx = x + oh[30];
             ky = y + oh[31];
