@@ -325,11 +325,6 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
 
 //---------
 // main hash function
-
-// Note that a large number of seeds lead to very bad quality, i.e. collisions
-// See some_bad_seeds[] and
-// https://github.com/rurban/smhasher/blob/master/doc/beamsplitter.txt
-
 template < bool bswap >
 void beamsplitter_64(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * key8Arr = (uint8_t *)in;
@@ -391,7 +386,7 @@ void beamsplitter_64(const void * in, const size_t len, const seed_t seed, void 
 
 REGISTER_FAMILY(beamsplitter);
 
-// Yes, this has no bad seeds! See note at the top.
+// Yes, this has no bad seeds! See note at the top near "thread_local".
 REGISTER_HASH(beamsplitter64,
   $.desc = "A possibly universal hash made with a 10x64 s-box",
   $.hash_flags =

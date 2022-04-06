@@ -125,7 +125,12 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
     for(index = Len; index < len; index++) {
         ds8[bswap ? (sindex^7) : sindex] += ROTR8(m8[index] + index + counter8 + 1, 23);
         // I also wonder if this was intended to be m8[index], to
-        // mirror the primay 8-byte loop above...
+        // mirror the primary 8-byte loop above...
+        //
+        // Regardless, m8[sindex] can never read past EOB here, which
+        // is the important thing. This is because the maximum value
+        // of sindex is (len & ~7) if oldver == true, and (len >> 3)
+        // if oldver == false.
         counter8 += ~m8[sindex] + 1;
         mix(index%STATE64M);
         if ( sindex >= STATEM ) {
@@ -211,7 +216,7 @@ void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) 
 
 REGISTER_FAMILY(discohash);
 
-// Yes, none of these have any bad seeds! See note at the top.
+// Yes, none of these have any bad seeds! See note at the top near "thread_local".
 REGISTER_HASH(discohash64_old,
   $.desc = "Discohash (aka BEBB4185) prior version",
   $.hash_flags =
