@@ -59,6 +59,9 @@ unsigned int FindCollisions ( std::vector<hashtype> & hashes,
                               bool drawDiagram = false);
 
 template < typename hashtype >
+void PrintCollisions(HashSet<hashtype> & collisions);
+
+template < typename hashtype >
 bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
                     bool testCollision = true, bool testDist = true,
                     bool testHighBits = true, bool testLowBits = true,

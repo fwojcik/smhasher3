@@ -232,67 +232,52 @@ static void plot ( double n )
 // Sort the hash list, count the total number of collisions and return
 // the first N collisions for further processing
 template< typename hashtype >
-unsigned int FindCollisions ( std::vector<hashtype> & hashes,
-                              HashSet<hashtype> & collisions,
-                              int maxCollisions,
-                              bool drawDiagram)
-{
-  unsigned int collcount = 0;
-  blobsort(hashes.begin(),hashes.end());
+unsigned int FindCollisions(std::vector<hashtype> & hashes,
+                            HashSet<hashtype> & collisions,
+                            int maxCollisions,
+                            bool drawDiagram) {
+    unsigned int collcount = 0;
+    blobsort(hashes.begin(),hashes.end());
 
-  for(size_t hnb = 1; hnb < hashes.size(); hnb++)
-    {
-      if(hashes[hnb] == hashes[hnb-1])
-        {
-          collcount++;
-          if(collcount < maxCollisions)
-            {
+    for(size_t hnb = 1; hnb < hashes.size(); hnb++) {
+        if(hashes[hnb] == hashes[hnb-1]) {
+            collcount++;
+            if(collcount < maxCollisions) {
 #if 0 && defined(DEBUG)
-              printf ("\n%zu: ", hnb);
-              printHash(&hashes[hnb], sizeof(hashtype));
+                printf ("\n%zu: ", hnb);
+                printHash(&hashes[hnb], sizeof(hashtype));
 #endif
-              if (drawDiagram)
-                collisions.insert(hashes[hnb]);
+                if (drawDiagram) {
+                    collisions.insert(hashes[hnb]);
+                }
             }
         }
     }
 
 #if 0 && defined(DEBUG)
     if (collcount)
-      printf ("\n");
+        printf ("\n");
 #endif
-  return collcount;
 
-#if 0
-  // sort indices instead
-  std::vector< std::pair<hashtype, size_t>> pairs;
-  pairs.resize (hashes.size());
-  for(size_t i = 0; i < hashes.size(); i++)
-    {
-      pairs[i] = std::make_pair(hashes[i], i);
-    }
-  std::sort(pairs.begin(),pairs.end());
-  for(size_t hnb = 1; hnb < pairs.size(); hnb++)
-    {
-      hashtype h1 = pairs[hnb].first;
-      hashtype prev = pairs[hnb-1].first;
-      if(h1 == prev)
-        {
-          collcount++;
-          if((int)collisions.size() < maxCollisions)
-            {
-#if 0 && defined(DEBUG)
-              printf ("\n%zu <=> %zu: ", pairs[hnb-1].second, pairs[hnb].second);
-              printHash(&h1, sizeof(hashtype));
-#endif
-              collisions.insert(h1);
-            }
-        }
-    }
-#endif
+    return collcount;
 }
 
 INSTANTIATE(FindCollisions, HASHTYPELIST);
+
+template < typename hashtype >
+void PrintCollisions(HashSet<hashtype> & collisions) {
+    printf("\nCollisions:\n");
+
+    for (typename HashSet<hashtype>::iterator it = collisions.begin();
+         it != collisions.end(); ++it) {
+        const hashtype &hash = *it;
+        printhex(&hash, sizeof(hashtype));
+        printf("\n");
+    }
+    printf("\n");
+}
+
+INSTANTIATE(PrintCollisions, HASHTYPELIST);
 
 //-----------------------------------------------------------------------------
 // If threshHBits is 0, then this tallies the total number of
@@ -448,21 +433,6 @@ static bool ReportBitsCollisions ( size_t nbH, int * collcounts, int minBits, in
 //----------------------------------------------------------------------------
 // Measure the distribution "score" for each possible N-bit span, with
 // N going from 8 to 20 inclusive.
-
-template < typename hashtype >
-static int PrintCollisions ( HashSet<hashtype> & collisions )
-{
-  printf("\nCollisions:\n");
-  for (typename HashSet<hashtype>::iterator it = collisions.begin();
-       it != collisions.end(); ++it)
-  {
-    const hashtype &hash = *it;
-    printhex(&hash, sizeof(hashtype));
-    printf("\n");
-  }
-  printf("\n");
-  return 0;
-}
 
 static int MaxDistBits ( const size_t nbH )
 {
