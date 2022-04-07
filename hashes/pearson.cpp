@@ -78,8 +78,8 @@ static void pearson_hash_256_portable(uint8_t * out, const uint8_t * in, size_t 
 
   uint64_t upper_hash_mask = GET_U64<false>(upper, 0);
   uint64_t lower_hash_mask = GET_U64<false>(lower, 0);
-  uint64_t high_upper_hash_mask = upper_hash_mask + 0x1010101010101010;
-  uint64_t high_lower_hash_mask = lower_hash_mask + 0x1010101010101010;
+  uint64_t high_upper_hash_mask = upper_hash_mask + UINT64_C(0x1010101010101010);
+  uint64_t high_lower_hash_mask = lower_hash_mask + UINT64_C(0x1010101010101010);
 
   // The one nod to endianness is that the hash_in value needs be in
   // little-endian format always, to match up with the byte ordering
@@ -189,7 +189,7 @@ static void pearson_hash_128_portable(uint8_t * out, const uint8_t * in, size_t 
 
 static void pearson_hash_64_portable(uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in) {
   size_t i;
-  uint64_t hash_mask = 0x0706050403020100;
+  uint64_t hash_mask = UINT64_C(0x0706050403020100);
   uint64_t hash = hash_in;
 
   for (i = 0; i < len; i++) {
@@ -289,7 +289,7 @@ static void pearson_hash_128_aesni(uint8_t * out, const uint8_t * in, size_t len
 
 static void pearson_hash_64_aesni(uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in) {
   size_t i;
-  __m128i hash_mask = _mm_cvtsi64_si128(0x0706050403020100);
+  __m128i hash_mask = _mm_cvtsi64_si128(UINT64_C(0x0706050403020100));
   __m128i hash = _mm_cvtsi64_si128(hash_in);
 
   // table lookup preparation
@@ -420,7 +420,7 @@ static void pearson_hash_128_ssse3(uint8_t * out, const uint8_t * in, size_t len
 
 static void pearson_hash_64_ssse3(uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in) {
   size_t i;
-  __m128i hash_mask = _mm_cvtsi64_si128(0x0706050403020100);
+  __m128i hash_mask = _mm_cvtsi64_si128(UINT64_C(0x0706050403020100));
   __m128i hash = _mm_cvtsi64_si128 (hash_in);
 
   // table lookup preparation

@@ -239,7 +239,7 @@ REGISTER_HASH(fibonacci32,
   $.verification_BE = 0x006F7705,
   $.hashfn_native = fibonacci<uint32_t, false>,
   $.hashfn_bswap = fibonacci<uint32_t, true>,
-  $.badseeds = {0, 0xffffffff00000000} /* !! all keys ending with 0x0000_0000 */
+  $.badseeds = {0, UINT64_C(0xffffffff00000000)} /* !! all keys ending with 0x0000_0000 */
 );
 
 REGISTER_HASH(fibonacci64,
@@ -255,7 +255,7 @@ REGISTER_HASH(fibonacci64,
   $.verification_BE = 0x3E67D58C,
   $.hashfn_native = fibonacci<uint64_t, false>,
   $.hashfn_bswap = fibonacci<uint64_t, true>,
-  $.badseeds = {0, 0xffffffff00000000} /* !! all keys ending with 0x0000_0000 */
+  $.badseeds = {0, UINT64_C(0xffffffff00000000)} /* !! all keys ending with 0x0000_0000 */
 );
 
 REGISTER_HASH(fnv1a_32,
@@ -287,7 +287,7 @@ REGISTER_HASH(fnv1a_64,
   $.verification_BE = 0x4B032B63,
   $.hashfn_native = FNV1a<uint64_t, false>,
   $.hashfn_bswap = FNV1a<uint64_t, true>,
-  $.badseeds = {0x811c9dc5, 0xcbf29ce4, 0x84222325, 0xcbf29ce484222325}
+  $.badseeds = {0x811c9dc5, 0xcbf29ce4, 0x84222325, UINT64_C(0xcbf29ce484222325)}
 );
 
 REGISTER_HASH(fnv2_32,

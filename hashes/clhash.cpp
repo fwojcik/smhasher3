@@ -324,9 +324,9 @@ static __m128i clmulhalfscalarproductOnlyExtraWord(const __m128i * randomsource,
 ////////
 static inline uint64_t fmix64 ( uint64_t k ) {
     k ^= k >> 33;
-    k *= 0xff51afd7ed558ccdULL;
+    k *= UINT64_C(0xff51afd7ed558ccd);
     k ^= k >> 33;
-    k *= 0xc4ceb9fe1a85ec53ULL;
+    k *= UINT64_C(0xc4ceb9fe1a85ec53);
     k ^= k >> 33;
     return k;
 }

@@ -97,7 +97,7 @@ static inline uint128_t tab_rand128() {
 
 //-----------------------------------------------------------------------------
 // 32 Bit Version
-const static uint64_t MERSENNE_31 = (1ull << 31) - 1;
+const static uint64_t MERSENNE_31 = (UINT64_C(1) << 31) - 1;
 const static int CHAR_SIZE = 8;
 const static int BLOCK_SIZE_32 = 1<<8;
 
@@ -110,13 +110,13 @@ static bool have_broken_rand = false;
 uintptr_t tabulation32_seed(const seed_t seed) {
    BSD_srand((uint64_t)seed);
    // the lazy mersenne combination requires 30 bits values in the polynomial.
-   multiply_shift_a_64 = tab_rand64() & ((1ull<<30)-1);
+   multiply_shift_a_64 = tab_rand64() & ((UINT64_C(1) << 30) - 1);
    if (!multiply_shift_a_64) {
-      multiply_shift_a_64 = tab_rand64() & ((1ull<<30)-1);
+      multiply_shift_a_64 = tab_rand64() & ((UINT64_C(1) << 30) - 1);
    }
    if (!multiply_shift_a_64) {
       have_broken_rand = true;
-      multiply_shift_a_64 = 0xababababbeafcafeULL & ((1ull<<30)-1);
+      multiply_shift_a_64 = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 30) - 1);
    }
    multiply_shift_b_64 = tab_rand64();
    if (!multiply_shift_b_64) {
@@ -177,7 +177,7 @@ void tabulation32(const void * in, const size_t len, const seed_t seed, void * o
 #if defined(HAVE_INT128)
 //-----------------------------------------------------------------------------
 // 64 Bit Version
-const static uint64_t TAB_MERSENNE_61 = (1ull << 61) - 1;
+const static uint64_t TAB_MERSENNE_61 = (UINT64_C(1) << 61) - 1;
 // multiply shift works on fixed length strings, so we operate in blocks.
 // this size can be tuned depending on the system.
 const static int TAB_BLOCK_SIZE = 1<<8;
@@ -191,12 +191,12 @@ uintptr_t tabulation64_seed(const seed_t seed) {
    BSD_srand((uint64_t)seed);
    // the lazy mersenne combination requires 60 bits values in the polynomial.
    // rurban: added checks for bad seeds
-   tab_multiply_shift_a = tab_rand128() & ((1ull<<60)-1);
+   tab_multiply_shift_a = tab_rand128() & ((UINT64_C(1) << 60) - 1);
    tab_multiply_shift_b = tab_rand128();
-   if (!tab_multiply_shift_a) tab_multiply_shift_a = tab_rand128() & ((1ull<<60)-1);
+   if (!tab_multiply_shift_a) tab_multiply_shift_a = tab_rand128() & ((UINT64_C(1) << 60) - 1);
    if (!tab_multiply_shift_a) {
       have_broken_rand = true;
-      tab_multiply_shift_a = 0xababababbeafcafeULL & ((1ull<<60)-1);
+      tab_multiply_shift_a = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 60) - 1);
    }
    if (!tab_multiply_shift_b) tab_multiply_shift_b = tab_rand128();
    if (!tab_multiply_shift_b) {

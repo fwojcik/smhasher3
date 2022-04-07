@@ -41,8 +41,8 @@ static const uint64_t incr[2] = {UINT64_C(1), UINT64_C(-1)};
 static uint32_t round_keys[44]; // only modified on main thread
 
 /* K1 is golden ratio - 1, K2 is sqrt(3) - 1 */
-#define K1 0x9E3779B97F4A7C15ULL
-#define K2 0xBB67AE8584CAA73BULL
+#define K1 UINT64_C(0x9E3779B97F4A7C15)
+#define K2 UINT64_C(0xBB67AE8584CAA73B)
 bool aesrng_init(void) {
     uint8_t key[16];
     if (isLE()) {

@@ -32,7 +32,7 @@
 // This function is generated using the framework provided.
 static inline uint64_t mix(uint64_t h) {
     h ^= h >> 23;
-    h *= 0x2127599bf4325c37ULL;
+    h *= UINT64_C(0x2127599bf4325c37);
     h ^= h >> 47;
     return h;
 }

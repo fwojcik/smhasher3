@@ -362,14 +362,6 @@ void CRC32(const void * in, const size_t len, const seed_t seed, void * out) {
         crc = crc32_sw<true>(crc, sw_tables, in, len);
     }
 
-#if 0
-    uint64_t m = crc;
-    m *= 0x8d1d57672c38b9adULL;
-    m ^= m >> 32;
-    m *= 0x8d1d57672c38b9adULL;
-    crc = m ^ (m >> 32);
-#endif
-
     crc = COND_BSWAP(crc, isBE());
     memcpy(out, &crc, 4);
 }

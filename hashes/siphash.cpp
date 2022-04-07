@@ -116,12 +116,12 @@ typedef union packedelem8_t {
 
 /* 0,2,1,3 */
 static const packedelem64 siphash_init[2] = {
-	{{0x736f6d6570736575ull,0x6c7967656e657261ull}},
-	{{0x646f72616e646f6dull,0x7465646279746573ull}}
+	{{ UINT64_C(0x736f6d6570736575), UINT64_C(0x6c7967656e657261) }},
+	{{ UINT64_C(0x646f72616e646f6d), UINT64_C(0x7465646279746573) }}
 };
 
 static const packedelem64 siphash_final = {
-	{0x0000000000000000ull,0x00000000000000ffull}
+	{ UINT64_C(0x0000000000000000), UINT64_C(0x00000000000000ff) }
 };
 
 static const packedelem8 siphash_rot16v3 = {
@@ -314,8 +314,8 @@ static uint64_t tsip(const uint64_t seed, const uint8_t * m, uint64_t len) {
   k0 = seed ^ UINT64_C(0x4915a64c00000000);
   k1 = seed ^ UINT64_C(0x1c29205700000000);
 
-  v0 = k0 ^ 0x736f6d6570736575ull;
-  v1 = k1 ^ 0x646f72616e646f6dull;
+  v0 = k0 ^ UINT64_C(0x736f6d6570736575);
+  v1 = k1 ^ UINT64_C(0x646f72616e646f6d);
 
 #define tsipcompress()                                                  \
   do {                                                                  \

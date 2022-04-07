@@ -254,7 +254,7 @@ REGISTER_HASH(murmur2_64,
   $.hashfn_native = MurmurHash2_64<false>,
   $.hashfn_bswap = MurmurHash2_64<true>,
   $.seedfixfn = excludeBadseeds,
-  $.badseeds = {0xc6a4a7935bd1e995ULL}
+  $.badseeds = {UINT64_C(0xc6a4a7935bd1e995)}
 );
 
 REGISTER_HASH(murmur2_32_64,
@@ -270,7 +270,7 @@ REGISTER_HASH(murmur2_32_64,
   $.hashfn_native = MurmurHash2_32_64<false>,
   $.hashfn_bswap = MurmurHash2_32_64<true>,
   $.seedfixfn = excludeBadseeds,
-  $.badseeds = {0x10, 0xffffffff00000010ULL}
+  $.badseeds = {0x10, UINT64_C(0xffffffff00000010)}
 );
 
 REGISTER_HASH(murmur2a_32,

@@ -110,7 +110,7 @@ FORCE_INLINE uint64_t rdtsc() {
     return __builtin_ia32_rdtsc();
 #elif defined(__aarch64__) && defined(HAVE_64BIT_PLATFORM)
   uint64_t pmccntr;
-  uint64_t pmuseren = 1UL;
+  uint64_t pmuseren = 1;
   // Read the user mode perf monitor counter access permissions.
   //asm volatile("mrs cntv_ctl_el0,  %0" : "=r" (pmuseren));
   if (pmuseren & 1) {  // Allows reading perfmon counters for user mode code.

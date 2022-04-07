@@ -33,8 +33,8 @@ static const uint32_t STATE64 = STATE >> 3;
 static const uint32_t STATEM = STATE-1;
 static const uint32_t HSTATE64M = (STATE64 >> 1)-1;
 static const uint32_t STATE64M = STATE64-1;
-static const uint64_t P = 0xFFFFFFFFFFFFFFFF - 58;
-static const uint64_t Q = 13166748625691186689U;
+static const uint64_t P = UINT64_C(0xFFFFFFFFFFFFFFFF) - 58;
+static const uint64_t Q = UINT64_C(13166748625691186689);
 
 // Since disco_buf is used read-write for each hash invocation, it
 // needs to be thread local, or else threaded tests will overwrite
@@ -86,7 +86,7 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
     uint32_t index;
     uint32_t sindex = 0;
     uint32_t Len = len >> 3;
-    uint64_t counter = 0xfaccadaccad09997;
+    uint64_t counter = UINT64_C(0xfaccadaccad09997);
     uint8_t counter8 = 137;
 
     //#pragma omp parallel for
@@ -176,10 +176,10 @@ void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) 
     }
 
     // nothing up my sleeve
-    ds[0] = 0x123456789abcdef0;
-    ds[1] = 0x0fedcba987654321;
-    ds[2] = 0xaccadacca80081e5;
-    ds[3] = 0xf00baaf00f00baaa;
+    ds[0] = UINT64_C(0x123456789abcdef0);
+    ds[1] = UINT64_C(0x0fedcba987654321);
+    ds[2] = UINT64_C(0xaccadacca80081e5);
+    ds[3] = UINT64_C(0xf00baaf00f00baaa);
 
     // The mixing in of the seed array does not need bswap set, since
     // the if() above will order the bytes correctly for that

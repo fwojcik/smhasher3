@@ -282,7 +282,7 @@ static bool TestManySeeds(const HashInfo * hinfo, const uint64_t hi, bool &newre
 #ifdef HAVE_THREADS
       // split into g_NCPU threads
       std::thread t[g_NCPU];
-      const uint64_t len = 0x100000000UL / g_NCPU;
+      const uint64_t len = UINT64_C(0x100000000) / g_NCPU;
       // Can't make VLAs in C++, so have to use vectors, but can't
       // pass a ref of a bool in a vector to a thread... :-<
       bool * results    = new bool[g_NCPU]();

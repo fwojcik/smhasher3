@@ -73,8 +73,8 @@ const int l = (int)(MsgEnd - Msg);
 static inline uint64_t prvhash_core64(uint64_t & Seed, uint64_t & lcg, uint64_t & Hash) {
     Seed *= lcg * 2 + 1;
     const uint64_t rs = Seed >> 32 | Seed << 32;
-    Hash += rs + 0xAAAAAAAAAAAAAAAA;
-    lcg += Seed + 0x5555555555555555;
+    Hash += rs + UINT64_C(0xAAAAAAAAAAAAAAAA);
+    lcg += Seed + UINT64_C(0x5555555555555555);
     Seed ^= Hash;
     const uint64_t out = lcg ^ rs;
 

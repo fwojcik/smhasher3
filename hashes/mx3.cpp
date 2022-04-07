@@ -10,7 +10,7 @@
 #include "Hashlib.h"
 
 //------------------------------------------------------------
-static const uint64_t C = 0xbea225f9eb34556d;
+static const uint64_t C = UINT64_C(0xbea225f9eb34556d);
 
 template < bool v1 >
 static inline uint64_t mix(uint64_t x) {

@@ -205,8 +205,8 @@ static void SHA1_Transform_sha1NI(uint32_t state[5], const uint8_t buffer[64]) {
     __m128i ABCD, ABCD_SAVE, E0, E0_SAVE, E1;
     __m128i MSG0, MSG1, MSG2, MSG3;
     const __m128i MASK = bswap ?
-        _mm_set_epi64x(0x0001020304050607ULL, 0x08090a0b0c0d0e0fULL) :
-        _mm_set_epi64x(0x0302010007060504ULL, 0x0b0a09080f0e0d0cULL) ;
+        _mm_set_epi64x(UINT64_C(0x0001020304050607), UINT64_C(0x08090a0b0c0d0e0f)) :
+        _mm_set_epi64x(UINT64_C(0x0302010007060504), UINT64_C(0x0b0a09080f0e0d0c)) ;
 
     /* Load initial values */
     ABCD = _mm_loadu_si128((const __m128i*) state);

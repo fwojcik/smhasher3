@@ -138,8 +138,8 @@ static inline uint64_t _wyhash64(const void * key, size_t len, uint64_t seed, co
 // 32-bit hash function
 static inline void _wymix32(uint32_t * A,  uint32_t * B) {
   uint64_t c;
-  c  = *A ^ 0x53c5ca59u;
-  c *= *B ^ 0x74743c1bu;
+  c  = *A ^ 0x53c5ca59;
+  c *= *B ^ 0x74743c1b;
   *A = (uint32_t)c;
   *B = (uint32_t)(c >> 32);
 }
@@ -256,7 +256,7 @@ REGISTER_HASH(wyhash_64,
   $.hashfn_bswap = Wyhash64<true,false>,
   $.initfn = wyhash64_selftest,
   $.seedfixfn = excludeBadseeds,
-  $.badseeds = { 0x14cc886e, 0x1bf4ed84, 0x14cc886e14cc886eULL } // all seeds with those lower bits ?
+  $.badseeds = { 0x14cc886e, 0x1bf4ed84, UINT64_C(0x14cc886e14cc886e) } // all seeds with those lower bits ?
 );
 
 REGISTER_HASH(wyhash_strict_64,

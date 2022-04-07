@@ -64,19 +64,23 @@ static inline uint64_t _mum(uint64_t v, uint64_t p) {
 /* Here are different primes randomly generated with the equal
    probability of their bit values.  They are used to randomize input
    values.  */
-static const uint64_t _mum_hash_step_prime = 0x2e0bb864e9ea7df5ULL;
-static const uint64_t _mum_key_step_prime = 0xcdb32970830fcaa1ULL;
-static const uint64_t _mum_block_start_prime = 0xc42b5e2e6480b23bULL;
-static const uint64_t _mum_unroll_prime = 0x7b51ec3d22f7096fULL;
-static const uint64_t _mum_tail_prime = 0xaf47d47c99b1461bULL;
-static const uint64_t _mum_finish_prime1 = 0xa9a7ae7ceff79f3fULL;
-static const uint64_t _mum_finish_prime2 = 0xaf47d47c99b1461bULL;
+static const uint64_t _mum_hash_step_prime   = UINT64_C(0x2e0bb864e9ea7df5);
+static const uint64_t _mum_key_step_prime    = UINT64_C(0xcdb32970830fcaa1);
+static const uint64_t _mum_block_start_prime = UINT64_C(0xc42b5e2e6480b23b);
+static const uint64_t _mum_unroll_prime      = UINT64_C(0x7b51ec3d22f7096f);
+static const uint64_t _mum_tail_prime        = UINT64_C(0xaf47d47c99b1461b);
+static const uint64_t _mum_finish_prime1     = UINT64_C(0xa9a7ae7ceff79f3f);
+static const uint64_t _mum_finish_prime2     = UINT64_C(0xaf47d47c99b1461b);
 
 static const uint64_t _mum_primes [] = {
-  0X9ebdcae10d981691, 0X32b9b9b97a27ac7d, 0X29b5584d83d35bbd, 0X4b04e0e61401255f,
-  0X25e8f7b1f1c9d027, 0X80d4c8c000f3e881, 0Xbd1255431904b9dd, 0X8a3bd4485eee6d81,
-  0X3bc721b2aad05197, 0X71b1a19b907d6e33, 0X525e6c1084a8534b, 0X9e4c2cd340c1299f,
-  0Xde3add92e94caa37, 0X7e14eadb1f65311d, 0X3f5aa40f89812853, 0X33b15a3b587d15c9,
+  UINT64_C(0x9ebdcae10d981691), UINT64_C(0x32b9b9b97a27ac7d),
+  UINT64_C(0x29b5584d83d35bbd), UINT64_C(0x4b04e0e61401255f),
+  UINT64_C(0x25e8f7b1f1c9d027), UINT64_C(0x80d4c8c000f3e881),
+  UINT64_C(0xbd1255431904b9dd), UINT64_C(0x8a3bd4485eee6d81),
+  UINT64_C(0x3bc721b2aad05197), UINT64_C(0x71b1a19b907d6e33),
+  UINT64_C(0x525e6c1084a8534b), UINT64_C(0x9e4c2cd340c1299f),
+  UINT64_C(0xde3add92e94caa37), UINT64_C(0x7e14eadb1f65311d),
+  UINT64_C(0x3f5aa40f89812853), UINT64_C(0x33b15a3b587d15c9),
 };
 
 // Since unroll_power actually affects hash *values*, not just speed,
@@ -218,7 +222,7 @@ static inline uint64_t mir_mum(uint64_t v, uint64_t c) {
   return v1 * c1 + (rm >> 32) + v2 * c2 + (rm << 32);
 }
 
-static const uint64_t p1 = 0X65862b62bdf5ef4d, p2 = 0X288eea216831e6a7;
+static const uint64_t p1 = UINT64_C(0x65862b62bdf5ef4d), p2 = UINT64_C(0x288eea216831e6a7);
 
 template < bool exactmul >
 static inline uint64_t mir_round(uint64_t state, uint64_t v) {
@@ -1021,5 +1025,5 @@ REGISTER_HASH(mir_inexact,
   $.hashfn_native = mir_hash<false,false>,
   $.hashfn_bswap = mir_hash<true,false>,
   $.seedfixfn = excludeBadseeds,
-  $.badseeds = {0xfffffffffffffff0ULL}
+  $.badseeds = {UINT64_C(0xfffffffffffffff0)}
 );

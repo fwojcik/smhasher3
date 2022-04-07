@@ -199,8 +199,6 @@ static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t
 template < bool bswap >
 static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t seed, void *output_state) {
   __m128i coeffs_1, coeffs_2, rnd_data, seed_xmm, input, state_1, state_2;
-  const __m128i mask =_mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020304050607ULL);
-
   coeffs_1 = _mm_load_si128((__m128i *) coeffs);
   coeffs_2 = _mm_load_si128((__m128i *) (coeffs + 4));
   rnd_data = _mm_load_si128((__m128i *) (coeffs + 8));
@@ -215,9 +213,7 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
       /* Read in 16 bytes, or 128 bits, from buf.  Advance buf and
          decrement n_bytes accordingly. */
       input = _mm_loadu_si128((__m128i *) input_buf);
-      if (bswap) {
-          input = _mm_shuffle_epi8(input, mask);
-      }
+      if (bswap) { input = mm_bswap64(input); }
       input_buf += 16;
       n_bytes -= 16;
 
@@ -228,9 +224,7 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
       memcpy(buf, input_buf, n_bytes);
       memset(buf + n_bytes, 0, 16 - n_bytes);
       input = _mm_load_si128((__m128i *) buf);
-      if (bswap) {
-          input = _mm_shuffle_epi8(input, mask);
-      }
+      if (bswap) { input = mm_bswap64(input); }
       COMBINE_AND_MIX(coeffs_1, coeffs_2, state_1, state_2, input);
   }
 
@@ -243,8 +237,8 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
   COMBINE_AND_MIX(coeffs_1, coeffs_2, state_1, state_2, input);
 
   if (bswap) {
-      state_1 = _mm_shuffle_epi8(state_1, mask);
-      state_2 = _mm_shuffle_epi8(state_2, mask);
+      state_1 = mm_bswap64(state_1);
+      state_2 = mm_bswap64(state_2);
   }
   _mm_storeu_si128((__m128i *)output_state,               state_1);
   _mm_storeu_si128((__m128i *)((char*)output_state + 16), state_2);

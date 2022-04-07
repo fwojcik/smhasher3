@@ -257,9 +257,9 @@ static uint64_t umash_short(const uint64_t *params, uint64_t seed,
     seed += params[n_bytes];
     h = vec_to_u64<bswap>(data, n_bytes);
     h ^= h >> 30;
-    h *= 0xbf58476d1ce4e5b9ULL;
+    h *= UINT64_C(0xbf58476d1ce4e5b9);
     h = (h ^ seed) ^ (h >> 27);
-    h *= 0x94d049bb133111ebULL;
+    h *= UINT64_C(0x94d049bb133111eb);
     h ^= h >> 31;
     return h;
 }
@@ -275,14 +275,14 @@ static struct umash_fp umash_fp_short(const uint64_t *params, uint64_t seed,
 
     h = vec_to_u64<bswap>(data, n_bytes);
     h ^= h >> 30;
-    h *= 0xbf58476d1ce4e5b9ULL;
+    h *= UINT64_C(0xbf58476d1ce4e5b9);
     h ^= h >> 27;
 
-#define TAIL(i)                                 \
-    do {                                        \
-        ret.hash[i] ^= h;                       \
-        ret.hash[i] *= 0x94d049bb133111ebULL;   \
-        ret.hash[i] ^= ret.hash[i] >> 31;       \
+#define TAIL(i)                                         \
+    do {                                                \
+        ret.hash[i] ^= h;                               \
+        ret.hash[i] *= UINT64_C(0x94d049bb133111eb);    \
+        ret.hash[i] ^= ret.hash[i] >> 31;               \
     } while (0)
 
     TAIL(0);

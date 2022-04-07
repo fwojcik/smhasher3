@@ -237,7 +237,7 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
       std::thread t[g_NCPU];
       printf("%d threads starting... ", g_NCPU);
 
-      const uint64_t len = 0x100000000UL / (step * g_NCPU);
+      const uint64_t len = UINT64_C(0x100000000) / (step * g_NCPU);
       for (int i=0; i < g_NCPU; i++) {
           const uint32_t start = i * len * step;
           const uint32_t end = (i < (g_NCPU - 1)) ? start + (len * step - 1) : 0xffffffff;

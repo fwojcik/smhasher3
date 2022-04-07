@@ -227,8 +227,8 @@ bool TextKeyTest(const HashInfo * hinfo, const bool verbose) {
     result &= TextKeyImpl<hashtype>(hash, seed, "",       alnum, 4, "FooBar", verbose );
 
     // maybe use random-len vector of strings here, from len 6-16
-    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000L, 6, 16, alnum, "alnum", verbose );
-    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000L, 6, 16, passwordchars, "password", verbose );
+    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 6, 16, alnum, "alnum", verbose );
+    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 6, 16, passwordchars, "password", verbose );
 
     std::vector<std::string> words = HashMapInit(verbose);
     result &= WordsStringImpl<hashtype>(hash, seed, words, verbose );

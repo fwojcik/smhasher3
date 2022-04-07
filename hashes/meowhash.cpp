@@ -67,7 +67,6 @@ typedef __m128i meow_u128;
 // NOTE(casey): pxor_clear is a nonsense thing that is only here
 // because compilers don't detect xor(a, a) is clearing a :(
 #define pxor_clear(A, B)   A = _mm_setzero_si128();
-#define bswapv(A)          _mm_shuffle_epi8(A, bswap_mask)
 
 //------------------------------------------------------------
 #define MEOW_MIX_REG(r1, r2, r3, r4, r5,  i1, i2, i3, i4)   \
@@ -83,10 +82,10 @@ typedef __m128i meow_u128;
 #define MEOW_MIX(r1, r2, r3, r4, r5, ptr)                   \
     if (bswap) {                                            \
         MEOW_MIX_REG(r1, r2, r3, r4, r5,                    \
-                bswapv(movdqu_imm((ptr) + 15)),             \
-                bswapv(movdqu_imm((ptr) +  0)),             \
-                bswapv(movdqu_imm((ptr) +  1)),             \
-                bswapv(movdqu_imm((ptr) + 16)))             \
+                mm_bswap64(movdqu_imm((ptr) + 15)),         \
+                mm_bswap64(movdqu_imm((ptr) +  0)),         \
+                mm_bswap64(movdqu_imm((ptr) +  1)),         \
+                mm_bswap64(movdqu_imm((ptr) + 16)))         \
     } else {                                                \
         MEOW_MIX_REG(r1, r2, r3, r4, r5,                    \
                 movdqu_imm((ptr) + 15),                     \
@@ -141,9 +140,6 @@ static const uint8_t MeowDefaultSeed[128] = {
     0x70, 0x80, 0x1F, 0x2E, 0x28, 0x58, 0xEF, 0xC1,
     0x66, 0x36, 0x92, 0x0D, 0x87, 0x15, 0x74, 0xE6
 };
-
-static const meow_u128 bswap_mask =
-    _mm_set_epi64x(0x08090a0b0c0d0e0fULL, 0x0001020304050607ULL);
 
 //------------------------------------------------------------
 //

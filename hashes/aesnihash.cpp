@@ -46,8 +46,8 @@ void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out
     uint64_t src_sz = len;
 
     uint8_t tmp_buf[16] = {0};
-    __m128i rk0 = {0x736f6d6570736575ULL, 0x646f72616e646f6dULL};
-    __m128i rk1 = {0x1231236570743245ULL, 0x126f12321321456dULL};
+    __m128i rk0 = {UINT64_C(0x736f6d6570736575), UINT64_C(0x646f72616e646f6d)};
+    __m128i rk1 = {UINT64_C(0x1231236570743245), UINT64_C(0x126f12321321456d)};
     __m128i seed128 = {(int64_t)seed, 0};
     __m128i hash = _mm_xor_si128(rk0, seed128);
 

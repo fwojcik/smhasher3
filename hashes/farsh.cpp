@@ -159,10 +159,10 @@ static uint64_t farsh_partial_block(const uint32_t *data, size_t bytes, const ui
 /* ////////////////////////////////////////////////////////////////////////// */
 /* Hash mixing code, including all constants, was kidnapped from the xxHash64 */
 
-static const uint64_t PRIME64_1 = 11400714785074694791ULL;
-static const uint64_t PRIME64_2 = 14029467366897019727ULL;
-static const uint64_t PRIME64_3 =  1609587929392839161ULL;
-static const uint64_t PRIME64_4 =  9650029242287828579ULL;
+static const uint64_t PRIME64_1 = UINT64_C(11400714785074694791);
+static const uint64_t PRIME64_2 = UINT64_C(14029467366897019727);
+static const uint64_t PRIME64_3 = UINT64_C( 1609587929392839161);
+static const uint64_t PRIME64_4 = UINT64_C( 9650029242287828579);
 
 /* Internal: combine hash of the current block with overall hashsum */
 static uint64_t farsh_combine (uint64_t sum, uint64_t h) {

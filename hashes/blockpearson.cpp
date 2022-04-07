@@ -34,11 +34,11 @@
 
 // David Stafford's Mix13 from http://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html
 // the author clarified via eMail that this of his work is released to the public domain
-#define permute64(in)         \
-    in ^= (in >> 30);         \
-    in *= 0xbf58476d1ce4e5b9; \
-    in ^= (in >> 27);         \
-    in *= 0x94d049bb133111eb; \
+#define permute64(in)                           \
+    in ^= (in >> 30);                           \
+    in *= UINT64_C(0xbf58476d1ce4e5b9);         \
+    in ^= (in >> 27);                           \
+    in *= UINT64_C(0x94d049bb133111eb);         \
     in ^= (in >> 31)
 
 #define dec1(in) \

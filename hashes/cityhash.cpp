@@ -84,10 +84,10 @@ static inline __m128i Fetch128(const uint8_t * s) {
 
 //------------------------------------------------------------
 // Some primes between 2^63 and 2^64 for various uses.
-static const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
-static const uint64_t k1 = 0xb492b66fbe98f273ULL;
-static const uint64_t k2 = 0x9ae16a3b2f90404fULL;
-static const uint64_t k3 = 0xc949d7c7509e6557ULL;
+static const uint64_t k0 = UINT64_C(0xc3a5c85c97cb3127);
+static const uint64_t k1 = UINT64_C(0xb492b66fbe98f273);
+static const uint64_t k2 = UINT64_C(0x9ae16a3b2f90404f);
+static const uint64_t k3 = UINT64_C(0xc949d7c7509e6557);
 
 // Magic numbers for 32-bit hashing.  Copied from Murmur3.
 static const uint32_t c1 = 0xcc9e2d51;
@@ -98,7 +98,7 @@ static const uint32_t c2 = 0x1b873593;
 // This is intended to be a reasonably good hash function.
 static inline uint64_t Hash128to64(const uint128_t & x) {
   // Murmur-inspired hashing.
-  const uint64_t kMul = 0x9ddfea08eb382d69ULL;
+  const uint64_t kMul = UINT64_C(0x9ddfea08eb382d69);
   uint64_t a = (Uint128Low64(x) ^ Uint128High64(x)) * kMul;
   a ^= (a >> 47);
   uint64_t b = (Uint128High64(x) ^ a) * kMul;
