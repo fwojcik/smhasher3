@@ -505,12 +505,21 @@ add_library(
 target_include_directories(SMHasher3Tests PRIVATE util)
 
 add_executable(SMHasher3 main.cpp)
-target_include_directories(SMHasher3 PRIVATE hashes tests util)
+target_include_directories(SMHasher3 PRIVATE hashes tests util ${CMAKE_BINARY_DIR}/include)
 target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashlib ${threads_link_command})
 
 ########################################
 # Miscellany
 ########################################
+
+find_package(Git)
+add_custom_target(SMHasher3Version ${CMAKE_COMMAND}
+    -D SRC=${CMAKE_SOURCE_DIR}/version.h.in
+    -D DST=${CMAKE_BINARY_DIR}/include/version.h
+    -D GIT_EXECUTABLE=${GIT_EXECUTABLE}
+    -P ${CMAKE_SOURCE_DIR}/version.cmake
+)
+add_dependencies(SMHasher3 SMHasher3Version)
 
 if((CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 9)
    AND (CMAKE_BUILD_TYPE STREQUAL "Release"))

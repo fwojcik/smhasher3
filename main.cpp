@@ -68,6 +68,7 @@
 #include "Hashlib.h"
 #include "Analyze.h"
 #include "VCode.h"
+#include "version.h"
 
 #include "SanityTest.h"
 #include "SparseKeysetTest.h"
@@ -623,7 +624,7 @@ static void usage( void )
            "                 [--endian=default|nondefault|native|nonnative|big|little]\n"
            "                 [--verbose] [--vcode] [--ncpu=N] [<hashname>]\n"
            "\n"
-           "       SMHasher3 [--list]|[--listnames]|[--tests]\n"
+           "       SMHasher3 [--list]|[--listnames]|[--tests]|[--version]\n"
            );
 }
 
@@ -672,6 +673,10 @@ int main ( int argc, const char ** argv )
         for(size_t i = 0; i < sizeof(g_testopts) / sizeof(TestOpts); i++) {
           printf("  %s\n", g_testopts[i].name);
         }
+        exit(0);
+      }
+      if (strcmp(arg,"--version") == 0) {
+        printf("SMHasher3 %s\n", VERSION);
         exit(0);
       }
       if (strcmp(arg,"--verbose") == 0) {
