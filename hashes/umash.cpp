@@ -204,6 +204,7 @@ static inline const void * select_ptr(bool cond, const void * then, const void *
 
 //------------------------------------------------------------
 // SHORT -- [0, 8] byte inputs
+template < bool bswap >
 static inline uint64_t vec_to_u64(const void *data, size_t n_bytes) {
     const uint8_t zeros[2] = { 0 };
     uint32_t hi, lo;
@@ -245,15 +246,16 @@ static inline uint64_t vec_to_u64(const void *data, size_t n_bytes) {
      * Mix `hi` with the `lo` bits: SplitMix64 seems to have
      * trouble with the top 4 bits.
      */
-    return ((uint64_t)hi << 32) | (lo + hi);
+    return COND_BSWAP(((uint64_t)hi << 32) | (lo + hi), bswap);
 }
 
+template < bool bswap >
 static uint64_t umash_short(const uint64_t *params, uint64_t seed,
         const void *data, size_t n_bytes) {
     uint64_t h;
 
     seed += params[n_bytes];
-    h = vec_to_u64(data, n_bytes);
+    h = vec_to_u64<bswap>(data, n_bytes);
     h ^= h >> 30;
     h *= 0xbf58476d1ce4e5b9ULL;
     h = (h ^ seed) ^ (h >> 27);
@@ -262,6 +264,7 @@ static uint64_t umash_short(const uint64_t *params, uint64_t seed,
     return h;
 }
 
+template < bool bswap >
 static struct umash_fp umash_fp_short(const uint64_t *params, uint64_t seed,
         const void *data, size_t n_bytes) {
     struct umash_fp ret;
@@ -270,7 +273,7 @@ static struct umash_fp umash_fp_short(const uint64_t *params, uint64_t seed,
     ret.hash[0] = seed + params[n_bytes];
     ret.hash[1] = seed + params[n_bytes + OH_SHORT_HASH_SHIFT];
 
-    h = vec_to_u64(data, n_bytes);
+    h = vec_to_u64<bswap>(data, n_bytes);
     h ^= h >> 30;
     h *= 0xbf58476d1ce4e5b9ULL;
     h ^= h >> 27;
@@ -295,6 +298,7 @@ static inline uint64_t finalize(uint64_t x) {
     return (x ^ ROTL64(x, 8)) ^ ROTL64(x, 33);
 }
 
+template < bool bswap >
 static uint64_t umash_medium(const uint64_t multipliers[2], const uint64_t *oh, uint64_t seed,
         const void *data, size_t n_bytes) {
     uint64_t enh_hi, enh_lo;
@@ -303,8 +307,8 @@ static uint64_t umash_medium(const uint64_t multipliers[2], const uint64_t *oh, 
         const uint8_t * data8 = (const uint8_t *)data;
         uint64_t x, y;
 
-        x = GET_U64<false>(data8, 0);
-        y = GET_U64<false>(data8, n_bytes - 8);
+        x = GET_U64<bswap>(data8, 0);
+        y = GET_U64<bswap>(data8, n_bytes - 8);
         x += oh[0];
         y += oh[1];
 
@@ -317,6 +321,7 @@ static uint64_t umash_medium(const uint64_t multipliers[2], const uint64_t *oh, 
         /*acc=*/0, multipliers[0], multipliers[1], enh_lo, enh_hi));
 }
 
+template < bool bswap >
 static struct umash_fp umash_fp_medium(const uint64_t multipliers[2][2],
         const uint64_t *oh, uint64_t seed, const void *data, size_t n_bytes) {
     struct umash_fp ret;
@@ -329,8 +334,8 @@ static struct umash_fp umash_fp_medium(const uint64_t multipliers[2][2],
 
     /* Expand the 9-16 bytes to 16. */
     const uint8_t * data8 = (const uint8_t *)data;
-    x = GET_U64<false>(data8, 0);
-    y = GET_U64<false>(data8, n_bytes - 8);
+    x = GET_U64<bswap>(data8, 0);
+    y = GET_U64<bswap>(data8, n_bytes - 8);
 
     a = oh[0];
     b = oh[1];
@@ -418,6 +423,7 @@ static inline struct split_accumulator split_accumulator_update(
 }
 
 // This is umash_multiple_blocks_generic().
+template < bool bswap >
 static uint64_t umash_multiple_blocks(uint64_t initial,
         const uint64_t multipliers[2], const uint64_t *oh_ptr, uint64_t seed,
         const void *blocks, size_t n_blocks) {
@@ -450,7 +456,7 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
             v128 x, k;                                      \
                                                             \
             x = _mm_loadu_si128((const v128 *)data);        \
-            if (false) { x = mm_bswap64(x); }               \
+            if (bswap) { x = mm_bswap64(x); }               \
             data = data + sizeof(x);                        \
                                                             \
             k = _mm_loadu_si128((const v128 *)&oh_ptr[I]);  \
@@ -497,9 +503,8 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
         {
             uint64_t x, y, enh_hi, enh_lo;
 
-            x = GET_U64<false>(data, 0);
-            y = GET_U64<false>(data, 8);
-            data += 16;
+            x = GET_U64<bswap>(data, 0);
+            y = GET_U64<bswap>(data, 8);
 
             x += kx;
             y += ky;
@@ -518,6 +523,7 @@ static uint64_t umash_multiple_blocks(uint64_t initial,
     return split_accumulator_eval(ret);
 }
 
+template < bool bswap >
 static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         const uint64_t multipliers[2][2], const uint64_t *oh, uint64_t seed,
         const void * blocks, size_t n_blocks) {
@@ -546,7 +552,7 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
             v128 x, k;                                  \
                                                         \
             x = _mm_loadu_si128((const v128 *)data);    \
-            if (false) { x = mm_bswap64(x); }           \
+            if (bswap) { x = mm_bswap64(x); }           \
             data = data + sizeof(x);                    \
                                                         \
             k = _mm_loadu_si128((const v128 *)&oh[I]);  \
@@ -603,7 +609,7 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
             v128 x, k;
 
             x = _mm_loadu_si128((const v128 *)data);
-            if (false) { x = mm_bswap64(x); }
+            if (bswap) { x = mm_bswap64(x); }
             k = _mm_loadu_si128((const v128 *)&oh[30]);
 
             lrc ^= x ^ k;
@@ -620,8 +626,8 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
         {
             uint64_t x, y, kx, ky, enh_hi, enh_lo;
 
-            x = GET_U64<false>(data, 0);
-            y = GET_U64<false>(data, 8);
+            x = GET_U64<bswap>(data, 0);
+            y = GET_U64<bswap>(data, 8);
 
             kx = x + oh[30];
             ky = y + oh[31];
@@ -651,6 +657,7 @@ static struct umash_fp umash_fprint_multiple_blocks(struct umash_fp initial,
    };
 }
 
+template < bool bswap >
 static struct umash_oh oh_varblock(const uint64_t *params, uint64_t tag,
         const void * block, size_t n_bytes) {
     struct umash_oh ret;
@@ -665,10 +672,11 @@ static struct umash_oh oh_varblock(const uint64_t *params, uint64_t tag,
     for (i = 0; i < end_full_pairs; i += 2) {
         v128 x, k;
 
-        memcpy(&x, block, sizeof(x));
+        x = _mm_loadu_si128((const v128 *)block);
+        if (bswap) { x = mm_bswap64(x); }
         block = (const uint8_t *)block + sizeof(x);
 
-        memcpy(&k, &params[i], sizeof(k));
+        k = _mm_loadu_si128((const v128 *)&params[i]);
         x ^= k;
         acc ^= v128_clmul_cross(x);
     }
@@ -679,9 +687,8 @@ static struct umash_oh oh_varblock(const uint64_t *params, uint64_t tag,
     {
         uint64_t x, y, enh_hi, enh_lo;
 
-        memcpy(&x, last_ptr, sizeof(x));
-        last_ptr = (const uint8_t *)last_ptr + sizeof(x);
-        memcpy(&y, last_ptr, sizeof(y));
+        x = GET_U64<bswap>((const uint8_t *)last_ptr, 0);
+        y = GET_U64<bswap>((const uint8_t *)last_ptr, 8);
 
         x += params[i];
         y += params[i + 1];
@@ -695,6 +702,7 @@ static struct umash_oh oh_varblock(const uint64_t *params, uint64_t tag,
     return ret;
 }
 
+template < bool bswap >
 static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
          uint64_t tag, const void * block, size_t n_bytes) {
     v128 acc = { 0, 0 }; /* Base umash */
@@ -710,10 +718,11 @@ static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
     for (i = 0; i < end_full_pairs; i += 2) {
         v128 x, k;
 
-        memcpy(&x, block, sizeof(x));
-        block = (const char *)block + sizeof(x);
+        x = _mm_loadu_si128((const v128 *)block);
+        if (bswap) { x = mm_bswap64(x); }
+        block = (const uint8_t *)block + sizeof(x);
 
-        memcpy(&k, &params[i], sizeof(k));
+        k = _mm_loadu_si128((const v128 *)&params[i]);
 
         x ^= k;
         lrc ^= x;
@@ -735,8 +744,9 @@ static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
     {
         v128 x, k;
 
-        memcpy(&x, last_ptr, sizeof(x));
-        memcpy(&k, &params[end_full_pairs], sizeof(k));
+        x = _mm_loadu_si128((const v128 *)last_ptr);
+        if (bswap) { x = mm_bswap64(x); }
+        k = _mm_loadu_si128((const v128 *)&params[end_full_pairs]);
 
         lrc ^= x ^ k;
     }
@@ -752,9 +762,8 @@ static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
     {
         uint64_t x, y, kx, ky, enh_hi, enh_lo;
 
-        memcpy(&x, last_ptr, sizeof(x));
-        last_ptr = (const char *)last_ptr + sizeof(x);
-        memcpy(&y, last_ptr, sizeof(y));
+        x = GET_U64<bswap>((const uint8_t *)last_ptr, 0);
+        y = GET_U64<bswap>((const uint8_t *)last_ptr, 8);
 
         kx = x + params[end_full_pairs];
         ky = y + params[end_full_pairs + 1];
@@ -771,6 +780,7 @@ static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
     }
 }
 
+template < bool bswap >
 static uint64_t umash_long(const uint64_t multipliers[2], const uint64_t *oh,
         uint64_t seed, const void *data, size_t n_bytes) {
     uint64_t acc = 0;
@@ -782,7 +792,7 @@ static uint64_t umash_long(const uint64_t multipliers[2], const uint64_t *oh,
 
         n_bytes %= BLOCK_SIZE;
         remaining = (const uint8_t *)data + (n_block * BLOCK_SIZE);
-        acc = umash_multiple_blocks(acc, multipliers, oh, seed, data, n_block);
+        acc = umash_multiple_blocks<bswap>(acc, multipliers, oh, seed, data, n_block);
 
         data = remaining;
         if (n_bytes == 0)
@@ -794,7 +804,7 @@ static uint64_t umash_long(const uint64_t multipliers[2], const uint64_t *oh,
     while (n_bytes > BLOCK_SIZE) {
         struct umash_oh compressed;
 
-        compressed = oh_varblock(oh, seed, data, BLOCK_SIZE);
+        compressed = oh_varblock<bswap>(oh, seed, data, BLOCK_SIZE);
         data = (const uint8_t *)data + BLOCK_SIZE;
         n_bytes -= BLOCK_SIZE;
 
@@ -808,7 +818,7 @@ last_block:
         struct umash_oh compressed;
 
         seed ^= (uint8_t)n_bytes;
-        compressed = oh_varblock(oh, seed, data, n_bytes);
+        compressed = oh_varblock<bswap>(oh, seed, data, n_bytes);
         acc = horner_double_update(acc, multipliers[0], multipliers[1],
             compressed.bits[0], compressed.bits[1]);
     }
@@ -817,6 +827,7 @@ finalize:
     return finalize(acc);
 }
 
+template < bool bswap >
 static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uint64_t *oh,
         uint64_t seed, const void *data, size_t n_bytes) {
     struct umash_oh compressed[2];
@@ -831,7 +842,7 @@ static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uin
 
         n_bytes %= BLOCK_SIZE;
         remaining = (const uint8_t *)data + (n_block * BLOCK_SIZE);
-        poly = umash_fprint_multiple_blocks(poly, multipliers, oh, seed, data, n_block);
+        poly = umash_fprint_multiple_blocks<bswap>(poly, multipliers, oh, seed, data, n_block);
 
         acc[0] = poly.hash[0];
         acc[1] = poly.hash[1];
@@ -844,7 +855,7 @@ static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uin
     }
 
     while (n_bytes > BLOCK_SIZE) {
-        oh_varblock_fprint(compressed, oh, seed, data, BLOCK_SIZE);
+        oh_varblock_fprint<bswap>(compressed, oh, seed, data, BLOCK_SIZE);
 
 #define UPDATE(i)                                                                   \
         acc[i] = horner_double_update(acc[i], multipliers[i][0], multipliers[i][1], \
@@ -859,7 +870,7 @@ static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uin
     }
 
 last_block:
-    oh_varblock_fprint(compressed, oh, seed ^ (uint8_t)n_bytes, data, n_bytes);
+    oh_varblock_fprint<bswap>(compressed, oh, seed ^ (uint8_t)n_bytes, data, n_bytes);
 
 #define FINAL(i)                                                        \
     do {                                                                \
@@ -880,6 +891,7 @@ finalize:
 
 //------------------------------------------------------------
 // This is hardcoded to which == 0.
+template < bool bswap >
 static uint64_t umash_full(const struct umash_params *params, uint64_t seed,
         const void *data, size_t n_bytes) {
     /*
@@ -889,25 +901,26 @@ static uint64_t umash_full(const struct umash_params *params, uint64_t seed,
      */
     if (likely(n_bytes <= sizeof(v128))) {
         if (likely(n_bytes <= sizeof(uint64_t))) {
-            return umash_short(params->oh, seed, data, n_bytes);
+            return umash_short<bswap>(params->oh, seed, data, n_bytes);
         } else {
-            return umash_medium(params->poly[0], params->oh, seed, data, n_bytes);
+            return umash_medium<bswap>(params->poly[0], params->oh, seed, data, n_bytes);
         }
     } else {
-        return umash_long(params->poly[0], params->oh, seed, data, n_bytes);
+        return umash_long<bswap>(params->poly[0], params->oh, seed, data, n_bytes);
     }
 }
 
+template < bool bswap >
 static struct umash_fp umash_fprint(const struct umash_params *params, uint64_t seed,
         const void *data, size_t n_bytes) {
     if (likely(n_bytes <= sizeof(v128))) {
         if (likely(n_bytes <= sizeof(uint64_t))) {
-            return umash_fp_short(params->oh, seed, data, n_bytes);
+            return umash_fp_short<bswap>(params->oh, seed, data, n_bytes);
         } else {
-            return umash_fp_medium(params->poly, params->oh, seed, data, n_bytes);
+            return umash_fp_medium<bswap>(params->poly, params->oh, seed, data, n_bytes);
         }
     } else {
-        return umash_fp_long(params->poly, params->oh, seed, data, n_bytes);
+        return umash_fp_long<bswap>(params->poly, params->oh, seed, data, n_bytes);
     }
 }
 
@@ -1147,23 +1160,23 @@ static bool umash_init(void) {
     return true;
 }
 
-template < bool reseed >
+template < bool reseed, bool bswap >
 void UMASH(const void * in, const size_t len, const seed_t seed, void * out) {
     const struct umash_params * params = reseed ?
         (const struct umash_params *)(uintptr_t)seed :
         &umash_params_global;
     const uint64_t hseed = reseed ? params->base_seed : (uint64_t)seed;
-    uint64_t hash = umash_full(params, hseed, in, len);
+    uint64_t hash = umash_full<bswap>(params, hseed, in, len);
     PUT_U64<false>(hash, (uint8_t *)out, 0);
 }
 
-template < bool reseed >
+template < bool reseed, bool bswap >
 void UMASH_FP(const void * in, const size_t len, const seed_t seed, void * out) {
     const struct umash_params * params = reseed ?
         (const struct umash_params *)(uintptr_t)seed :
         &umash_params_global;
     const uint64_t hseed = reseed ? params->base_seed : (uint64_t)seed;
-    struct umash_fp hash = umash_fprint(params, hseed, in, len);
+    struct umash_fp hash = umash_fprint<bswap>(params, hseed, in, len);
     PUT_U64<false>(hash.hash[0], (uint8_t *)out, 0);
     PUT_U64<false>(hash.hash[1], (uint8_t *)out, 8);
 }
@@ -1183,9 +1196,9 @@ REGISTER_HASH(umash_64,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x36A264CD,
-  $.verification_BE = 0x0,
-  $.hashfn_native = UMASH<false>,
-  $.hashfn_bswap = UMASH<false>,
+  $.verification_BE = 0x84DA635B,
+  $.hashfn_native = UMASH<false,false>,
+  $.hashfn_bswap = UMASH<false,true>,
   $.initfn = umash_init
 );
 
@@ -1198,9 +1211,9 @@ REGISTER_HASH(umash_reseed_64,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x161495C6,
-  $.verification_BE = 0x0,
-  $.hashfn_native = UMASH<true>,
-  $.hashfn_bswap = UMASH<true>,
+  $.verification_BE = 0xF18B8420,
+  $.hashfn_native = UMASH<true,false>,
+  $.hashfn_bswap = UMASH<true,true>,
   $.seedfn = umash_slow_reseed,
   $.initfn = umash_init
 );
@@ -1213,9 +1226,9 @@ REGISTER_HASH(umash_128,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x63857D05,
-  $.verification_BE = 0x0,
-  $.hashfn_native = UMASH_FP<false>,
-  $.hashfn_bswap = UMASH_FP<false>,
+  $.verification_BE = 0xE87FFB4B,
+  $.hashfn_native = UMASH_FP<false,false>,
+  $.hashfn_bswap = UMASH_FP<false,true>,
   $.initfn = umash_init
 );
 
@@ -1227,9 +1240,9 @@ REGISTER_HASH(umash_reseed_128,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x36D4EC95,
-  $.verification_BE = 0x0,
-  $.hashfn_native = UMASH_FP<true>,
-  $.hashfn_bswap = UMASH_FP<true>,
+  $.verification_BE = 0x9F870C9C,
+  $.hashfn_native = UMASH_FP<true,false>,
+  $.hashfn_bswap = UMASH_FP<true,true>,
   $.seedfn = umash_slow_reseed,
   $.initfn = umash_init
 );
