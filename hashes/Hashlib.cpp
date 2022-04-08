@@ -96,6 +96,8 @@ unsigned register_hash(const HashInfo * hinfo) {
 const HashInfo * findHash(const char * name) {
   std::string n = name;
   std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+  // Since underscores can't be in names, the user must have meant a dash
+  std::replace(n.begin(), n.end(), '_', '-');
 
   const auto it = hashMap().find(n);
   if (it == hashMap().end()) {
