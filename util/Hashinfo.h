@@ -161,8 +161,7 @@ class HashInfo {
     HashInfo(const char * n, const char * f) :
         name(_fixup_name(n)), family(f), desc(""),
         initfn(NULL), seedfixfn(NULL), seedfn(NULL),
-        hashfn_native(NULL), hashfn_bswap(NULL)
-    { register_hash(this); }
+        hashfn_native(NULL), hashfn_bswap(NULL) { }
 
     ~HashInfo() {
         free((char *)name);

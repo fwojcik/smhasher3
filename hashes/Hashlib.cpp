@@ -79,6 +79,7 @@ std::vector<const HashInfo *> findAllHashes(void) {
 
 // FIXME Verify hinfo is all filled out.
 unsigned register_hash(const HashInfo * hinfo) {
+  static std::unordered_map<uint32_t, const HashInfo *> hashcodes;
   std::string name = hinfo->name;
   // Allow users to lookup hashes by any case
   std::transform(name.begin(), name.end(), name.begin(), ::tolower);
@@ -89,6 +90,28 @@ unsigned register_hash(const HashInfo * hinfo) {
     printf("Note that hash names are using a case-insensitive comparison.\n");
     exit(1);
   }
+
+  if (hinfo->verification_LE != 0) {
+      const auto it_LE = hashcodes.find(hinfo->verification_LE);
+      if (it_LE == hashcodes.end()) {
+          hashcodes[hinfo->verification_LE] = hinfo;
+      } else {
+          printf("WARNING: Hash with verification code %08x was already registered: %s\n",
+                  hinfo->verification_LE, it_LE->second->name);
+          printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
+      }
+  }
+  if ((hinfo->verification_BE != 0) && (hinfo->verification_BE != hinfo->verification_LE)) {
+      const auto it_BE = hashcodes.find(hinfo->verification_BE);
+      if (it_BE == hashcodes.end()) {
+          hashcodes[hinfo->verification_BE] = hinfo;
+      } else {
+          printf("WARNING: Hash with verification code %08x was already registered: %s\n",
+                  hinfo->verification_BE, it_BE->second->name);
+          printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
+      }
+  }
+
   hashMap()[name] = hinfo;
   return hashMap().size();
 }

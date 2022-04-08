@@ -36,6 +36,7 @@ bool verifyHash(const HashInfo * hinfo, enum HashInfo::endianness endian,
     static HashInfo CONCAT(Details,N) = []{                 \
         HashInfo $(#N, THIS_HASH_FAMILY);                   \
         __VA_ARGS__;                                        \
+        register_hash(&$);                                  \
         return $;                                           \
     }();
 
