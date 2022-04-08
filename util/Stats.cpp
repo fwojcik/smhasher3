@@ -244,12 +244,6 @@ static double ExpectedNBCollisions_Slow ( const double nbH, const double nbBits 
   return (double)(nbH * result);
 }
 
-// TODO This only works for a low number of collisions
-static inline double ExpectedCollisions ( const double balls, const double bins )
-{
-  return balls - (bins * (1 - pow((bins - 1)/bins, balls)));
-}
-
 // Still too inaccurate: https://preshing.com/20110504/hash-collision-probabilities/
 static double EstimateNbCollisions_Taylor(const double nbH, const double nbBits)
 {
@@ -341,8 +335,7 @@ static double EstimateNbCollisionsCand(const unsigned long nbH, const int nbBits
     case 1: return EstimateNbCollisions_previmpl((const double)nbH, (const double)nbBits);
     case 2: return EstimateNbCollisions_Demerphq((const double)nbH, (const double)nbBits);
     //case 3: return EstimateNbCollisions_Taylor((const double)nbH, (const double)nbBits);
-    //case 4: return ExpectedCollisions((const double)nbH, (const double)nbBits);
-    //case 5: return ExpectedNBCollisions_Slow((const double)nbH, (const double)nbBits);
+    //case 4: return ExpectedNBCollisions_Slow((const double)nbH, (const double)nbBits);
     default: { printf("Invalid estimator requested\n"); exit(1); }
     }
     return NAN;
