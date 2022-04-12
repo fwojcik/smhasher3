@@ -14,9 +14,6 @@ if(POLICY CMP0069) # Honor IPO setting for all supported compilers, not just icc
   cmake_policy(SET CMP0069 NEW) # since 3.9
 endif()
 
-# Cmake sometimes caches this variable :-{
-unset(RESULT_VAR CACHE)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -138,12 +135,14 @@ if (ENDIAN_DETECT_BUILDTIME AND (NOT DEFINED DETECTED_LITTLE_ENDIAN))
 
     file(READ "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c" TEST_ENDIANESS_FILE_CONTENT)
 
-    try_compile(RESULT_VAR "${CMAKE_BINARY_DIR}"
-      "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c"
-      OUTPUT_VARIABLE OUTPUT
-      COPY_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/TestEndianess.bin")
+    if(NOT DEFINED RESULT_ENDIAN_COMPILE)
+      try_compile(RESULT_ENDIAN_COMPILE "${CMAKE_BINARY_DIR}"
+	"${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c"
+	OUTPUT_VARIABLE OUTPUT
+	COPY_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/TestEndianess.bin")
+    endif()
 
-    if(RESULT_VAR)
+    if(RESULT_ENDIAN_COMPILE)
       file(STRINGS
         "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/TestEndianess.bin"
 	CMAKE_TEST_ENDIANESS_STRINGS_LE
@@ -201,161 +200,23 @@ endif()
 # Platform detection things
 ########################################
 
+set(DETECT_DIR ${CMAKE_SOURCE_DIR}/hashes/detect)
+
+include(${DETECT_DIR}/detect.cmake)
+
 include(CheckIncludeFileCXX)
 
 if(PROCESSOR_FAMILY STREQUAL "Arm")
   add_definitions(-DHAVE_NEON)
-  check_include_file_cxx("arm_neon.h" RESULT_VAR)
-  if(RESULT_VAR)
+  check_include_file_cxx("arm_neon.h" RESULT_NEON_INCLUDE)
+  if(RESULT_NEON_INCLUDE)
     add_definitions(-DNEW_HAVE_ARM_NEON)
     message(STATUS "ARM NEON available")
   endif()
-  check_include_file_cxx("arm_acle.h" RESULT_VAR)
-  if(RESULT_VAR)
+  check_include_file_cxx("arm_acle.h" RESULT_ACLE_INCLUDE)
+  if(RESULT_ACLE_INCLUDE)
     add_definitions(-DNEW_HAVE_ARM_ACLE)
     message(STATUS "ARM ACLE available")
-  endif()
-endif()
-
-set(DETECTSRCDIR ${CMAKE_SOURCE_DIR}/hashes/detect)
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_sse2.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SSE_2)
-  message(STATUS "x86_64 SSE 2 intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_ssse3.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SSSE3)
-  message(STATUS "x86_64 SSSE3 intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_sse41.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SSE_4_1)
-  message(STATUS "x86_64 SSE 4.1 intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_avx2.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_AVX2)
-  message(STATUS "x86_64 AVX2 intrinsics available")
-endif()
-
-# Foundational
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_avx512_f.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_AVX512_F)
-  message(STATUS "x86_64 AVX512-F intrinsics available")
-
-  # Byte and Word
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_avx512_bw.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_AVX512_BW)
-    message(STATUS "x86_64 AVX512-BW intrinsics available")
-  endif()
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_xop.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_XOP)
-  message(STATUS "x86_64 XOP intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_crc.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_CRC32C_X86_64)
-  message(STATUS "x86_64 CRC-32C intrinsics available")
-  if (MSVC AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND (MSVC_VERSION LESS 1928))
-    add_definitions(-DHAVE_BROKEN_MSVC_CRC32C_HW)
-    message(WARNING "MSVC version too old; CRC-32C intrinsics broken")
-  endif()
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_aes.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_AES_X86_64)
-  message(STATUS "x86_64 AES intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_sha1.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SHA1_X86_64)
-  message(STATUS "x86_64 SHA-1 intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_sha2.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_SHA2_X86_64)
-  message(STATUS "x86_64 SHA-2 intrinsics available")
-endif()
-
-try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_clmul.cpp)
-if(RESULT_VAR)
-  add_definitions(-DNEW_HAVE_CLMUL_X86_64)
-  message(STATUS "x86_64 CLMUL intrinsics available")
-endif()
-
-if(MSVC)
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_umulh.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_UMULH)
-    message(STATUS "x86_64 MSVC high 128-bit multiply intrinsic available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_umul128.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_UMUL128)
-    message(STATUS "x86_64 MSVC full 128-bit multiply intrinsic available")
-  endif()
-else()
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/x86_64_asm.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_X64_ASM)
-    message(STATUS "x86_64 __asm__() available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_neon_sha1.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_SHA1_ARM)
-    message(STATUS "ARM SHA-1 intrinsics available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_aes.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_AES_ARM)
-    message(STATUS "ARM AES intrinsics available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_asm.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_ARM_ASM)
-    message(STATUS "ARM 32-bit __asm__() available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/arm_asm64.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_ARM64_ASM)
-    message(STATUS "ARM 64-bit __asm__() available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/ppc_vsx.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_PPC_VSX)
-    message(STATUS "PPC VSX intrinsics available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/ppc_aes.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_AES_PPC)
-    message(STATUS "PPC AES intrinsics available")
-  endif()
-
-  try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${DETECTSRCDIR}/ppc_asm.cpp)
-  if(RESULT_VAR)
-    add_definitions(-DNEW_HAVE_PPC_ASM)
-    message(STATUS "PPC __asm__() available")
   endif()
 endif()
 
