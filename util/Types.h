@@ -51,7 +51,6 @@
 #include <algorithm>
 
 #include "Hashinfo.h"
-#include "Bitvec.h"
 
 #ifdef HAVE_INT128
 typedef unsigned __int128 uint128_t;

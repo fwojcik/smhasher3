@@ -52,6 +52,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Bitvec.h"
 #include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"

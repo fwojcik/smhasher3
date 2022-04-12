@@ -47,6 +47,7 @@
 #include "Platform.h"
 #include "Types.h"
 #include "Random.h"
+#include "Bitvec.h"
 
 #include <cstdio>
 #include <algorithm>

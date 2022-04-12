@@ -46,6 +46,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "Bitvec.h"
 #include "Stats.h"
 #include "Random.h"
 #include "Analyze.h"
