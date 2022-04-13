@@ -75,182 +75,80 @@ extern HashInfo::endianness g_hashEndian;
 
 //-----------------------------------------------------------------------------
 template < int _bits >
-class Blob
-{
-public:
+class Blob {
 
-  Blob()
-  {
+public:
+  Blob() {
     memset(bytes, 0, sizeof(bytes));
   }
 
-  Blob ( int x )
-  {
+  Blob(uint64_t x) {
     set(&x, sizeof(x));
   }
 
-  Blob ( unsigned long x )
-  {
-    set(&x, sizeof(x));
+  uint8_t & operator [] (int i) {
+    return bytes[i];
   }
 
-  Blob ( unsigned long long x )
-  {
-    set(&x, sizeof(x));
+  const uint8_t & operator [](int i) const {
+    return bytes[i];
   }
 
-  Blob ( uint64_t a, uint64_t b )
-  {
-    uint64_t t[2] = {a,b};
-    set(&t, sizeof(t));
-  }
-
-  void set ( const void * blob, size_t len )
-  {
-    len = std::min(len, sizeof(bytes));
-    memcpy(bytes, blob, len);
-    memset(&bytes[len], 0, sizeof(bytes) - len);
-  }
-
-  Blob ( const Blob & k )
-  {
-    memcpy(bytes, k.bytes, sizeof(bytes));
-  }
-
-  Blob & operator = ( const Blob & k )
-  {
+  Blob & operator = (const Blob & k) {
     memcpy(bytes, k.bytes, sizeof(bytes));
     return *this;
-  }
-
-  uint8_t & operator [] ( int i )
-  {
-    return bytes[i];
-  }
-
-  const uint8_t & operator [] ( int i ) const
-  {
-    return bytes[i];
   }
 
   //----------
   // boolean operations
 
-  bool operator < ( const Blob & k ) const
-  {
-    for(int i = sizeof(bytes) -1; i >= 0; i--)
-    {
+  bool operator < (const Blob & k) const {
+    for(int i = sizeof(bytes) -1; i >= 0; i--) {
       if(bytes[i] < k.bytes[i]) return true;
       if(bytes[i] > k.bytes[i]) return false;
     }
-
     return false;
   }
 
-  bool operator == ( const Blob & k ) const
-  {
+  bool operator == ( const Blob & k ) const {
     int r = memcmp(&bytes[0], &k.bytes[0], sizeof(bytes));
     return (r == 0) ? true : false;
   }
 
-  bool operator != ( const Blob & k ) const
-  {
+  bool operator != ( const Blob & k ) const {
     return !(*this == k);
   }
 
   //----------
   // bitwise operations
 
-  Blob operator ^ ( const Blob & k ) const
-  {
+  Blob operator ^ (const Blob & k) const {
     Blob t;
 
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
+    for(size_t i = 0; i < sizeof(bytes); i++) {
       t.bytes[i] = bytes[i] ^ k.bytes[i];
     }
 
     return t;
   }
 
-  Blob & operator ^= ( const Blob & k )
-  {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
+  Blob & operator ^= (const Blob & k) {
+    for(size_t i = 0; i < sizeof(bytes); i++) {
       bytes[i] ^= k.bytes[i];
     }
-    return *this;
-  }
-
-  int operator & ( int x )
-  {
-    return (*(int*)bytes) & x;
-  }
-  int operator | ( int x )
-  {
-    return (*(int*)bytes) | x;
-  }
-
-  Blob & operator |= ( const Blob & k )
-  {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
-      bytes[i] |= k.bytes[i];
-    }
-    return *this;
-  }
-  Blob & operator |= ( uint8_t k )
-  {
-    bytes[0] |= k;
-    return *this;
-  }
-
-  Blob & operator &= ( const Blob & k )
-  {
-    for(size_t i = 0; i < sizeof(bytes); i++)
-    {
-      bytes[i] &= k.bytes[i];
-    }
-    return *this;
-  }
-
-  Blob operator << ( int c )
-  {
-    Blob t = *this;
-
-    lshift(&t.bytes[0], sizeof(bytes), c);
-
-    return t;
-  }
-
-  Blob operator >> ( int c )
-  {
-    Blob t = *this;
-
-    rshift(&t.bytes[0], sizeof(bytes), c);
-
-    return t;
-  }
-
-  Blob & operator <<= ( int c )
-  {
-    lshift(&bytes[0], sizeof(bytes), c);
-
-    return *this;
-  }
-
-  Blob & operator >>= ( int c )
-  {
-    rshift(&bytes[0], sizeof(bytes), c);
-
     return *this;
   }
 
   //----------
 
 private:
-
   uint8_t bytes[(_bits+7)/8];
+
+  void set(const void * blob, size_t len) {
+    len = std::min(len, sizeof(bytes));
+    memcpy(bytes, blob, len);
+    memset(&bytes[len], 0, sizeof(bytes) - len);
+  }
 };
 
 //-----------------------------------------------------------------------------
