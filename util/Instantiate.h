@@ -20,7 +20,7 @@
 
 // When this list gets extended, add more ",void*" entries to the
 // C++11 version of INSTANTIATE() below.
-#define HASHTYPELIST uint32_t, uint64_t, Blob<128>, Blob<160>, Blob<224>, Blob<256>
+#define HASHTYPELIST Blob<32>, Blob<64>, Blob<128>, Blob<160>, Blob<224>, Blob<256>
 
 #if defined(__cplusplus) && (__cplusplus >= 201402L)
 // C++14 allows auto variables to determine function return types

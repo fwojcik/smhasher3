@@ -598,9 +598,9 @@ static bool testHash(const char * name) {
   // If you extend these statements by adding a new bitcount/type, you
   // need to adjust HASHTYPELIST in util/Instantiate.h also.
   if(hInfo->bits == 32)
-      return test<uint32_t>( hInfo );
+      return test<Blob<32>>( hInfo );
   if(hInfo->bits == 64)
-      return test<uint64_t>( hInfo );
+      return test<Blob<64>>( hInfo );
   if(hInfo->bits == 128)
       return test<Blob<128>>( hInfo );
   if(hInfo->bits == 160)
