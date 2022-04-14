@@ -233,8 +233,7 @@ bool TextKeyTest(const HashInfo * hinfo, const bool verbose) {
     std::vector<std::string> words = HashMapInit(verbose);
     result &= WordsStringImpl<hashtype>(hash, seed, words, verbose );
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

@@ -331,8 +331,7 @@ bool PopcountTest(const HashInfo * hinfo, const bool extra) {
         result &= PopcountTestImpl(hinfo, 16, step);
     }
 
-    if(!result) printf("\n*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

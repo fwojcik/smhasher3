@@ -202,8 +202,7 @@ bool BicTest(const HashInfo * hinfo, const bool verbose) {
 
     recordTestResult(result, "BIC", (const char *)NULL);
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("\n%s\n", result ? "" : g_failstr);
 
     return result;
 }

@@ -93,14 +93,13 @@ static bool DiffDistTest2(HashFn hash, const seed_t seed, bool drawDiagram) {
     }
 
     bool thisresult = TestHashList<hashtype>(hashes,drawDiagram,true,true);
+    printf("\n");
 
     addVCodeResult(thisresult);
 
     recordTestResult(thisresult, "DiffDist", keybit);
 
     result &= thisresult;
-
-    printf("\n");
   }
 
   return result;
@@ -119,8 +118,7 @@ bool DiffDistTest(const HashInfo * hinfo, const bool verbose) {
 
     result &= DiffDistTest2<uint64_t,hashtype>(hash, seed, verbose);
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

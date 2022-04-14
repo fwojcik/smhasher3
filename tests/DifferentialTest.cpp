@@ -261,8 +261,7 @@ bool DiffTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     result &= DiffTestImpl< Blob<128>, hashtype >(hash,seed,4,reps,dumpCollisions);
     result &= DiffTestImpl< Blob<256>, hashtype >(hash,seed,3,reps,dumpCollisions);
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

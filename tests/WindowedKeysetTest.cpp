@@ -142,8 +142,7 @@ bool WindowedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
     result &= WindowedKeyImpl< Blob<keybits>, hashtype >(hash, seed,
             windowbits, testCollision, testDistribution, verbose);
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("\n%s\n", result ? "" : g_failstr);
 
     return result;
 }

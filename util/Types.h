@@ -74,6 +74,9 @@ extern seed_t g_seed;
 extern HashInfo::endianness g_hashEndian;
 
 //-----------------------------------------------------------------------------
+extern const char * g_failstr;
+
+//-----------------------------------------------------------------------------
 template < int _bits >
 class Blob {
 

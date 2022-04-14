@@ -190,8 +190,7 @@ bool SparseKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra)
     }
 
  END_Sparse:
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

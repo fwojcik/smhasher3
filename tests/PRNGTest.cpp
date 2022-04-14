@@ -107,8 +107,7 @@ bool PRNGTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
 
     result &= TestHashList(hashes, verbose, testCollision, testDistribution);
 
-    if(!result) printf("\n*********FAIL*********\n");
-    printf("\n");
+    printf("\n%s\n", result ? "" : g_failstr);
 
     recordTestResult(result, "Prng", (const char *)NULL);
 

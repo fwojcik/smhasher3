@@ -288,8 +288,7 @@ bool HashMapTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
     result &= HashMapImpl(hash,hinfo->bits,words,seed,trials,verbose);
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("\n%s\n", result ? "" : g_failstr);
 
     return result;
 }

@@ -153,6 +153,7 @@ static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool dr
   }
 
   bool result = TestHashList(hashes,drawDiagram);
+  printf("\n");
 
   recordTestResult(result, "Seed", "Sparse");
 
@@ -177,8 +178,7 @@ bool SeedTest(const HashInfo * hinfo, const bool verbose) {
       result &= SparseSeedTestImpl<hashtype,true>( hinfo, 5, verbose );
     }
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

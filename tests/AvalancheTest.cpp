@@ -341,8 +341,7 @@ bool AvalancheTest(const HashInfo * hinfo, const bool verbose, const bool extra)
         result &= AvalancheImpl<hashtype>(hash,seed,testBits,300000,verbose,drawdots);
     }
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("\n%s\n", result ? "" : g_failstr);
 
     return result;
 }

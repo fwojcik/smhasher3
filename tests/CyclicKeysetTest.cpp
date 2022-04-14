@@ -142,8 +142,7 @@ bool CyclicKeyTest(const HashInfo * hinfo, const bool verbose) {
     result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+4,8,reps,verbose);
     result &= CyclicKeyImpl<hashtype>(hash,seed,sizeof(hashtype)+8,8,reps,verbose);
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

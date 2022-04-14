@@ -250,15 +250,14 @@ bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
                 &(test.blocks[0]), test.nrBlocks, test.szBlock, test.desc,
                 true, true, verbose);
 
-        if(!curresult) printf("*********FAIL*********\n");
-        printf("\n");
-
         recordTestResult(curresult, "Permutation", test.desc);
 
         addVCodeResult(curresult);
 
         result &= curresult;
     }
+
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

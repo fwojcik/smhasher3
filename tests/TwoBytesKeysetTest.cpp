@@ -156,8 +156,7 @@ bool TwoBytesKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
         result &= TwoBytesTest2<hashtype>(hash, seed, len, verbose);
     }
 
-    if(!result) printf("*********FAIL*********\n");
-    printf("\n");
+    printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }

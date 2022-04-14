@@ -386,8 +386,7 @@ bool BadSeedsTest(const HashInfo * hinfo, bool find_new_seeds) {
 
     recordTestResult(result, "BadSeeds", (const char *)NULL);
 
-    if(!result) printf("\n*********FAIL*********\n");
-    printf("\n");
+    printf("\n%s\n", result ? "" : g_failstr);
 
     return result;
 }
