@@ -81,9 +81,9 @@ static void CombinationKeygenRecurse(uint8_t * key, int len, int maxlen,
 
 template< typename hashtype >
 static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen,
-        const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
+        const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz, const char * testdesc,
         bool testColl, bool testDist, bool drawDiagram) {
-  printf("Keyset 'Combination' - up to %d blocks from a set of %d - ",maxlen,blockcount);
+  printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - ",testdesc,maxlen,blockcount);
 
   //----------
 
@@ -115,7 +115,7 @@ const struct {
     const std::vector<uint8_t> blocks;
 } keytests[] = {
     // This one breaks lookup3, surprisingly
-    { "  4-bytes [low bits]", 7, 8, 4,
+    { "4-bytes [3 low bits]", 7, 8, 4,
       { 0, 0, 0, 0,
         1, 0, 0, 0,
         2, 0, 0, 0,
@@ -124,7 +124,7 @@ const struct {
         5, 0, 0, 0,
         6, 0, 0, 0,
         7, 0, 0, 0 } },
-    { "  4-bytes [high bits]", 7, 8, 4,
+    { "4-bytes [3 high bits]", 7, 8, 4,
       { 0, 0, 0,   0,
         0, 0, 0,  32,
         0, 0, 0,  64,
@@ -133,7 +133,7 @@ const struct {
         0, 0, 0, 160,
         0, 0, 0, 192,
         0, 0, 0, 224 } },
-    { "  4-bytes [high+low bits]", 6, 15, 4,
+    { "4-bytes [3 high+low bits]", 6, 15, 4,
       { 0, 0, 0,   0,
         1, 0, 0,   0,
         2, 0, 0,   0,
@@ -149,35 +149,35 @@ const struct {
         0, 0, 0, 160,
         0, 0, 0, 192,
         0, 0, 0, 224 } },
-    { "  4-bytes [0, low bit]",    0, 2, 4,
+    { "4-bytes [0, low bit]",    0, 2, 4,
       { 0, 0, 0, 0,
         1, 0, 0, 0   } },
-    { "  4-bytes [0, high bit]", 0, 2, 4,
+    { "4-bytes [0, high bit]", 0, 2, 4,
       { 0, 0, 0,   0,
         0, 0, 0, 128 } },
-    { "  8-bytes [0, low bit]",    0, 2, 8,
+    { "8-bytes [0, low bit]",    0, 2, 8,
       { 0, 0, 0, 0, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0, } },
-    { "  8-bytes [0, high bit]", 0, 2, 8,
+    { "8-bytes [0, high bit]", 0, 2, 8,
       { 0, 0, 0, 0, 0, 0, 0,   0,
         0, 0, 0, 0, 0, 0, 0, 128, } },
-    { " 16-bytes [0, low bit]",    0, 2, 16,
+    { "16-bytes [0, low bit]",    0, 2, 16,
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } },
-    { " 16-bytes [0, high bit]", 0, 2, 16,
+    { "16-bytes [0, high bit]", 0, 2, 16,
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, } },
-    { " 32-bytes [0, low bit]",    0, 2, 32,
+    { "32-bytes [0, low bit]",    0, 2, 32,
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } },
-    { " 32-bytes [0, high bit]", 0, 2, 32,
+    { "32-bytes [0, high bit]", 0, 2, 32,
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, } },
-    { " 64-bytes [0, low bit]",    0, 2, 64,
+    { "64-bytes [0, low bit]",    0, 2, 64,
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -186,7 +186,7 @@ const struct {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } },
-    { " 64-bytes [0, high bit]", 0, 2, 64,
+    { "64-bytes [0, high bit]", 0, 2, 64,
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
@@ -242,14 +242,12 @@ bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
     const seed_t seed = hinfo->Seed(g_seed);
 
     for (auto test: keytests) {
-        printf("Combination %s Tests:\n", test.desc);
-
         bool curresult = true;
         int maxlen = test.maxlen > 0 ? test.maxlen : default_maxlen;
 
         assert(test.blocks.size() == test.nrBlocks * test.szBlock);
         curresult &= CombinationKeyTest<hashtype>(hash, seed, maxlen,
-                &(test.blocks[0]), test.nrBlocks, test.szBlock,
+                &(test.blocks[0]), test.nrBlocks, test.szBlock, test.desc,
                 true, true, verbose);
 
         if(!curresult) printf("*********FAIL*********\n");
