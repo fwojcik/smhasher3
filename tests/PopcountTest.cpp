@@ -119,24 +119,34 @@ static void PopcountThread(const HashInfo * hinfo, const seed_t seed, const int 
   }
 }
 
-static double PopcountResults ( long double srefh, long double srefl,
+static bool PopcountResults ( long double srefh, long double srefl,
         long double b1h, long double b1l,
         long double b0h, long double b0l )
 {
-  double worse;
+  double worst;
   {
       double chi2 = (b1h-srefh) * (b1h-srefh) / (b1l+srefl);
       printf("From counting 1s : %9.2Lf, %9.2Lf  -  moment chisq %10.4f\n",
               b1h, b1l, chi2);
-      worse = chi2;
+      worst = chi2;
   }
   {
       double chi2 = (b0h-srefh) * (b0h-srefh) / (b0l+srefl);
       printf("From counting 0s : %9.2Lf, %9.2Lf  -  moment chisq %10.4f\n",
               b0h, b0l, chi2);
-      worse = std::max(worse, chi2);
+      worst = std::max(worst, chi2);
   }
-  return worse;
+
+  // note : previous threshold : 3.84145882069413
+  int const rank = (worst < 500.) + (worst < 50.) + (worst < 5.);
+  assert(0 <= rank && rank <= 3);
+
+  const char* rankstr[4] = { "FAIL !!!!", "pass", "Good", "Great" };
+  printf("Test result:  %s\n", rankstr[rank]);
+
+  addVCodeResult((uint32_t)(worst * 1000.0));
+
+  return (rank > 0);
 }
 
 static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
@@ -286,31 +296,20 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   b0h  /= n;  b0l = (b0l/n  - b0h*b0h) / n;
   db0h /= n; db0l = (db0l/n - db0h*db0h) / n;
 
-  double worstL, worstD;
+  bool result = true;
 
   printf("Ideal results    : %9.2Lf, %9.2Lf\n", srefh, srefl);
 
   printf("\nResults from literal hashes :\n");
-  worstL = PopcountResults(srefh, srefl, b1h, b1l, b0h, b0l);
+  result &= PopcountResults(srefh, srefl, b1h, b1l, b0h, b0l);
 
   printf("\nResults from derivative hashes (XOR of 2 consecutive values) :\n");
-  worstD = PopcountResults(srefh, srefl, db1h, db1l, db0h, db0l);
-
-  // note : previous threshold : 3.84145882069413
-  double worstchisq = std::max(worstL, worstD);
-  int const rank = (worstchisq < 500.) + (worstchisq < 50.) + (worstchisq < 5.);
-  assert(0 <= rank && rank <= 3);
-
-  const char* rankstr[4] = { "FAIL !!!!", "pass", "Good !", "Great !!" };
-  printf("\n  %s \n\n", rankstr[rank]);
+  result &= PopcountResults(srefh, srefl, db1h, db1l, db0h, db0l);
 
   // Similar threading problems for the outputs, so just hash in the
   // summary data.
   addVCodeOutput(&rawhash[0][0], 65 * sizeof(rawhash[0][0]));
   addVCodeOutput(&xorhash[0][0], 65 * sizeof(xorhash[0][0]));
-  addVCodeResult((uint32_t)(worstchisq * 1000.0));
-
-  bool result = (rank > 0);
 
   recordTestResult(result, "Popcount", inputSize);
 
