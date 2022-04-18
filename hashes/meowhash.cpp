@@ -21,8 +21,7 @@
  *    distribution.
  */
 /*
- * Code originally from https://github.com/cmuratori/meow_hash.  It
- * has been modified for use in SMHasher3 to use the provided
+ * This code has been modified for use in SMHasher3 to use the provided
  * framework, to be clearer to read, to be able to byteswap the input
  * words, and to have a seeding function added.
  */
@@ -346,7 +345,10 @@ void MeowHash128(const void * in, const size_t len, const seed_t seed, void * ou
 #endif
 
 //------------------------------------------------------------
-REGISTER_FAMILY(meowhash);
+REGISTER_FAMILY(meowhash,
+  $.src_url = "https://github.com/cmuratori/meow_hash",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 #if defined(NEW_HAVE_AES_X86_64) && defined(NEW_HAVE_SSE_4_1)
 

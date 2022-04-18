@@ -2596,7 +2596,10 @@ void PMPML_64(const void * in, const size_t len, const seed_t seed, void * out) 
   PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(PMP_mutilinear);
+REGISTER_FAMILY(PMP_mutilinear,
+  $.src_url = "https://github.com/lemire/StronglyUniversalStringHashing",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(PMPML_32,
   $.desc = "PMP_Multilinear 32-bit",

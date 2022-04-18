@@ -26,9 +26,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * You can contact the author at:
- *   - xxHash homepage: https://www.xxhash.com
- *   - xxHash source repository: https://github.com/Cyan4973/xxHash
+ *
+ * You can contact the author at xxHash homepage: https://www.xxhash.com.
  */
 #include "Platform.h"
 #include "Types.h"
@@ -1403,7 +1402,10 @@ void XXH3_128(const void * in, const size_t len, const seed_t seed, void * out) 
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(xxhash);
+REGISTER_FAMILY(xxhash,
+  $.src_url = "https://github.com/Cyan4973/xxHash",
+  $.src_status = HashFamilyInfo::SRC_ACTIVE
+);
 
 REGISTER_HASH(xxHash_32,
   $.desc = "xxHash, 32-bit version",

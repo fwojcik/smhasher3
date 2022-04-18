@@ -126,10 +126,13 @@ void floppsyhash(const void * in, const size_t len, const seed_t seed, void * ou
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(floppsy);
+REGISTER_FAMILY(floppsy,
+  $.src_url = "https://github.com/dosyago/floppsy",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(floppsyhash,
-  $.desc = "Floppsyhash (floating-point hash using continued Egyptian fractions)",
+  $.desc = "Floppsyhash v1.1.10 (floating-point hash using continued Egyptian fractions)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED      |
         FLAG_HASH_FLOATING_POINT  ,

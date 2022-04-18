@@ -48,7 +48,10 @@ void MurmurOAAT(const void * in, const size_t len, const seed_t seed, void * out
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(MurmurOAAT);
+REGISTER_FAMILY(MurmurOAAT,
+  $.src_url = "https://github.com/aappleby/smhasher/blob/master/src/Hashes.cpp",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(MurmurOAAT,
   $.desc = "OAAT hash based on Murmur's mix",

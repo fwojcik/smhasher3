@@ -376,7 +376,10 @@ bool ascon_xof_selftest(void) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(ascon);
+REGISTER_FAMILY(ascon,
+  $.src_url = "https://github.com/ascon/ascon-c",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(ascon_XOF_32,
   $.desc = "ascon v1.2 (XOF, 32 bits)",

@@ -3,7 +3,6 @@
  *
  * original author: Jon Maiga, 2020-08-03, jonkagstrom.com, @jonkagstrom
  * license: CC0 license
- * from: https://github.com/jonmaiga/mx3/
  */
 #include "Platform.h"
 #include "Types.h"
@@ -90,7 +89,10 @@ void mx3_v2(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(mx3);
+REGISTER_FAMILY(mx3,
+  $.src_url = "https://github.com/jonmaiga/mx3/",
+  $.src_status = HashFamilyInfo::SRC_ACTIVE
+);
 
 REGISTER_HASH(mx3,
   $.desc = "mx3 (revision 2)",

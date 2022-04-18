@@ -82,7 +82,10 @@ void lookup3(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(lookup3);
+REGISTER_FAMILY(lookup3,
+  $.src_url = "http://www.burtleburtle.net/bob/c/lookup3.c",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(lookup3_32,
   $.desc = "Bob Jenkins' lookup3 (32-bit output)",

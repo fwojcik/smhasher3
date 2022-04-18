@@ -617,7 +617,10 @@ void VHASH64(const void * in, const size_t len, const seed_t seed, void * out) {
 
 //-----------------------------------------------------------------------------
 
-REGISTER_FAMILY(vmac);
+REGISTER_FAMILY(vmac,
+  $.src_url = "https://www.fastcrypto.org/vmac/",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(VHASH_32,
   $.desc = "VHASH_32, by Ted Krovetz and Wei Dai",

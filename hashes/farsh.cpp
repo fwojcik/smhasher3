@@ -228,7 +228,10 @@ void farsh(const void * in, const size_t len, const seed_t seed, void * out) {
     farsh_n<bswap>(in, len, 0, hashcount, (uint64_t)seed, out);
 }
 
-REGISTER_FAMILY(farsh);
+REGISTER_FAMILY(farsh,
+  $.src_url = "https://github.com/Bulat-Ziganshin/FARSH",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(farsh32,
   $.desc = "FARSH 32-bit (1 hash output)",

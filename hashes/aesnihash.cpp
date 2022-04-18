@@ -39,7 +39,6 @@
 #if defined(NEW_HAVE_AES_X86_64)
 #include "lib/Intrinsics.h"
 
-// based on https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a
 template < bool bswap >
 void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out) {
     const uint8_t * in = (uint8_t *)inv;
@@ -80,7 +79,10 @@ void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out
     memcpy(out, &result, 8);
 }
 
-REGISTER_FAMILY(aesnihash);
+REGISTER_FAMILY(aesnihash,
+  $.src_url = "https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(aesnihash,
   $.desc = "majek's aesnihash",

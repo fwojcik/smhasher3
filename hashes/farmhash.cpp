@@ -1616,7 +1616,10 @@ void FarmHashCityMurmur_128(const void * in, const size_t len, const seed_t seed
     PUT_U64<bswap>(Uint128High64(h), (uint8_t *)out, 8);
 }
 
-REGISTER_FAMILY(farmhash);
+REGISTER_FAMILY(farmhash,
+  $.src_url = "https://github.com/google/farmhash",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(FarmHashNA_64,
   $.desc = "FarmHash Hash64WithSeed (NA version)",

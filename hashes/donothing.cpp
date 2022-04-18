@@ -44,7 +44,9 @@ void DoNothingOAATHash(const void * in, const size_t len, const seed_t seed, voi
     *(uint8_t *)out = (uint8_t)h;
 }
 
-REGISTER_FAMILY(donothing);
+REGISTER_FAMILY(donothing,
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(donothing32,
   $.desc = "Do-Nothing function (measure call overhead)",

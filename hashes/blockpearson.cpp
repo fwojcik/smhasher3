@@ -197,7 +197,10 @@ static void blockpearson_hash_64(const void * in, const size_t org_len, const se
   PUT_U64<!bswap>(hash1, (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(blockpearson);
+REGISTER_FAMILY(blockpearson,
+  $.src_url = "https://github.com/Logan007/pearsonB",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(blockpearson_64,
   $.desc = "Pearson-inspired block hash",

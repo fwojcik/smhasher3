@@ -118,7 +118,10 @@ void jodyhash64(const void * in, const size_t len, const seed_t seed, void * out
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(jodyhash);
+REGISTER_FAMILY(jodyhash,
+  $.src_url = "https://github.com/jbruchon/jodyhash",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(jodyhash_32,
   $.desc = "jodyhash v5, 32-bit",

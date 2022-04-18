@@ -182,7 +182,9 @@ void aesrng(const void * in, const size_t len, const seed_t seed, void * out) {
     rng_impl<(hashbits >> 3)>(out);
 }
 
-REGISTER_FAMILY(aesrng);
+REGISTER_FAMILY(aesrng,
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(aesrng32,
   $.desc = "32-bit RNG using AES in CTR mode; not a hash",

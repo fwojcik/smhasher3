@@ -90,7 +90,10 @@ void fasthash32(const void * in, const size_t len, const seed_t seed, void * out
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(fasthash);
+REGISTER_FAMILY(fasthash,
+  $.src_url = "https://github.com/ztanml/fast-hash",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(fasthash_32,
   $.desc = "fast-hash, 32-bit version",

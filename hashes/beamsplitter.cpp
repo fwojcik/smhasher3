@@ -435,7 +435,10 @@ void beamsplitter_64(const void * in, const size_t len, const seed_t seed, void 
     PUT_U64<bswap>(h[0], (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(beamsplitter);
+REGISTER_FAMILY(beamsplitter,
+  $.src_url = "https://github.com/crisdosyago/beamsplitter",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 // Yes, this has no bad seeds! See note at the top near "thread_local".
 REGISTER_HASH(beamsplitter64,

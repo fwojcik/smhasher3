@@ -82,7 +82,9 @@ void sumhash32(const void * in, const size_t len, const seed_t seed, void * out)
     memcpy(out, &h, sizeof(h));
 }
 
-REGISTER_FAMILY(badhash);
+REGISTER_FAMILY(badhash,
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(badhash,
   $.desc = "very simple XOR shift",

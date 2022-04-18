@@ -229,3 +229,28 @@ class HashInfo {
         return !!(impl_flags & FLAG_IMPL_VERY_SLOW);
     }
 };
+
+class HashFamilyInfo {
+public:
+  const char * name;
+  const char * src_url;
+  enum SrcStatus : uint32_t {
+    SRC_UNKNOWN,
+    SRC_FROZEN,     // Very unlikely to change
+    SRC_STABLEISH,  // Fairly unlikely to change
+    SRC_ACTIVE,     // Likely to change
+  } src_status;
+
+  HashFamilyInfo(const char * n) :
+    name(_fixup_name(n)),
+    src_url(NULL), src_status(SRC_UNKNOWN) { }
+
+private:
+  char * _fixup_name(const char * in) {
+    // Since dashes can't be in C/C++ identifiers, but humans want them
+    // in names, replace underscores with dashes.
+    char * out = strdup(in);
+    std::replace(&out[0], &out[strlen(out)], '_', '-');
+    return out;
+  }
+};

@@ -44,7 +44,9 @@ void x17(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(x17);
+REGISTER_FAMILY(x17,
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(x17,
   $.desc = "x17",

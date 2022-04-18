@@ -161,7 +161,9 @@ void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, void * 
     memcpy(out, &h, 4);
 }
 
-REGISTER_FAMILY(poly_mersenne);
+REGISTER_FAMILY(poly_mersenne,
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(poly_mersenne_1,
   $.desc = "Degree 1 Hashing mod 2^61-1",

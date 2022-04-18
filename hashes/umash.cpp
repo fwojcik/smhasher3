@@ -1183,7 +1183,10 @@ void UMASH_FP(const void * in, const size_t len, const seed_t seed, void * out) 
 
 #endif
 //------------------------------------------------------------
-REGISTER_FAMILY(umash);
+REGISTER_FAMILY(umash,
+  $.src_url = "https://github.com/backtrace-labs/umash",
+  $.src_status = HashFamilyInfo::SRC_ACTIVE
+);
 
 #if defined(NEW_HAVE_CLMUL_X86_64)
 

@@ -172,7 +172,10 @@ void falkhash(const void * in, const size_t olen, const seed_t seed64, void * ou
 }
 #endif
 
-REGISTER_FAMILY(falkhash);
+REGISTER_FAMILY(falkhash,
+  $.src_url = "https://github.com/gamozolabs/falkhash",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 #if defined(NEW_HAVE_AES_X86_64)
 

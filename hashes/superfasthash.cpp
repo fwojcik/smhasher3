@@ -88,7 +88,10 @@ void SFH(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(superfasthash);
+REGISTER_FAMILY(superfasthash,
+  $.src_url = "http://www.azillionmonkeys.com/qed/hash.html",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(SuperFastHash,
   $.desc = "Paul Hsieh's SuperFastHash",

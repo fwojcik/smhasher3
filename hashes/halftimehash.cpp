@@ -1287,7 +1287,10 @@ void HalftimeHash512(const void * in, const size_t len, const seed_t seed, void 
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(halftimehash);
+REGISTER_FAMILY(halftimehash,
+  $.src_url = "",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(halftimehash64,
   $.desc = "Halftime Hash (64-bit blocks)",

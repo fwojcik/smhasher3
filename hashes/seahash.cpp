@@ -137,7 +137,10 @@ void SeaHash(const void * in, const size_t len, const seed_t seed, void * out) {
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(seahash);
+REGISTER_FAMILY(seahash,
+  $.src_url = "",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(seahash,
   $.desc = "seahash",

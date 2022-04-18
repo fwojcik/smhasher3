@@ -10,8 +10,6 @@
  *
  * This is released under CC0 Public Domain Dedication. See
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
- *
- * http://mouha.be/chaskey/
  */
 #include "Platform.h"
 #include "Types.h"
@@ -258,7 +256,10 @@ static bool chaskey_selftest(void) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(chaskey);
+REGISTER_FAMILY(chaskey,
+  $.src_url = "http://mouha.be/chaskey/",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(chaskey_12_32,
   $.desc = "Chaskey PRF (12 rounds, 32 bits)",

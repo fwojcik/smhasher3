@@ -214,7 +214,10 @@ void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) 
     }
 }
 
-REGISTER_FAMILY(discohash);
+REGISTER_FAMILY(discohash,
+  $.src_url = "https://github.com/crisdosyago/discohash",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 // Yes, none of these have any bad seeds! See note at the top near "thread_local".
 REGISTER_HASH(discohash64_old,

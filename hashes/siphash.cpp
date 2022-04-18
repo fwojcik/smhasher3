@@ -34,15 +34,15 @@
 #endif
 
 //------------------------------------------------------------
-#define SIPCOMPRESS_64                      \
-	v0 += v1; v2 += v3;                     \
-	v1 = ROTL64(v1,13); v3 = ROTL64(v3,16); \
-	v1 ^= v0; v3 ^= v2;                     \
-	v0 = ROTL64(v0,32);                     \
-	v2 += v1; v0 += v3;                     \
-	v1 = ROTL64(v1,17); v3 = ROTL64(v3,21); \
-	v1 ^= v2; v3 ^= v0;                     \
-	v2 = ROTL64(v2,32)
+#define SIPCOMPRESS_64                          \
+  v0 += v1; v2 += v3;                           \
+  v1 = ROTL64(v1,13); v3 = ROTL64(v3,16);       \
+  v1 ^= v0; v3 ^= v2;                           \
+  v0 = ROTL64(v0,32);                           \
+  v2 += v1; v0 += v3;                           \
+  v1 = ROTL64(v1,17); v3 = ROTL64(v3,21);       \
+  v1 ^= v2; v3 ^= v0;                           \
+  v2 = ROTL64(v2,32)
 
 /* The 64bit 1-3 and 2-4 variants */
 template < bool variant_2_4, bool bswap >
@@ -317,13 +317,13 @@ static uint64_t tsip(const uint64_t seed, const uint8_t * m, uint64_t len) {
   v0 = k0 ^ UINT64_C(0x736f6d6570736575);
   v1 = k1 ^ UINT64_C(0x646f72616e646f6d);
 
-#define tsipcompress()                                                  \
-  do {                                                                  \
-      v0 += v1;                                                         \
-      v1 = ROTL64(v1, 13) ^ v0;                                         \
-      v0 = ROTL64(v0, 35) + v1;                                         \
-      v1 = ROTL64(v1, 17) ^ v0;                                         \
-      v0 = ROTL64(v0, 21);                                              \
+#define tsipcompress()                          \
+  do {                                          \
+    v0 += v1;                                   \
+    v1 = ROTL64(v1, 13) ^ v0;                   \
+    v0 = ROTL64(v0, 35) + v1;                   \
+    v1 = ROTL64(v1, 17) ^ v0;                   \
+    v0 = ROTL64(v0, 21);                        \
   } while (0)
 
   const uint8_t *end = m + (len & ~7);
@@ -411,7 +411,10 @@ void TinySipHash(const void * in, const size_t len, const seed_t seed, void * ou
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(siphash);
+REGISTER_FAMILY(siphash,
+  $.src_url = "https://github.com/floodyberry/siphash",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(siphash_2_4,
   $.desc = "SipHash 2-4",

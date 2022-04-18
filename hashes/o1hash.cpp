@@ -69,7 +69,10 @@ void o1hash(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(o1hash);
+REGISTER_FAMILY(o1hash,
+  $.src_url = "https://github.com/wangyi-fudan/wyhash/blob/master/old_versions/o1hash.h",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(o1hash,
   $.desc = "o(1) hash, from wyhash",

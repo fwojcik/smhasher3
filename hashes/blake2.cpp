@@ -219,7 +219,10 @@ void BLAKE2S(const void * in, const size_t len, const seed_t seed, void * out) {
   memcpy(out, buf, (outbits >= 256) ? 32 : (outbits+7)/8);
 }
 
-REGISTER_FAMILY(blake2);
+REGISTER_FAMILY(blake2,
+  $.src_url = "https://github.com/BLAKE2/BLAKE2",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(blake2b_256,
   $.desc = "BLAKE 2b, 256-bit digest",

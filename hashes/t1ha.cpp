@@ -52,8 +52,6 @@
  * lib/Mathmult.h.
  *
  * Performance and hash results should match the original code.
- *
- * Original source is at https://github.com/erthink/t1ha.
  */
 #include "Platform.h"
 #include "Types.h"
@@ -1596,7 +1594,10 @@ bool t1ha0_aes_selftest(void) {
 }
 #endif
 
-REGISTER_FAMILY(t1ha);
+REGISTER_FAMILY(t1ha,
+  $.src_url = "https://github.com/erthink/t1ha",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(t1ha0,
   $.desc = "Fast Positive Hash #0 (portable, 32-bit core)",

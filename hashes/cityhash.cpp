@@ -701,7 +701,10 @@ void CityCrc256(const void * in, const size_t len, const seed_t seed, void * out
 #endif
 
 //------------------------------------------------------------
-REGISTER_FAMILY(cityhash);
+REGISTER_FAMILY(cityhash,
+  $.src_url = "https://github.com/google/cityhash",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(cityhash_32,
   $.desc = "Google CityHash32WithSeed",

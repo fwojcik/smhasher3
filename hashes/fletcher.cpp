@@ -180,7 +180,10 @@ void fletcher64(const void * in, const size_t len, const seed_t seed, void * out
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(fletcher);
+REGISTER_FAMILY(fletcher,
+  $.src_url = "",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(fletcher2_64,
   $.desc = "fletcher2 from ZFS (one lane, best 64 bits)",

@@ -633,7 +633,10 @@ void BLAKE3(const void * in, const size_t len, const seed_t seed, void * out) {
   blake3_hasher_finalize(&hasher, (uint8_t *)out, (outbits >= 256) ? 32 : (outbits+7)/8);
 }
 
-REGISTER_FAMILY(blake3);
+REGISTER_FAMILY(blake3,
+  $.src_url = "https://github.com/BLAKE3-team/BLAKE3",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(blake3,
   $.desc = "BLAKE 3, 256-bit digest",

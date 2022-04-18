@@ -378,7 +378,10 @@ void spookyhash(const void * in, const size_t len, const seed_t seed, void * out
   }
 }
 
-REGISTER_FAMILY(spookyhash);
+REGISTER_FAMILY(spookyhash,
+  $.src_url = "https://www.burtleburtle.net/bob/hash/spooky.html",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 //{ 0x111af082, 0x26bb3cda, 0x94c4f96c, 0xec24c166 }
 REGISTER_HASH(Spookyhash_v1_32,

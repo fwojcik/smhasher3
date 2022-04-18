@@ -725,7 +725,10 @@ bool SHA1_test(void) {
   }
 }
 
-REGISTER_FAMILY(sha1);
+REGISTER_FAMILY(sha1,
+  $.src_url = "https://github.com/noloader/SHA-Intrinsics",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(sha1_32,
   $.desc = "SHA-1, bits 0-31",

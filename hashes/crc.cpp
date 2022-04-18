@@ -379,7 +379,10 @@ bool CRC32_init(void) {
     return true;
 }
 
-REGISTER_FAMILY(crc);
+REGISTER_FAMILY(crc,
+  $.src_url = "https://github.com/baruch/crcbench/blob/master/crc-mark-adler.c",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(crc_32c,
   $.desc = "CRC32-C (Castagnoli, 0x1EDC6F41 / 0x82F63B78)",

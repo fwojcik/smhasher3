@@ -22,8 +22,6 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
- * From https://github.com/avaneev/komihash/
  */
 #include "Platform.h"
 #include "Types.h"
@@ -352,7 +350,10 @@ void komihash(const void * in, const size_t len, const seed_t seed, void * out) 
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(komihash);
+REGISTER_FAMILY(komihash,
+  $.src_url = "https://github.com/avaneev/komihash/",
+  $.src_status = HashFamilyInfo::SRC_ACTIVE
+);
 
 REGISTER_HASH(komihash,
   $.desc = "komihash v4.3",

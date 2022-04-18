@@ -251,7 +251,10 @@ void pair_multiply_shift64(const void * in, const size_t len_bytes, const seed_t
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(multiply_shift);
+REGISTER_FAMILY(multiply_shift,
+  $.src_url = "https://github.com/rurban/smhasher/blob/2b5992fe015282c87c9069e3c664771b47555ff3/Hashes.cpp",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(multiply_shift_32,
   $.desc = "Dietzfelbinger Multiply-shift on strings, 32-bit blocks",

@@ -35,6 +35,7 @@
 // https://github.com/aappleby/smhasher/blob/master/src/Hashes.cpp, and
 // https://web.archive.org/web/20150218010816/http://floodyberry.com/noncryptohashzoo/Crap8.html
 // https://web.archive.org/web/20150218011152/http://floodyberry.com/noncryptohashzoo/CrapWow.html
+// https://web.archive.org/web/20150218011033/http://floodyberry.com/noncryptohashzoo/CrapWow64.html
 
 template < bool bswap >
 static uint32_t Crap8_impl(const uint8_t * key, size_t len, uint32_t seed) {
@@ -109,7 +110,6 @@ static uint32_t CrapWow_impl(const uint8_t * key, size_t len, uint32_t seed) {
 #undef cwmixa
 #undef cwfold
 
-// https://web.archive.org/web/20150218011033/http://floodyberry.com/noncryptohashzoo/CrapWow64.html
 template < bool bswap >
 static uint64_t CrapWow64_impl(const uint8_t * key, size_t len, uint64_t seed) {
 #define cwfold(a, b, lo, hi) {                  \
@@ -168,7 +168,10 @@ void CrapWow64(const void * in, const size_t len, const seed_t seed, void * out)
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(crap);
+REGISTER_FAMILY(crap,
+  $.src_url = "https://web.archive.org/web/20150218011033/http://floodyberry.com/noncryptohashzoo/",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(Crap8,
   $.desc = "Noncryptohashzoo's Crap8 hash",

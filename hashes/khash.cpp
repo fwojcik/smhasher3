@@ -1,6 +1,7 @@
 /*
  * khash
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
+ * Copyright (c) 2021 Reini Urban
  * Copyright (c) 2021 Keith-Cancel
  *
  * Permission is hereby granted, free of charge, to any person
@@ -124,7 +125,10 @@ void khash64(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(khash);
+REGISTER_FAMILY(khash,
+  $.src_url = "https://github.com/Keith-Cancel/k-hash",
+  $.src_status = HashFamilyInfo::SRC_ACTIVE
+);
 
 REGISTER_HASH(khash32,
   $.desc = "K-Hash 32 bit mixer-based hash",

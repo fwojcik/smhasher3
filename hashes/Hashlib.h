@@ -26,19 +26,25 @@ bool verifyHash(const HashInfo * hinfo, enum HashInfo::endianness endian,
 #define CONCAT_INNER(x, y) x##y
 #define CONCAT(x,y) CONCAT_INNER(x, y)
 
-#define REGISTER_FAMILY(N)                                  \
-    static const char * THIS_HASH_FAMILY = #N;              \
-    unsigned CONCAT(N,_ref)
+#define REGISTER_FAMILY(N, ...)                             \
+  static_assert(sizeof(#N) > 1,                             \
+      "REGISTER_FAMILY() needs a non-empty name");          \
+  static HashFamilyInfo THIS_HASH_FAMILY = []{              \
+    HashFamilyInfo $(#N);                                   \
+    __VA_ARGS__;                                            \
+    return $;                                               \
+  }();                                                      \
+  unsigned CONCAT(N,_ref)
 
 #define REGISTER_HASH(N, ...)                               \
-    static_assert(sizeof(#N) > 1,                           \
-            "REGISTER_HASH() needs a non-empty name");      \
-    static HashInfo CONCAT(Details,N) = []{                 \
-        HashInfo $(#N, THIS_HASH_FAMILY);                   \
-        __VA_ARGS__;                                        \
-        register_hash(&$);                                  \
-        return $;                                           \
-    }();
+  static_assert(sizeof(#N) > 1,                             \
+      "REGISTER_HASH() needs a non-empty name");            \
+  static HashInfo CONCAT(Hash_,N) = []{                     \
+    HashInfo $(#N, THIS_HASH_FAMILY.name);                  \
+    __VA_ARGS__;                                            \
+    register_hash(&$);                                      \
+    return $;                                               \
+  }();
 
 #define USE_FAMILY(N)                                       \
     extern unsigned CONCAT(N,_ref);                         \

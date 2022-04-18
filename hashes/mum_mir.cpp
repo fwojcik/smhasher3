@@ -273,8 +273,10 @@ void mir_hash(const void * in, const size_t olen, const seed_t seed, void * out)
 }
 
 //-----------------------------------------------------------------------------
-
-REGISTER_FAMILY(mum_mir);
+REGISTER_FAMILY(mum_mir,
+  $.src_url = "https://github.com/vnmakarov/mum-hash",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(mum1_exact_1,
   $.desc = "Mum-hash v1, unroll 2^1, exact mult, for any-alignment reads",

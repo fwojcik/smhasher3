@@ -440,7 +440,10 @@ void CLHashNomix(const void * in, const size_t len, const seed_t seed, void * ou
 #endif
 
 //------------------------------------------------------------
-REGISTER_FAMILY(clhash);
+REGISTER_FAMILY(clhash,
+  $.src_url = "https://github.com/lemire/clhash",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 #if defined(NEW_HAVE_CLMUL_X86_64)
 

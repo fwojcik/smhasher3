@@ -696,7 +696,10 @@ bool rmd_test(void) {
    return result;
 }
 
-REGISTER_FAMILY(rmd);
+REGISTER_FAMILY(rmd,
+  $.src_url = "",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(rmd128,
   $.desc = "RIPE-MD 128",

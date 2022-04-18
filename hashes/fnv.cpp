@@ -224,8 +224,11 @@ static void FNV_Pippip_Yurii(const void * in, const size_t len, const seed_t see
 
 #undef _PADr_KAZE
 
-
-REGISTER_FAMILY(fnv);
+// Also https://www.codeproject.com/articles/716530/fastest-hash-function-for-table-lookups-in-c
+REGISTER_FAMILY(fnv,
+  $.src_url = "http://www.sanmayce.com/Fastest_Hash/index.html",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(fibonacci32,
   $.desc = "32-bit wordwise Fibonacci hash (Knuth)",

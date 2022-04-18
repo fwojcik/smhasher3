@@ -308,7 +308,10 @@ void MD5(const void * in, const size_t len, const seed_t seed, void * out) {
     }
 }
 
-REGISTER_FAMILY(md5);
+REGISTER_FAMILY(md5,
+  $.src_url = "",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(md5_32,
   $.desc = "MD5, bits 32-63",

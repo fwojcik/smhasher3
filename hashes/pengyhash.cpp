@@ -29,7 +29,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// From https://github.com/tinypeng/pengyhash
 #include "Platform.h"
 #include "Types.h"
 #include "Hashlib.h"
@@ -70,7 +69,10 @@ void pengy(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(pengyhash);
+REGISTER_FAMILY(pengyhash,
+  $.src_url = "https://github.com/tinypeng/pengyhash",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(pengyhash,
   $.desc = "pengyhash v0.2",

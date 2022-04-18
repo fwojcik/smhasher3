@@ -24,8 +24,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *
- * based on:
- *     https://github.com/brainhub/SHA3IUF (public domain)
+ * based on public domain code from:
  *     Aug 2015. Andrey Jivsov. crypto@brainhub.org
  */
 #include "Platform.h"
@@ -211,7 +210,10 @@ void SHA3_256(const void * in, const size_t len, const seed_t seed, void * out) 
   sha3_Finalize<bswap>(&context, (hashbits+63)/64, (uint8_t *)out);
 }
 
-REGISTER_FAMILY(sha3);
+REGISTER_FAMILY(sha3,
+  $.src_url = "https://github.com/brainhub/SHA3IUF",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(sha3_256_64,
   $.desc = "SHA-3, bits 0-63",

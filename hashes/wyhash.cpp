@@ -3,7 +3,6 @@
  * This is free and unencumbered software released into the public
  * domain under The Unlicense (http://unlicense.org/).
  *
- * main repo: https://github.com/wangyi-fudan/wyhash
  * author: 王一 Wang Yi <godspeed_china@yeah.net>
  * contributors: Frank J. T. Wojcik, Reini Urban, Dietrich Epp, Joshua
  * Haberman, Tommy Ettinger, Daniel Lemire, Otmar Ertl, cocowalla,
@@ -74,15 +73,15 @@ static inline void _wymum(uint64_t *A, uint64_t *B){
       *A^=_wyrot(hl)^hh; *B^=_wyrot(lh)^ll;
     } else {
       *A=_wyrot(hl)^hh; *B=_wyrot(lh)^ll;
-   }
+    }
   } else {
-      uint64_t rlo, rhi;
-      mult64_128(rlo, rhi, *A, *B);
-      if (strict) {
-          *A^=rlo; *B^=rhi;
-      } else {
-          *A=rlo; *B=rhi;
-      }
+    uint64_t rlo, rhi;
+    mult64_128(rlo, rhi, *A, *B);
+    if (strict) {
+      *A^=rlo; *B^=rhi;
+    } else {
+      *A=rlo; *B=rhi;
+    }
   }
 }
 
@@ -223,7 +222,10 @@ bool wyhash64_selftest(void) {
 
 
 //-----------------------------------------------------------------------------
-REGISTER_FAMILY(wyhash);
+REGISTER_FAMILY(wyhash,
+  $.src_url = "https://github.com/wangyi-fudan/wyhash",
+  $.src_status = HashFamilyInfo::SRC_ACTIVE
+);
 
 REGISTER_HASH(wyhash_32,
   $.desc = "wyhash v3, 32-bit native version",

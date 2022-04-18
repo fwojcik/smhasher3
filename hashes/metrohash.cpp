@@ -286,7 +286,10 @@ void MetroHash128(const void * in, const size_t len, const seed_t seed, void * o
     PUT_U64<bswap>(v[1], (uint8_t *)out, 8);
 }
 
-REGISTER_FAMILY(metrohash);
+REGISTER_FAMILY(metrohash,
+  $.src_url = "https://github.com/jandrewrogers/MetroHash/tree/c135424b3b83f1ca2502b7960f8d5705ddcec987",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(metrohash_64,
   $.desc = "Metrohash v1 base variant, 64-bit version",

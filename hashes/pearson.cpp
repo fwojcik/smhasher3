@@ -484,7 +484,10 @@ void pearson256(const void * in, const size_t len, const seed_t seed, void * out
 #endif
 }
 
-REGISTER_FAMILY(pearson);
+REGISTER_FAMILY(pearson,
+  $.src_url = "https://github.com/Logan007/pearson",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(pearson_64,
   $.desc = "Pearson hash, 8 lanes using AES sbox",

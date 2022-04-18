@@ -296,7 +296,10 @@ void MurmurHash3_128(const void * in, const size_t len, const seed_t seed, void 
   PUT_U64<bswap>(h2, (uint8_t *)out, 8);
 }
 
-REGISTER_FAMILY(murmur3);
+REGISTER_FAMILY(murmur3,
+  $.src_url = "https://github.com/aappleby/smhasher/",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(murmur3_32,
   $.desc = "MurmurHash v3, 32-bit version",

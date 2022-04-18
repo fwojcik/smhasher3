@@ -312,7 +312,10 @@ void prvhash128s(const void * in, const size_t len, const seed_t seed, void * ou
     prvhash64s_oneshot<bswap,true>(in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
-REGISTER_FAMILY(prvhash);
+REGISTER_FAMILY(prvhash,
+  $.src_url = "https://github.com/avaneev/prvhash",
+  $.src_status = HashFamilyInfo::SRC_ACTIVE
+);
 
 REGISTER_HASH(prvhash64_64,
   $.desc = "prvhash64 64-bit output",

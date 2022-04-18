@@ -223,7 +223,10 @@ void MurmurHash2A_32(const void * in, const size_t olen, const seed_t seed, void
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(murmur2);
+REGISTER_FAMILY(murmur2,
+  $.src_url = "https://github.com/aappleby/smhasher/",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(murmur2_32,
   $.desc = "MurmurHash v2, 32-bit version",

@@ -693,7 +693,10 @@ bool SHA256_test(void) {
   }
 }
 
-REGISTER_FAMILY(sha2);
+REGISTER_FAMILY(sha2,
+  $.src_url = "https://github.com/noloader/SHA-Intrinsics",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(sha2_256_64,
   $.desc = "SHA-2, bits 0-63",

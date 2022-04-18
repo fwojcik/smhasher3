@@ -22,9 +22,6 @@
 #include "Hashlib.h"
 
 //------------------------------------------------------------
-// Based on
-// https://github.com/Perl/perl5/blob/6b0260474df579e9412f57249519747ab8bb5c2b/hv_func.h
-//
 // Old SMHasher version of these didn't include len in the initial
 // hash value, as the perl code does. The old verification codes can
 // be obtained by removing "+ (uint32_t)len" from the "hash =" lines.
@@ -140,7 +137,10 @@ void perl_jenkins_hard(const void * in, const size_t len, const seed_t seed, voi
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(perloldhashes);
+REGISTER_FAMILY(perloldhashes,
+  $.src_url = "https://github.com/Perl/perl5/blob/6b0260474df579e9412f57249519747ab8bb5c2b/hv_func.h",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(perl_djb2,
   $.desc = "djb2 OAAT hash (from old perl5 code)",

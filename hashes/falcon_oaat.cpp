@@ -29,9 +29,6 @@
 #include "Hashlib.h"
 
 //------------------------------------------------------------
-// From commit 3931fd6f723f4fb2afab6ef9a628912220e90ce7
-// in rurban's SMHasher fork
-
 static uint32_t GoodOAAT_impl(const uint8_t * str, size_t len, uint32_t seed) {
     const uint8_t * const end = str + len;
     uint32_t h1 = seed ^ 0x3b00;
@@ -90,7 +87,10 @@ void MicroOAAT(const void * in, const size_t len, const seed_t seed, void * out)
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(falcon_oaat);
+REGISTER_FAMILY(falcon_oaat,
+  $.src_url = "https://github.com/rurban/smhasher/commit/3931fd6f723f4fb2afab6ef9a628912220e90ce7",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(GoodOAAT,
   $.desc = "GoodOAAT (Small non-multiplicative OAAT by funny-falcon)",

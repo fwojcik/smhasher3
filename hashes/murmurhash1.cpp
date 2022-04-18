@@ -77,7 +77,10 @@ void MurmurHash1(const void * in, const size_t olen, const seed_t seed, void * o
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(murmur1);
+REGISTER_FAMILY(murmur1,
+  $.src_url = "https://github.com/aappleby/smhasher/",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(murmur1_32,
   $.desc = "MurmurHash v1",

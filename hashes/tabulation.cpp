@@ -314,7 +314,9 @@ void tabulation64(const void * in, const size_t len, const seed_t seed, void * o
 #endif
 
 //-----------------------------------------------------------------------------
-REGISTER_FAMILY(tabulation);
+REGISTER_FAMILY(tabulation,
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(tabulation_32,
   $.desc = "32-bit Tabulation with Multiply-Shift Mixer",

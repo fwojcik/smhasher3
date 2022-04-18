@@ -740,10 +740,13 @@ void NMhashX(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 //------------------------------------------------------------
-REGISTER_FAMILY(nmhash);
+REGISTER_FAMILY(nmhash,
+  $.src_url = "https://github.com/gzm55/hash-garage",
+  $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
 
 REGISTER_HASH(nmhash,
-  $.desc = "nmhash32",
+  $.desc = "nmhash32 v2",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
@@ -758,7 +761,7 @@ REGISTER_HASH(nmhash,
 );
 
 REGISTER_HASH(nmhashx,
-  $.desc = "nmhash32x",
+  $.desc = "nmhash32x v2",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =

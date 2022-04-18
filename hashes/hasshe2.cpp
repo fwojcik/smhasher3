@@ -28,7 +28,6 @@
  *
  * For more information, please refer to <http://unlicense.org/>
  */
-/* From http://cessu.blogspot.com/2008/11/hashing-with-sse2-revisited-or-my-hash.html */
 #include "Platform.h"
 #include "Types.h"
 #include "Hashlib.h"
@@ -254,7 +253,10 @@ void Hasshe2(const void * in, const size_t len, const seed_t seed, void * out) {
 #endif
 }
 
-REGISTER_FAMILY(hasshe2);
+REGISTER_FAMILY(hasshe2,
+  $.src_url = "http://cessu.blogspot.com/2008/11/hashing-with-sse2-revisited-or-my-hash.html",
+  $.src_status = HashFamilyInfo::SRC_FROZEN
+);
 
 REGISTER_HASH(hasshe2,
   $.desc = "hasshe2 (SSE2-oriented hash)",
