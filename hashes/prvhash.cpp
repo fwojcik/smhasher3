@@ -318,7 +318,7 @@ REGISTER_FAMILY(prvhash,
 );
 
 REGISTER_HASH(prvhash64_64,
-  $.desc = "prvhash64 64-bit output",
+  $.desc = "prvhash64 v4.3 64-bit output",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -331,7 +331,7 @@ REGISTER_HASH(prvhash64_64,
 );
 
 REGISTER_HASH(prvhash64_128,
-  $.desc = "prvhash64 128-bit output",
+  $.desc = "prvhash64 v4.3 128-bit output",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -344,7 +344,7 @@ REGISTER_HASH(prvhash64_128,
 );
             
 REGISTER_HASH(prvhash64s_64,
-  $.desc = "prvhash64 streaming mode 64-bit output",
+  $.desc = "prvhash64 v4.3 streaming mode 64-bit output",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -357,7 +357,7 @@ REGISTER_HASH(prvhash64s_64,
 );
 
 REGISTER_HASH(prvhash64s_128,
-  $.desc = "prvhash64 streaming mode 128-bit output",
+  $.desc = "prvhash64 v4.3 streaming mode 128-bit output",
   $.hash_flags =
         0,
   $.impl_flags =

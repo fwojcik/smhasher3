@@ -1,5 +1,5 @@
 /*
- * Murmur hash, version 2 variants
+ * Murmur hash, version 3 variants
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (c) 2014-2021 Reini Urban
  *
