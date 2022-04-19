@@ -471,8 +471,9 @@ static void vmac_set_key(uint8_t user_key[], vmac_ctx_t *ctx) {
     in[1] = 0;
     for (i = 0; i < sizeof(ctx->polykey)/8; i+=2) {
         aes_encryption((uint8_t *)in, (uint8_t *)out, ctx->cipher_key);
-        ctx->polykey[i  ] = GET_U64<bswap>((uint8_t *)out, 0) & mpoly;
-        ctx->polykey[i+1] = GET_U64<bswap>((uint8_t *)out, 8) & mpoly;
+        // "& mpoly" code is moved into vhash() due to new seeding
+        ctx->polykey[i  ] = GET_U64<bswap>((uint8_t *)out, 0);
+        ctx->polykey[i+1] = GET_U64<bswap>((uint8_t *)out, 8);
         ((uint8_t *)in)[15] += 1;
     }
 
@@ -534,8 +535,8 @@ static uint64_t vhash(const uint8_t * mptr, size_t mbytes, uint64_t seed, vmac_c
     const uint64_t *kptr = (uint64_t *)ctx->nhkey;
     size_t i, remaining;
     uint64_t ch, cl;
-    uint64_t pkh = ctx->polykey[0] ^ ROTR64(seed, 24);
-    uint64_t pkl = ctx->polykey[1] ^ seed;
+    uint64_t pkh = (ctx->polykey[0] ^ ROTR64(seed, 24)) & mpoly;
+    uint64_t pkl = (ctx->polykey[1] ^ seed            ) & mpoly;
 
     i = mbytes / VMAC_NHBYTES;
     remaining = mbytes % VMAC_NHBYTES;
