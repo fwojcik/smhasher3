@@ -36,6 +36,7 @@ template < bool fullhash, bool bswap >
 static void fletcher2(const uint8_t * key, size_t len, uint64_t seed, uint8_t * out) {
     const uint8_t * const endc = key + len;
     const uint8_t * const endw = key + (len & ~7);
+    // Legacy homegrown seeding for SMHasher3
     uint64_t A = seed, B = 0;
     for (; key < endw; key += 8) {
         A += GET_U64<bswap>(key, 0);
@@ -60,6 +61,7 @@ template < bool fullhash, bool bswap >
 static void fletcher4(const uint8_t * key, size_t len, uint64_t seed, uint8_t * out) {
     const uint8_t * const endc = key + len;
     const uint8_t * const endw = key + (len & ~3);
+    // Legacy homegrown seeding for SMHasher3
     uint64_t A = seed, B = 0, C = 0, D = 0;
     for (; key < endw; key += 4) {
         A += GET_U32<bswap>(key, 0);
@@ -91,6 +93,7 @@ static void fletcher4(const uint8_t * key, size_t len, uint64_t seed, uint8_t * 
 // implementations.
 template < bool bswap >
 static uint32_t fletcher32(const uint8_t * key, size_t len, uint64_t seed) {
+    // Legacy homegrown seeding for SMHasher3
 	uint32_t c0 = (uint32_t)(seed + len), c1 = (uint32_t)((seed >> 32) + len);
 
     while (len > 1) {
@@ -118,6 +121,7 @@ static uint32_t fletcher32(const uint8_t * key, size_t len, uint64_t seed) {
 
 template < bool bswap >
 static uint64_t fletcher64(const uint8_t * key, size_t len, uint64_t seed) {
+    // Legacy homegrown seeding for SMHasher3
 	uint64_t c0 = seed + len, c1 = seed + len;
 
     while (len > 3) {
@@ -244,7 +248,7 @@ REGISTER_HASH(fletcher4_256,
 );
 
 REGISTER_HASH(fletcher32,
-  $.desc = "Fletcher's checksum, 32-bit",
+  $.desc = "Fletcher's checksum, 32-bit, IV == len",
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
@@ -258,7 +262,7 @@ REGISTER_HASH(fletcher32,
 );
 
 REGISTER_HASH(fletcher64,
-  $.desc = "Fletcher's checksum, 64-bit",
+  $.desc = "Fletcher's checksum, 64-bit, IV == len",
   $.sort_order = 0,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
