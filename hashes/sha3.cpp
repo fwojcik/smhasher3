@@ -121,7 +121,7 @@ static void sha3_Init(sha3_context * ctx, unsigned bitSize) {
 static void sha3_Seed(sha3_context * ctx, uint64_t seed) {
   if (ctx->capacityWords >= 2) {
     ctx->s[SHA3_KECCAK_SPONGE_WORDS - 2] ^= seed;
-    ctx->s[SHA3_KECCAK_SPONGE_WORDS - 1] ^= (seed + 1) * UINT64_C(0x9E3779B97F4A7C15);
+    ctx->s[SHA3_KECCAK_SPONGE_WORDS - 1] ^= seed * UINT64_C(0x9E3779B97F4A7C15);
   } else {
     ctx->s[SHA3_KECCAK_SPONGE_WORDS - 1] ^= seed;
   }
@@ -228,8 +228,8 @@ REGISTER_HASH(sha3_256_64,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 64,
-  $.verification_LE = 0x00FF5701,
-  $.verification_BE = 0x7FC2F919,
+  $.verification_LE = 0x76804BEC,
+  $.verification_BE = 0xC7D2D825,
   $.hashfn_native = SHA3_256<64,false>,
   $.hashfn_bswap = SHA3_256<64,true>
 );
@@ -247,8 +247,8 @@ REGISTER_HASH(sha3_256,
         FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW,
   $.bits = 256,
-  $.verification_LE = 0x4EEA1FBE,
-  $.verification_BE = 0x27C883B2,
+  $.verification_LE = 0x79AEFB60,
+  $.verification_BE = 0x074CB90C,
   $.hashfn_native = SHA3_256<256,false>,
   $.hashfn_bswap = SHA3_256<256,true>
 );
