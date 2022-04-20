@@ -103,19 +103,22 @@ static void combine_and_mix(uint64_t state[4], const uint64_t input[2]) {
        between 45% to 55%. */
 }
 
-template < bool bswap >
+template < bool orig, bool bswap >
 static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t seed, void *output_state) {
     uint64_t state[4];
     uint64_t input[2];
-    uint64_t seed2 = seed + (uint64_t)n_bytes;
+    uint64_t seed2 = orig ? seed : (seed + (uint64_t)n_bytes);
 
     /* Initialize internal state to something random.  (Alternatively,
        if hashing a chain of data, read in the previous hash result from
-       somewhere.) */
+       somewhere.)
+
+       Seeding is homegrown for SMHasher3
+    */
     state[0] = coeffs[ 8] + (((uint64_t)coeffs[ 9]) << 32);
     state[1] = coeffs[10] + (((uint64_t)coeffs[11]) << 32);
     state[0] ^= seed;
-    state[1] ^= (seed + (uint64_t)n_bytes);
+    state[1] ^= seed2;
     state[2] = state[0];
     state[3] = state[1];
 
@@ -195,17 +198,20 @@ static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t
      changed all bits in the internal state with a probability               \
      between 45% to 55%. */
 
-template < bool bswap >
+template < bool orig, bool bswap >
 static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t seed, void *output_state) {
   __m128i coeffs_1, coeffs_2, rnd_data, seed_xmm, input, state_1, state_2;
   coeffs_1 = _mm_load_si128((__m128i *) coeffs);
   coeffs_2 = _mm_load_si128((__m128i *) (coeffs + 4));
   rnd_data = _mm_load_si128((__m128i *) (coeffs + 8));
-  seed_xmm = _mm_set_epi64x(seed + n_bytes, seed);
+  seed_xmm = _mm_set_epi64x(orig ? seed : (seed + n_bytes), seed);
 
   /* Initialize internal state to something random.  (Alternatively,
      if hashing a chain of data, read in the previous hash result from
-     somewhere.) */
+     somewhere.)
+
+     Seeding is homegrown for SMHasher3
+  */
   state_1 = state_2 = _mm_xor_si128(rnd_data, seed_xmm);
 
   while (n_bytes >= 16) {
@@ -244,12 +250,12 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
 }
 #endif
 
-template < bool bswap >
+template < bool orig, bool bswap >
 void Hasshe2(const void * in, const size_t len, const seed_t seed, void * out) {
 #if defined(NEW_HAVE_SSE_2)
-    hasshe2_sse2<bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
+    hasshe2_sse2<orig,bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
 #else
-    hasshe2_portable<bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
+    hasshe2_portable<orig,bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
 #endif
 }
 
@@ -267,8 +273,23 @@ REGISTER_HASH(hasshe2,
         FLAG_IMPL_MULTIPLY               |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,
+  $.verification_LE = 0x68CBC5F1,
+  $.verification_BE = 0x562ECEB4,
+  $.hashfn_native = Hasshe2<true,false>,
+  $.hashfn_bswap = Hasshe2<true,true>
+);
+
+REGISTER_HASH(hasshe2_tweaked,
+  $.desc = "hasshe2 (SSE2-oriented hash, tweaked to add len into IV)",
+  $.hash_flags =
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_64BIT                  |
+        FLAG_IMPL_MULTIPLY               |
+        FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+  $.bits = 256,
   $.verification_LE = 0xBAF6B1BF,
   $.verification_BE = 0x35A87D75,
-  $.hashfn_native = Hasshe2<false>,
-  $.hashfn_bswap = Hasshe2<true>
+  $.hashfn_native = Hasshe2<false,false>,
+  $.hashfn_bswap = Hasshe2<false,true>
 );
