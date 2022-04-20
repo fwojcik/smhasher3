@@ -115,8 +115,9 @@ NEVER_INLINE static void blake2_Init(T * ctx, unsigned hashbits, uint64_t seed) 
           GET_U32<true> ((const uint8_t *)(&params), 0);
   }
 
-  // Legacy BLAKE2 seeding
+  // Legacy homegrown BLAKE2 seeding for SMHasher3
   ctx->h[0] ^= seedlo;
+  ctx->h[1] ^= seedhi;
 }
 
 template < typename T >
