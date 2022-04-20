@@ -1238,11 +1238,27 @@ alignas(64) static thread_local uint64_t
     halftime_hash_random[8 * ((halftime_hash::kEntropyBytesNeeded / 64) + 1)];
 
 // romu random number generator for seeding the HalftimeHash entropy
-uintptr_t halftime_hash_seed_init(const seed_t seed) {
-    uint64_t wState = UINT64_C(0xcc70c4c1798e4a6f) ^ (uint64_t)seed;
-    uint64_t xState = UINT64_C(0xecfc1357d65941ae);
-    uint64_t yState = UINT64_C(0xbe1927f97b8c43f1);
-    uint64_t zState = UINT64_C(0xf4d4beb14ae042bb);
+static uint64_t splitmix(uint64_t & state) {
+  uint64_t z = (state += UINT64_C(0x9e3779b97f4a7c15));
+  z = (z ^ (z >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+  z = (z ^ (z >> 27)) * UINT64_C(0x94d049bb133111eb);
+  return z ^ (z >> 31);
+}
+
+static uintptr_t halftime_hash_seed_init(const seed_t seed) {
+    uint64_t mState = seed;
+    uint64_t wState = splitmix(mState);
+    uint64_t xState = splitmix(mState);
+    uint64_t yState = splitmix(mState);
+    uint64_t zState = splitmix(mState);
+
+    for (unsigned i = 0; i < 10; i++) {
+        const uint64_t wp = wState, xp = xState, yp = yState, zp = zState;
+        wState = zp * UINT64_C(15241094284759029579);
+        xState = zp + ROTL64(wp, 52);
+        yState = yp - xp;
+        zState = ROTL64(yp + wp, 19);
+    }
 
     unsigned cnt = sizeof(halftime_hash_random) / sizeof(halftime_hash_random[0]);
     for (unsigned i = 0; i < cnt; ++i) {
@@ -1301,8 +1317,8 @@ REGISTER_HASH(halftimehash64,
         FLAG_IMPL_SLOW         |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
-  $.verification_LE = 0xAF539848,
-  $.verification_BE = 0x4A1F9A08,
+  $.verification_LE = 0xED42E424,
+  $.verification_BE = 0x7EE5ED6F,
   $.hashfn_native = HalftimeHash64<false>,
   $.hashfn_bswap = HalftimeHash64<true>,
   $.seedfn = halftime_hash_seed_init
@@ -1317,8 +1333,8 @@ REGISTER_HASH(halftimehash128,
         FLAG_IMPL_SLOW         |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
-  $.verification_LE = 0x77595FFF,
-  $.verification_BE = 0xB3C5666D,
+  $.verification_LE = 0x952DF141,
+  $.verification_BE = 0xD79E990B,
   $.hashfn_native = HalftimeHash128<false>,
   $.hashfn_bswap = HalftimeHash128<true>,
   $.seedfn = halftime_hash_seed_init
@@ -1333,8 +1349,8 @@ REGISTER_HASH(halftimehash256,
         FLAG_IMPL_SLOW         |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
-  $.verification_LE = 0x86252F3C,
-  $.verification_BE = 0xC40601B9,
+  $.verification_LE = 0x912330EA,
+  $.verification_BE = 0x23C24991,
   $.hashfn_native = HalftimeHash256<false>,
   $.hashfn_bswap = HalftimeHash256<true>,
   $.seedfn = halftime_hash_seed_init
@@ -1349,8 +1365,8 @@ REGISTER_HASH(halftimehash512,
         FLAG_IMPL_SLOW         |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
-  $.verification_LE = 0xAD2A4D39,
-  $.verification_BE = 0x3F70720D,
+  $.verification_LE = 0x1E0F99EA,
+  $.verification_BE = 0xA3A0AE42,
   $.hashfn_native = HalftimeHash512<false>,
   $.hashfn_bswap = HalftimeHash512<true>,
   $.seedfn = halftime_hash_seed_init
