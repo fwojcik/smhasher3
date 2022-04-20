@@ -47,6 +47,7 @@
 */
 
 //------------------------------------------------------------
+// Includes homegrown seeding for SMHasher3
 template < bool bswap >
 void o1hash(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * p = (const uint8_t *)in;

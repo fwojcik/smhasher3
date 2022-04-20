@@ -266,8 +266,8 @@ static meow_u128 MeowHash(const void * Seed128Init, size_t Len, const void * Sou
     // to confuse people about hwo to use them or what security
     // implications they had.
     //
-    // fwojcik: The (presumed) place of the 64-bit nonce is used for
-    // the 64-bit seed value for SMHasher3.
+    // fwojcik: Homegrown seeding. The (presumed) place of the 64-bit
+    // nonce is used for the 64-bit seed value for SMHasher3.
     pxor_clear(xmm12, xmm12);
     pxor_clear(xmm13, xmm13);
     pxor_clear(xmm14, xmm14);

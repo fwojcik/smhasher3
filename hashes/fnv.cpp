@@ -55,6 +55,8 @@ static void fibonacci(const void * in, const size_t len, const seed_t seed, void
     memcpy(out, &h, sizeof(h));
 }
 
+// All seeding below this is homegrown for SMHasher3
+
 template < typename hashT, bool bswap >
 static void FNV1a(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * data = (const uint8_t *)in;

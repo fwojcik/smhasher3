@@ -575,7 +575,7 @@ void CityHashCrc256(const uint8_t *s, size_t len, uint64_t *result) {
 }
 
 // Requires len < 240.
-// Unofficial
+// Unofficial homegrown seeding for SMHasher3
 template < bool bswap >
 static void CityHashCrc256ShortWithSeed(const uint8_t *s, size_t len, uint64_t seed, uint64_t *result) {
   uint8_t buf[240];
@@ -709,7 +709,6 @@ REGISTER_FAMILY(cityhash,
 REGISTER_HASH(cityhash_32,
   $.desc = "Google CityHash32WithSeed",
   $.hash_flags =
-        FLAG_HASH_NO_SEED         |
         FLAG_HASH_SMALL_SEED      ,
   $.impl_flags =
         FLAG_IMPL_64BIT           |
@@ -888,6 +887,7 @@ REGISTER_HASH(cityhashcrc_seed3_128,
 REGISTER_HASH(cityhashcrc_256,
   $.desc = "Google CityHashCrc256 (with modified seeding)",
   $.hash_flags =
+        FLAG_HASH_NO_SEED         |
         FLAG_HASH_CRC_BASED       ,
   $.impl_flags =
         FLAG_IMPL_64BIT           |
