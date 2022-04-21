@@ -94,7 +94,7 @@ NEVER_INLINE static int64_t timehash(HashFn hash, const seed_t seed,
 // Specialized procedure for small lengths. Serialize invocations of the hash
 // function. Make sure they would not be computed in parallel on an out-of-order CPU.
 
-NEVER_INLINE static int64_t timehash_small(HashFn hash, const seed_t seed,
+NEVER_INLINE static double timehash_small(HashFn hash, const seed_t seed,
         uint8_t * const key, int len) {
   const int NUM_TRIALS = 200;
   volatile unsigned long long int begin, end;
@@ -125,7 +125,7 @@ NEVER_INLINE static int64_t timehash_small(HashFn hash, const seed_t seed,
 
   end = timer_end();
 
-  return (int64_t)((end - begin) / (double)NUM_TRIALS);
+  return ((double)(end - begin) / (double)NUM_TRIALS);
 }
 
 //-----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
 
     double t;
     if (testsize < 100) {
-        t = (double)timehash_small(hash,seed,block,testsize);
+        t = timehash_small(hash,seed,block,testsize);
     } else {
         t = (double)timehash(hash,seed,block,testsize);
     }
