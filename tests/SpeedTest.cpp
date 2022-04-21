@@ -91,36 +91,44 @@ NEVER_INLINE static int64_t timehash(HashFn hash, const seed_t seed,
 }
 
 //-----------------------------------------------------------------------------
-// Specialized procedure for small lengths. Serialize invocations of the hash
-// function. Make sure they would not be computed in parallel on an out-of-order CPU.
-
+// Specialized procedure for small lengths.
+//
+// This alters the hash key every test, based on the previous hash
+// output, in order to:
+//   *) make the compiler serialize invocations of the hash function,
+//   *) ensure hash invocations would not be computed in parallel //
+//      on an out-of-order CPU, and
+//   *) try to excercize as many data-dependent paths in the hash code
+//      as possible.
+//
+// The odd incr value and for() loop are to ensure that the LSB of the
+// key is altered every cycle on both big- and little-endian machines,
+// without needing an isLE()/isBE() call inside the loop. Altering
+// just one byte of the key would do this and would obviate the
+// undesirable behavior warned about below, but modifying a single
+// byte instead of a whole word is *surprisingly* expensive, even on
+// x64 platforms, which leads to unfairly inflated cycle counts.
+//
+// WARNING: This assumes that at least 4 bytes can be written to key!
 NEVER_INLINE static double timehash_small(HashFn hash, const seed_t seed,
         uint8_t * const key, int len) {
   const int NUM_TRIALS = 200;
+  const uint32_t incr = 0x1000001;
+  uint32_t maxi = incr * NUM_TRIALS;
   volatile unsigned long long int begin, end;
   uint32_t hash_temp[16] = {0};
 
   begin = timer_start();
 
-  for(int i = 0; i < NUM_TRIALS; i++) {
+  for (uint32_t i = 0; i < maxi; i += incr) {
       hash(key, len, seed, hash_temp);
-      // XXX Add more dependency between invocations of hash-function
-      // to prevent parallel evaluation of them. However this way the
-      // invocations still would not be fully serialized. Another
-      // option is to use lfence instruction (load-from-memory
-      // serialization instruction) or mfence (load-from-memory AND
-      // store-to-memory serialization instruction):
-      //   __asm volatile ("lfence");
-      // It's hard to say which one is the most realistic and sensible
-      // approach.
-
-      // XXX Can't do this particular thing anymore, since hashes
-      // might have expensive seeding, and we don't want to/can't call
-      // hInfo->Seed() every speedtest loop!
-      //seed += hash_temp[0];
-
-      // This seems to be good enough, maybe?
-      key[0] = (i & 0xFF) ^ hash_temp[0];
+      // It's possible that even with this loop data dependency that
+      // hash invocations still would not be fully serialized. Another
+      // option is to add lfence instruction to enforce serialization
+      // at the CPU level. It's hard to say which one is the most
+      // realistic and sensible approach.
+      uint32_t j = i ^ hash_temp[0];
+      memcpy(key, &j, 4);
   }
 
   end = timer_end();
