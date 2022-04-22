@@ -292,17 +292,6 @@ static const uint64_t T[1024] = {
 static const int STATE = 32;
 static const uint64_t MASK = UINT64_C(0xffffffffffffff);
 
-// Since buf is used read-write for each hash invocation, it needs to
-// be thread local, or else threaded tests will overwrite each others'
-// state, leading to bad hashes. This appears to be the reason that
-// this hash had previously been reported to have so many bad seeds!
-//
-// There are other ways to fix this, like making disco_buf be local to
-// the main hash function and passing the pointer around everywhere.
-static thread_local uint8_t buf[STATE] = {0};
-static thread_local uint8_t * state8 = buf;
-static thread_local uint64_t * state = (uint64_t *)buf;
-
 //--------
 // State mix function
 static FORCE_INLINE uint8_t beam_ROTR8(uint8_t v, int n) {
@@ -320,7 +309,7 @@ static FORCE_INLINE uint64_t beam_ROTR64(uint64_t v, int n) {
 }
 
 
-static FORCE_INLINE void mix(const uint32_t A) {
+static FORCE_INLINE void mix(uint64_t * state, const uint32_t A) {
       const uint32_t B = A+1;
       const uint32_t iv = state[A] & 1023;
       const uint64_t M = T[iv];
@@ -330,48 +319,49 @@ static FORCE_INLINE void mix(const uint32_t A) {
       state[B] ^= state[A];
       state[A] ^= state[B];
 
-      state[B] = beam_ROTR64(state[B], state[A]&63);
+      state[B] = beam_ROTR64(state[B], state[A]);
 }
 
 //---------
 // Hash round function
 template < bool bswap >
-static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
+static FORCE_INLINE void round(uint64_t * const state, const uint8_t * m8, uint32_t len) {
+    uint8_t * const state8 = (uint8_t *)state;
     uint32_t index = 0;
     uint32_t sindex = 0;
 
     for (uint32_t Len = len >> 3; index < Len; index++) {
         uint64_t blk = GET_U64<bswap>(m8, index*8);
         state[sindex] += beam_ROTR64(blk + index + 1,
-                (state[sindex] + index + 1)&63);
+                           state[sindex] + index + 1);
         if (sindex == 1) {
-            mix(0);
+            mix(state, 0);
         } else if (sindex == 3) {
-            mix(2);
+            mix(state, 2);
             sindex = -1;
         }
         sindex++;
     }
 
-    mix(0);
+    mix(state, 0);
 
     index <<= 3;
     sindex = index&31;
     for( ; index < len; index++) {
         const uint32_t ssindex = bswap ? (sindex^7) : sindex;
         state8[ssindex] += beam_ROTR8(m8[index] + index + 1,
-                    (state8[ssindex] + index + 1)&7);
+                                state8[ssindex] + index + 1);
         // state+[0,1,2]
-        mix(index%3);
+        mix(state, index%3);
         if (sindex >= 31) {
             sindex = -1;
         }
         sindex++;
     }
 
-    mix(0);
-    mix(1);
-    mix(2);
+    mix(state, 0);
+    mix(state, 1);
+    mix(state, 2);
 }
 
 //---------
@@ -379,25 +369,23 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
 template < bool bswap >
 void beamsplitter_64(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * key8Arr = (uint8_t *)in;
-
-    uint8_t seedbuf[8] = {0};
-    uint8_t * seed8Arr = (uint8_t *)seedbuf;
-    uint32_t * seed32Arr = (uint32_t *)seedbuf;
+    uint32_t seedbuf[2] = {0};
 
     if (len >= UINT32_C(0xffffffff)) { return; }
 
     // the cali number from the Matrix (1999)
     uint32_t seed32 = seed;
     if (!bswap) {
-        seed32Arr[0] = 0xc5550690;
-        seed32Arr[0] -= seed32;
-        seed32Arr[1] = ~(1 - seed32);
+        seedbuf[0] = 0xc5550690;
+        seedbuf[0] -= seed32;
+        seedbuf[1] = ~(1 - seed32);
     } else {
-        seed32Arr[1] = 0xc5550690;
-        seed32Arr[1] -= seed32;
-        seed32Arr[0] = ~(1 - seed32);
+        seedbuf[1] = 0xc5550690;
+        seedbuf[1] -= seed32;
+        seedbuf[0] = ~(1 - seed32);
     }
 
+    uint64_t state[STATE/8];
     // nothing up my sleeve
     state[0] = UINT64_C(0x123456789abcdef0);
     state[1] = UINT64_C(0x0fedcba987654321);
@@ -406,14 +394,14 @@ void beamsplitter_64(const void * in, const size_t len, const seed_t seed, void 
 
     // The mixing in of the seed array does not need bswap set, since
     // the if() above will order the bytes correctly for that variable.
-    round<bswap>(key8Arr, (uint32_t)len);
-    round<bswap>(key8Arr, (uint32_t)len);
-    round<bswap>(key8Arr, (uint32_t)len);
-    round<false>(seed8Arr, 8 );
-    round<false>(seed8Arr, 8 );
-    round<bswap>(key8Arr, (uint32_t)len);
-    round<bswap>(key8Arr, (uint32_t)len);
-    round<bswap>(key8Arr, (uint32_t)len);
+    round<bswap>(state, key8Arr, (uint32_t)len);
+    round<bswap>(state, key8Arr, (uint32_t)len);
+    round<bswap>(state, key8Arr, (uint32_t)len);
+    round<false>(state, (uint8_t *)seedbuf, 8);
+    round<false>(state, (uint8_t *)seedbuf, 8);
+    round<bswap>(state, key8Arr, (uint32_t)len);
+    round<bswap>(state, key8Arr, (uint32_t)len);
+    round<bswap>(state, key8Arr, (uint32_t)len);
 
     /*
     //printf("state = %#018" PRIx64 " %#018" PRIx64 " %#018" PRIx64 " %#018" PRIx64 "\n",
