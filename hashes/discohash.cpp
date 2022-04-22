@@ -28,25 +28,13 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-static const uint32_t STATE = 32;
+static const uint32_t STATE = 32; // Must be divisible by 8
 static const uint32_t STATE64 = STATE >> 3;
 static const uint32_t STATEM = STATE-1;
 static const uint32_t HSTATE64M = (STATE64 >> 1)-1;
 static const uint32_t STATE64M = STATE64-1;
 static const uint64_t P = UINT64_C(0xFFFFFFFFFFFFFFFF) - 58;
 static const uint64_t Q = UINT64_C(13166748625691186689);
-
-// Since disco_buf is used read-write for each hash invocation, it
-// needs to be thread local, or else threaded tests will overwrite
-// each others' state, leading to bad hashes. This appears to be the
-// reason that discohash had previously been reported to have so many
-// bad seeds!
-//
-// There are other ways to fix this, like making disco_buf be local to
-// the main hash function and passing the pointer around everywhere.
-static thread_local uint8_t disco_buf[STATE] = {0};
-static thread_local uint8_t  * ds8  = (uint8_t *)disco_buf;
-static thread_local uint64_t * ds   = (uint64_t *)disco_buf;
 
 //--------
 // State mix function
@@ -57,7 +45,7 @@ static FORCE_INLINE uint8_t ROTR8(uint8_t v, int n) {
     return v;
 }
 
-static FORCE_INLINE void mix(const uint32_t A) {
+static FORCE_INLINE void mix(uint64_t * ds, const uint32_t A) {
       const uint32_t B = A+1;
       ds[A] *= P;
       ds[A] = ROTR64(ds[A], 23);
@@ -82,7 +70,7 @@ static FORCE_INLINE void mix(const uint32_t A) {
 // The oldver parameter "fixes" a possibly-unintentional behavior
 // change, details of which are below.
 template < bool bswap, bool reread, bool oldver >
-static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
+static FORCE_INLINE void round(uint64_t * ds, const uint8_t * m8, uint32_t len) {
     uint32_t index;
     uint32_t sindex = 0;
     uint32_t Len = len >> 3;
@@ -96,15 +84,15 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
         if (reread) { blk = GET_U64<bswap>(m8, index*8); }
         counter += ~blk + 1;
         if ( sindex == HSTATE64M ) {
-            mix(0);
+            mix(ds, 0);
         } else if ( sindex == STATE64M ) {
-            mix(2);
+            mix(ds, 2);
             sindex = -1;
         }
         sindex++;
     }
 
-    mix(1);
+    mix(ds, 1);
 
     // In commit 73bfb9e31e68a31dc49ba53dbd33ca72e4c931a8 titled
     // "Added pragmas and changed loop format to fit omp
@@ -123,7 +111,7 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
 
     //#pragma omp parallel for
     for(index = Len; index < len; index++) {
-        ds8[bswap ? (sindex^7) : sindex] += ROTR8(m8[index] + index + counter8 + 1, 23);
+        ((uint8_t *)ds)[bswap ? (sindex^7) : sindex] += ROTR8(m8[index] + index + counter8 + 1, 23);
         // I also wonder if this was intended to be m8[index], to
         // mirror the primary 8-byte loop above...
         //
@@ -132,16 +120,16 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
         // of sindex is (len & ~7) if oldver == true, and (len >> 3)
         // if oldver == false.
         counter8 += ~m8[sindex] + 1;
-        mix(index%STATE64M);
+        mix(ds, index%STATE64M);
         if ( sindex >= STATEM ) {
             sindex = -1;
         }
         sindex++;
     }
 
-    mix(0);
-    mix(1);
-    mix(2);
+    mix(ds, 0);
+    mix(ds, 1);
+    mix(ds, 2);
 }
 
 //---------
@@ -149,32 +137,29 @@ static FORCE_INLINE void round(const uint8_t * m8, uint32_t len) {
 
 template < uint32_t hashsize, bool bswap, bool oldver >
 void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) {
-    const uint8_t * key8Arr = (uint8_t *)in;
-
-    uint8_t seedbuf[16] = {0};
-    uint32_t * seed32Arr = (uint32_t *)seedbuf;
-    const uint8_t * seed8Arr = (uint8_t *)seedbuf;
-
+    const uint8_t * key8Arr = (const uint8_t *)in;
     uint8_t * out8 = (uint8_t *)out;
+    uint32_t seedbuf[4];
 
     if (len >= UINT32_C(0xffffffff)) { return; }
 
     // the cali number from the Matrix (1999)
     uint32_t seed32 = seed;
     if (!bswap) {
-        seed32Arr[0] = 0xc5550690;
-        seed32Arr[0] -= seed32;
-        seed32Arr[1] = 1 + seed32;
-        seed32Arr[2] = ~(1 - seed32);
-        seed32Arr[3] = (1+seed32) * 0xf00dacca;
+        seedbuf[0] = 0xc5550690;
+        seedbuf[0] -= seed32;
+        seedbuf[1] = 1 + seed32;
+        seedbuf[2] = ~(1 - seed32);
+        seedbuf[3] = (1+seed32) * 0xf00dacca;
     } else {
-        seed32Arr[1] = 0xc5550690;
-        seed32Arr[1] -= seed32;
-        seed32Arr[0] = 1 + seed32;
-        seed32Arr[3] = ~(1 - seed32);
-        seed32Arr[2] = (1+seed32) * 0xf00dacca;
+        seedbuf[1] = 0xc5550690;
+        seedbuf[1] -= seed32;
+        seedbuf[0] = 1 + seed32;
+        seedbuf[3] = ~(1 - seed32);
+        seedbuf[2] = (1+seed32) * 0xf00dacca;
     }
 
+    uint64_t ds[STATE/8];
     // nothing up my sleeve
     ds[0] = UINT64_C(0x123456789abcdef0);
     ds[1] = UINT64_C(0x0fedcba987654321);
@@ -186,9 +171,9 @@ void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) 
     // variable. The mixing of the state with itself also doesn't need
     // bswap set, because the endianness of the data will naturally
     // always match the endianness of the ds[] values.
-    round<bswap,false,oldver>(key8Arr, (uint32_t)len);
-    round<false,false,oldver>(seed8Arr, 16);
-    round<false,true,oldver>(ds8, STATE);
+    round<bswap,false,oldver>(ds, key8Arr, (uint32_t)len);
+    round<false,false,oldver>(ds, (uint8_t *)seedbuf, 16);
+    round<false,true,oldver>(ds, (uint8_t *)ds, STATE);
 
     /**
        printf("ds = %#018" PRIx64 " %#018" PRIx64 " %#018" PRIx64 " %#018" PRIx64 "\n",
