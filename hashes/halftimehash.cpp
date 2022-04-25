@@ -819,7 +819,7 @@ inline uint64_t TabulateBytes(uint64_t input, const uint64_t entropy[256 * width
 
 template <typename BlockWrapper, unsigned dimension, unsigned in_width,
           unsigned encoded_dimension, unsigned out_width>
-void Hash(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
+static void Hash(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
           uint64_t output[out_width]) {
   constexpr unsigned kMaxStackSize = 9;
   constexpr unsigned kFanout = 8;
@@ -1122,16 +1122,16 @@ inline void V4Avx512(const uint64_t* entropy, const uint8_t* uint8_t_input, size
 #endif // NEW_HAVE_ARM_NEON
 
 template <unsigned out_width, bool bswap>
-inline void V4(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
+static inline void V4(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
                uint64_t output[out_width]);
 template <unsigned out_width, bool bswap>
-inline void V3(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
+static inline void V3(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
                uint64_t output[out_width]);
 template <unsigned out_width, bool bswap>
-inline void V2(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
+static inline void V2(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
                uint64_t output[out_width]);
 template <unsigned out_width, bool bswap>
-inline void V1(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
+static inline void V1(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
                uint64_t output[out_width]);
 
 //------------------------------------------------------------
@@ -1198,34 +1198,34 @@ SPECIALIZE_4(1, Scalar)
 }  // namespace advanced
 
 //------------------------------------------------------------
-constexpr size_t kEntropyBytesNeeded =
+static constexpr size_t kEntropyBytesNeeded =
     256 * 3 * sizeof(uint64_t) * sizeof(uint64_t) +
     advanced::GetEntropyBytesNeeded<
         advanced::RepeatWrapper<advanced::BlockWrapperScalar<false>, 8>, 2>(~0ul);
 
 template < bool bswap >
-inline uint64_t HalftimeHashStyle512(
+static inline uint64_t HalftimeHashStyle512(
     const uint64_t entropy[kEntropyBytesNeeded / sizeof(uint64_t)], const uint8_t input[],
     size_t length) {
   return advanced::TabulateAfter<advanced::V4<2, bswap>, 2>(entropy, input, length);
 }
 
 template < bool bswap >
-inline uint64_t HalftimeHashStyle256(
+static inline uint64_t HalftimeHashStyle256(
     const uint64_t entropy[kEntropyBytesNeeded / sizeof(uint64_t)], const uint8_t input[],
     size_t length) {
   return advanced::TabulateAfter<advanced::V3<2, bswap>, 2>(entropy, input, length);
 }
 
 template < bool bswap >
-inline uint64_t HalftimeHashStyle128(
+static inline uint64_t HalftimeHashStyle128(
     const uint64_t entropy[kEntropyBytesNeeded / sizeof(uint64_t)], const uint8_t input[],
     size_t length) {
   return advanced::TabulateAfter<advanced::V2<2, bswap>, 2>(entropy, input, length);
 }
 
 template < bool bswap >
-inline uint64_t HalftimeHashStyle64(
+static inline uint64_t HalftimeHashStyle64(
     const uint64_t entropy[kEntropyBytesNeeded / sizeof(uint64_t)], const uint8_t input[],
     size_t length) {
   return advanced::TabulateAfter<advanced::V1<2, bswap>, 2>(entropy, input, length);
@@ -1275,28 +1275,28 @@ static uintptr_t halftime_hash_seed_init(const seed_t seed) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void HalftimeHash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void HalftimeHash64(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
     uint64_t h = halftime_hash::HalftimeHashStyle64<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void HalftimeHash128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void HalftimeHash128(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
     uint64_t h = halftime_hash::HalftimeHashStyle128<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void HalftimeHash256(const void * in, const size_t len, const seed_t seed, void * out) {
+static void HalftimeHash256(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
     uint64_t h = halftime_hash::HalftimeHashStyle256<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void HalftimeHash512(const void * in, const size_t len, const seed_t seed, void * out) {
+static void HalftimeHash512(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint64_t * random_words = (const uint64_t *)(uintptr_t)seed;
     uint64_t h = halftime_hash::HalftimeHashStyle512<bswap>(random_words, (const uint8_t *)in, (size_t)len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);

@@ -325,19 +325,19 @@ static meow_u128 MeowHash(const void * Seed128Init, size_t Len, const void * Sou
 
 //------------------------------------------------------------
 template < bool bswap >
-void MeowHash32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MeowHash32(const void * in, const size_t len, const seed_t seed, void * out) {
     meow_u128 h = MeowHash<bswap>(MeowDefaultSeed, len, in, (uint64_t)seed);
     PUT_U32<bswap>(MeowU32From(h, 0), (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void MeowHash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MeowHash64(const void * in, const size_t len, const seed_t seed, void * out) {
     meow_u128 h = MeowHash<bswap>(MeowDefaultSeed, len, in, (uint64_t)seed);
     PUT_U64<bswap>(MeowU64From(h, 0), (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void MeowHash128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MeowHash128(const void * in, const size_t len, const seed_t seed, void * out) {
     meow_u128 h = MeowHash<bswap>(MeowDefaultSeed, len, in, (uint64_t)seed);
     PUT_U64<bswap>(MeowU64From(h, 0), (uint8_t *)out, 0);
     PUT_U64<bswap>(MeowU64From(h, 1), (uint8_t *)out, 8);

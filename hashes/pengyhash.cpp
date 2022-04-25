@@ -63,7 +63,7 @@ static uint64_t pengyhash(const uint8_t * p, size_t size, uint64_t seed) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void pengy(const void * in, const size_t len, const seed_t seed, void * out) {
+static void pengy(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = pengyhash<bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

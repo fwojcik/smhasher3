@@ -289,13 +289,13 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
 }
 
 template < bool bswap >
-void prvhash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void prvhash64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = prvhash64_64m<bswap,false>(in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void prvhash128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void prvhash128(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h1, h2;
     h1 = prvhash64_64m<bswap,true>(in, len, (uint64_t)seed, &h2);
     PUT_U64<bswap>(h1, (uint8_t *)out, 0);
@@ -303,12 +303,12 @@ void prvhash128(const void * in, const size_t len, const seed_t seed, void * out
 }
 
 template < bool bswap >
-void prvhash64s(const void * in, const size_t len, const seed_t seed, void * out) {
+static void prvhash64s(const void * in, const size_t len, const seed_t seed, void * out) {
     prvhash64s_oneshot<bswap,false>(in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
 template < bool bswap >
-void prvhash128s(const void * in, const size_t len, const seed_t seed, void * out) {
+static void prvhash128s(const void * in, const size_t len, const seed_t seed, void * out) {
     prvhash64s_oneshot<bswap,true>(in, len, (uint64_t)seed, (uint8_t *)out);
 }
 

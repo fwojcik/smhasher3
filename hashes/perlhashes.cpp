@@ -107,31 +107,31 @@ static uint32_t jenkinsOAAT_hard(const uint8_t * str, const size_t len, const ui
 
 //------------------------------------------------------------
 template < bool bswap >
-void perl_djb2(const void * in, const size_t len, const seed_t seed, void * out) {
+static void perl_djb2(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = djb2((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void perl_sdbm(const void * in, const size_t len, const seed_t seed, void * out) {
+static void perl_sdbm(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = sdbm((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void perl_jenkins(const void * in, const size_t len, const seed_t seed, void * out) {
+static void perl_jenkins(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = jenkinsOAAT((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void perl_jenkins_old(const void * in, const size_t len, const seed_t seed, void * out) {
+static void perl_jenkins_old(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = jenkinsOAAT_old((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void perl_jenkins_hard(const void * in, const size_t len, const seed_t seed, void * out) {
+static void perl_jenkins_hard(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = jenkinsOAAT_hard((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }

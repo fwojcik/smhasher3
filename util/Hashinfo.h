@@ -107,7 +107,7 @@ class HashInfo {
   private:
     uint32_t _ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian) const;
 
-    char * _fixup_name(const char * in) {
+    static char * _fixup_name(const char * in) {
         // Since dashes can't be in C/C++ identifiers, but humans want them
         // in names, replace underscores with dashes.
         char * out = strdup(in);

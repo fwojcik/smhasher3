@@ -177,17 +177,17 @@ static const uint64_t _wyp[4] = {
 
 //-----------------------------------------------------------------------------
 template < bool bswap >
-void Wyhash32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void Wyhash32(const void * in, const size_t len, const seed_t seed, void * out) {
   PUT_U32<bswap>(_wyhash32<bswap>(in, (uint64_t)len, (uint32_t)seed), (uint8_t *)out, 0);
 }
 
 template < bool bswap, bool strict >
-void Wyhash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void Wyhash64(const void * in, const size_t len, const seed_t seed, void * out) {
   PUT_U64<bswap>(_wyhash64<bswap,strict>(in, len, (uint64_t)seed, _wyp), (uint8_t *)out, 0);
 }
 
 //-----------------------------------------------------------------------------
-bool wyhash64_selftest(void) {
+static bool wyhash64_selftest(void) {
   struct {
     const uint64_t hash;
     const char * key;

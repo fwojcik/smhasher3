@@ -67,7 +67,7 @@ static const uint8_t ROTK64[VARIANTS_64][9] = {
 };
 
 template < uint32_t variant, bool bswap >
-void MetroHash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MetroHash64(const void * in, const size_t len, const seed_t seed, void * out) {
   if (variant >= VARIANTS_64) { return; }
 
   const uint64_t * K = &MULTK64[variant][0];
@@ -177,7 +177,7 @@ static const uint8_t ROTK128[VARIANTS_128][15] = {
 };
 
 template < uint32_t variant, bool bswap >
-void MetroHash128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MetroHash128(const void * in, const size_t len, const seed_t seed, void * out) {
     if (variant >= VARIANTS_128) { return; }
 
     const uint64_t * K = &MULTK128[variant][0];

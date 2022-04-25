@@ -95,7 +95,7 @@ static FORCE_INLINE void setup(double * state, double init = 0) {
 //------------------------------------------------------------
 //static_assert(sizeof(double) == 8);
 template < bool old, bool bswap >
-void floppsyhash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void floppsyhash(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * data = (const uint8_t *)in;
     double state[2];
     uint8_t seedbuf[4];

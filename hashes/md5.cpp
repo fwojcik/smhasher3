@@ -286,7 +286,7 @@ static FORCE_INLINE void seed_md5(md5_context * ctx, const seed_t seed) {
 //-----------------------------------------------------------------------------
 // Wrappers for rest of SMHasher3
 template < uint32_t hashbits, bool bswap >
-void MD5(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MD5(const void * in, const size_t len, const seed_t seed, void * out) {
     md5_context md5_ctx;
     uint8_t buf[16];
     uint8_t * hash = (hashbits >= 128) ? (uint8_t *)out : &buf[0];

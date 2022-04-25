@@ -1086,7 +1086,7 @@ static uint64_t t1ha0_aes_impl(const void *data, size_t len, uint64_t seed) {
 #endif
 
 template < enum t1ha_modes mode >
-void t1ha0(const void * in, const size_t len, const seed_t seed, void * out) {
+static void t1ha0(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t hash;
     // If unaligned access is fast, don't worry about
     // checking/handling pointer alignments. Otherwise, use
@@ -1105,7 +1105,7 @@ void t1ha0(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < enum t1ha_modes mode >
-void t1ha1(const void * in, const size_t len, const seed_t seed, void * out) {
+static void t1ha1(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t hash;
     // If unaligned access is fast, don't worry about
     // checking/handling pointer alignments. Otherwise, use
@@ -1124,7 +1124,7 @@ void t1ha1(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < enum t1ha_modes mode, bool xwidth >
-void t1ha2(const void * in, const size_t len, const seed_t seed, void * out) {
+static void t1ha2(const void * in, const size_t len, const seed_t seed, void * out) {
     alignas(alignof(max_align_t)) t1ha_state256_t state;
     uint64_t hash, xhash = 0;
     uint64_t length = (uint64_t)len;
@@ -1167,7 +1167,7 @@ void t1ha2(const void * in, const size_t len, const seed_t seed, void * out) {
 // once. Default to once so SMHasher3 tests are consistent, but allow
 // selftests to use published KAT tables.
 template < enum t1ha_modes mode, bool xwidth, bool selftest_seeding = false >
-void t1ha2_incr(const void * in, const size_t len, const seed_t seed, void * out) {
+static void t1ha2_incr(const void * in, const size_t len, const seed_t seed, void * out) {
     alignas(alignof(max_align_t)) t1ha_context_t ctx;
     uint64_t hash, xhash = 0;
     uint64_t length = (uint64_t)len;
@@ -1184,14 +1184,14 @@ void t1ha2_incr(const void * in, const size_t len, const seed_t seed, void * out
 
 #if defined(NEW_HAVE_AES_X86_64)
 template < bool bswap >
-void t1ha0_aesA(const void * in, const size_t len, const seed_t seed, void * out) {
+static void t1ha0_aesA(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t hash;
     hash = t1ha0_aes_impl<MODE_LE_NATIVE,false>(in, len, (uint64_t)seed);
     PUT_U64<bswap>(hash, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void t1ha0_aesB(const void * in, const size_t len, const seed_t seed, void * out) {
+static void t1ha0_aesB(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t hash;
     hash = t1ha0_aes_impl<MODE_LE_NATIVE,true>(in, len, (uint64_t)seed);
     PUT_U64<bswap>(hash, (uint8_t *)out, 0);
@@ -1199,7 +1199,7 @@ void t1ha0_aesB(const void * in, const size_t len, const seed_t seed, void * out
 #endif
 
 //------------------------------------------------------------
-const uint8_t t1ha_test_pattern[64] = {
+static const uint8_t t1ha_test_pattern[64] = {
     0,    1,    2,    3,    4,    5,    6,    7,    0xFF, 0x7F, 0x3F,
     0x1F, 0xF,  8,    16,   32,   64,   0x80, 0xFE, 0xFC, 0xF8, 0xF0,
     0xE0, 0xC0, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x55, 0xAA, 11,
@@ -1491,7 +1491,7 @@ static bool t1ha_selfcheck(void (*hash)(const void * in, const size_t len, const
     return failed;
 }
 
-bool t1ha0_selftest(void) {
+static bool t1ha0_selftest(void) {
     bool failed = false;
 
     failed |= t1ha_selfcheck(isLE() ?
@@ -1512,7 +1512,7 @@ bool t1ha0_selftest(void) {
     return !failed;
 }
 
-bool t1ha1_selftest(void) {
+static bool t1ha1_selftest(void) {
     bool failed = false;
 
     failed |= t1ha_selfcheck(isLE() ?
@@ -1533,7 +1533,7 @@ bool t1ha1_selftest(void) {
     return !failed;
 }
 
-bool t1ha2_selftest(void) {
+static bool t1ha2_selftest(void) {
     bool failed = false;
 
     failed |= t1ha_selfcheck(isLE()     ?
@@ -1554,7 +1554,7 @@ bool t1ha2_selftest(void) {
     return !failed;
 }
 
-bool t1ha2_incr_selftest(void) {
+static bool t1ha2_incr_selftest(void) {
     bool failed = false;
 
     failed |= t1ha_selfcheck(isLE()     ?
@@ -1576,7 +1576,7 @@ bool t1ha2_incr_selftest(void) {
 }
 
 #if defined(NEW_HAVE_AES_X86_64)
-bool t1ha0_aes_selftest(void) {
+static bool t1ha0_aes_selftest(void) {
     bool failed = false;
 
     failed |= t1ha_selfcheck(t1ha0_aesA<false>,

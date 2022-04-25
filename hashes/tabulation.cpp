@@ -107,7 +107,7 @@ static uint64_t multiply_shift_b_64;
 static int32_t tabulation_32[32/CHAR_SIZE][1<<CHAR_SIZE];
 static bool have_broken_rand = false;
 
-uintptr_t tabulation32_seed(const seed_t seed) {
+static uintptr_t tabulation32_seed(const seed_t seed) {
    BSD_srand((uint64_t)seed);
    // the lazy mersenne combination requires 30 bits values in the polynomial.
    multiply_shift_a_64 = tab_rand64() & ((UINT64_C(1) << 30) - 1);
@@ -140,7 +140,7 @@ static inline uint32_t combine31(uint32_t h, uint32_t x, uint32_t a) {
 }
 
 template < bool bswap >
-void tabulation32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void tabulation32(const void * in, const size_t len, const seed_t seed, void * out) {
    const uint8_t * buf = (const uint8_t *)in;
    size_t len_words_32 = len/4;
    size_t len_blocks_32 = len_words_32/BLOCK_SIZE_32;
@@ -187,7 +187,7 @@ static uint128_t tab_multiply_shift_a;
 static uint128_t tab_multiply_shift_b;
 static int64_t tabulation[64/CHAR_SIZE][1<<CHAR_SIZE];
 
-uintptr_t tabulation64_seed(const seed_t seed) {
+static uintptr_t tabulation64_seed(const seed_t seed) {
    BSD_srand((uint64_t)seed);
    // the lazy mersenne combination requires 60 bits values in the polynomial.
    // rurban: added checks for bad seeds
@@ -237,7 +237,7 @@ static inline uint64_t combine61(uint64_t h, uint64_t x, uint64_t a) {
 }
 
 template < bool bswap >
-void tabulation64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void tabulation64(const void * in, const size_t len, const seed_t seed, void * out) {
    const uint8_t * buf = (const uint8_t *)in;
 
    // the idea is to compute a fast "signature" of the string before doing

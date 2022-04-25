@@ -588,7 +588,7 @@ static FORCE_INLINE void SHA256_Seed(SHA2_CTX * ctx, const seed_t seed) {
 
 //-----------------------------------------------------------------------------
 template < uint32_t hashbits, bool bswap >
-void SHA256(const void * in, const size_t len, const seed_t seed, void * out) {
+static void SHA256(const void * in, const size_t len, const seed_t seed, void * out) {
   SHA2_CTX context;
 
   SHA256_Init         (&context);
@@ -598,7 +598,7 @@ void SHA256(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < uint32_t hashbits, bool bswap >
-void SHA224(const void * in, const size_t len, const seed_t seed, void * out) {
+static void SHA224(const void * in, const size_t len, const seed_t seed, void * out) {
   SHA2_CTX context;
 
   SHA224_Init         (&context);
@@ -685,7 +685,7 @@ static bool SHA256_Selftest(void) {
   return true;
 }
 
-bool SHA256_test(void) {
+static bool SHA256_test(void) {
   if (isBE()) {
       return SHA256_Selftest<false>();
   } else {

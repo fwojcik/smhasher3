@@ -77,13 +77,13 @@ static inline uint64_t mx3(const uint8_t * buf, size_t len, uint64_t seed) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void mx3_v1(const void * in, const size_t len, const seed_t seed, void * out) {
+static void mx3_v1(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = mx3<true, bswap>((const uint8_t *)in, len, (uint64_t) seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void mx3_v2(const void * in, const size_t len, const seed_t seed, void * out) {
+static void mx3_v2(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = mx3<false, bswap>((const uint8_t *)in, len, (uint64_t) seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

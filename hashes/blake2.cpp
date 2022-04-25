@@ -191,7 +191,7 @@ static void blake2_Finalize(T * ctx) {
 }
 
 template < uint32_t hashbits, uint32_t outbits, bool bswap >
-void BLAKE2B(const void * in, const size_t len, const seed_t seed, void * out) {
+static void BLAKE2B(const void * in, const size_t len, const seed_t seed, void * out) {
   blake2b_context ctx;
 
   blake2_Init(&ctx, hashbits, (uint64_t)seed);
@@ -206,7 +206,7 @@ void BLAKE2B(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < uint32_t hashbits, uint32_t outbits, bool bswap >
-void BLAKE2S(const void * in, const size_t len, const seed_t seed, void * out) {
+static void BLAKE2S(const void * in, const size_t len, const seed_t seed, void * out) {
   blake2s_context ctx;
 
   blake2_Init(&ctx, hashbits, (uint64_t)seed);

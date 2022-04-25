@@ -562,7 +562,7 @@ static void rmd_seed(rmd_ctx * ctx, uint64_t seed) {
 }
 
 template < bool bswap >
-void rmd128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void rmd128(const void * in, const size_t len, const seed_t seed, void * out) {
   rmd_ctx ctx;
 
   rmd_init<128>          (&ctx);
@@ -572,7 +572,7 @@ void rmd128(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < bool bswap >
-void rmd160(const void * in, const size_t len, const seed_t seed, void * out) {
+static void rmd160(const void * in, const size_t len, const seed_t seed, void * out) {
   rmd_ctx ctx;
 
   rmd_init<160>          (&ctx);
@@ -582,7 +582,7 @@ void rmd160(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < bool bswap >
-void rmd256(const void * in, const size_t len, const seed_t seed, void * out) {
+static void rmd256(const void * in, const size_t len, const seed_t seed, void * out) {
   rmd_ctx ctx;
 
   rmd_init<256>          (&ctx);
@@ -591,7 +591,7 @@ void rmd256(const void * in, const size_t len, const seed_t seed, void * out) {
   rmd_done<256, bswap>   (&ctx, (uint8_t*)out);
 }
 
-bool rmd_test(void) {
+static bool rmd_test(void) {
    static const struct {
         const char *msg;
         unsigned char hash128[16];

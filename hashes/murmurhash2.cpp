@@ -33,7 +33,7 @@
 
 //-----------------------------------------------------------------------------
 template < bool bswap >
-void MurmurHash2_32(const void * in, const size_t olen, const seed_t seed, void * out) {
+static void MurmurHash2_32(const void * in, const size_t olen, const seed_t seed, void * out) {
   // 'm' and 'r' are mixing constants generated offline.
   // They're not really 'magic', they just happen to work well.
   const uint32_t m = 0x5bd1e995;
@@ -82,7 +82,7 @@ void MurmurHash2_32(const void * in, const size_t olen, const seed_t seed, void 
 
 // 64-bit hash for 64-bit platforms
 template < bool bswap >
-void MurmurHash2_64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MurmurHash2_64(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint64_t m = UINT64_C(0xc6a4a7935bd1e995);
     const uint32_t r = 47;
 
@@ -125,7 +125,7 @@ void MurmurHash2_64(const void * in, const size_t len, const seed_t seed, void *
 
 // 64-bit hash for 32-bit platforms
 template < bool bswap >
-void MurmurHash2_32_64(const void * in, const size_t olen, const seed_t seed, void * out) {
+static void MurmurHash2_32_64(const void * in, const size_t olen, const seed_t seed, void * out) {
     const uint32_t m = 0x5bd1e995;
     const uint32_t r = 24;
 
@@ -186,7 +186,7 @@ void MurmurHash2_32_64(const void * in, const size_t olen, const seed_t seed, vo
 #define mmix(h,k) { k *= m; k ^= k >> r; k *= m; h *= m; h ^= k; }
 
 template < bool bswap >
-void MurmurHash2A_32(const void * in, const size_t olen, const seed_t seed, void * out) {
+static void MurmurHash2A_32(const void * in, const size_t olen, const seed_t seed, void * out) {
     const uint32_t m = 0x5bd1e995;
     const uint32_t r = 24;
 

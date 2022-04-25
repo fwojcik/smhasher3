@@ -251,7 +251,7 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
 #endif
 
 template < bool orig, bool bswap >
-void Hasshe2(const void * in, const size_t len, const seed_t seed, void * out) {
+static void Hasshe2(const void * in, const size_t len, const seed_t seed, void * out) {
 #if defined(NEW_HAVE_SSE_2)
     hasshe2_sse2<orig,bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
 #else

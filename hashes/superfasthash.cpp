@@ -82,7 +82,7 @@ static uint32_t SuperFastHash(const uint8_t * data, size_t len, const uint32_t s
 
 //------------------------------------------------------------
 template < bool bswap >
-void SFH(const void * in, const size_t len, const seed_t seed, void * out) {
+static void SFH(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = SuperFastHash<bswap>((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }

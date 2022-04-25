@@ -728,13 +728,13 @@ static inline uint32_t NMHASH32X(const void* const RESTRICT input,
 
 //------------------------------------------------------------
 template < bool bswap >
-void NMhash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void NMhash(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = NMHASH32<bswap>(in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void NMhashX(const void * in, const size_t len, const seed_t seed, void * out) {
+static void NMhashX(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = NMHASH32X<bswap>(in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }

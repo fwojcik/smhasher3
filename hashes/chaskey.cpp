@@ -27,7 +27,7 @@
     } while(0)
 
 template < uint32_t rounds, uint32_t tagwords, bool bswap >
-void chaskey_impl(uint8_t * tag, const uint8_t * m, const size_t mlen,
+static void chaskey_impl(uint8_t * tag, const uint8_t * m, const size_t mlen,
         const uint32_t k[4], const uint32_t k1[4], const uint32_t k2[4]) {
   const uint8_t * end = m + (((mlen - 1) >> 4) << 4); /* pointer to last message block */
 
@@ -150,7 +150,7 @@ static uintptr_t seed_subkeys(uint64_t seed) {
 }
 
 template < uint32_t rounds, uint32_t tagwords,bool bswap >
-void chaskey(const void * in, const size_t len, const seed_t seed, void * out) {
+static void chaskey(const void * in, const size_t len, const seed_t seed, void * out) {
     const keys_t * keys = (const keys_t *)(uintptr_t)seed;
     chaskey_impl<rounds,tagwords,bswap>((uint8_t *)out, (const uint8_t *)in,
             len, keys->k, keys->k1, keys->k2);

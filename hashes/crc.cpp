@@ -131,8 +131,8 @@ static void crc32_zeros(uint32_t op[32], uint32_t zeros[][256]) {
 // Block sizes for three-way parallel crc computation.
 // HW_LONGBLOCK_LEN and HW_SHORTBLOCK_LEN must both be
 // powers of two.
-const uint32_t HW_LONGBLOCK_LEN = 8192;
-const uint32_t HW_SHORTBLOCK_LEN = 256;
+static const uint32_t HW_LONGBLOCK_LEN = 8192;
+static const uint32_t HW_SHORTBLOCK_LEN = 256;
 
 /* Initialize tables for shifting crcs. */
 template < uint32_t polynomial >
@@ -344,7 +344,7 @@ static crc_hw_table hw_tables;
 static crc_sw_table sw_tables;
 
 template < uint32_t polynomial >
-void CRC32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CRC32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t crc = seed;
     if (polynomial != table_poly) {
         printf("CRC32 of poly %08x requested, but Init() was given %08x\n",
@@ -367,7 +367,7 @@ void CRC32(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < uint32_t polynomial >
-bool CRC32_init(void) {
+static bool CRC32_init(void) {
     table_poly = polynomial;
 #if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
     if (polynomial == POLY_CRC32C) {

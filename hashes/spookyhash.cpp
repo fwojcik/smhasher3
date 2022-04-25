@@ -361,7 +361,7 @@ void SpookyHash::Hash128(const void * message, size_t length, uint64_t * hash1, 
 }
 
 template < uint32_t version, uint32_t hashlen, bool bswap >
-void spookyhash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void spookyhash(const void * in, const size_t len, const seed_t seed, void * out) {
   uint64_t h1, h2;
   h1 = h2 = (uint64_t)seed;
 

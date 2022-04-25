@@ -7,44 +7,44 @@
   (_mm_castps_si128(                                                           \
       _mm_shuffle_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(b), (c))))
 
-FORCE_INLINE __m128i loadu(const uint8_t src[16]) {
+static FORCE_INLINE __m128i loadu(const uint8_t src[16]) {
   return _mm_loadu_si128((const __m128i *)src);
 }
 
-FORCE_INLINE void storeu(__m128i src, uint8_t dest[16]) {
+static FORCE_INLINE void storeu(__m128i src, uint8_t dest[16]) {
   _mm_storeu_si128((__m128i *)dest, src);
 }
 
-FORCE_INLINE __m128i addv(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
+static FORCE_INLINE __m128i addv(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
 
 // Note that clang-format doesn't like the name "xor" for some reason.
-FORCE_INLINE __m128i xorv(__m128i a, __m128i b) { return _mm_xor_si128(a, b); }
+static FORCE_INLINE __m128i xorv(__m128i a, __m128i b) { return _mm_xor_si128(a, b); }
 
-FORCE_INLINE __m128i set1(uint32_t x) { return _mm_set1_epi32((int32_t)x); }
+static FORCE_INLINE __m128i set1(uint32_t x) { return _mm_set1_epi32((int32_t)x); }
 
-FORCE_INLINE __m128i set4(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+static FORCE_INLINE __m128i set4(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   return _mm_setr_epi32((int32_t)a, (int32_t)b, (int32_t)c, (int32_t)d);
 }
 
-FORCE_INLINE __m128i rot16(__m128i x) {
+static FORCE_INLINE __m128i rot16(__m128i x) {
   return _mm_shuffle_epi8(
       x, _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2));
 }
 
-FORCE_INLINE __m128i rot12(__m128i x) {
+static FORCE_INLINE __m128i rot12(__m128i x) {
   return xorv(_mm_srli_epi32(x, 12), _mm_slli_epi32(x, 32 - 12));
 }
 
-FORCE_INLINE __m128i rot8(__m128i x) {
+static FORCE_INLINE __m128i rot8(__m128i x) {
   return _mm_shuffle_epi8(
       x, _mm_set_epi8(12, 15, 14, 13, 8, 11, 10, 9, 4, 7, 6, 5, 0, 3, 2, 1));
 }
 
-FORCE_INLINE __m128i rot7(__m128i x) {
+static FORCE_INLINE __m128i rot7(__m128i x) {
   return xorv(_mm_srli_epi32(x, 7), _mm_slli_epi32(x, 32 - 7));
 }
 
-FORCE_INLINE void g1(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
+static FORCE_INLINE void g1(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
                __m128i m) {
   *row0 = addv(addv(*row0, m), *row1);
   *row3 = xorv(*row3, *row0);
@@ -54,7 +54,7 @@ FORCE_INLINE void g1(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
   *row1 = rot12(*row1);
 }
 
-FORCE_INLINE void g2(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
+static FORCE_INLINE void g2(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
                __m128i m) {
   *row0 = addv(addv(*row0, m), *row1);
   *row3 = xorv(*row3, *row0);
@@ -67,19 +67,19 @@ FORCE_INLINE void g2(__m128i *row0, __m128i *row1, __m128i *row2, __m128i *row3,
 // Note the optimization here of leaving row1 as the unrotated row, rather than
 // row0. All the message loads below are adjusted to compensate for this. See
 // discussion at https://github.com/sneves/blake2-avx2/pull/4
-FORCE_INLINE void diagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
+static FORCE_INLINE void diagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
   *row0 = _mm_shuffle_epi32(*row0, _MM_SHUFFLE(2, 1, 0, 3));
   *row3 = _mm_shuffle_epi32(*row3, _MM_SHUFFLE(1, 0, 3, 2));
   *row2 = _mm_shuffle_epi32(*row2, _MM_SHUFFLE(0, 3, 2, 1));
 }
 
-FORCE_INLINE void undiagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
+static FORCE_INLINE void undiagonalize(__m128i *row0, __m128i *row2, __m128i *row3) {
   *row0 = _mm_shuffle_epi32(*row0, _MM_SHUFFLE(0, 3, 2, 1));
   *row3 = _mm_shuffle_epi32(*row3, _MM_SHUFFLE(1, 0, 3, 2));
   *row2 = _mm_shuffle_epi32(*row2, _MM_SHUFFLE(2, 1, 0, 3));
 }
 
-FORCE_INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
+static FORCE_INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
                          const uint8_t block[BLAKE3_BLOCK_LEN],
                          uint8_t block_len, uint64_t counter, uint8_t flags) {
   rows[0] = loadu((uint8_t *)&cv[0]);
@@ -250,7 +250,7 @@ FORCE_INLINE void compress_pre(__m128i rows[4], const uint32_t cv[8],
   undiagonalize(&rows[0], &rows[2], &rows[3]);
 }
 
-void blake3_compress_in_place(uint32_t cv[8],
+static void blake3_compress_in_place(uint32_t cv[8],
                                     const uint8_t block[BLAKE3_BLOCK_LEN],
                                     uint8_t block_len, uint64_t counter,
                                     uint8_t flags) {
@@ -260,7 +260,7 @@ void blake3_compress_in_place(uint32_t cv[8],
   storeu(xorv(rows[1], rows[3]), (uint8_t *)&cv[4]);
 }
 
-void blake3_compress_xof(const uint32_t cv[8],
+static void blake3_compress_xof(const uint32_t cv[8],
                                const uint8_t block[BLAKE3_BLOCK_LEN],
                                uint8_t block_len, uint64_t counter,
                                uint8_t flags, uint8_t out[64]) {
@@ -272,7 +272,7 @@ void blake3_compress_xof(const uint32_t cv[8],
   storeu(xorv(rows[3], loadu((uint8_t *)&cv[4])), &out[48]);
 }
 
-FORCE_INLINE void round_fn(__m128i v[16], __m128i m[16], size_t r) {
+static FORCE_INLINE void round_fn(__m128i v[16], __m128i m[16], size_t r) {
   v[0] = addv(v[0], m[(size_t)MSG_SCHEDULE[r][0]]);
   v[1] = addv(v[1], m[(size_t)MSG_SCHEDULE[r][2]]);
   v[2] = addv(v[2], m[(size_t)MSG_SCHEDULE[r][4]]);
@@ -388,7 +388,7 @@ FORCE_INLINE void round_fn(__m128i v[16], __m128i m[16], size_t r) {
   v[4] = rot7(v[4]);
 }
 
-FORCE_INLINE void transpose_vecs(__m128i vecs[DEGREE]) {
+static FORCE_INLINE void transpose_vecs(__m128i vecs[DEGREE]) {
   // Interleave 32-bit lates. The low unpack is lanes 00/11 and the high is
   // 22/33. Note that this doesn't split the vector into two lanes, as the
   // AVX2 counterparts do.
@@ -409,7 +409,7 @@ FORCE_INLINE void transpose_vecs(__m128i vecs[DEGREE]) {
   vecs[3] = abcd_3;
 }
 
-FORCE_INLINE void transpose_msg_vecs(const uint8_t *const *inputs,
+static FORCE_INLINE void transpose_msg_vecs(const uint8_t *const *inputs,
                                size_t block_offset, __m128i out[16]) {
   out[0] = loadu(&inputs[0][block_offset + 0 * sizeof(__m128i)]);
   out[1] = loadu(&inputs[1][block_offset + 0 * sizeof(__m128i)]);
@@ -436,7 +436,7 @@ FORCE_INLINE void transpose_msg_vecs(const uint8_t *const *inputs,
   transpose_vecs(&out[12]);
 }
 
-FORCE_INLINE void load_counters(uint64_t counter, bool increment_counter,
+static FORCE_INLINE void load_counters(uint64_t counter, bool increment_counter,
                           __m128i *out_lo, __m128i *out_hi) {
   const __m128i mask = _mm_set1_epi32(-(int32_t)increment_counter);
   const __m128i add0 = _mm_set_epi32(3, 2, 1, 0);
@@ -449,8 +449,7 @@ FORCE_INLINE void load_counters(uint64_t counter, bool increment_counter,
   *out_hi = h;
 }
 
-static
-void blake3_hash4(const uint8_t *const *inputs, size_t blocks,
+static void blake3_hash4(const uint8_t *const *inputs, size_t blocks,
                         const uint32_t key[8], uint64_t counter,
                         bool increment_counter, uint8_t flags,
                         uint8_t flags_start, uint8_t flags_end, uint8_t *out) {
@@ -511,7 +510,7 @@ void blake3_hash4(const uint8_t *const *inputs, size_t blocks,
   storeu(h_vecs[7], &out[7 * sizeof(__m128i)]);
 }
 
-FORCE_INLINE void hash_one(const uint8_t *input, size_t blocks,
+static FORCE_INLINE void hash_one(const uint8_t *input, size_t blocks,
                            const uint32_t key[8], uint64_t counter,
                            uint8_t flags, uint8_t flags_start,
                            uint8_t flags_end, uint8_t out[BLAKE3_OUT_LEN]) {
@@ -531,7 +530,7 @@ FORCE_INLINE void hash_one(const uint8_t *input, size_t blocks,
   memcpy(out, cv, BLAKE3_OUT_LEN);
 }
 
-void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
+static void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
                             size_t blocks, const uint32_t key[8],
                             uint64_t counter, bool increment_counter,
                             uint8_t flags, uint8_t flags_start,

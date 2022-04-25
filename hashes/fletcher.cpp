@@ -152,33 +152,33 @@ static uint64_t fletcher64(const uint8_t * key, size_t len, uint64_t seed) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void fletcher2_64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fletcher2_64(const void * in, const size_t len, const seed_t seed, void * out) {
     fletcher2<false,bswap>((const uint8_t *)in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
 template < bool bswap >
-void fletcher2_128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fletcher2_128(const void * in, const size_t len, const seed_t seed, void * out) {
     fletcher2<true,bswap>((const uint8_t *)in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
 template < bool bswap >
-void fletcher4_64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fletcher4_64(const void * in, const size_t len, const seed_t seed, void * out) {
     fletcher4<false,bswap>((const uint8_t *)in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
 template < bool bswap >
-void fletcher4_256(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fletcher4_256(const void * in, const size_t len, const seed_t seed, void * out) {
     fletcher4<true,bswap>((const uint8_t *)in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
 template < bool bswap >
-void fletcher32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fletcher32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = fletcher32<bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void fletcher64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fletcher64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = fletcher64<bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

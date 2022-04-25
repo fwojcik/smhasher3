@@ -29,7 +29,7 @@
 #include "Hashlib.h"
 
 template < bool bswap >
-void BadHash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void BadHash(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t *       data = (const uint8_t *)in;
     const uint8_t * const end  = &data[len];
     uint32_t h                 = seed;
@@ -45,7 +45,7 @@ void BadHash(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < bool bswap >
-void sumhash8(const void * in, const size_t len, const seed_t seed, void * out) {
+static void sumhash8(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t *       data = (const uint8_t *)in;
     const uint8_t * const end  = &data[len];
     uint32_t h                 = seed;
@@ -59,7 +59,7 @@ void sumhash8(const void * in, const size_t len, const seed_t seed, void * out) 
 }
 
 template < bool bswap >
-void sumhash32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void sumhash32(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint32_t *       data = (const uint32_t *)in;
     const uint32_t * const end  = &data[len/4];
     uint32_t h                  = seed;

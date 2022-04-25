@@ -244,7 +244,7 @@ static void ascon_squeeze(state_t * s, uint8_t * out, uint64_t outlen) {
 
 //------------------------------------------------------------
 template < uint64_t outbits, bool XOFa, bool bswap >
-void ascon_xof(const void * in, const size_t len, const seed_t seed, void * out) {
+static void ascon_xof(const void * in, const size_t len, const seed_t seed, void * out) {
     state_t s;
     ascon_initxof<XOFa>(&s, seed);
     ascon_absorb<XOFa, bswap>(&s, (const uint8_t *)in, (uint64_t)len);
@@ -335,7 +335,7 @@ static const uint8_t KAT[KAT_NUM][2][256/8] = {
     },
 };
 
-bool ascon_xof_selftest(void) {
+static bool ascon_xof_selftest(void) {
     uint8_t input[KAT_NUM - 1];
     for (int i = 0; i < sizeof(input); i++) { input[i] = (uint8_t)i; }
 

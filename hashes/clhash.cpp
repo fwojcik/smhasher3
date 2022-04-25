@@ -426,13 +426,13 @@ static uint64_t clhash(const void * random, const uint8_t * stringbyte, const si
 
 //------------------------------------------------------------
 template < bool bswap >
-void CLHash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CLHash(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = clhash<true, bswap>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void CLHashNomix(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CLHashNomix(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = clhash<false, bswap>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

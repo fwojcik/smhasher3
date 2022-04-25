@@ -78,13 +78,13 @@ static uint64_t fasthash_impl(const uint8_t * pos, size_t len, uint64_t seed) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void fasthash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fasthash64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = fasthash_impl<bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void fasthash32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void fasthash32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = fasthash_impl<bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U32<bswap>(fold(h), (uint8_t *)out, 0);
 }

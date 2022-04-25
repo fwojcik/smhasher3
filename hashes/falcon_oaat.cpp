@@ -75,13 +75,13 @@ static uint32_t MicroOAAT_impl(const uint8_t * str, size_t len, uint32_t seed) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void GoodOAAT(const void * in, const size_t len, const seed_t seed, void * out) {
+static void GoodOAAT(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = GoodOAAT_impl((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void MicroOAAT(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MicroOAAT(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = MicroOAAT_impl((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }

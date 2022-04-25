@@ -150,19 +150,19 @@ static uint64_t CrapWow64_impl(const uint8_t * key, size_t len, uint64_t seed) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void Crap8(const void * in, const size_t len, const seed_t seed, void * out) {
+static void Crap8(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = Crap8_impl<bswap>((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void CrapWow(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CrapWow(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = CrapWow_impl<bswap>((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void CrapWow64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CrapWow64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = CrapWow64_impl<bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

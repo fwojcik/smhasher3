@@ -136,7 +136,7 @@ static FORCE_INLINE void round(uint64_t * ds, const uint8_t * m8, uint32_t len) 
 // main hash function
 
 template < uint32_t hashsize, bool bswap, bool oldver >
-void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) {
+static void BEBB4185(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * key8Arr = (const uint8_t *)in;
     uint8_t * out8 = (uint8_t *)out;
     uint32_t seedbuf[4];

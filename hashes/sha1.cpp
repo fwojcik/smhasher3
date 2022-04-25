@@ -633,7 +633,7 @@ static FORCE_INLINE void SHA1_Seed(SHA1_CTX * ctx, const seed_t seed) {
 
 //-----------------------------------------------------------------------------
 template < uint32_t hashbits, bool bswap >
-void SHA1(const void * in, const size_t len, const seed_t seed, void * out) {
+static void SHA1(const void * in, const size_t len, const seed_t seed, void * out) {
   SHA1_CTX context;
 
   SHA1_Init         (&context);
@@ -717,7 +717,7 @@ static bool SHA1_Selftest(void) {
   return true;
 }
 
-bool SHA1_test(void) {
+static bool SHA1_test(void) {
   if (isBE()) {
       return SHA1_Selftest<false>();
   } else {

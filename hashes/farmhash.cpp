@@ -333,7 +333,7 @@ static uint64_t farmhashna::Hash64WithSeeds(const uint8_t *s, size_t len, uint64
 }
 
 template < bool bswap >
-uint64_t farmhashna::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
+static uint64_t farmhashna::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
     return farmhashna::Hash64WithSeeds<bswap>(s, len, k2, seed);
 }
 
@@ -450,7 +450,7 @@ static uint64_t farmhashuo::Hash64WithSeeds(const uint8_t *s, size_t len,
 }
 
 template < bool bswap >
-uint64_t farmhashuo::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
+static uint64_t farmhashuo::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
   return len <= 64 ? farmhashna::Hash64WithSeed<bswap>(s, len, seed) :
                      farmhashuo::Hash64WithSeeds<bswap>(s, len, 0, seed);
 }
@@ -467,9 +467,9 @@ namespace farmhashxo {
         static inline uint64_t H32(const uint8_t *s, size_t len, uint64_t mul,
             uint64_t seed0 = 0, uint64_t seed1 = 0);
     template < bool bswap >
-    static inline uint64_t HashLen33to64(const uint8_t *s, size_t len);
+        static inline uint64_t HashLen33to64(const uint8_t *s, size_t len);
     template < bool bswap >
-    static inline uint64_t HashLen65to96(const uint8_t *s, size_t len);
+        static inline uint64_t HashLen65to96(const uint8_t *s, size_t len);
 
     template < bool bswap >
         static uint64_t Hash64(const uint8_t *s, size_t len);
@@ -534,12 +534,12 @@ static uint64_t farmhashxo::Hash64(const uint8_t *s, size_t len) {
 }
 
 template < bool bswap >
-uint64_t farmhashxo::Hash64WithSeeds(const uint8_t *s, size_t len, uint64_t seed0, uint64_t seed1) {
+static uint64_t farmhashxo::Hash64WithSeeds(const uint8_t *s, size_t len, uint64_t seed0, uint64_t seed1) {
   return farmhashuo::Hash64WithSeeds<bswap>(s, len, seed0, seed1);
 }
 
 template < bool bswap >
-uint64_t farmhashxo::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
+static uint64_t farmhashxo::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
   return farmhashuo::Hash64WithSeed<bswap>(s, len, seed);
 }
 
@@ -739,20 +739,20 @@ static inline uint64_t farmhashte::Hash64Long(const uint8_t* s, size_t n,
 }
 
 template < bool bswap >
-uint64_t farmhashte::Hash64(const uint8_t *s, size_t len) {
+static uint64_t farmhashte::Hash64(const uint8_t *s, size_t len) {
   // Empirically, farmhashxo seems faster until length 512.
     return len >= 512 ? farmhashte::Hash64Long<bswap>(s, len, k2, k1) :
                         farmhashxo::Hash64<bswap>(s, len);
 }
 
 template < bool bswap >
-uint64_t farmhashte::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
+static uint64_t farmhashte::Hash64WithSeed(const uint8_t *s, size_t len, uint64_t seed) {
     return len >= 512 ? farmhashte::Hash64Long<bswap>(s, len, k1, seed) :
                         farmhashxo::Hash64WithSeed<bswap>(s, len, seed);
 }
 
 template < bool bswap >
-uint64_t farmhashte::Hash64WithSeeds(const uint8_t *s, size_t len, uint64_t seed0, uint64_t seed1) {
+static uint64_t farmhashte::Hash64WithSeeds(const uint8_t *s, size_t len, uint64_t seed0, uint64_t seed1) {
     return len >= 512 ? farmhashte::Hash64Long<bswap>(s, len, seed0, seed1) :
                         farmhashxo::Hash64WithSeeds<bswap>(s, len, seed0, seed1);
 }
@@ -774,7 +774,7 @@ static uint32_t farmhashnt::Hash32(const uint8_t *s, size_t len) {
 }
 
 template < bool bswap >
-uint32_t farmhashnt::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
+static uint32_t farmhashnt::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
   return static_cast<uint32_t>(farmhashte::Hash64WithSeed<bswap>(s, len, seed));
 }
 #endif
@@ -891,7 +891,7 @@ static uint32_t farmhashmk::Hash32(const uint8_t *s, size_t len) {
 }
 
 template < bool bswap >
-uint32_t farmhashmk::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
+static uint32_t farmhashmk::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
     if (len <= 24) {
         if (len >= 13) return farmhashmk::Hash32Len13to24<bswap>(s, len, seed * c1);
         else if (len >= 5) return farmhashmk::Hash32Len5to12<bswap>(s, len, seed);
@@ -1080,7 +1080,7 @@ static uint32_t farmhashsu::Hash32(const uint8_t *s, size_t len) {
 #undef Mulc1
 
 template < bool bswap >
-uint32_t farmhashsu::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
+static uint32_t farmhashsu::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
   if (len <= 24) {
     if (len >= 13) return farmhashmk::Hash32Len13to24<bswap>(s, len, seed * c1);
     else if (len >= 5) return farmhashmk::Hash32Len5to12<bswap>(s, len, seed);
@@ -1261,7 +1261,7 @@ static uint32_t farmhashsa::Hash32(const uint8_t *s, size_t len) {
 #undef Mulc1
 
 template < bool bswap >
-uint32_t farmhashsa::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
+static uint32_t farmhashsa::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
   if (len <= 24) {
     if (len >= 13) return farmhashmk::Hash32Len13to24<bswap>(s, len, seed * c1);
     else if (len >= 5) return farmhashmk::Hash32Len5to12<bswap>(s, len, seed);
@@ -1399,7 +1399,7 @@ static uint32_t farmhashcc::Hash32(const uint8_t *s, size_t len) {
 }
 
 template < bool bswap >
-uint32_t farmhashcc::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
+static uint32_t farmhashcc::Hash32WithSeed(const uint8_t *s, size_t len, uint32_t seed) {
   if (len <= 24) {
     if (len >= 13) return farmhashmk::Hash32Len13to24<bswap>(s, len, seed * c1);
     else if (len >= 5) return farmhashmk::Hash32Len5to12<bswap>(s, len, seed);
@@ -1467,7 +1467,7 @@ static inline uint128_t farmhashcc::CityMurmur(const uint8_t *s, size_t len, uin
 }
 
 template < bool bswap >
-uint128_t farmhashcc::Hash128WithSeed(const uint8_t *s, size_t len, uint128_t seed) {
+static uint128_t farmhashcc::Hash128WithSeed(const uint8_t *s, size_t len, uint128_t seed) {
   if (len < 128) {
       return farmhashcc::CityMurmur<bswap>(s, len, seed);
   }
@@ -1532,13 +1532,13 @@ uint128_t farmhashcc::Hash128WithSeed(const uint8_t *s, size_t len, uint128_t se
 
 //------------------------------------------------------------
 template < bool bswap >
-void FarmHashNA(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashNA(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = farmhashna::Hash64WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void FarmHashUO(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashUO(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = farmhashuo::Hash64WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
@@ -1548,27 +1548,27 @@ void FarmHashUO(const void * in, const size_t len, const seed_t seed, void * out
 
 #if defined(NEW_HAVE_SSE_4_1)
 template < bool bswap >
-void FarmHashTE(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashTE(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = farmhashte::Hash64WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void FarmHashNT(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashNT(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = farmhashnt::Hash32WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 #endif
 
 template < bool bswap >
-void FarmHashMK(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashMK(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = farmhashmk::Hash32WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 #if defined(NEW_HAVE_CRC32C_X86_64) && defined(NEW_HAVE_AES_X86_64)
 template < bool bswap >
-void FarmHashSU(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashSU(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = farmhashsu::Hash32WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
@@ -1576,20 +1576,20 @@ void FarmHashSU(const void * in, const size_t len, const seed_t seed, void * out
 
 #if defined(NEW_HAVE_CRC32C_X86_64)
 template < bool bswap >
-void FarmHashSA(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashSA(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = farmhashsa::Hash32WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 #endif
 
 template < bool bswap >
-void FarmHashCC_32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashCC_32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = farmhashcc::Hash32WithSeed<bswap>((const uint8_t *)in, len, seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap, uint32_t seedmode >
-void FarmHashCC_128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashCC_128(const void * in, const size_t len, const seed_t seed, void * out) {
     uint128_t seed128;
     switch(seedmode) {
     case 1: seed128 = Uint128((uint64_t)seed, 0); break;
@@ -1603,7 +1603,7 @@ void FarmHashCC_128(const void * in, const size_t len, const seed_t seed, void *
 }
 
 template < bool bswap, uint32_t seedmode >
-void FarmHashCityMurmur_128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void FarmHashCityMurmur_128(const void * in, const size_t len, const seed_t seed, void * out) {
     uint128_t seed128;
     switch(seedmode) {
     case 1: seed128 = Uint128((uint64_t)seed, 0); break;

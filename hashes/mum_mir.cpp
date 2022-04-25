@@ -180,7 +180,7 @@ static inline uint64_t _mum_final (uint64_t h) {
 // MUM hash externals for SMHasher3
 
 template < uint32_t version, uint32_t unroll_power, bool bswap, bool exactmul >
-void mum_aligned(const void * in, const size_t len, const seed_t seed, void * out) {
+static void mum_aligned(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h;
     h = _mum_hash_aligned<version,unroll_power,bswap,exactmul>(seed + len, in, len);
     h = _mum_final<version,exactmul>(h);
@@ -188,7 +188,7 @@ void mum_aligned(const void * in, const size_t len, const seed_t seed, void * ou
 }
 
 template < uint32_t version, uint32_t unroll_power, bool bswap, bool exactmul >
-void mum_realign(const void * in, const size_t olen, const seed_t seed, void * out) {
+static void mum_realign(const void * in, const size_t olen, const seed_t seed, void * out) {
     const uint8_t * str = (const uint8_t *)in;
     const uint32_t _MUM_BLOCK_LEN = 1024;
     uint64_t buf[_MUM_BLOCK_LEN / sizeof(uint64_t)];
@@ -250,7 +250,7 @@ static inline uint64_t mir_get_key_part(const uint8_t * v, size_t len) {
 // values from the original mir_hash() in both "strict" mode and
 // "relaxed" mode, regardless of machine endianness.
 template < bool bswap, bool exactmul >
-void mir_hash(const void * in, const size_t olen, const seed_t seed, void * out) {
+static void mir_hash(const void * in, const size_t olen, const seed_t seed, void * out) {
   const uint8_t * v = (const uint8_t *)in;
   uint64_t r = seed + olen;
   size_t len = olen;

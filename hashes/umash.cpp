@@ -1161,7 +1161,7 @@ static bool umash_init(void) {
 }
 
 template < bool reseed, bool bswap >
-void UMASH(const void * in, const size_t len, const seed_t seed, void * out) {
+static void UMASH(const void * in, const size_t len, const seed_t seed, void * out) {
     const struct umash_params * params = reseed ?
         (const struct umash_params *)(uintptr_t)seed :
         &umash_params_global;
@@ -1171,7 +1171,7 @@ void UMASH(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < bool reseed, bool bswap >
-void UMASH_FP(const void * in, const size_t len, const seed_t seed, void * out) {
+static void UMASH_FP(const void * in, const size_t len, const seed_t seed, void * out) {
     const struct umash_params * params = reseed ?
         (const struct umash_params *)(uintptr_t)seed :
         &umash_params_global;

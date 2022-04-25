@@ -48,7 +48,7 @@ typedef __vector unsigned int xxh_u32x4;
 #  define XXH_vec_revb vec_revb
 #else
 // A polyfill for POWER9's vec_revb().
-FORCE_INLINE xxh_u64x2 XXH_vec_revb(xxh_u64x2 val) {
+static FORCE_INLINE xxh_u64x2 XXH_vec_revb(xxh_u64x2 val) {
     xxh_u8x16 const vByteSwap = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
                                   0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
     return vec_perm(val, val, vByteSwap);
@@ -57,7 +57,7 @@ FORCE_INLINE xxh_u64x2 XXH_vec_revb(xxh_u64x2 val) {
 
 // Performs an unaligned vector load and byte swaps it on big endian.
 template < bool bswap >
-FORCE_INLINE xxh_u64x2 XXH_vec_loadu(const void *ptr) {
+static FORCE_INLINE xxh_u64x2 XXH_vec_loadu(const void *ptr) {
     xxh_u64x2 ret;
     memcpy(&ret, ptr, sizeof(xxh_u64x2));
     if (bswap) {
@@ -83,12 +83,12 @@ FORCE_INLINE xxh_u64x2 XXH_vec_loadu(const void *ptr) {
 #else
 /* gcc needs inline assembly */
 /* Adapted from https://github.com/google/highwayhash/blob/master/highwayhash/hh_vsx.h. */
-FORCE_INLINE xxh_u64x2 XXH_vec_mulo(xxh_u32x4 a, xxh_u32x4 b) {
+static FORCE_INLINE xxh_u64x2 XXH_vec_mulo(xxh_u32x4 a, xxh_u32x4 b) {
     xxh_u64x2 result;
     __asm__("vmulouw %0, %1, %2" : "=v" (result) : "v" (a), "v" (b));
     return result;
 }
-FORCE_INLINE xxh_u64x2 XXH_vec_mule(xxh_u32x4 a, xxh_u32x4 b) {
+static FORCE_INLINE xxh_u64x2 XXH_vec_mule(xxh_u32x4 a, xxh_u32x4 b) {
     xxh_u64x2 result;
     __asm__("vmuleuw %0, %1, %2" : "=v" (result) : "v" (a), "v" (b));
     return result;

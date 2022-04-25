@@ -31,7 +31,7 @@
 }
 
 template < bool hash64, bool bswap >
-void hashlittle(const uint8_t * key, size_t length, uint64_t seed64, uint8_t * out) {
+static void hashlittle(const uint8_t * key, size_t length, uint64_t seed64, uint8_t * out) {
   uint32_t a,b,c;                                          /* internal state */
 
   /* Set up the internal state */
@@ -77,7 +77,7 @@ void hashlittle(const uint8_t * key, size_t length, uint64_t seed64, uint8_t * o
 
 //------------------------------------------------------------
 template < bool hash64, bool bswap >
-void lookup3(const void * in, const size_t len, const seed_t seed, void * out) {
+static void lookup3(const void * in, const size_t len, const seed_t seed, void * out) {
     hashlittle<hash64,bswap>((const uint8_t *)in, len, (uint64_t)seed, (uint8_t *)out);
 }
 

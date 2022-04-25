@@ -344,7 +344,7 @@ static inline uint64_t komihash_impl(const void* const Msg0, size_t MsgLen,
 
 //------------------------------------------------------------
 template < bool bswap >
-void komihash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void komihash(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = komihash_impl<bswap>(in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

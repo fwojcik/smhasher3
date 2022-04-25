@@ -33,7 +33,7 @@
 
 //-----------------------------------------------------------------------------
 template < bool bswap >
-void MurmurHash1(const void * in, const size_t olen, const seed_t seed, void * out) {
+static void MurmurHash1(const void * in, const size_t olen, const seed_t seed, void * out) {
     //uint32_t MurmurHash1 ( const void * key, int len, uint32_t seed )
     const uint32_t m = 0xc6a4a793;
     const uint32_t r = 16;

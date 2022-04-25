@@ -87,7 +87,7 @@ static inline uint32_t khash32_fn(uint32_t input, uint32_t func1, uint32_t func2
 // 32 bits are zero, so that the verification value is unchanged.
 
 template < bool bswap >
-void khash32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void khash32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t seedlo  = (uint32_t)(seed);
     uint32_t seedhi  = (uint32_t)(seed >> 32);
     uint32_t hash    = ~seedlo;
@@ -107,7 +107,7 @@ void khash32(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < bool bswap >
-void khash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void khash64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t seed64 = ((uint64_t)seed ^ UINT64_C(0x6a09e66700000000));
     uint64_t hash = ~seed64;
 

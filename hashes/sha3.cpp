@@ -201,7 +201,7 @@ static void sha3_Finalize(sha3_context * ctx, size_t digest_words, uint8_t * dig
 }
 
 template < uint32_t hashbits, bool bswap >
-void SHA3_256(const void * in, const size_t len, const seed_t seed, void * out) {
+static void SHA3_256(const void * in, const size_t len, const seed_t seed, void * out) {
   sha3_context context;
 
   sha3_Init           (&context, 256);

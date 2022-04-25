@@ -40,7 +40,7 @@
 #include "lib/Intrinsics.h"
 
 template < bool bswap >
-void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out) {
+static void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out) {
     const uint8_t * in = (uint8_t *)inv;
     uint64_t src_sz = len;
 

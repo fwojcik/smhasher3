@@ -1296,7 +1296,7 @@ static NEVER_INLINE XXH128_hash_t XXH3_hashLong_128b_internal(
 // XXH3 and XXH3-128 top-level functions
 
 template < bool bswap >
-uint64_t XXH3_64bits_withSeed(const void * input, size_t len, uint64_t seed) {
+static uint64_t XXH3_64bits_withSeed(const void * input, size_t len, uint64_t seed) {
     const uint8_t * RESTRICT secret = (const uint8_t *)XXH3_kSecret;
     size_t secretLen = sizeof(XXH3_kSecret);
 
@@ -1319,7 +1319,7 @@ uint64_t XXH3_64bits_withSeed(const void * input, size_t len, uint64_t seed) {
 }
 
 template < bool bswap >
-XXH128_hash_t XXH3_128bits_withSeed(const void * input, size_t len, uint64_t seed) {
+static XXH128_hash_t XXH3_128bits_withSeed(const void * input, size_t len, uint64_t seed) {
     const uint8_t * RESTRICT secret = (const uint8_t *)XXH3_kSecret;
     size_t secretLen = sizeof(XXH3_kSecret);
 
@@ -1347,7 +1347,7 @@ XXH128_hash_t XXH3_128bits_withSeed(const void * input, size_t len, uint64_t see
 
 //------------------------------------------------------------
 template < bool bswap >
-void XXH32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void XXH32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = XXH32_impl<bswap>((const uint8_t *)in, len, (uint32_t)seed);
 #if 0
     // Output in "canonical" format
@@ -1362,7 +1362,7 @@ void XXH32(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < bool bswap >
-void XXH64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void XXH64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = XXH64_impl<bswap>((const uint8_t *)in, len, (uint64_t)seed);
 #if 0
     // Output in "canonical" format
@@ -1378,7 +1378,7 @@ void XXH64(const void * in, const size_t len, const seed_t seed, void * out) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void XXH3_64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void XXH3_64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = XXH3_64bits_withSeed<bswap>(in, len, seed);
     // Output in "canonical" BE format
     if (isLE()) {
@@ -1389,7 +1389,7 @@ void XXH3_64(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template <  bool bswap >
-void XXH3_128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void XXH3_128(const void * in, const size_t len, const seed_t seed, void * out) {
     XXH128_hash_t h = XXH3_128bits_withSeed<bswap>(in, len, seed);
     // Output in "canonical" BE format
     if (isLE()) {

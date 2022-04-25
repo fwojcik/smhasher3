@@ -70,18 +70,6 @@ static inline uint64_t Fetch64(const uint8_t * p) {
     return GET_U64<bswap>(p, 0);
 }
 
-#if 0
-template < bool bswap >
-static inline __m128i Fetch128(const uint8_t * s) {
-    __m128i d = _mm_loadu_si128(reinterpret_cast<const __m128i*>(s));
-    if (bswap) {
-        const __m128i mask = _mm_set_epi8(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
-        d = _mm_shuffle_epi8(d, mask);
-    }
-    return d;
-}
-#endif
-
 //------------------------------------------------------------
 // Some primes between 2^63 and 2^64 for various uses.
 static const uint64_t k0 = UINT64_C(0xc3a5c85c97cb3127);
@@ -470,7 +458,7 @@ static uint128_t CityHash128WithSeed(const uint8_t *s, size_t len, uint128_t see
 }
 
 template < bool bswap >
-uint128_t CityHash128(const char *s, size_t len) {
+static uint128_t CityHash128(const char *s, size_t len) {
     if (len >= 16) {
         return CityHash128WithSeed<bswap>(
             s + 16, len - 16, Uint128(Fetch64<bswap>(s) ^ k3, Fetch64<bswap>(s + 8)));
@@ -566,7 +554,7 @@ static void CityHashCrc256Short(const uint8_t *s, size_t len, uint64_t *result) 
 }
 
 template < bool bswap >
-void CityHashCrc256(const uint8_t *s, size_t len, uint64_t *result) {
+static void CityHashCrc256(const uint8_t *s, size_t len, uint64_t *result) {
   if (likely(len >= 240)) {
     CityHashCrc256Long<bswap>(s, len, 0, result);
   } else {
@@ -586,7 +574,7 @@ static void CityHashCrc256ShortWithSeed(const uint8_t *s, size_t len, uint64_t s
 
 // Unofficial
 template < bool bswap >
-void CityHashCrc256WithSeed(const uint8_t *s, size_t len, uint64_t seed, uint64_t *result) {
+static void CityHashCrc256WithSeed(const uint8_t *s, size_t len, uint64_t seed, uint64_t *result) {
   if (likely(len >= 240)) {
     CityHashCrc256Long<bswap>(s, len, seed, result);
   } else {
@@ -595,7 +583,7 @@ void CityHashCrc256WithSeed(const uint8_t *s, size_t len, uint64_t seed, uint64_
 }
 
 template < bool bswap >
-uint128_t CityHashCrc128WithSeed(const uint8_t *s, size_t len, uint128_t seed) {
+static uint128_t CityHashCrc128WithSeed(const uint8_t *s, size_t len, uint128_t seed) {
   if (len <= 900) {
     return CityHash128WithSeed<bswap>(s, len, seed);
   } else {
@@ -609,7 +597,7 @@ uint128_t CityHashCrc128WithSeed(const uint8_t *s, size_t len, uint128_t seed) {
 }
 
 template < bool bswap >
-uint128_t CityHashCrc128(const uint8_t *s, size_t len) {
+static uint128_t CityHashCrc128(const uint8_t *s, size_t len) {
   if (len <= 900) {
     return CityHash128<bswap>(s, len);
   } else {
@@ -623,21 +611,21 @@ uint128_t CityHashCrc128(const uint8_t *s, size_t len) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void City32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void City32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h;
     h = CityHash32WithSeed<bswap>((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void City64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void City64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h;
     h = CityHash64WithSeed<bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap, uint32_t seedmode >
-void City128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void City128(const void * in, const size_t len, const seed_t seed, void * out) {
     uint128_t seed128;
     switch(seedmode) {
     case 1: seed128 = Uint128((uint64_t)seed, 0); break;
@@ -655,7 +643,7 @@ void City128(const void * in, const size_t len, const seed_t seed, void * out) {
 // This version is slightly different than the one in Farmhash, so it
 // is tested also.
 template < bool bswap, uint32_t seedmode >
-void CityMurmur_128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CityMurmur_128(const void * in, const size_t len, const seed_t seed, void * out) {
     uint128_t seed128;
     switch(seedmode) {
     case 1: seed128 = Uint128((uint64_t)seed, 0); break;
@@ -673,7 +661,7 @@ void CityMurmur_128(const void * in, const size_t len, const seed_t seed, void *
 #if defined(NEW_HAVE_CRC32C_X86_64)
 
 template < bool bswap, uint32_t seedmode >
-void CityCrc128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CityCrc128(const void * in, const size_t len, const seed_t seed, void * out) {
     uint128_t seed128;
     switch(seedmode) {
     case 1: seed128 = Uint128((uint64_t)seed, 0); break;
@@ -689,7 +677,7 @@ void CityCrc128(const void * in, const size_t len, const seed_t seed, void * out
 }
 
 template < bool bswap >
-void CityCrc256(const void * in, const size_t len, const seed_t seed, void * out) {
+static void CityCrc256(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t result[4];
     CityHashCrc256WithSeed<bswap>((const uint8_t *)in, len, (uint64_t)seed, result);
     PUT_U64<bswap>(result[0], (uint8_t *)out,  0);

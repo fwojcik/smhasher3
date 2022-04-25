@@ -1,7 +1,7 @@
 #define SIMD_DEGREE_OR_2  2
 #define SIMD_DEGREE       1
 
-FORCE_INLINE void g(uint32_t *state, size_t a, size_t b, size_t c, size_t d,
+static FORCE_INLINE void g(uint32_t *state, size_t a, size_t b, size_t c, size_t d,
               uint32_t x, uint32_t y) {
   state[a] = state[a] + state[b] + x;
   state[d] = rotr32(state[d] ^ state[a], 16);
@@ -13,7 +13,7 @@ FORCE_INLINE void g(uint32_t *state, size_t a, size_t b, size_t c, size_t d,
   state[b] = rotr32(state[b] ^ state[c], 7);
 }
 
-FORCE_INLINE void round_fn(uint32_t state[16], const uint32_t *msg, size_t round) {
+static FORCE_INLINE void round_fn(uint32_t state[16], const uint32_t *msg, size_t round) {
   // Select the message schedule based on the round.
   const uint8_t *schedule = MSG_SCHEDULE[round];
 
@@ -30,13 +30,13 @@ FORCE_INLINE void round_fn(uint32_t state[16], const uint32_t *msg, size_t round
   g(state, 3, 4, 9, 14, msg[schedule[14]], msg[schedule[15]]);
 }
 
-FORCE_INLINE uint32_t load32(const void *src) {
+static FORCE_INLINE uint32_t load32(const void *src) {
   const uint8_t *p = (const uint8_t *)src;
   return ((uint32_t)(p[0]) << 0) | ((uint32_t)(p[1]) << 8) |
          ((uint32_t)(p[2]) << 16) | ((uint32_t)(p[3]) << 24);
 }
 
-FORCE_INLINE void compress_pre(uint32_t state[16], const uint32_t cv[8],
+static FORCE_INLINE void compress_pre(uint32_t state[16], const uint32_t cv[8],
                          const uint8_t block[BLAKE3_BLOCK_LEN],
                          uint8_t block_len, uint64_t counter, uint8_t flags) {
   uint32_t block_words[16];
@@ -83,7 +83,7 @@ FORCE_INLINE void compress_pre(uint32_t state[16], const uint32_t cv[8],
   round_fn(state, &block_words[0], 6);
 }
 
-void blake3_compress_in_place(uint32_t cv[8],
+static void blake3_compress_in_place(uint32_t cv[8],
 			      const uint8_t block[BLAKE3_BLOCK_LEN],
 			      uint8_t block_len, uint64_t counter,
 			      uint8_t flags) {
@@ -99,7 +99,7 @@ void blake3_compress_in_place(uint32_t cv[8],
   cv[7] = state[7] ^ state[15];
 }
 
-void blake3_compress_xof(const uint32_t cv[8],
+static void blake3_compress_xof(const uint32_t cv[8],
 			 const uint8_t block[BLAKE3_BLOCK_LEN],
 			 uint8_t block_len, uint64_t counter,
 			 uint8_t flags, uint8_t out[64]) {
@@ -124,7 +124,7 @@ void blake3_compress_xof(const uint32_t cv[8],
   store32(&out[15 * 4], state[15] ^ cv[7]);
 }
 
-FORCE_INLINE void hash_one(const uint8_t *input, size_t blocks,
+static FORCE_INLINE void hash_one(const uint8_t *input, size_t blocks,
 		     const uint32_t key[8], uint64_t counter,
 		     uint8_t flags, uint8_t flags_start,
 		     uint8_t flags_end, uint8_t out[BLAKE3_OUT_LEN]) {
@@ -144,7 +144,7 @@ FORCE_INLINE void hash_one(const uint8_t *input, size_t blocks,
   store_cv_words(out, cv);
 }
 
-void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
+static void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
                                size_t blocks, const uint32_t key[8],
                                uint64_t counter, bool increment_counter,
                                uint8_t flags, uint8_t flags_start,

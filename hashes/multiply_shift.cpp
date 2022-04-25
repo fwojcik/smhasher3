@@ -48,7 +48,7 @@ static inline void mix(uint32_t & w, uint32_t & x, uint32_t & y, uint32_t & z) {
     w = w ^ (w >> 19) ^ t ^ (t >> 8);
 }
 
-uintptr_t multiply_shift_seed_init_slow(const seed_t seed) {
+static uintptr_t multiply_shift_seed_init_slow(const seed_t seed) {
     uint32_t w, x, y, z;
     x = 0x498b3bc5 ^ (uint32_t)(seed);
     y = 0x5a05089a ^ (uint32_t)(seed >> 32);
@@ -66,14 +66,14 @@ uintptr_t multiply_shift_seed_init_slow(const seed_t seed) {
     return 0;
 }
 
-bool multiply_shift_init(void) {
+static bool multiply_shift_init(void) {
     multiply_shift_seed_init_slow(0);
     return true;
 }
 
 // Vector multiply-shift (3.4) from Thorup's notes.
 template < bool bswap >
-void multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+static void multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
     const size_t len = len_bytes/4;
 
@@ -108,7 +108,7 @@ void multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed
 
 // Pair multiply-shift (3.5) from Thorup's notes.
 template < bool bswap >
-void pair_multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+static void pair_multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
     const size_t len = len_bytes/4;
 
@@ -158,7 +158,7 @@ void pair_multiply_shift32(const void * in, const size_t len_bytes, const seed_t
 //
 // XXX Need to implement fma128_128()
 template < bool bswap >
-void multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+static void multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
     const size_t len = len_bytes/8;
 
@@ -199,7 +199,7 @@ void multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed
 
 // Pair multiply-shift (3.5) from Thorup's notes.
 template < bool bswap >
-void pair_multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+static void pair_multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
     const size_t len = len_bytes/8;
 

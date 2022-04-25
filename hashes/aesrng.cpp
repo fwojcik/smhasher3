@@ -43,7 +43,7 @@ static uint32_t round_keys[44]; // only modified on main thread
 /* K1 is golden ratio - 1, K2 is sqrt(3) - 1 */
 #define K1 UINT64_C(0x9E3779B97F4A7C15)
 #define K2 UINT64_C(0xBB67AE8584CAA73B)
-bool aesrng_init(void) {
+static bool aesrng_init(void) {
     uint8_t key[16];
     if (isLE()) {
         PUT_U64<false>(g_seed + K2, key, 0);
@@ -108,7 +108,7 @@ static uint64_t hash_mode;
 // thread's results should be unaffected if threading is enabled or
 // disabled, or if the possibly-threaded tests are skipped, and the
 // per-thread results should be unaffected by the number of threads.
-seed_t aesrng_seedfix(const HashInfo * hinfo, const seed_t hint) {
+static seed_t aesrng_seedfix(const HashInfo * hinfo, const seed_t hint) {
     if (hash_mode == hint) {
         oldctr[0] = ctr[0];
         oldctr[1] = ctr[1];
@@ -176,7 +176,7 @@ static void rng_impl(void * out) {
 }
 
 template < uint32_t hashbits >
-void aesrng(const void * in, const size_t len, const seed_t seed, void * out) {
+static void aesrng(const void * in, const size_t len, const seed_t seed, void * out) {
     if (hash_mode != 0)
       rng_keyseq(in, len, seed);
     rng_impl<(hashbits >> 3)>(out);

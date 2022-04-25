@@ -58,7 +58,7 @@ static const uint32_t tail_mask_32[] = {
 #define JODY_HASH_SHIFT    14
 
 template < typename T, bool bswap >
-T jody_block_hash(const uint8_t * RESTRICT data, const size_t count, const T start_hash) {
+static T jody_block_hash(const uint8_t * RESTRICT data, const size_t count, const T start_hash) {
     T hash = start_hash;
     T element;
     T partial_salt;
@@ -106,13 +106,13 @@ T jody_block_hash(const uint8_t * RESTRICT data, const size_t count, const T sta
 
 //------------------------------------------------------------
 template < bool bswap >
-void jodyhash32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void jodyhash32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = jody_block_hash<uint32_t,bswap>((const uint8_t *)in, len, (uint32_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void jodyhash64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void jodyhash64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = jody_block_hash<uint64_t,bswap>((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

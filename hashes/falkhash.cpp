@@ -62,7 +62,7 @@
 #include "lib/Intrinsics.h"
 
 template < uint32_t version, bool bswap >
-void falkhash(const void * in, const size_t olen, const seed_t seed64, void * out) {
+static void falkhash(const void * in, const size_t olen, const seed_t seed64, void * out) {
   const uint8_t * buf = (const uint8_t *)in;
   uint64_t len = (uint64_t)olen;
   __m128i hash, seed;

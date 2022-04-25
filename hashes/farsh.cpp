@@ -41,7 +41,7 @@
 #define EXTRA_ELEMENTS  (((FARSH_MAX_HASHES-1) * FARSH_EXTRA_KEY_SIZE) / sizeof(uint32_t))
 
 /* STRIPE bytes of key material plus extra keys for hashes up to 1024 bits long */
-alignas(alignof(max_align_t)) static const uint32_t FARSH_KEYS [STRIPE_ELEMENTS + EXTRA_ELEMENTS] = {
+alignas(2*alignof(__m128i)) static const uint32_t FARSH_KEYS [STRIPE_ELEMENTS + EXTRA_ELEMENTS] = {
     0xb8fe6c39,0x23a44bbe,0x7c01812c,0xf721ad1c,0xded46de9,0x839097db,0x7240a4a4,0xb7b3671f,
     0xcb79e64e,0xccc0e578,0x825ad07d,0xccff7221,0xb8084674,0xf743248e,0xe03590e6,0x813a264c,
     0x3c2852bb,0x91c300cb,0x88d0658b,0x1b532ea3,0x71644897,0xa20df94e,0x3819ef46,0xa9deacd8,
@@ -189,7 +189,7 @@ static uint32_t farsh_final (uint64_t sum) {
 
 /* Public API functions documented in farsh.h */
 template < bool bswap >
-uint32_t farsh_keyed (const void *data, size_t bytes, const void *key, uint64_t seed) {
+static uint32_t farsh_keyed (const void *data, size_t bytes, const void *key, uint64_t seed) {
     uint64_t sum = seed;
     const char *ptr     = (const char*) data;
     const uint32_t *key_ptr = (const uint32_t*) key;
@@ -209,14 +209,14 @@ uint32_t farsh_keyed (const void *data, size_t bytes, const void *key, uint64_t 
 }
 
 template < bool bswap >
-void farsh_keyed_n (const void *data, size_t bytes, const void *key, int n, uint64_t seed, void *hash) {
+static void farsh_keyed_n (const void *data, size_t bytes, const void *key, int n, uint64_t seed, void *hash) {
     uint32_t * hash_ptr = (uint32_t*)hash;
     for (int i = 0; i < n; i++)
         hash_ptr[i] = COND_BSWAP(farsh_keyed<bswap>(data, bytes, (const char*)key + i*FARSH_EXTRA_KEY_SIZE, seed), bswap);
 }
 
 template < bool bswap >
-void farsh_n (const void *data, size_t bytes, int k, int n, uint64_t seed, void *hash) {
+static void farsh_n (const void *data, size_t bytes, int k, int n, uint64_t seed, void *hash) {
     /* FARSH_KEYS contains only material for the hashes 0..FARSH_MAX_HASHES-1 */
     if (k+n > FARSH_MAX_HASHES) return;
 
@@ -224,7 +224,7 @@ void farsh_n (const void *data, size_t bytes, int k, int n, uint64_t seed, void 
 }
 
 template < bool bswap, uint32_t hashcount >
-void farsh(const void * in, const size_t len, const seed_t seed, void * out) {
+static void farsh(const void * in, const size_t len, const seed_t seed, void * out) {
     farsh_n<bswap>(in, len, 0, hashcount, (uint64_t)seed, out);
 }
 

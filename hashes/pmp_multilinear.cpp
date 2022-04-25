@@ -643,7 +643,7 @@ static thread_local random_data_for_PMPML_64 rd_for_PMPML_64[PMPML_64_LEVELS] = 
 //-------------------------------------------------------------
 // Common math routines
 
-inline uint32_t fmix32_short(uint32_t h) {
+static inline uint32_t fmix32_short(uint32_t h) {
   h ^= h >> 13;
   h *= 0xab3be54f;
   h ^= h >> 16;
@@ -651,7 +651,7 @@ inline uint32_t fmix32_short(uint32_t h) {
   return h;
 }
 
-inline uint64_t fmix64_short(uint64_t k) {
+static inline uint64_t fmix64_short(uint64_t k) {
   k ^= k >> 33;
   k *= UINT64_C(0xc4ceb9fe1a85ec53 );
   k ^= k >> 33;
@@ -664,17 +664,17 @@ inline uint64_t fmix64_short(uint64_t k) {
 //-------------------------------------------------------------
 // 32-bit hash
 
-inline
+static inline
 void multiply32x32to64(uint32_t& rhi, uint32_t& rlo, uint32_t a, uint32_t b) {
     mult32_64(rlo, rhi, a, b);
 }
 
-inline
+static inline
 void add64(uint32_t& loWord, uint32_t& hiWord, uint32_t& hhWord, uint32_t& loAdd, uint32_t& hiAdd, uint32_t& hhAdd) {
     add96(loWord, hiWord, hhWord, loAdd, hiAdd, hhAdd);
 }
 
-FORCE_INLINE
+static FORCE_INLINE
 void mul32x32to64addto96(uint32_t& loWord, uint32_t& hiWord, uint32_t& hhWord, uint32_t a, uint32_t b) {
     fma32_96(loWord, hiWord, hhWord, a, b);
 }
@@ -1590,7 +1590,7 @@ class PMP_Multilinear_Hasher_32
 
 #if defined(_MSC_VER) && defined(HAVE_32BIT_PLATFORM)
   template < uint32_t N, bool bswap >
-  FORCE_INLINE uint32_t hash_size_SMALL_N( const unsigned char* chars ) const
+  static FORCE_INLINE uint32_t hash_size_SMALL_N( const unsigned char* chars ) const
   {
 		const uint32_t* coeff = curr_rd[0].random_coeff;
 		ULARGE_INTEGER__XX constTerm = *(ULARGE_INTEGER__XX*)(&(curr_rd[0].const_term));
@@ -1614,7 +1614,7 @@ class PMP_Multilinear_Hasher_32
   }
 
 #define HASH_SIZE_XXX_BEGIN( XXX ) \
-	FORCE_INLINE uint32_t hash_size_##XXX( const unsigned char* chars ) const \
+  static FORCE_INLINE uint32_t hash_size_##XXX( const unsigned char* chars ) const \
   { \
 		const uint32_t* coeff = curr_rd[0].random_coeff; \
 		const uint32_t* x = (const uint32_t*)chars; \
@@ -1626,7 +1626,7 @@ class PMP_Multilinear_Hasher_32
 #define HASH_SIZE_XXX_END \
 		PMPML_CHUNK_LOOP_PRE_REDUCE_L0 \
 		PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN_RETURN \
-}
+  }
 
 HASH_SIZE_XXX_BEGIN(28 )
 		PMPML_CHUNK_LOOP_BODY_ULI_T1( 0 ) PMPML_CHUNK_LOOP_BODY_ULI_T1( 1 ) PMPML_CHUNK_LOOP_BODY_ULI_T1( 2 ) PMPML_CHUNK_LOOP_BODY_ULI_T1( 3 ) PMPML_CHUNK_LOOP_BODY_ULI_T1( 4 ) PMPML_CHUNK_LOOP_BODY_ULI_T1( 5 ) PMPML_CHUNK_LOOP_BODY_ULI_T1( 6 ) 	xLast = 0x1;	PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST_FOR_JUST_1;
@@ -1806,11 +1806,6 @@ public:
   {
       curr_rd = (random_data_for_PMPML_32*)rd_for_PMPML_32;
       coeff0 = curr_rd[0].const_term;
-  }
-  virtual ~PMP_Multilinear_Hasher_32()
-  {
-    if ( curr_rd != NULL && curr_rd != rd_for_PMPML_32 )
-        delete [] curr_rd;
   }
   void seed( uint64_t seed )
   {
@@ -2008,7 +2003,7 @@ static FORCE_INLINE void MultiplyAccumulateWordLoHi(uint64_t& rlo, uint64_t& rhi
 }
 
 template < bool bswap >
-uint64_t ReadTail(const uint8_t * tail, uint64_t tail_size) {
+static uint64_t ReadTail(const uint8_t * tail, uint64_t tail_size) {
   uint64_t xLast;
 
   switch (tail_size & (PMPML_64_WORD_SIZE_BYTES - 1)) {
@@ -2555,11 +2550,6 @@ public:
     curr_rd = (random_data_for_PMPML_64*)rd_for_PMPML_64;
     coeff0 = curr_rd[0].random_coeff[0];
   }
-  virtual ~PMP_Multilinear_Hasher_64()
-  {
-    if ( curr_rd != NULL && curr_rd != rd_for_PMPML_64 )
-		delete [] curr_rd;
-  }
   void seed( uint64_t seed )
   {
     curr_rd[0].random_coeff[0] = coeff0 ^ seed;
@@ -2572,25 +2562,25 @@ public:
 static thread_local PMP_Multilinear_Hasher_32 pmpml_hasher_32;
 static thread_local PMP_Multilinear_Hasher_64 pmpml_hasher_64;
 
-uintptr_t PMPML_32_seed(const seed_t seed) {
+static uintptr_t PMPML_32_seed(const seed_t seed) {
   pmpml_hasher_32.seed((uint64_t)seed);
   return (uintptr_t)(&pmpml_hasher_32);
 }
 
-uintptr_t PMPML_64_seed(const seed_t seed) {
+static uintptr_t PMPML_64_seed(const seed_t seed) {
   pmpml_hasher_64.seed((uint64_t)seed);
   return (uintptr_t)(&pmpml_hasher_64);
 }
 
 template < bool bswap >
-void PMPML_32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void PMPML_32(const void * in, const size_t len, const seed_t seed, void * out) {
   PMP_Multilinear_Hasher_32 * p = (PMP_Multilinear_Hasher_32 *)(uintptr_t)seed;
   uint32_t h = p->hash<bswap>((const uint8_t *)in, len);
   PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void PMPML_64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void PMPML_64(const void * in, const size_t len, const seed_t seed, void * out) {
   PMP_Multilinear_Hasher_64 * p = (PMP_Multilinear_Hasher_64 *)(uintptr_t)seed;
   uint64_t h = p->hash<bswap>((const uint8_t *)in, len);
   PUT_U64<bswap>(h, (uint8_t *)out, 0);

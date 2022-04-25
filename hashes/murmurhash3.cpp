@@ -67,7 +67,7 @@ static FORCE_INLINE uint64_t getblock64(const uint64_t * p, int64_t i) {
 
 //-----------------------------------------------------------------------------
 template < bool bswap >
-void MurmurHash3_32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MurmurHash3_32(const void * in, const size_t len, const seed_t seed, void * out) {
   const uint8_t * data = (const uint8_t *)in;
   const ssize_t nblocks = len / 4;
 
@@ -119,7 +119,7 @@ void MurmurHash3_32(const void * in, const size_t len, const seed_t seed, void *
 
 //-----------------------------------------------------------------------------
 template < bool bswap >
-void MurmurHash3_32_128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MurmurHash3_32_128(const void * in, const size_t len, const seed_t seed, void * out) {
   const uint8_t * data = (const uint8_t *)in;
   const ssize_t nblocks = len / 16;
 
@@ -221,7 +221,7 @@ void MurmurHash3_32_128(const void * in, const size_t len, const seed_t seed, vo
 
 //-----------------------------------------------------------------------------
 template < bool bswap >
-void MurmurHash3_128(const void * in, const size_t len, const seed_t seed, void * out) {
+static void MurmurHash3_128(const void * in, const size_t len, const seed_t seed, void * out) {
   const uint8_t * data = (const uint8_t *)in;
   const size_t nblocks = len / 16;
 

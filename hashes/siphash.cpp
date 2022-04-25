@@ -372,7 +372,7 @@ static uint64_t tsip(const uint64_t seed, const uint8_t * m, uint64_t len) {
 
 //------------------------------------------------------------
 template < bool bswap >
-void SipHash_2_4(const void * in, const size_t len, const seed_t seed, void * out) {
+static void SipHash_2_4(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t key[2] = { seed, 0 };
     uint64_t h;
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
@@ -384,7 +384,7 @@ void SipHash_2_4(const void * in, const size_t len, const seed_t seed, void * ou
 }
 
 template < bool bswap >
-void SipHash_1_3(const void * in, const size_t len, const seed_t seed, void * out) {
+static void SipHash_1_3(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t key[2] = { seed, 0 };
     uint64_t h;
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
@@ -396,7 +396,7 @@ void SipHash_1_3(const void * in, const size_t len, const seed_t seed, void * ou
 }
 
 template < bool bswap >
-void HalfSipHash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void HalfSipHash(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t key[2] = { (uint32_t)seed, (uint32_t)(((uint64_t)seed) >> 32) };
     uint32_t h;
     h = halfsiphash<bswap>(key, (const uint8_t *)in, len);
@@ -404,7 +404,7 @@ void HalfSipHash(const void * in, const size_t len, const seed_t seed, void * ou
 }
 
 template < bool bswap >
-void TinySipHash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void TinySipHash(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h;
     h = tsip<bswap>((uint64_t)seed, (const uint8_t *)in, len);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);

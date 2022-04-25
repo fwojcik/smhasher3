@@ -367,7 +367,7 @@ static FORCE_INLINE void round(uint64_t * const state, const uint8_t * m8, uint3
 //---------
 // main hash function
 template < bool bswap >
-void beamsplitter_64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void beamsplitter_64(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * key8Arr = (uint8_t *)in;
     uint32_t seedbuf[2] = {0};
 

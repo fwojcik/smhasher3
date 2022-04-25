@@ -91,7 +91,7 @@ static uint128_t rand_u128(void) {
     return r;
 }
 
-uintptr_t poly_mersenne_seed_init(const seed_t seed) {
+static uintptr_t poly_mersenne_seed_init(const seed_t seed) {
     BSD_srand(seed);
     // a has be at most 2^60, or the lazy modular reduction won't work.
     poly_mersenne_a = rand_u128() % (MERSENNE_61/2);
@@ -117,7 +117,7 @@ static uint64_t mult_combine61(uint64_t h, uint64_t x, uint64_t a) {
 
 // This function ignores the seed, because it uses a separate seeding function.
 template < uint32_t K, bool bswap >
-void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, void * out) {
+static void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t * buf = (const uint8_t *)in;
 
     // We first combine hashes using a polynomial in `a`:

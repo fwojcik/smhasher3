@@ -605,13 +605,13 @@ public:
 static VHASH_initializer vhi;
 
 template < bool bswap >
-void VHASH32(const void * in, const size_t len, const seed_t seed, void * out) {
+static void VHASH32(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t hash = vhash<bswap>((const uint8_t *)in, len, (uint64_t)seed, &(vhi.ctx));
     PUT_U32<bswap>(hash, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
-void VHASH64(const void * in, const size_t len, const seed_t seed, void * out) {
+static void VHASH64(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t hash = vhash<bswap>((const uint8_t *)in, len, (uint64_t)seed, &(vhi.ctx));
     PUT_U64<bswap>(hash, (uint8_t *)out, 0);
 }

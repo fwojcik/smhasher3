@@ -29,11 +29,11 @@
 #include "Types.h"
 #include "Hashlib.h"
 
-void DoNothingHash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void DoNothingHash(const void * in, const size_t len, const seed_t seed, void * out) {
 }
 
 template < uint32_t hashlen, bool bswap >
-void DoNothingOAATHash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void DoNothingOAATHash(const void * in, const size_t len, const seed_t seed, void * out) {
     const uint8_t *       data = (const uint8_t *)in;
     const uint8_t * const end  = &data[len];
     uint32_t h                 = seed >> 32;
