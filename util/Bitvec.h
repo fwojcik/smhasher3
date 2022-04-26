@@ -70,49 +70,6 @@ inline void flipbit ( T & blob, uint32_t bit )
 }
 
 //-----------------------------------------------------------------------------
-// Bit-windowing functions - select some N-bit subset of the input blob
-
-template<uint32_t bitlen>
-inline uint32_t window ( const void * blob, int start, int count )
-{
-  assume(count <= 24);
-  const uint32_t mask = (1 << count) - 1;
-  const uint8_t * b = (const uint8_t *)blob;
-  uint32_t v;
-
-  if (bitlen == 8)
-      v = (b[0] | (b[0] << 8)) >> start;
-  else if (bitlen == 16)
-      v = (b[0] | (b[1] << 8) | (b[0] << 16) | (b[1] << 24)) >> start;
-  else if (bitlen == 24) {
-      uint8_t t[6];
-      memcpy(&t[0], b, 3);
-      memcpy(&t[3], b, 3);
-      memcpy(&v, t + (start >> 3), 4);
-      v >>= (start & 7);
-  } else if (start <= (bitlen - 25)) {
-      memcpy(&v, b + (start >> 3), 4);
-      v >>= (start & 7);
-  } else {
-      memcpy(&v, b + (bitlen / 8) - 4, 4);
-      v >>= 32 + start - bitlen;
-      if ((start + count) > bitlen) {
-          uint32_t v2;
-          memcpy(&v2, b, 4);
-          v2 <<= bitlen - start;
-          v |= v2;
-      }
-  }
-  return v & mask;
-}
-
-template < typename T >
-inline uint32_t window ( const T & blob, int start, int count )
-{
-  return window<8*sizeof(T)>(&blob,start,count);
-}
-
-//-----------------------------------------------------------------------------
 static const uint32_t    RADIX_BITS   = 8;
 static const uint32_t    RADIX_SIZE   = (uint32_t)1 << RADIX_BITS;
 static const uint32_t    RADIX_MASK   = RADIX_SIZE - 1;

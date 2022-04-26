@@ -478,7 +478,7 @@ static bool TestDistribution ( std::vector<hashtype> & hashes, bool drawDiagram 
 
     for(uint64_t j = 0; j < nbH; j++)
     {
-      uint32_t index = window(hashes[j],start,width);
+      uint32_t index = hashes[j].window(start,width);
 
       bins[index]++;
     }

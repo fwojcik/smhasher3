@@ -166,6 +166,33 @@ public:
       return zb;
   }
 
+  // Bit-windowing function.
+  // Select some N-bit subset of the Blob, where N <= 24.
+  FORCE_INLINE uint32_t window(size_t start, size_t count) const {
+      assume(count <= 24);
+      const size_t bitlen = 8 * sizeof(bytes);
+      const uint32_t mask = (1 << count) - 1;
+      uint32_t v;
+
+      if (start <= (bitlen - 25)) {
+          memcpy(&v, &bytes[start >> 3], 4);
+          v = COND_BSWAP(v, isBE());
+          v >>= (start & 7);
+      } else {
+          memcpy(&v, &bytes[sizeof(bytes) - 4], 4);
+          v = COND_BSWAP(v, isBE());
+          v >>= 32 + start - bitlen;
+          if ((start + count) > bitlen) {
+              uint32_t v2;
+              memcpy(&v2, bytes, 4);
+              v2 = COND_BSWAP(v2, isBE());
+              v2 <<= bitlen - start;
+              v |= v2;
+          }
+      }
+      return v & mask;
+  }
+
   // 0xf00f1001 => 0x8008f00f
   FORCE_INLINE void reversebits(void) {
       const size_t len = sizeof(bytes);
