@@ -46,28 +46,9 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "Random.h"
 #include "Bitvec.h"
 
-#include <cstdio>
-#include <algorithm>
-#include <memory>
 #include <cassert>
-
-//----------------------------------------------------------------------------
-
-#ifdef DEBUG
-#undef assume
-#define assume(x) assert(x)
-#define verify(x) assert(x)
-#else
-static void warn_if ( bool x, const char * s, const char * fn, uint64_t ln )
-{
-  if (!x)
-    printf("Statement %s is not true: %s:%ld\n", s, fn, ln);
-}
-#define verify(x) warn_if(x, #x, __FILE__, __LINE__)
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -179,47 +160,3 @@ void printbytes2 ( const void * blob, int len )
     printf("%02x ",d[i]);
   }
 }
-
-//-----------------------------------------------------------------------------
-// Bit-level manipulation
-
-uint32_t getbit_wrap ( const void * block, int len, uint32_t bit )
-{
-  uint8_t * b = (uint8_t*)block;
-
-  int byte = bit >> 3;
-  bit = bit & 0x7;
-
-  byte %= len;
-
-  return (b[byte] >> bit) & 1;
-}
-
-void setbit ( void * block, int len, uint32_t bit )
-{
-  uint8_t * b = (uint8_t*)block;
-
-  int byte = bit >> 3;
-  bit = bit & 0x7;
-
-  if(byte < len) b[byte] |= (1 << bit);
-}
-
-void     clearbit    ( void * blob, int len, uint32_t bit );
-
-void setbit ( void * block, int len, uint32_t bit, uint32_t val )
-{
-  val ? setbit(block,len,bit) : clearbit(block,len,bit);
-}
-
-void clearbit ( void * block, int len, uint32_t bit )
-{
-  uint8_t * b = (uint8_t*)block;
-
-  int byte = bit >> 3;
-  bit = bit & 0x7;
-
-  if(byte < len) b[byte] &= ~(1 << bit);
-}
-
-//-----------------------------------------------------------------------------

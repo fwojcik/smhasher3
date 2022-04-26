@@ -49,6 +49,8 @@
 //-----------------------------------------------------------------------------
 // Platform-specific functions and macros
 
+#include <cstdio>
+
 #ifdef HAVE_THREADS
 #include <thread>
 # if __APPLE__
@@ -205,8 +207,21 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #endif	//	!defined(_MSC_VER)
 
 //-----------------------------------------------------------------------------
-#include <cstdio>
+#ifdef DEBUG
+#include <cassert>
+#undef assume
+#define assume(x) assert(x)
+#define verify(x) assert(x)
+#else
+static void warn_if ( bool x, const char * s, const char * fn, uint64_t ln )
+{
+  if (!x)
+    printf("Statement %s is not true: %s:%ld\n", s, fn, ln);
+}
+#define verify(x) warn_if(x, #x, __FILE__, __LINE__)
+#endif
 
+//-----------------------------------------------------------------------------
 // isLE() and isBE() should NOT be constexpr
 #if defined(FORCE_LITTLE_ENDIAN)
 static FORCE_INLINE bool isLE(void) { return true; }
