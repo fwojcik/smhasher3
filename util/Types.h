@@ -91,10 +91,12 @@ public:
   }
 
   uint8_t & operator [] (int i) {
+    //assert(i < sizeof(bytes));
     return bytes[i];
   }
 
   const uint8_t & operator [](int i) const {
+    //assert(i < sizeof(bytes));
     return bytes[i];
   }
 
@@ -142,7 +144,6 @@ public:
     }
     return *this;
   }
-
 
   void lrot(size_t c) {
       const size_t byteoffset = c >> 3;

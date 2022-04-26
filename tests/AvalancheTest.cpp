@@ -235,7 +235,7 @@ static void calcBiasRange ( const HashFn hash, const seed_t seed,
       }
 #else
       for(int oByte = 0; oByte < hashbytes; oByte++) {
-          uint32_t byte = getbyte(B, oByte);
+          uint8_t byte = B[oByte];
           for(int oBit = 0; oBit < 8; oBit++) {
               (*cursor++) += byte & 1;
               byte >>= 1;

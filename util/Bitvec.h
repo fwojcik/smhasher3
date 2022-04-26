@@ -53,23 +53,6 @@ void     printhex    ( const void * blob, int len );
 
 //----------
 
-static inline uint32_t getbyte ( const void * block, int len, uint32_t byte )
-{
-  uint8_t * b = (uint8_t*)block;
-
-  if(byte >= len) return 0;
-
-  return b[byte];
-}
-
-template< typename T >
-inline uint32_t getbyte ( T & blob, uint32_t byte )
-{
-  return getbyte(&blob,sizeof(T),byte);
-}
-
-//----------
-
 static inline uint32_t getbit ( const void * block, int len, uint32_t bit )
 {
   uint8_t * b = (uint8_t*)block;
@@ -246,7 +229,7 @@ static void radixsort( T * begin, T * end )
   // the last one.
   do {
     for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
-      uint32_t value = getbyte(*ptr, pass);
+      uint8_t value = (*ptr)[pass];
       ++freqs[pass][value];
     }
   } while (++ptr < (end - 1));
@@ -255,7 +238,7 @@ static void radixsort( T * begin, T * end )
   // therefore be skipped entirely.
   uint32_t trivial_passes = 0;
   for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
-    uint32_t value = getbyte(*ptr, pass);
+    uint8_t value = (*ptr)[pass];
     if (++freqs[pass][value] == count)
       trivial_passes |= 1UL << pass;
   }
@@ -274,14 +257,14 @@ static void radixsort( T * begin, T * end )
     // way all the entries end up contiguous with no gaps.
     T * queue_ptrs[RADIX_SIZE];
     T * next = to;
-    for (uint32_t i = 0; i < RADIX_SIZE; i++) {
+    for (size_t i = 0; i < RADIX_SIZE; i++) {
       queue_ptrs[i] = next;
       next += freqs[pass][i];
     }
 
     // Copy each element into its queue based on the current byte.
     for (size_t i = 0; i < count; i++) {
-      uint32_t index = getbyte(from[i], pass);
+      uint8_t index = from[i][pass];
       *queue_ptrs[index]++ = from[i];
       __builtin_prefetch(queue_ptrs[index] + 1);
     }
@@ -324,14 +307,14 @@ static void flagsort( T * begin, T * end, int idx )
   size_t freqs[RADIX_SIZE] = {};
   T * ptr = begin;
   do {
-    ++freqs[getbyte(*ptr, idx)];
+    ++freqs[(*ptr)[idx]];
   } while (++ptr < (end - 1));
   // As in radix sort, if this pass would do no rearrangement, then
   // there's no need to iterate over every item. Since this case is
   // only likely to hit in degenerate cases (e.g. donothing64), just
   // devolve into radixsort since that performs better on lists of
   // many similar values.
-  if (++freqs[getbyte(*ptr, idx)] == count) {
+  if (++freqs[(*ptr)[idx]] == count) {
       // If there are no more passes, then we're just done.
       if (idx == 0) {
           return;
@@ -341,7 +324,7 @@ static void flagsort( T * begin, T * end, int idx )
 
   T * block_ptrs[RADIX_SIZE];
   ptr = begin;
-  for (uint32_t i = 0; i < RADIX_SIZE; i++) {
+  for (size_t i = 0; i < RADIX_SIZE; i++) {
     block_ptrs[i] = ptr;
     ptr += freqs[i];
   }
@@ -350,14 +333,14 @@ static void flagsort( T * begin, T * end, int idx )
   // sort ordering inside each block.
   ptr     = begin;
   T * nxt = begin + freqs[0];
-  unsigned curblock = 0;
+  uint8_t curblock = 0;
   while (curblock < (RADIX_SIZE - 1)) {
     if (expectp(ptr >= nxt, 0.0944)) {
       curblock++;
       nxt += freqs[curblock];
       continue;
     }
-    uint32_t value = getbyte(*ptr, idx);
+    uint8_t value = (*ptr)[idx];
     if (expectp(value == curblock, 0.501155)) {
       ptr++;
       continue;
