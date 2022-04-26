@@ -148,7 +148,18 @@ public:
   FORCE_INLINE uint8_t getbit(size_t bit) const {
       size_t byte = bit >> 3;
       bit &= 7;
+      if (byte > sizeof(bytes)) return 0;
       return (bytes[byte] >> bit) & 1;
+  }
+
+  // 0xf00f1001 => 0x8008f00f
+  FORCE_INLINE void reversebits(void) {
+      const size_t len = sizeof(bytes);
+      uint8_t tmp[len];
+
+      for (size_t i = 0; i < len; i++)
+          tmp[len - i - 1] = byterev(bytes[i]);
+      memcpy(bytes, tmp, len);
   }
 
   void lrot(size_t c) {
@@ -180,6 +191,46 @@ private:
     memcpy(bytes, blob, len);
     memset(&bytes[len], 0, sizeof(bytes) - len);
   }
+
+  // from the "Bit Twiddling Hacks" webpage
+  static FORCE_INLINE uint8_t byterev(uint8_t b) {
+      return ((b * UINT64_C(0x0802) & UINT64_C(0x22110)) |
+              (b * UINT64_C(0x8020) & UINT64_C(0x88440)))  * UINT64_C(0x10101) >> 16;
+  }
+
 };
+
+// from the "Bit Twiddling Hacks" webpage
+template<> FORCE_INLINE void Blob<32>::reversebits(void) {
+    uint32_t v = GET_U32<false>(bytes, 0);
+    // swap odd and even bits
+    v = ((v >> 1) & 0x55555555) | ((v & 0x55555555) <<  1);
+    // swap consecutive pairs
+    v = ((v >> 2) & 0x33333333) | ((v & 0x33333333) <<  2);
+    // swap nibbles ...
+    v = ((v >> 4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) <<  4);
+    // swap bytes
+    v = ((v >> 8) & 0x00FF00FF) | ((v & 0x00FF00FF) <<  8);
+    // swap 2-byte long pairs
+    v = ( v >> 16             ) | ( v               << 16);
+    PUT_U32<false>(v, bytes, 0);
+}
+
+template<> FORCE_INLINE void Blob<64>::reversebits(void) {
+    uint64_t v = GET_U64<false>(bytes, 0);
+    // swap odd and even bits
+    v = ((v >> 1)  & UINT64_C(0x5555555555555555)) | ((v & UINT64_C(0x5555555555555555)) <<  1);
+    // swap consecutive pairs
+    v = ((v >> 2)  & UINT64_C(0x3333333333333333)) | ((v & UINT64_C(0x3333333333333333)) <<  2);
+    // swap nibbles ...
+    v = ((v >> 4)  & UINT64_C(0x0F0F0F0F0F0F0F0F)) | ((v & UINT64_C(0x0F0F0F0F0F0F0F0F)) <<  4);
+    // swap bytes
+    v = ((v >> 8)  & UINT64_C(0x00FF00FF00FF00FF)) | ((v & UINT64_C(0x00FF00FF00FF00FF)) <<  8);
+    // swap 2-byte long pairs
+    v = ((v >> 16) & UINT64_C(0x0000FFFF0000FFFF)) | ((v & UINT64_C(0x0000FFFF0000FFFF)) << 16);
+    // swap 4-byte long pairs
+    v = ( v >> 32                      ) | ( v                       << 32);
+    PUT_U64<false>(v, bytes, 0);
+}
 
 //-----------------------------------------------------------------------------

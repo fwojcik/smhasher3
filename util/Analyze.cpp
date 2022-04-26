@@ -739,7 +739,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
       for(const auto hashval: hashes)
       {
         hashtype rev = hashval;
-        reversebits(rev);
+        rev.reversebits();
         revhashes.push_back(rev);
       }
       blobsort(revhashes.begin(), revhashes.end());
