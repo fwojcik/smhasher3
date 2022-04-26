@@ -143,6 +143,26 @@ public:
     return *this;
   }
 
+
+  void lrot(size_t c) {
+      const size_t byteoffset = c >> 3;
+      const size_t bitoffset  = c & 7;
+      const size_t len = sizeof(bytes);
+      uint8_t tmp[len];
+
+      for (size_t i = 0; i < len; i++) {
+          tmp[(i + byteoffset) % len] = bytes[i];
+      }
+      if (bitoffset == 0) {
+          memcpy(bytes, tmp, len);
+      } else {
+          for (size_t i = 0; i < len; i++) {
+              uint8_t a = tmp[i];
+              uint8_t b = (i == 0) ? tmp[len - 1] : tmp[i - 1];
+              bytes[i] = (a << bitoffset) | (b >> (8 - bitoffset));
+          }
+      }
+  }
   //----------
 
 private:

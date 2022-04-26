@@ -96,8 +96,7 @@ static bool WindowedKeyImpl(HashFn hash, const seed_t seed, int windowbits,
     for(int i = 0; i < keycount; i++)
     {
       key = i;
-      //key = key << minbit;
-      lrot(key, minbit);
+      key.lrot(minbit);
       hash(&key, sizeof(keytype), seed, &hashes[i]);
       addVCodeInput(&key, sizeof(keytype));
     }
@@ -132,8 +131,8 @@ bool WindowedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
     // except for 64++bit where it unrealistic. There use smaller but more keys,
     // to get a higher collision percentage.
     int windowbits = 20;
-    const int hashbits = sizeof(hashtype) * 8;
-    const int keybits = (hashbits >= 64) ? 32 : 72;
+    constexpr int hashbits = sizeof(hashtype) * 8;
+    constexpr int keybits = (hashbits >= 64) ? 32 : 72;
 
     printf("[[[ Keyset 'Window' Tests ]]]\n\n");
 
