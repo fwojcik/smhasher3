@@ -48,115 +48,29 @@
 #include "Types.h"
 #include "Bitvec.h"
 
-#include <cassert>
+void printhex(const void * blob, size_t len, const char * prefix) {
+    const uint8_t * bytes = (const uint8_t *)blob;
+    const size_t buflen = 4 + 2 * len + ((len + 3) / 4);
+    char buf[buflen];
+    char * p;
 
-//----------------------------------------------------------------------------
+    buf[0]          = '[';
+    buf[1]          = ' ';
+    // Space preceding the closing ']' gets added by the loop below
+    buf[buflen - 2] = ']';
+    buf[buflen - 1] = '\0';
 
-static void printKey(const void* key, size_t len)
-{
-    const unsigned char* const p = (const unsigned char*)key;
-    size_t s;
-    printf("\n0x");
-    for (s=0; s<len; s++) printf("%02X", p[s]);
-    printf("\n  ");
-    for (s=0; s<len; s+=8) printf("%-16zu", s);
-}
-
-void printHash(const void* key, size_t len)
-{
-    const unsigned char* const p = (const unsigned char*)key;
-    assert(len < 2048);
-    for (int i=(int)len-1; i >= 0 ; i--) printf("%02x", p[i]);
-    printf("  ");
-}
-
-void printbits ( const void * blob, int len )
-{
-  const uint8_t * data = (const uint8_t *)blob;
-
-  printf("[");
-  for(int i = 0; i < len; i++)
-  {
-    unsigned char byte = data[i];
-
-    int hi = (byte >> 4);
-    int lo = (byte & 0xF);
-
-    if(hi) printf("%01x",hi);
-    else   printf(".");
-
-    if(lo) printf("%01x",lo);
-    else   printf(".");
-
-    if(i != len-1) printf(" ");
-  }
-  printf("]");
-}
-
-void printbits2 ( const uint8_t * k, int nbytes )
-{
-  printf("[");
-
-  for(int i = nbytes-1; i >= 0; i--)
-  {
-    uint8_t b = k[i];
-
-    for(int j = 7; j >= 0; j--)
-    {
-      uint8_t c = (b & (1 << j)) ? '#' : ' ';
-
-      putc(c,stdout);
+    // Print using MSB-first notation
+    p = &buf[2];
+    for (size_t i = len; i != 0; i--) {
+        uint8_t vh = (bytes[i - 1] >> 4);
+        uint8_t vl = (bytes[i - 1] & 15);
+        *p++ = vh + ((vh <= 9) ? '0' : 'W'); // 'W' + 10 == 'a'
+        *p++ = vl + ((vl <= 9) ? '0' : 'W');
+        if ((i & 3) == 1) {
+            *p++ = ' ';
+        }
     }
-  }
-  printf("]");
-}
 
-void printhex ( const void * blob, int len )
-{
-  assert((len & 3) == 0);
-  uint8_t * d = (uint8_t*)blob;
-  for(int i = 0; i < len; i++)
-  {
-    printf("%02x",d[i]);
-  }
-}
-
-void printhex32 ( const void * blob, int len )
-{
-  assert((len & 3) == 0);
-
-  uint32_t * d = (uint32_t*)blob;
-
-  printf("{ ");
-
-  for(int i = 0; i < len/4; i++)
-  {
-    printf("0x%08x, ",d[i]);
-  }
-
-  printf("}");
-}
-
-void printbytes ( const void * blob, int len )
-{
-  uint8_t * d = (uint8_t*)blob;
-
-  printf("{ ");
-
-  for(int i = 0; i < len; i++)
-  {
-    printf("0x%02x, ",d[i]);
-  }
-
-  printf(" };");
-}
-
-void printbytes2 ( const void * blob, int len )
-{
-  uint8_t * d = (uint8_t*)blob;
-
-  for(int i = 0; i < len; i++)
-  {
-    printf("%02x ",d[i]);
-  }
+    printf("%s%s\n", prefix, buf);
 }

@@ -47,9 +47,7 @@
 
 //-----------------------------------------------------------------------------
 
-void     printHash   ( const void * key, size_t len );
-void     printbits   ( const void * blob, int len );
-void     printhex    ( const void * blob, int len );
+void printhex(const void * blob, size_t len, const char * prefix = "");
 
 //----------
 

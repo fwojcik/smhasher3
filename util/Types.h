@@ -87,7 +87,7 @@ public:
     memset(bytes, 0, sizeof(bytes));
   }
 
-  Blob(const uint8_t * p, size_t len) {
+  Blob(const void * p, size_t len) {
     len = std::min(len, sizeof(bytes));
     memcpy(bytes, p, len);
     memset(&bytes[len], 0, sizeof(bytes) - len);
@@ -109,6 +109,56 @@ public:
   Blob & operator = (const Blob & k) {
     memcpy(bytes, k.bytes, sizeof(bytes));
     return *this;
+  }
+
+  void printhex(const char * prefix = "") const {
+      constexpr size_t buflen = 4 + 2 * sizeof(bytes) + ((sizeof(bytes) + 3) / 4);
+      char buf[buflen];
+      char * p;
+
+      buf[0]          = '[';
+      buf[1]          = ' ';
+      // Space preceding the closing ']' gets added by the loop below
+      buf[buflen - 2] = ']';
+      buf[buflen - 1] = '\0';
+
+      // Print using MSB-first notation
+      p = &buf[2];
+      for (size_t i = sizeof(bytes); i != 0; i--) {
+          uint8_t vh = (bytes[i - 1] >> 4);
+          uint8_t vl = (bytes[i - 1] & 15);
+          *p++ = vh + ((vh <= 9) ? '0' : 'W'); // 'W' + 10 == 'a'
+          *p++ = vl + ((vl <= 9) ? '0' : 'W');
+          if ((i & 3) == 1) {
+              *p++ = ' ';
+          }
+      }
+
+      printf("%s%s\n", prefix, buf);
+  }
+
+  void printbits(const char * prefix = "") const {
+      constexpr size_t buflen = 4 + 9 * sizeof(bytes);
+      char buf[buflen];
+      char * p;
+
+      buf[0]          = '[';
+      buf[1]          = ' ';
+      // Space preceding the closing ']' gets added by the loop below
+      buf[buflen - 2] = ']';
+      buf[buflen - 1] = '\0';
+
+      // Print using MSB-first notation
+      p = &buf[2];
+      for (size_t i = sizeof(bytes); i != 0; i--) {
+          uint8_t v = bytes[i - 1];
+          for (int j = 7; j >= 0; j--) {
+              *p++ = (v & (1 << j)) ? '1' : '0';
+          }
+          *p++ = ' ';
+      }
+
+      printf("%s%s\n", prefix, buf);
   }
 
   //----------

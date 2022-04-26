@@ -240,14 +240,14 @@ unsigned int FindCollisions(std::vector<hashtype> & hashes,
     unsigned int collcount = 0;
     blobsort(hashes.begin(),hashes.end());
 
-    const uint64_t sz = hashes.size();
-    for (uint64_t hnb = 1; hnb < sz; hnb++) {
+    const size_t sz = hashes.size();
+    for (size_t hnb = 1; hnb < sz; hnb++) {
         if(hashes[hnb] == hashes[hnb-1]) {
             collcount++;
             if(collcount < maxCollisions) {
-#if 0 && defined(DEBUG)
-                printf ("\n%zu: ", hnb);
-                printHash(&hashes[hnb], sizeof(hashtype));
+#if 0
+                printf ("  %zu: ", hnb);
+                hashes[hnb].printhex("");
 #endif
                 if (drawDiagram) {
                     collisions.insert(hashes[hnb]);
@@ -273,8 +273,7 @@ void PrintCollisions(HashSet<hashtype> & collisions) {
     for (typename HashSet<hashtype>::iterator it = collisions.begin();
          it != collisions.end(); ++it) {
         const hashtype &hash = *it;
-        printhex(&hash, sizeof(hashtype));
-        printf("\n");
+        hash.printhex("  ");
     }
     printf("\n");
 }

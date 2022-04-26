@@ -443,11 +443,9 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
             }
             for (int j = 0; j < reps; j++) {
                 if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
-                    maybeprintf("\nMismatch between main process and thread #%d at index %d\n  main   :", i, j);
-                    if (verbose) { printHash(&mainhashes[j * hashbytes], hashbytes); }
-                    maybeprintf("\n  thread :");
-                    if (verbose) { printHash(&threadhashes[i][j * hashbytes], hashbytes); }
-                    maybeprintf("\n");
+                    maybeprintf("\nMismatch between main process and thread #%d at index %d\n", i, j);
+                    if (verbose) { printhex(&mainhashes[j * hashbytes],      hashbytes, "  main   :"); }
+                    if (verbose) { printhex(&threadhashes[i][j * hashbytes], hashbytes, "  thread :"); }
                     result = false;
                     break; // Only breaks out of j loop
                 }
@@ -455,9 +453,9 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
         }
 
         if(result == false) {
-            printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
+            printf("%s", verbose ? " FAIL  !!!!!\n\n" : " ... FAIL");
         } else {
-            printf("%s", verbose ? " PASS\n"        : " ... pass");
+            printf("%s", verbose ? " PASS\n"         : " ... pass");
         }
 
         recordTestResult(result, "Sanity", "Thread safety");

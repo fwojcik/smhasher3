@@ -105,9 +105,7 @@ static bool TestSeed(const HashInfo * hinfo, const seed_t seed) {
         if (FindCollisions(hashes, dummy_collisions, 0, false) > 0) {
             printf("Confirmed bad seed 0x%" PRIx64 " for len %d\n", seed, len);
             for (int i = 0; i < numtestbytes; i++) {
-                printf("  ");
-                printhex(&hashes[i], sizeof(hashtype));
-                printf("\n");
+                hashes[i].printhex("  ");
             }
             result = false;
         }

@@ -91,8 +91,7 @@ static bool ProcessDifferentials ( std::map<keytype, uint32_t> & diffcounts, int
 
               if(dumpCollisions) {
                   double pct = 100 * (double(count) / double(reps));
-
-                  printbits((unsigned char*)&dc.first, sizeof(keytype));
+                  dc.first.printbits("");
                   printf(" - %4.2f%%\n", pct );
               }
           }
