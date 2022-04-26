@@ -205,6 +205,8 @@ void setbit ( void * block, int len, uint32_t bit )
   if(byte < len) b[byte] |= (1 << bit);
 }
 
+void     clearbit    ( void * blob, int len, uint32_t bit );
+
 void setbit ( void * block, int len, uint32_t bit, uint32_t val )
 {
   val ? setbit(block,len,bit) : clearbit(block,len,bit);
@@ -580,6 +582,7 @@ bool test_window ( void )
     int nbytes  = nbits / 8;
 
     uint64_t x = r.rand_u64();
+    Blob<64> xb = x;
 
     for(int start = 0; start < nbits; start++)
     {
@@ -588,11 +591,11 @@ bool test_window ( void )
         uint32_t a = (uint32_t)ROTR64(x,start);
         a &= ((1 << count)-1);
 
-        uint32_t b = window1   (&x,nbytes,start,count);
-        uint32_t c = window8   (&x,nbytes,start,count);
-        uint32_t d = window32  (&x,nbytes,start,count);
-        uint32_t e = window<64>(&x,start,count);
-        uint32_t f = window    (x,start,count);
+        uint32_t b = window1   (&xb,nbytes,start,count);
+        uint32_t c = window8   (&xb,nbytes,start,count);
+        uint32_t d = window32  (&xb,nbytes,start,count);
+        uint32_t e = window<64>(&xb,start,count);
+        uint32_t f = window    (&xb,start,count);
 
         verify(a == b);
         verify(a == c);

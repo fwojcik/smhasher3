@@ -50,25 +50,6 @@
 void     printHash   ( const void * key, size_t len );
 void     printbits   ( const void * blob, int len );
 void     printhex    ( const void * blob, int len );
-void     printhex32  ( const void * blob, int len );
-void     printbytes  ( const void * blob, int len );
-void     printbytes2 ( const void * blob, int len );
-
-uint32_t parity      ( uint32_t v );
-
-uint32_t getbit_wrap ( const void * blob, int len, uint32_t bit );
-
-void     setbit      ( void * blob, int len, uint32_t bit );
-void     setbit      ( void * blob, int len, uint32_t bit, uint32_t val );
-
-void     clearbit    ( void * blob, int len, uint32_t bit );
-
-int      countbits   ( uint32_t v );
-int      countbits   ( std::vector<uint32_t> & v );
-
-int      countbits   ( const void * blob, int len );
-
-extern const uint32_t hzb[256];
 
 //----------
 
@@ -86,11 +67,6 @@ inline uint32_t getbyte ( T & blob, uint32_t byte )
 {
   return getbyte(&blob,sizeof(T),byte);
 }
-
-template<>
-inline uint32_t getbyte ( uint32_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
-template<>
-inline uint32_t getbyte ( uint64_t & blob, uint32_t byte ) { return (blob >> (byte * 8)) & 255; }
 
 //----------
 
@@ -112,24 +88,6 @@ inline uint32_t getbit ( T & blob, uint32_t bit )
   return getbit(&blob,sizeof(T),bit);
 }
 
-template<>
-inline uint32_t getbit ( uint32_t & blob, uint32_t bit ) { return (blob >> (bit & 31)) & 1; }
-template<>
-inline uint32_t getbit ( uint64_t & blob, uint32_t bit ) { return (blob >> (bit & 63)) & 1; }
-
-//----------
-
-template< typename T >
-inline void setbit ( T & blob, uint32_t bit )
-{
-  return setbit(&blob,sizeof(T),bit);
-}
-
-template<>
-inline void setbit ( uint32_t & blob, uint32_t bit ) { blob |= uint32_t(1) << (bit & 31); }
-template<>
-inline void setbit ( uint64_t & blob, uint32_t bit ) { blob |= uint64_t(1) << (bit & 63); }
-
 //----------
 
 static inline void flipbit ( void * block, int len, uint32_t bit )
@@ -147,11 +105,6 @@ inline void flipbit ( T & blob, uint32_t bit )
 {
   flipbit(&blob,sizeof(T),bit);
 }
-
-template<>
-inline void flipbit ( uint32_t & blob, uint32_t bit ) { bit &= 31; blob ^= (uint32_t(1) << bit); }
-template<>
-inline void flipbit ( uint64_t & blob, uint32_t bit ) { bit &= 63; blob ^= (uint64_t(1) << bit); }
 
 //----------
 
@@ -210,12 +163,9 @@ inline void reversebits ( T & blob )
   reversebits(&blob,sizeof(T));
 }
 
-template<>
-inline void reversebits ( uint32_t & blob ) { reverse32(blob); }
-template<>
-inline void reversebits ( uint64_t & blob ) { reverse64(blob); }
-
 //----------
+
+extern const uint32_t hzb[256];
 
 static inline uint32_t highzerobits ( void * block, size_t len )
 {
@@ -235,78 +185,6 @@ inline uint32_t highzerobits ( T & blob )
 {
   return highzerobits(&blob,sizeof(T));
 }
-
-template<>
-inline uint32_t highzerobits ( uint32_t & blob ) { return blob == 0 ? 32 : clz4(blob); }
-template<>
-inline uint32_t highzerobits ( uint64_t & blob ) { return blob == 0 ? 64 : clz8(blob); }
-
-//-----------------------------------------------------------------------------
-// Left and right shift of blobs. The shift(N) versions work on chunks of N
-// bits at a time (faster)
-
-void lshift1  ( void * blob, int len, int c );
-void lshift8  ( void * blob, int len, int c );
-void lshift32 ( void * blob, int len, int c );
-
-void rshift1  ( void * blob, int len, int c );
-void rshift8  ( void * blob, int len, int c );
-void rshift32 ( void * blob, int len, int c );
-
-inline void lshift ( void * blob, int len, int c )
-{
-  if((len & 3) == 0)
-  {
-    lshift32(blob, len, c);
-  }
-  else
-  {
-    lshift8(blob, len, c);
-  }
-}
-
-inline void rshift ( void * blob, int len, int c )
-{
-  if((len & 3) == 0)
-  {
-    rshift32(blob, len, c);
-  }
-  else
-  {
-    rshift8(blob, len, c);
-  }
-}
-
-template < typename T >
-inline void lshift ( T & blob, int c )
-{
-  if((sizeof(T) & 3) == 0)
-  {
-    lshift32(&blob,sizeof(T),c);
-  }
-  else
-  {
-    lshift8(&blob,sizeof(T),c);
-  }
-}
-
-template < typename T >
-inline void rshift ( T & blob, int c )
-{
-  if((sizeof(T) & 3) == 0)
-  {
-    lshift32(&blob,sizeof(T),c);
-  }
-  else
-  {
-    lshift8(&blob,sizeof(T),c);
-  }
-}
-
-template<> inline void lshift ( uint32_t & blob, int c ) { blob <<= c; }
-template<> inline void lshift ( uint64_t & blob, int c ) { blob <<= c; }
-template<> inline void rshift ( uint32_t & blob, int c ) { blob >>= c; }
-template<> inline void rshift ( uint64_t & blob, int c ) { blob >>= c; }
 
 //-----------------------------------------------------------------------------
 // Bit-windowing functions - select some N-bit subset of the input blob
@@ -349,22 +227,6 @@ template < typename T >
 inline uint32_t window ( const T & blob, int start, int count )
 {
   return window<8*sizeof(T)>(&blob,start,count);
-}
-
-template<>
-inline uint32_t window ( const uint32_t & blob, int start, int count )
-{
-  if ((start + count) == 32)
-    return (blob >> start);
-  return ((start == 0) ? blob : ROTR32(blob,start)) & ((1<<count)-1);
-}
-
-template<>
-inline uint32_t window ( const uint64_t & blob, int start, int count )
-{
-  if ((start + count) == 64)
-    return (uint32_t)(blob >> start);
-  return (uint32_t)((start == 0) ? blob : ROTR64(blob,start)) & ((1<<count)-1);
 }
 
 //-----------------------------------------------------------------------------
