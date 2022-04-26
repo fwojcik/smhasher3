@@ -318,7 +318,7 @@ static void CountRangedNbCollisions ( std::vector<hashtype> & hashes, uint64_t c
 
   for (uint64_t hnb = 1; hnb < nbH; hnb++) {
     hashtype hdiff = hashes[hnb-1] ^ hashes[hnb];
-    int hzb = highzerobits(hdiff);
+    int hzb = hdiff.highzerobits();
     if (hzb > maxHBits)
       hzb = maxHBits;
     if (hzb >= minHBits)

@@ -69,29 +69,6 @@ inline void flipbit ( T & blob, uint32_t bit )
   flipbit(&blob,sizeof(T),bit);
 }
 
-//----------
-
-extern const uint32_t hzb[256];
-
-static inline uint32_t highzerobits ( void * block, size_t len )
-{
-  uint8_t * b = (uint8_t*)block;
-  uint32_t zb = 0;
-  for(int i = len - 1; i >= 0; i--)
-  {
-    zb += hzb[b[i]];
-    if (b[i] != 0)
-      break;
-  }
-  return zb;
-}
-
-template< typename T >
-inline uint32_t highzerobits ( T & blob )
-{
-  return highzerobits(&blob,sizeof(T));
-}
-
 //-----------------------------------------------------------------------------
 // Bit-windowing functions - select some N-bit subset of the input blob
 

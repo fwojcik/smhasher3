@@ -77,6 +77,8 @@ extern HashInfo::endianness g_hashEndian;
 extern const char * g_failstr;
 
 //-----------------------------------------------------------------------------
+extern const uint32_t hzb[256];
+
 template < int _bits >
 class Blob {
 
@@ -150,6 +152,18 @@ public:
       bit &= 7;
       if (byte > sizeof(bytes)) return 0;
       return (bytes[byte] >> bit) & 1;
+  }
+
+  FORCE_INLINE uint32_t highzerobits(void) const {
+      const size_t len = sizeof(bytes);
+      uint32_t zb = 0;
+      for(size_t i = len - 1; i >= 0; i--) {
+          zb += hzb[bytes[i]];
+          if (bytes[i] != 0) {
+              break;
+          }
+      }
+      return zb;
   }
 
   // 0xf00f1001 => 0x8008f00f
