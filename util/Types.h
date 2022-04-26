@@ -145,6 +145,12 @@ public:
     return *this;
   }
 
+  FORCE_INLINE uint8_t getbit(size_t bit) const {
+      size_t byte = bit >> 3;
+      bit &= 7;
+      return (bytes[byte] >> bit) & 1;
+  }
+
   void lrot(size_t c) {
       const size_t byteoffset = c >> 3;
       const size_t bitoffset  = c & 7;

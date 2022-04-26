@@ -53,26 +53,6 @@ void     printhex    ( const void * blob, int len );
 
 //----------
 
-static inline uint32_t getbit ( const void * block, int len, uint32_t bit )
-{
-  uint8_t * b = (uint8_t*)block;
-
-  int byte = bit >> 3;
-  bit = bit & 0x7;
-
-  if(byte >= len) return 0;
-
-  return (b[byte] >> bit) & 1;
-}
-
-template< typename T >
-inline uint32_t getbit ( T & blob, uint32_t bit )
-{
-  return getbit(&blob,sizeof(T),bit);
-}
-
-//----------
-
 static inline void flipbit ( void * block, int len, uint32_t bit )
 {
   uint8_t * b = (uint8_t*)block;

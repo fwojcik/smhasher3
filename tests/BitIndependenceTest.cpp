@@ -109,7 +109,7 @@ static bool BicTest3(HashFn hash, const seed_t seed, const int reps, bool verbos
       {
         int * b = &page[(out1*hashbits+out2)*4];
 
-        uint32_t x = getbit(d,out1) | (getbit(d,out2) << 1);
+        uint32_t x = d.getbit(out1) | (d.getbit(out2) << 1);
 
         b[x]++;
       }
