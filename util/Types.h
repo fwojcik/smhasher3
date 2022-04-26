@@ -86,6 +86,7 @@ public:
   }
 
   Blob(uint64_t x) {
+    x = COND_BSWAP(x, isBE());
     set(&x, sizeof(x));
   }
 
