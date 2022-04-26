@@ -87,10 +87,14 @@ public:
     memset(bytes, 0, sizeof(bytes));
   }
 
-  Blob(uint64_t x) {
-    x = COND_BSWAP(x, isBE());
-    set(&x, sizeof(x));
+  Blob(const uint8_t * p, size_t len) {
+    len = std::min(len, sizeof(bytes));
+    memcpy(bytes, p, len);
+    memset(&bytes[len], 0, sizeof(bytes) - len);
   }
+
+  Blob(uint64_t x) :
+      Blob((x = COND_BSWAP(x, isBE()), &x), sizeof(x)) {};
 
   uint8_t & operator [] (int i) {
     //assert(i < sizeof(bytes));
@@ -226,12 +230,6 @@ public:
 
 private:
   uint8_t bytes[(_bits+7)/8];
-
-  void set(const void * blob, size_t len) {
-    len = std::min(len, sizeof(bytes));
-    memcpy(bytes, blob, len);
-    memset(&bytes[len], 0, sizeof(bytes) - len);
-  }
 
   // from the "Bit Twiddling Hacks" webpage
   static FORCE_INLINE uint8_t byterev(uint8_t b) {
