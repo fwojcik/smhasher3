@@ -38,45 +38,14 @@ static unsigned dummy = refs();
 typedef std::unordered_map<std::string, const HashInfo *> HashMap;
 typedef std::vector<const HashInfo *> HashMapOrder;
 
-HashMap& hashMap() {
+static HashMap& hashMap() {
   static HashMap * map = new HashMap;
   return *map;
 }
 
-// The sort_order field is intended to be used for people adding
-// hashes which should appear inside their family in
-// other-than-alphabetical order.
+//-----------------------------------------------------------------------------
+// Add a hash to the hashMap list of all hashes.
 //
-// This is overloaded for mock hashes to also override the sorting for
-// _family name_, which is not something general users should do.
-HashMapOrder defaultSort(HashMap & map) {
-    HashMapOrder hashes;
-    hashes.reserve(map.size());
-    for (auto kv : map) {
-        hashes.push_back(kv.second);
-    }
-    std::sort(hashes.begin(), hashes.end(),
-            [](const HashInfo * a, const HashInfo * b) {
-                int r;
-                if (a->isMock() != b->isMock())               return a->isMock();
-                if (a->isMock() && (a->sort_order != b->sort_order))
-                                                              return (a->sort_order < b->sort_order);
-                if (a->isCrypto() != b->isCrypto())           return a->isCrypto();
-                if ((r = strcmp(a->family, b->family)) != 0)  return (r < 0);
-                if (a->bits != b->bits)                       return (a->bits < b->bits);
-                if (a->sort_order != b->sort_order)           return (a->sort_order < b->sort_order);
-                if ((r = strcmp(a->name, b->name)) != 0)      return (r < 0);
-                return false;
-            });
-    return hashes;
-}
-
-std::vector<const HashInfo *> findAllHashes(void) {
-    HashMapOrder hashes;
-    hashes = defaultSort(hashMap());
-    return hashes;
-}
-
 // FIXME Verify hinfo is all filled out.
 unsigned register_hash(const HashInfo * hinfo) {
   static std::unordered_map<uint32_t, const HashInfo *> hashcodes;
@@ -116,6 +85,43 @@ unsigned register_hash(const HashInfo * hinfo) {
   return hashMap().size();
 }
 
+//-----------------------------------------------------------------------------
+// Routines for querying/finding hashes that have been registered.
+
+// The sort_order field is intended to be used for people adding
+// hashes which should appear inside their family in
+// other-than-alphabetical order.
+//
+// This is overloaded for mock hashes to also override the sorting for
+// _family name_, which is not something general users should do.
+static HashMapOrder defaultSort(HashMap & map) {
+    HashMapOrder hashes;
+    hashes.reserve(map.size());
+    for (auto kv : map) {
+        hashes.push_back(kv.second);
+    }
+    std::sort(hashes.begin(), hashes.end(),
+            [](const HashInfo * a, const HashInfo * b) {
+                int r;
+                if (a->isMock() != b->isMock())               return a->isMock();
+                if (a->isMock() && (a->sort_order != b->sort_order))
+                                                              return (a->sort_order < b->sort_order);
+                if (a->isCrypto() != b->isCrypto())           return a->isCrypto();
+                if ((r = strcmp(a->family, b->family)) != 0)  return (r < 0);
+                if (a->bits != b->bits)                       return (a->bits < b->bits);
+                if (a->sort_order != b->sort_order)           return (a->sort_order < b->sort_order);
+                if ((r = strcmp(a->name, b->name)) != 0)      return (r < 0);
+                return false;
+            });
+    return hashes;
+}
+
+std::vector<const HashInfo *> findAllHashes(void) {
+    HashMapOrder hashes;
+    hashes = defaultSort(hashMap());
+    return hashes;
+}
+
 const HashInfo * findHash(const char * name) {
   std::string n = name;
   std::transform(n.begin(), n.end(), n.begin(), ::tolower);
@@ -149,6 +155,8 @@ void listHashes(bool nameonly) {
 }
 
 //-----------------------------------------------------------------------------
+// Hash verification routines
+
 static void reportInitFailure(const HashInfo * hinfo) {
     printf("%25s - Hash initialization failed!      ...... FAIL!\n",
             hinfo->name);

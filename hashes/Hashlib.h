@@ -16,12 +16,20 @@
  * along with this program.  If not, see
  * <https://www.gnu.org/licenses/>.
  */
+class HashInfo;
+
+unsigned register_hash(const HashInfo * hinfo);
+
 const HashInfo * findHash(const char * name);
 std::vector<const HashInfo *> findAllHashes(void);
 void listHashes(bool nameonly);
+
 bool verifyAllHashes(bool verbose);
-bool verifyHash(const HashInfo * hinfo, enum HashInfo::endianness endian,
+bool verifyHash(const HashInfo * hinfo,
+        enum HashInfo::endianness endian,
         bool verbose, bool prefix);
+
+//-----------------------------------------------------------------------------
 
 #define CONCAT_INNER(x, y) x##y
 #define CONCAT(x,y) CONCAT_INNER(x, y)
