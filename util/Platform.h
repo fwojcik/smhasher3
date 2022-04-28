@@ -315,3 +315,9 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
     n = COND_BSWAP(n, bswap);
     memcpy(&b[i], &n, 8);
 }
+
+//-----------------------------------------------------------------------------
+// seed_t must be large enough to be able to hold a 64-bit integer
+// value OR an integer representation of a pointer.
+typedef std::conditional<sizeof(uintptr_t) <= sizeof(uint64_t),
+  uint64_t, uintptr_t>::type seed_t;

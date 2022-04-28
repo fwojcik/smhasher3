@@ -77,11 +77,6 @@ typedef enum : uint64_t {
 #undef FLAG_EXPAND
 
 //-----------------------------------------------------------------------------
-// seed_t must be large enough to be able to hold a 64-bit integer
-// value OR an integer representation of a pointer.
-typedef std::conditional<sizeof(uintptr_t) <= sizeof(uint64_t),
-  uint64_t, uintptr_t>::type seed_t;
-
 class HashInfo;
 
 typedef bool      (*HashInitFn)(void);
