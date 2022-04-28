@@ -46,6 +46,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "TestGlobals.h"
 #include "Bitvec.h"
 
 void printhex(const void * blob, size_t len, const char * prefix) {

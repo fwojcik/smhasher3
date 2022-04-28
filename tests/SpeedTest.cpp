@@ -48,9 +48,10 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "Timing.h"
-#include "Stats.h"
+#include "TestGlobals.h"
+#include "Stats.h"       // For FilterOutliers, CalcMean, CalcStdv
 #include "Random.h"
+#include "Timing.h"
 
 #include "SpeedTest.h"
 

@@ -44,23 +44,6 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-// Basic infrastructure
-#include <vector>    // Used by Stats.h and Analyze.h, which all tests currently need
-#include <set>       // Used by Analyze.h, which most tests need
-#include "Hashinfo.h"
-
-//-----------------------------------------------------------------------------
-// To be able to sample different statistics sets from the same hash,
-// a seed can be supplied which will be used in each test where a seed
-// is not explicitly part of that test.
-extern seed_t g_seed;
-
-//-----------------------------------------------------------------------------
-// The user can select which endian-ness of the hash implementation to test
-extern HashInfo::endianness g_hashEndian;
-
-//-----------------------------------------------------------------------------
-extern const char * g_failstr;
 
 //-----------------------------------------------------------------------------
 extern const uint32_t hzb[256];

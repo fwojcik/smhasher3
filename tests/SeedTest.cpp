@@ -48,7 +48,8 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "Stats.h"
+#include "TestGlobals.h"
+#include "Stats.h"       // For chooseUpToK
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"

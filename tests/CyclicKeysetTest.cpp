@@ -48,7 +48,8 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "Stats.h"
+#include "TestGlobals.h"
+#include "Stats.h"       // For EstimateNbCollisions
 #include "Random.h"
 #include "Analyze.h"
 #include "Instantiate.h"

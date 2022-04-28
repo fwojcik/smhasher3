@@ -52,6 +52,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
+#include "TestGlobals.h"
 #include "Stats.h"
 
 #include <math.h>
@@ -1109,12 +1110,3 @@ double normalizeScore ( double score, int scorewidth, int tests )
 }
 
 //----------------------------------------------------------------------------
-
-extern uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE+2];
-void recordLog2PValue(uint32_t log_pvalue) {
-  if (log_pvalue <= COUNT_MAX_PVALUE) {
-    g_log2pValueCounts[log_pvalue]++;
-  } else {
-    g_log2pValueCounts[COUNT_MAX_PVALUE+1]++;
-  }
-}

@@ -48,7 +48,7 @@
  */
 #include "Platform.h"
 #include "Types.h"
-#include "Stats.h"
+#include "TestGlobals.h"
 #include "Random.h"
 #include "Analyze.h"
 #include "Instantiate.h"

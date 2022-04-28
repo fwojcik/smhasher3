@@ -74,36 +74,3 @@ double BoundedPoissonPValue(const double expected, const uint64_t collisions);
 
 double calcScore ( const unsigned * bins, const int bincount, const int ballcount );
 double normalizeScore ( double score, int scorewidth, int tests );
-
-//-----------------------------------------------------------------------------
-#define COUNT_MAX_PVALUE 18
-void recordLog2PValue(uint32_t pvalue);
-
-extern uint32_t g_testPass, g_testFail;
-extern std::vector< std::pair<const char *, char *> > g_testFailures;
-
-static inline void recordTestResult(bool pass, const char * suitename, const char * testname) {
-  if (pass) {
-    g_testPass++;
-    return;
-  }
-  g_testFail++;
-
-  char * ntestname = NULL;
-  if (testname != NULL) {
-    testname += strspn(testname, " ");
-    ntestname = strdup(testname);
-    if (!ntestname) {
-        printf("OOM\n");
-        exit(1);
-    }
-  }
-  g_testFailures.push_back(std::pair<const char *, char *>(suitename, ntestname));
-}
-
-static inline void recordTestResult(bool pass, const char * suitename, uint64_t testnum) {
-  const uint64_t maxlen = sizeof("18446744073709551615"); // UINT64_MAX
-  char testname[maxlen];
-  snprintf(testname, maxlen, "%lu", testnum);
-  recordTestResult(pass, suitename, testname);
-}
