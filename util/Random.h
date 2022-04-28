@@ -111,10 +111,10 @@ struct Rand
     return (a << 32) | b;
   }
 
-#ifdef __SIZEOF_INT128__
-  __uint128_t rand_u128 ( void ) 
+#if defined(HAVE_INT128)
+  uint128_t rand_u128 ( void )
   {
-    __uint128_t a = rand_u64();
+    uint128_t a = rand_u64();
     return (a << 64) | rand_u64();
   }
 #endif

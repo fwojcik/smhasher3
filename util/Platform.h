@@ -144,7 +144,7 @@ static char* strndup(char const *s, size_t n)
 #include <cstddef>
 #include <cstdlib>
 #include <cstdint>
-#ifdef HAVE_INT128
+#if defined(HAVE_INT128)
 typedef unsigned __int128 uint128_t;
 typedef          __int128 int128_t;
 #endif
