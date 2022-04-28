@@ -75,6 +75,7 @@ double BoundedPoissonPValue(const double expected, const uint64_t collisions);
 double calcScore ( const unsigned * bins, const int bincount, const int ballcount );
 double normalizeScore ( double score, int scorewidth, int tests );
 
+//-----------------------------------------------------------------------------
 #define COUNT_MAX_PVALUE 18
 void recordLog2PValue(uint32_t pvalue);
 

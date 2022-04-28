@@ -58,10 +58,8 @@
 #include "Instantiate.h"
 #include "VCode.h"
 
-#include <cstdio>      // for printf
-#include <string.h>    // for memset
-#include <algorithm>   // for std::sort
 #include <cassert>
+#include <cstring>    // for memset
 #include <math.h>
 
 //-----------------------------------------------------------------------------

@@ -55,7 +55,6 @@
 
 #include "AvalancheTest.h"
 
-#include <cstdio>
 #include <cassert>
 #include <math.h>
 

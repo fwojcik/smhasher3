@@ -49,7 +49,7 @@
 //-----------------------------------------------------------------------------
 // Platform-specific functions and macros
 
-#include <cstdio>
+#include <cstdio>    // Allow printf() from anywhere
 
 #ifdef HAVE_THREADS
 #include <thread>

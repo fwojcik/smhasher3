@@ -55,8 +55,6 @@
 
 #include "DiffDistributionTest.h"
 
-#include <cstdio>
-
 //-----------------------------------------------------------------------------
 // Simpler differential-distribution test - for all 1-bit differentials,
 // generate random key pairs and run full distribution/collision tests on the

@@ -51,12 +51,11 @@
 #include "HashMapTest.h"
 #include "Wordlist.h"
 
-#include <cstdio>
 #include <string>
 #include <unordered_map>
 #include <parallel_hashmap/phmap.h>
 #include <functional>
-#include <algorithm>
+
 
 //-----------------------------------------------------------------------------
 // This is functionally a speed test, and so will not inform VCodes,

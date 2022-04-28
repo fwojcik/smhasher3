@@ -54,7 +54,6 @@
 
 #include "SpeedTest.h"
 
-#include <algorithm> // for sort, min
 #include <string>
 #include <functional>
 #include <cassert>

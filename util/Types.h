@@ -44,12 +44,9 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <vector>
-#include <map>
-#include <set>
-#include <memory>
-#include <algorithm>
-
+// Basic infrastructure
+#include <vector>    // Used by Stats.h and Analyze.h, which all tests currently need
+#include <set>       // Used by Analyze.h, which most tests need
 #include "Hashinfo.h"
 
 //-----------------------------------------------------------------------------

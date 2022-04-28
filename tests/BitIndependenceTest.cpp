@@ -55,7 +55,6 @@
 
 #include "BitIndependenceTest.h"
 
-#include <cstdio>
 #include <math.h>
 
 //-----------------------------------------------------------------------------

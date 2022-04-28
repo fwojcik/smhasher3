@@ -58,7 +58,6 @@
 
 #include <inttypes.h>
 #ifdef HAVE_THREADS
-#include <thread>
 #include <chrono>
 #include <atomic>
 #include <mutex>

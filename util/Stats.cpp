@@ -55,8 +55,6 @@
 #include "Stats.h"
 
 #include <math.h>
-#include <cstdio>
-#include <algorithm>
 
 //-----------------------------------------------------------------------------
 

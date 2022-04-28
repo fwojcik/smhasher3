@@ -55,7 +55,7 @@
 
 #include "DifferentialTest.h"
 
-#include <cstdio>
+#include <map>
 #include <math.h>
 
 #ifdef HAVE_THREADS
