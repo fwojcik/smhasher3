@@ -81,15 +81,11 @@ extern uint32_t g_resultVCode;
 //-----------------------------------------------------------------------------
 // HW CRC32c wrappers/accessors
 #if defined(NEW_HAVE_ARM_ACLE)
-#include <arm_acle.h>
-#elif defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
-#include <immintrin.h>
-#endif
-
-#if defined(NEW_HAVE_ARM_ACLE)
+#  include "Intrinsics.h"
 #  define HWCRC_U64 __crc32cd
 #  define HWCRC_U8  __crc32cb
 #elif defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+#  include "Intrinsics.h"
 #  define HWCRC_U64 _mm_crc32_u64
 #  define HWCRC_U8  _mm_crc32_u8
 #elif defined(NEW_HAVE_ARM64_ASM)

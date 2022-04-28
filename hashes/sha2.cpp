@@ -35,7 +35,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SHA2_X86_64) || defined(NEW_HAVE_SHA2_ARM)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #endif
 
 //-----------------------------------------------------------------------------

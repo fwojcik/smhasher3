@@ -32,7 +32,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SSE_2)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #endif
 
 //------------------------------------------------------------

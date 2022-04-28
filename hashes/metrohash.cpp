@@ -27,7 +27,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #else
 uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v);
 #endif

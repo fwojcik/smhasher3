@@ -27,7 +27,7 @@
 #include "Hashlib.h"
 
 // This uses bog-standard AES encryption
-#include "lib/AES.h"
+#include "AES.h"
 
 #include <cassert>
 

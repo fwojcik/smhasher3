@@ -49,17 +49,17 @@
  * macros into templatized C++ functions, and the corresponding
  * introduction of a "mode" enum for use in those templates. There
  * have also been changes to work with SMHasher3's Platform.h and
- * lib/Mathmult.h.
+ * Mathmult.h.
  *
  * Performance and hash results should match the original code.
  */
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 #if defined(NEW_HAVE_AES_X86_64)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #endif
 
 #include <cassert>

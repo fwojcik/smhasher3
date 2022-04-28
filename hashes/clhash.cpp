@@ -26,7 +26,7 @@
 
 #if defined(NEW_HAVE_CLMUL_X86_64)
 
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #include <cassert>
 
 /*

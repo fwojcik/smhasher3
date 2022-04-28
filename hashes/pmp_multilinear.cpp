@@ -32,10 +32,10 @@
 #undef NEW_HAVE_AVX2
 #undef NEW_HAVE_SSE4_1
 #undef NEW_HAVE_SSE_2
-//#include "lib/Intrinsics.h"
+//#include "Intrinsics.h"
 #endif
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 #include <functional>
 using namespace std;

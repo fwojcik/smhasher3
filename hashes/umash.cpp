@@ -28,14 +28,14 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_CLMUL_X86_64)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #include <cassert>
 
 /* We only use 128-bit vector, as pairs of 64-bit integers. */
 typedef __m128i v128;
 
 //------------------------------------------------------------
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 static inline void mul128(uint64_t x, uint64_t y, uint64_t & hi, uint64_t & lo) {
     mult64_128(lo, hi, x, y);

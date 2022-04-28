@@ -257,10 +257,10 @@ endif(NOT MSVC)
 add_library(
   SMHasher3Hashlib STATIC
 #
-  hashes/Hashlib.cpp
-  hashes/Hashinfo.cpp
+  lib/Hashlib.cpp
+  lib/Hashinfo.cpp
+  lib/AEStables.cpp
   hashes/Hashrefs.cpp
-  hashes/lib/AEStables.cpp
 #
   hashes/donothing.cpp
   hashes/badhash.cpp
@@ -334,7 +334,14 @@ add_library(
   hashes/murmur_oaat.cpp
   hashes/x17.cpp
 )
-target_include_directories(SMHasher3Hashlib PRIVATE util)
+target_include_directories(SMHasher3Hashlib PRIVATE include/hashlib PUBLIC include/common)
+# Hashinfo.cpp has special dispensation to access util/ for VCode.h.
+# Different CMake versions do this different ways
+if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
+  set_source_files_properties(lib/Hashinfo.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/util")
+else()
+  set_source_files_properties(lib/Hashinfo.cpp PROPERTIES INCLUDE_DIRECTORIES util)
+endif()
 
 add_library(
   SMHasher3Tests STATIC
@@ -365,10 +372,10 @@ add_library(
   tests/PRNGTest.cpp
   tests/SpeedTest.cpp
 )
-target_include_directories(SMHasher3Tests PRIVATE util)
+target_include_directories(SMHasher3Tests PRIVATE util PUBLIC include/common)
 
 add_executable(SMHasher3 main.cpp)
-target_include_directories(SMHasher3 PRIVATE hashes tests util ${CMAKE_BINARY_DIR}/include)
+target_include_directories(SMHasher3 PUBLIC include/common PRIVATE util tests include/hashlib ${CMAKE_BINARY_DIR}/include)
 target_link_libraries(SMHasher3 SMHasher3Tests SMHasher3Hashlib ${threads_link_command})
 
 ########################################

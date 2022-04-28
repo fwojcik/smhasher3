@@ -28,7 +28,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_2)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #endif
 
 #define FARSH_MAX_HASHES             32  /* number of 32-bit hashes supported by the built-in key */

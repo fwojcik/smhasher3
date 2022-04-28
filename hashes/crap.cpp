@@ -27,7 +27,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 //------------------------------------------------------------
 // From:

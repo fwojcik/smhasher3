@@ -57,8 +57,9 @@
 #include <cassert>
 #include <math.h>
 
-#if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_4_1)
-#include <immintrin.h>
+// VCode might have already included this
+#if !defined(HAVE_INTRINSICS) && (defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_4_1))
+#include "Intrinsics.h"
 #endif
 
 #if defined(HAVE_THREADS)

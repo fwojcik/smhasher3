@@ -25,7 +25,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 //-----------------------------------------------------------------------------
 // Multiply 64-bit V and P and return sum of high and low parts of the

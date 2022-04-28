@@ -58,7 +58,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AES_X86_64)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 
 template < uint32_t version, bool bswap >
 static void falkhash(const void * in, const size_t olen, const seed_t seed64, void * out) {

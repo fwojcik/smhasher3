@@ -30,7 +30,7 @@
 
 #if defined(NEW_HAVE_AES_X86_64) && defined(NEW_HAVE_SSE_4_1)
 
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 
 typedef __m128i meow_u128;
 

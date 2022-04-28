@@ -52,7 +52,7 @@
 #endif
 
 #if NMH_VECTOR > NMH_SCALAR
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #endif
 
 //------------------------------------------------------------

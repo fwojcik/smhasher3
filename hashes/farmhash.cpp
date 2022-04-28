@@ -29,7 +29,7 @@
 #include <cassert>
 
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_4_1) || defined(NEW_HAVE_CRC32C_X86_64) || defined(NEW_HAVE_AES_X86_64) || defined(NEW_HAVE_AVX)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #endif
 
 using namespace std;

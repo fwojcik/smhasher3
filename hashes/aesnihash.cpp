@@ -36,7 +36,7 @@
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AES_X86_64)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 
 template < bool bswap >
 static void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out) {

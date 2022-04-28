@@ -36,7 +36,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 //-----------------------------------------------------------------------------
 // Constants and masks
@@ -408,7 +408,7 @@ static void poly_step(uint64_t & ah, uint64_t & al, const uint64_t & kh,
 #define VMAC_NHBYTES  128
 
 //-----------------------------------------------------------------------------
-#include "lib/AES.h"
+#include "AES.h"
 
 typedef uint32_t aes_int_key[4*(VMAC_KEY_LEN/32+7)];
 

@@ -28,7 +28,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 // Multiply shift from
 // Thorup "High Speed Hashing for Integers and Strings" 2018

@@ -27,7 +27,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 
 #include <cassert>
 #include <climits>

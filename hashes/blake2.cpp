@@ -144,7 +144,7 @@ static void blake2_increment_counter( T * ctx, const uint64_t inc ) {
 //   static void blake2_compress(T * ctx, const uint8_t * in) {
 //   }
 #if defined(NEW_HAVE_SSE_2)
-#include "lib/Intrinsics.h"
+#include "Intrinsics.h"
 #include "blake2/compress-sse2-plus.h"
 #else
 #include "blake2/compress-portable.h"

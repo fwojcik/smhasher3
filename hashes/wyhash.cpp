@@ -37,7 +37,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 //-----------------------------------------------------------------------------
 // Data reading functions, common to 32- and 64-bit hashes

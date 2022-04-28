@@ -33,7 +33,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include "lib/Mathmult.h"
+#include "Mathmult.h"
 
 #if defined(HAVE_INT128)
 // This code originally used the system's srand()/rand() functions

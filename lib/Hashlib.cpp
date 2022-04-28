@@ -18,7 +18,6 @@
  */
 #include "Platform.h"
 #include "Hashlib.h"
-#include "VCode.h"
 
 #include <cstdio>
 #include <string>
