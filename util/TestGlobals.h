@@ -22,7 +22,6 @@
 #include <vector>
 #include <set>
 #include "Blob.h"
-#include "Hashinfo.h"
 
 //-----------------------------------------------------------------------------
 // Global variables from main.cpp
@@ -32,10 +31,18 @@
 // is not explicitly part of that test.
 extern seed_t g_seed;
 
+// What each test suite prints upon failure
+extern const char * g_failstr;
+
+// By rights, the HAVE_HASHINFO #define shouldn't exist, but C++11
+// doesn't allow forward declaration of class enums (enum classes,
+// yes, but not class enums) for no good reason, and we definitely
+// don't want to force files which use TestGlobals.h to include
+// Hashinfo.h. So this is the least-bad solution. :-{
+#if defined(HAVE_HASHINFO)
 // The user can select which endian-ness of the hash implementation to test
 extern HashInfo::endianness g_hashEndian;
-
-extern const char * g_failstr;
+#endif
 
 //-----------------------------------------------------------------------------
 // Recording test results for final summary printout
