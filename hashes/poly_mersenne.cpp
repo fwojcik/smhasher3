@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #include "lib/Mathmult.h"

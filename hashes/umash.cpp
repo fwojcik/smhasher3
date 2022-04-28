@@ -25,7 +25,6 @@
  * SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_CLMUL_X86_64)

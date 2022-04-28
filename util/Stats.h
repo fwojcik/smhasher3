@@ -50,8 +50,6 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <vector>
-
 double CalcMean ( std::vector<double> & v );
 double CalcMean ( std::vector<double> & v, int a, int b );
 double CalcStdv ( std::vector<double> & v );

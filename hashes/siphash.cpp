@@ -26,7 +26,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)

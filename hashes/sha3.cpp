@@ -28,7 +28,6 @@
  *     Aug 2015. Andrey Jivsov. crypto@brainhub.org
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #include <cassert>

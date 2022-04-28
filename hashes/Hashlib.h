@@ -16,7 +16,9 @@
  * along with this program.  If not, see
  * <https://www.gnu.org/licenses/>.
  */
-class HashInfo;
+#include "Hashinfo.h"
+
+#include <vector>
 
 unsigned register_hash(const HashInfo * hinfo);
 

@@ -34,7 +34,6 @@
  *     The authors offers no warranty. Use at your own risk.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #include "lib/Mathmult.h"

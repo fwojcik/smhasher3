@@ -53,13 +53,15 @@
 #include "Platform.h"
 #include "TestGlobals.h"
 #include "Stats.h"
-#include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
+#include <set>
 #include <cassert>
 #include <cstring>    // for memset
 #include <math.h>
+
+#include "Analyze.h"
 
 //-----------------------------------------------------------------------------
 // If score exceeds this improbability of happening, note a failing result

@@ -24,7 +24,6 @@
  * SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)

@@ -12,7 +12,6 @@
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 //------------------------------------------------------------

@@ -24,13 +24,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 // This uses bog-standard AES encryption
 #include "lib/AES.h"
 
-#include <assert.h>
+#include <cassert>
 
 // ------------------------------------------------------------
 // This is not strictly AES CTR mode, it is based on that plus the ARS
@@ -39,6 +38,9 @@
 static thread_local uint64_t ctr[2], oldctr[2];
 static const uint64_t incr[2] = {UINT64_C(1), UINT64_C(-1)};
 static uint32_t round_keys[44]; // only modified on main thread
+
+// A little ugly...
+extern seed_t g_seed;
 
 /* K1 is golden ratio - 1, K2 is sqrt(3) - 1 */
 #define K1 UINT64_C(0x9E3779B97F4A7C15)

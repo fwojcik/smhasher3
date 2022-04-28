@@ -26,7 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE4_1) || defined(NEW_HAVE_SSE_2)

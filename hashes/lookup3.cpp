@@ -5,7 +5,6 @@
  * It has no warranty.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 //------------------------------------------------------------

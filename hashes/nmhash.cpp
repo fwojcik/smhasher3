@@ -30,7 +30,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 //------------------------------------------------------------

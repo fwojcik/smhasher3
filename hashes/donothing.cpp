@@ -26,7 +26,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 static void DoNothingHash(const void * in, const size_t len, const seed_t seed, void * out) {

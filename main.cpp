@@ -60,13 +60,12 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#define _MAIN_CPP
 #include "Platform.h"
-#include "Types.h"
 #include "Timing.h"
-#include "Stats.h"
 #include "Hashlib.h"
+#include "TestGlobals.h"
 #include "Analyze.h"
+#include "Stats.h"
 #include "VCode.h"
 #include "version.h"
 

@@ -28,7 +28,6 @@
  * used under terms of CC0.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 static const uint32_t IV[8] = {0x6A09E667UL, 0xBB67AE85UL, 0x3C6EF372UL,

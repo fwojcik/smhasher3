@@ -25,7 +25,6 @@
  * SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 static const uint32_t STATE = 32; // Must be divisible by 8

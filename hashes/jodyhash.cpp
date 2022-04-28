@@ -26,7 +26,6 @@
  */
 // From https://github.com/jbruchon/jodyhash
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 //------------------------------------------------------------

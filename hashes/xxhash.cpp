@@ -30,7 +30,6 @@
  * You can contact the author at xxHash homepage: https://www.xxhash.com.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #include "lib/Mathmult.h"

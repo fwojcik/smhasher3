@@ -29,7 +29,6 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SSSE3)

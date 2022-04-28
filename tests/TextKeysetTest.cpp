@@ -47,6 +47,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
+#include "Hashinfo.h"
 #include "TestGlobals.h"
 #include "Random.h"
 #include "Analyze.h"

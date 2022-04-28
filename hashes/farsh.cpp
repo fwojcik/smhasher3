@@ -25,7 +25,6 @@
  * SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_2)

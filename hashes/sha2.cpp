@@ -32,7 +32,6 @@
  *     Skip Hovsmith and Barry O'Rourke for the mbedTLS project.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_SHA2_X86_64) || defined(NEW_HAVE_SHA2_ARM)

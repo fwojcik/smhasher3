@@ -25,7 +25,6 @@
  * SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 // gotten from random.org

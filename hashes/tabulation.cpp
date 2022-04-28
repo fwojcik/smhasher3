@@ -33,7 +33,6 @@
 // Based on Thorup's "high speed hashing for integers and strings"
 // https://arxiv.org/pdf/1504.06804.pdf
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #include "lib/Mathmult.h"

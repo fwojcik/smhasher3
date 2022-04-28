@@ -28,7 +28,6 @@
  * domain. The author hereby disclaims copyright to this source code.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 static FORCE_INLINE uint32_t fmix32(uint32_t h) {

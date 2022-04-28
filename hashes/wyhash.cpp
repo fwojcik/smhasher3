@@ -35,7 +35,6 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #include "lib/Mathmult.h"

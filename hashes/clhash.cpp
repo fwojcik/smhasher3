@@ -22,7 +22,6 @@
  * been sublicensed as GPL3 from the original Apache-2.0 license.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #if defined(NEW_HAVE_CLMUL_X86_64)

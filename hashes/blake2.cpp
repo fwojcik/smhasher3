@@ -28,7 +28,6 @@
  * used under terms of CC0.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 static const uint64_t blake2b_IV[8] =

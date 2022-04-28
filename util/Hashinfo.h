@@ -17,6 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 #define HAVE_HASHINFO
+#include <set>
 
 #define HASH_FLAGS                                     \
     FLAG_EXPAND(HASH_MOCK)                             \

@@ -54,7 +54,6 @@
  * Performance and hash results should match the original code.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 #include "lib/Mathmult.h"

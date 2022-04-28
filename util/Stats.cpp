@@ -51,9 +51,11 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Stats.h"
 
+#include <vector>
 #include <math.h>
+
+#include "Stats.h"
 
 //-----------------------------------------------------------------------------
 

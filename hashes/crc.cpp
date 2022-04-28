@@ -26,7 +26,6 @@
  * madler@alumni.caltech.edu
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 typedef struct {

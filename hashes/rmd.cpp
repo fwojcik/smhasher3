@@ -28,7 +28,6 @@
  *     LibTomCrypt API Tom St Denis
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 
 typedef struct {

@@ -17,7 +17,6 @@
  * <https://www.gnu.org/licenses/>.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "Hashlib.h"
 #include "VCode.h"
 
