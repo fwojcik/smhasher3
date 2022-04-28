@@ -200,7 +200,7 @@ endif()
 # Platform detection things
 ########################################
 
-set(DETECT_DIR ${CMAKE_SOURCE_DIR}/hashes/detect)
+set(DETECT_DIR ${CMAKE_SOURCE_DIR}/detect)
 
 include(${DETECT_DIR}/detect.cmake)
 
