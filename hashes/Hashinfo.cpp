@@ -21,6 +21,19 @@
 #include "VCode.h"
 
 #include <cstdio>
+#include <algorithm>
+
+char * HashInfo::_fixup_name(const char * in) {
+    // Since dashes can't be in C/C++ identifiers, but humans want them
+    // in names, replace underscores with dashes.
+    char * out = strdup(in);
+    std::replace(&out[0], &out[strlen(out)], '_', '-');
+    return out;
+}
+
+char * HashFamilyInfo::_fixup_name(const char * in) {
+    return HashInfo::_fixup_name(in);
+}
 
 //-----------------------------------------------------------------------------
 // This should hopefully be a thorough and uambiguous test of whether a hash

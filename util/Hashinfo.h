@@ -91,6 +91,8 @@ seed_t excludeBadseeds(const HashInfo * hinfo, const seed_t seed);
 seed_t excludeZeroSeed(const HashInfo * hinfo, const seed_t seed);
 
 class HashInfo {
+  friend class HashFamilyInfo;
+
   public:
     enum endianness : uint32_t {
         ENDIAN_DEFAULT,
@@ -101,16 +103,11 @@ class HashInfo {
         ENDIAN_BIG
     };
 
+  protected:
+    static char * _fixup_name(const char * in);
+
   private:
     uint32_t _ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian) const;
-
-    static char * _fixup_name(const char * in) {
-        // Since dashes can't be in C/C++ identifiers, but humans want them
-        // in names, replace underscores with dashes.
-        char * out = strdup(in);
-        std::replace(&out[0], &out[strlen(out)], '_', '-');
-        return out;
-    }
 
     bool _is_native(enum endianness e) const {
         bool is_native = true;
@@ -243,11 +240,5 @@ public:
     src_url(NULL), src_status(SRC_UNKNOWN) { }
 
 private:
-  char * _fixup_name(const char * in) {
-    // Since dashes can't be in C/C++ identifiers, but humans want them
-    // in names, replace underscores with dashes.
-    char * out = strdup(in);
-    std::replace(&out[0], &out[strlen(out)], '_', '-');
-    return out;
-  }
+    static char * _fixup_name(const char * in);
 };

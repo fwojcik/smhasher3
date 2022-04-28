@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <string>
 #include <unordered_map>
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 // These are here only so that the linker will consider all the

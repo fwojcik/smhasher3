@@ -50,7 +50,6 @@
 // Platform-specific functions and macros
 
 #include <cstdio>    // Allow printf() from anywhere
-#include <algorithm>
 
 #ifdef HAVE_THREADS
 #include <thread>
