@@ -21,6 +21,7 @@
 // Basic infrastructure that basically all tests use
 #include <vector>
 #include <set>
+#include "Blob.h"
 #include "Hashinfo.h"
 
 //-----------------------------------------------------------------------------

@@ -44,7 +44,6 @@
  */
 #include "Platform.h"
 #include "Timing.h"
-#include "Types.h"
 #include "TestGlobals.h"
 #include "Stats.h"       // For FilterOutliers, CalcMean, CalcStdv
 #include "Random.h"

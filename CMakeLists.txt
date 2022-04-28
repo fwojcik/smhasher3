@@ -339,11 +339,10 @@ target_include_directories(SMHasher3Hashlib PRIVATE util)
 add_library(
   SMHasher3Tests STATIC
 #
-  util/Bitvec.cpp
   util/Platform.cpp
   util/Analyze.cpp
+  util/Blob.cpp
   util/Stats.cpp
-  util/Types.cpp
   util/VCode.cpp
 #
   tests/SanityTest.cpp

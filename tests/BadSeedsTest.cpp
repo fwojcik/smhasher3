@@ -47,16 +47,13 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "TestGlobals.h"
-#include "Bitvec.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
 #include "BadSeedsTest.h"
 
-#include <inttypes.h>
 #ifdef HAVE_THREADS
 #include <chrono>
 #include <atomic>

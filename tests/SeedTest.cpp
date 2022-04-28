@@ -47,7 +47,6 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "TestGlobals.h"
 #include "Stats.h"       // For chooseUpToK
 #include "Analyze.h"

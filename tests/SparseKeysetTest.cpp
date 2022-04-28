@@ -47,9 +47,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
-#include "Types.h"
 #include "TestGlobals.h"
-#include "Bitvec.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"

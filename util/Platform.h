@@ -50,6 +50,7 @@
 // Platform-specific functions and macros
 
 #include <cstdio>    // Allow printf() from anywhere
+#include <algorithm>
 
 #ifdef HAVE_THREADS
 #include <thread>
@@ -79,6 +80,7 @@ void DisableThreads(void);
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #define FORCE_INLINE	__forceinline
 #define	NEVER_INLINE  __declspec(noinline)
@@ -144,6 +146,7 @@ static char* strndup(char const *s, size_t n)
 #include <cstddef>
 #include <cstdlib>
 #include <cstdint>
+#include <inttypes.h>
 #if defined(HAVE_INT128)
 typedef unsigned __int128 uint128_t;
 typedef          __int128 int128_t;
