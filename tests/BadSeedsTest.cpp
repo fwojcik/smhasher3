@@ -75,7 +75,7 @@ static bool TestSeed(const HashInfo * hinfo, const seed_t seed) {
     const unsigned numtestbytes = testbytes.size();
     const hashtype zero = {0};
     std::vector<hashtype> hashes(numtestbytes);
-    HashSet<hashtype> dummy_collisions;
+    std::set<hashtype> dummy_collisions;
     bool result = true;
 
     if (hinfo->is32BitSeed() && (seed > UINT64_C(0xffffffff)))
@@ -166,7 +166,7 @@ static void TestSeedRangeThread(const HashInfo * hinfo, const uint64_t hi,
     const std::vector<uint8_t> testbytes = {0,32,127,255};
     const unsigned numtestbytes = testbytes.size();
     std::vector<hashtype> hashes(numtestbytes);
-    HashSet<hashtype> collisions;
+    std::set<hashtype> collisions;
 
     const char * progress_fmt =
         (last <= UINT64_C(0xffffffff)) ?

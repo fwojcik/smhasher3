@@ -56,6 +56,7 @@
 
 #include "HashMapTest.h"
 
+#include <unordered_set>
 #include <string>
 #include <cassert>
 #include <math.h>
@@ -129,7 +130,7 @@ static bool WordsKeyImpl(HashFn hash, const seed_t seed,
   assert (minlen >= 0);
   assert (maxlen > minlen);
 
-  HashSet<std::string> words; // need to be unique, otherwise we report collisions
+  std::unordered_set<std::string> words; // need to be unique, otherwise we report collisions
   std::vector<hashtype> hashes;
   hashes.resize(keycount);
   Rand r(483723);
@@ -180,10 +181,10 @@ static bool WordsStringImpl(HashFn hash, const seed_t seed,
   long wordscount = words.size();
   printf("Keyset 'Words' - dictionary words - %ld keys\n", wordscount);
 
+  std::unordered_set<std::string> wordset; // need to be unique, otherwise we report collisions
   std::vector<hashtype> hashes;
   hashes.resize(wordscount);
   Rand r(483723);
-  HashSet<std::string> wordset; // need to be unique, otherwise we report collisions
 
   for(int i = 0; i < (int)wordscount; i++) {
     if (wordset.count(words[i]) > 0) { // not unique

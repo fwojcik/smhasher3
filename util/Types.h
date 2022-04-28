@@ -52,17 +52,6 @@
 
 #include "Hashinfo.h"
 
-#ifdef HAVE_INT128
-typedef unsigned __int128 uint128_t;
-typedef          __int128 int128_t;
-#endif
-
-//-----------------------------------------------------------------------------
-template< typename hashtype >
-struct HashSet : public std::set<hashtype>
-{
-};
-
 //-----------------------------------------------------------------------------
 // To be able to sample different statistics sets from the same hash,
 // a seed can be supplied which will be used in each test where a seed

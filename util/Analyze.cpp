@@ -234,7 +234,7 @@ static void plot ( double n )
 // the first N collisions for further processing
 template< typename hashtype >
 unsigned int FindCollisions(std::vector<hashtype> & hashes,
-                            HashSet<hashtype> & collisions,
+                            std::set<hashtype> & collisions,
                             int maxCollisions,
                             bool drawDiagram) {
     unsigned int collcount = 0;
@@ -267,11 +267,10 @@ unsigned int FindCollisions(std::vector<hashtype> & hashes,
 INSTANTIATE(FindCollisions, HASHTYPELIST);
 
 template < typename hashtype >
-void PrintCollisions(HashSet<hashtype> & collisions) {
+void PrintCollisions(std::set<hashtype> & collisions) {
     printf("\nCollisions:\n");
 
-    for (typename HashSet<hashtype>::iterator it = collisions.begin();
-         it != collisions.end(); ++it) {
+    for (auto it = collisions.begin(); it != collisions.end(); ++it) {
         const hashtype &hash = *it;
         hash.printhex("  ");
     }
@@ -630,7 +629,7 @@ bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
 
     addVCodeOutput(&hashes[0], sizeof(hashtype) * nbH);
 
-    HashSet<hashtype> collisions;
+    std::set<hashtype> collisions;
     int collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
 
     /*

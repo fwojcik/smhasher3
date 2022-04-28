@@ -54,12 +54,12 @@ bool ReportBias(const int biascnt, const int coinflips, const int trials, const 
 
 template < typename hashtype >
 unsigned int FindCollisions ( std::vector<hashtype> & hashes,
-                              HashSet<hashtype> & collisions,
+                              std::set<hashtype> & collisions,
                               int maxCollisions = 1000,
                               bool drawDiagram = false);
 
 template < typename hashtype >
-void PrintCollisions(HashSet<hashtype> & collisions);
+void PrintCollisions(std::set<hashtype> & collisions);
 
 template < typename hashtype >
 bool TestHashList ( std::vector<hashtype> & hashes, bool drawDiagram,
