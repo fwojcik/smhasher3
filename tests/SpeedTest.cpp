@@ -112,15 +112,15 @@ NEVER_INLINE static int64_t timehash(HashFn hash, const seed_t seed,
 // WARNING: This assumes that at least 4 bytes can be written to key!
 NEVER_INLINE static double timehash_small(HashFn hash, const seed_t seed,
         uint8_t * const key, int len) {
-  const int NUM_TRIALS = 200;
-  const uint32_t incr = 0x1000001;
-  uint32_t maxi = incr * NUM_TRIALS;
+  const int NUM_TRIALS = 30000;
+  const uint64_t incr = 0x1000001;
+  uint64_t maxi = incr * NUM_TRIALS;
   volatile unsigned long long int begin, end;
   uint32_t hash_temp[16] = {0};
 
   begin = timer_start();
 
-  for (uint32_t i = 0; i < maxi; i += incr) {
+  for (uint64_t i = 0; i < maxi; i += incr) {
       hash(key, len, seed, hash_temp);
       // It's possible that even with this loop data dependency that
       // hash invocations still would not be fully serialized. Another
@@ -253,7 +253,7 @@ static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary
 
 static double TinySpeedTest ( HashFn hash, int maxkeysize, seed_t seed, bool verbose, bool include_vary )
 {
-  const int trials = 99999;
+  const int trials = 999;
   double sum = 0.0;
 
   printf("Small key speed test - [1, %2d]-byte keys\n",maxkeysize);
