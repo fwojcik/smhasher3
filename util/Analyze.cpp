@@ -52,6 +52,7 @@
  */
 #include "Platform.h"
 #include "TestGlobals.h"
+#include "Blobsort.h"
 #include "Stats.h"
 #include "Instantiate.h"
 #include "VCode.h"
