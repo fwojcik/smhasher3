@@ -1,6 +1,9 @@
 # Map of feature variable to the file that detects it.
 # Cmake doesn't have associative arrays, so just do this instead.
 set(detectVarsFilesMap
+  FEATURE_HINT_EXPECT      hint_expect.cpp
+  FEATURE_HINT_EXPECTP     hint_expectp.cpp
+  FEATURE_HINT_UNPREDICT   hint_unpredictable.cpp
   FEATURE_SSE2_FOUND       x86_64_sse2.cpp
   FEATURE_SSSE3_FOUND      x86_64_ssse3.cpp
   FEATURE_SSE41_FOUND      x86_64_sse41.cpp
@@ -85,6 +88,24 @@ function(feature_detect var)
 endfunction()
 
 ########################################
+
+feature_detect(FEATURE_HINT_EXPECT)
+if(FEATURE_HINT_EXPECT)
+  add_definitions(-DHAVE_HINT_EXPECT)
+  message(STATUS "__builtin_expect() available")
+endif()
+
+feature_detect(FEATURE_HINT_EXPECTP)
+if(FEATURE_HINT_EXPECTP)
+  add_definitions(-DHAVE_HINT_EXPECT_PROB)
+  message(STATUS "__builtin_expect_with_probability() available")
+endif()
+
+feature_detect(FEATURE_HINT_UNPREDICT)
+if(FEATURE_HINT_UNPREDICT)
+  add_definitions(-DHAVE_HINT_UNPREDICTABLE)
+  message(STATUS "__builtin_unpredictable() available")
+endif()
 
 feature_detect(FEATURE_SSE2_FOUND)
 if(FEATURE_SSE2_FOUND)

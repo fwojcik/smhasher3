@@ -385,12 +385,6 @@ static void radixsort( T * begin, T * end )
 //-----------------------------------------------------------------------------
 static const uint32_t    SORT_CUTOFF  = 60;
 
-#if 0
-#define expectp(x, p)  __builtin_expect_with_probability(!!(x), 1, (p))
-#else
-#define expectp(x, p) (x)
-#endif
-
 // This is an in-place MSB radix sort that recursively sorts each
 // block, sometimes known as an "American Flag Sort". Testing shows
 // that performance increases by devolving to std::sort once we get
@@ -444,7 +438,7 @@ static void flagsort( T * begin, T * end, int idx )
       continue;
     }
     uint8_t value = (*ptr)[idx];
-    if (expectp(value == curblock, 0.501155)) {
+    if (unpredictable(value == curblock)) { // p ~= 0.501155
       ptr++;
       continue;
     }

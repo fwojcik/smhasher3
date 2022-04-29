@@ -52,14 +52,14 @@
 #include <cstdio>    // Allow printf() from anywhere
 
 #ifdef HAVE_THREADS
-#include <thread>
-# if __APPLE__
-#  include <mach/mach.h>
-#  include <mach/thread_act.h>
-# endif
-extern unsigned g_NCPU;
+  #include <thread>
+  #if __APPLE__
+    #include <mach/mach.h>
+    #include <mach/thread_act.h>
+  #endif
+  extern unsigned g_NCPU;
 #else
-extern const unsigned g_NCPU;
+  extern const unsigned g_NCPU;
 #endif
 
 void DisableThreads(void);
@@ -70,6 +70,29 @@ void DisableThreads(void);
   #elif defined(__i386__)
     #define HAVE_X86_32
   #endif
+#endif
+
+// Compiler branching hints
+#if defined(HAVE_HINT_EXPECT)
+  #define likely(x) __builtin_expect(!!(x), 1)
+  #define unlikely(x) __builtin_expect(!!(x), 0)
+  #if defined(HAVE_HINT_EXPECT_PROB)
+    #define expectp(x, p) __builtin_expect_with_probability(!!(x), 1, (p))
+  #else
+    #define expectp(x, p) ((p >= 0.9) ? likely(x) : (p <= 0.1) ? unlikely(x) : (x))
+  #endif
+#else
+  #define likely(x) (x)
+  #define unlikely(x) (x)
+  #define expectp(x, p) (x)
+#endif
+
+#if defined(HAVE_HINT_UNPREDICTABLE)
+  #define unpredictable(x) __builtin_unpredictable(x)
+#elif defined(HAVE_HINT_EXPECT_PROB)
+  #define unpredictable(x) __builtin_expect_with_probability(!!(x), 1, 0.5)
+#else
+  #define unpredictable(x) (x)
 #endif
 
 //-----------------------------------------------------------------------------
@@ -132,7 +155,6 @@ static char* strndup(char const *s, size_t n)
 }
 #endif
 
-#define likely(x) (x)
 #define assume(x) (__assume(x))
 #define unreachable() (__assume(0))
 #define prefetch(ptr) do { (void)(ptr); } while (0)
@@ -200,9 +222,6 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #define	ROTR32(x,y)	rotr32(x,y)
 #define ROTR64(x,y)	rotr64(x,y)
 
-#define likely(x) __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
-/* Should work for gcc, clang, and icc at least */
 #define assume(x) do { if (!(x)) __builtin_unreachable(); } while (0)
 #define unreachable() __builtin_unreachable()
 #define prefetch(ptr) __builtin_prefetch(ptr)
