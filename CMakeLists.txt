@@ -249,90 +249,43 @@ if(NOT MSVC)
 endif(NOT MSVC)
 
 ########################################
+# The list of hash source files
+########################################
+
+include(hashes/Hashsrc.cmake)
+
+########################################
+# Generate the list of USE_FAMILY() calls
+########################################
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/Hashrefs.cpp
+  IMPLICIT_DEPENDS CXX ${CMAKE_SOURCE_DIR}/hashes/Hashrefs.cpp.in
+  DEPENDS ${HASH_SRC_FILES}
+  COMMAND ${CMAKE_COMMAND}
+    -D SRCDIR=${CMAKE_SOURCE_DIR}
+    -D SRC=${CMAKE_SOURCE_DIR}/hashes/Hashrefs.cpp.in
+    -D DST=${CMAKE_BINARY_DIR}/Hashrefs.cpp
+    -P ${CMAKE_SOURCE_DIR}/hashes/Hashrefs.cmake
+)
+
+########################################
 # Build all the hashes
 ########################################
 
 add_library(
   SMHasher3Hashlib STATIC
 #
+  ${CMAKE_BINARY_DIR}/Hashrefs.cpp
+#
   lib/Hashlib.cpp
   lib/Hashinfo.cpp
   lib/AEStables.cpp
-  hashes/Hashrefs.cpp
 #
-  hashes/donothing.cpp
-  hashes/badhash.cpp
-  hashes/aesrng.cpp
-#
-#########################################
-# Normal hashes are sorted biggest->smallest to try to minimize
-# parallel compilation times
-#########################################
-#
-  hashes/pmp_multilinear.cpp
-  hashes/xxhash.cpp
-  hashes/t1ha.cpp
-  hashes/farmhash.cpp
-  hashes/halftimehash.cpp
-  hashes/blake2.cpp
-  hashes/blake3.cpp
-  hashes/umash.cpp
-  hashes/mum_mir.cpp
-  hashes/cityhash.cpp
-  hashes/nmhash.cpp
-  hashes/ascon.cpp
-  hashes/rmd.cpp
-  hashes/beamsplitter.cpp
-  hashes/sha2.cpp
-  hashes/sha1.cpp
-  hashes/pearson.cpp
-  hashes/vmac.cpp
-  hashes/clhash.cpp
-  hashes/spookyhash.cpp
-  hashes/meowhash.cpp
-  hashes/metrohash.cpp
-  hashes/farsh.cpp
-  hashes/siphash.cpp
-  hashes/crc.cpp
-  hashes/chaskey.cpp
-  hashes/tabulation.cpp
-  hashes/komihash.cpp
-  hashes/multiply_shift.cpp
-  hashes/md5.cpp
-  hashes/fnv.cpp
-  hashes/hasshe2.cpp
-  hashes/prvhash.cpp
-  hashes/murmurhash3.cpp
-  hashes/aesrng.cpp
-  hashes/wyhash.cpp
-  hashes/discohash.cpp
-  hashes/sha3.cpp
-  hashes/poly_mersenne.cpp
-  hashes/murmurhash2.cpp
-  hashes/falkhash.cpp
-  hashes/fletcher.cpp
-  hashes/crap.cpp
-  hashes/blockpearson.cpp
-  hashes/perlhashes.cpp
-  hashes/jodyhash.cpp
-  hashes/khash.cpp
-  hashes/floppsyhash.cpp
-  hashes/seahash.cpp
-  hashes/falcon_oaat.cpp
-  hashes/lookup3.cpp
-  hashes/donothing.cpp
-  hashes/badhash.cpp
-  hashes/fasthash.cpp
-  hashes/aesnihash.cpp
-  hashes/o1hash.cpp
-  hashes/pengyhash.cpp
-  hashes/mx3.cpp
-  hashes/superfasthash.cpp
-  hashes/murmurhash1.cpp
-  hashes/murmur_oaat.cpp
-  hashes/x17.cpp
+  ${HASH_SRC_FILES}
 )
 target_include_directories(SMHasher3Hashlib PRIVATE include/hashlib PUBLIC include/common)
+
 # Hashinfo.cpp has special dispensation to access util/ for VCode.h.
 # Different CMake versions do this different ways
 if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
@@ -340,6 +293,10 @@ if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
 else()
   set_source_files_properties(lib/Hashinfo.cpp PROPERTIES INCLUDE_DIRECTORIES util)
 endif()
+
+########################################
+# Build all the tests
+########################################
 
 add_library(
   SMHasher3Tests STATIC

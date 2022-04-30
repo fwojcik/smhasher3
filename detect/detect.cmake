@@ -64,7 +64,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${detectFiles})
 # cached variables iff the files post-date the CMake cache... :-{
 if((DEFINED LAST_DETECT_HASH) AND (LAST_DETECT_HASH STREQUAL detectFileHashes))
 else()
-  message(STATUS "Clearing detection cache")
+  message(STATUS "Clearing feature detection cache")
   set(isFile OFF)
   foreach(entry ${detectVarsFilesMap})
     if(isFile)
