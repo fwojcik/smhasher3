@@ -351,3 +351,74 @@ template<> FORCE_INLINE void Blob<64>::reversebits(void) {
     v = ( v >> 32                      ) | ( v                       << 32);
     PUT_U64<false>(v, bytes, 0);
 }
+
+//-----------------------------------------------------------------------------
+// Blob-like class for externally managed buffers.
+// The operator overloads of Blob<> are made private, and so are not exposed.
+
+typedef void * voidptr_t;
+typedef const void * constvoidptr_t;
+
+class ExtBlob : private Blob<0> {
+
+public:
+  //----------
+  // constructors
+
+  ExtBlob(uint8_t * p, size_t l) {
+      ptr = p;
+      len = l;
+  }
+
+  ExtBlob(uint8_t * p, const uint8_t * i, size_t l) {
+      ptr = p;
+      len = l;
+      memcpy(ptr, i, len);
+  }
+
+  //----------
+  // conversion operators
+
+  operator voidptr_t () const {
+      return (voidptr_t)ptr;
+  }
+
+  operator constvoidptr_t () const {
+      return (constvoidptr_t)ptr;
+  }
+
+  //----------
+  // interface
+
+  FORCE_INLINE uint8_t getbit(size_t bit) const {
+      return _getbit(bit, ptr, len);
+  }
+
+  FORCE_INLINE void printhex(const char * prefix = "") const {
+      _printhex(prefix, ptr, len);
+  }
+
+  FORCE_INLINE void printbits(const char * prefix = "") const {
+      _printbits(prefix, ptr, len);
+  }
+
+  FORCE_INLINE uint32_t highzerobits(void) const {
+      return _highzerobits(ptr, len);
+  }
+
+  FORCE_INLINE uint32_t window(size_t start, size_t count) const {
+      return _window(start, count, ptr, len);
+  }
+
+  FORCE_INLINE void reversebits(void) {
+      _reversebits(ptr, len);
+  }
+
+  FORCE_INLINE void lrot(size_t c) {
+      _lrot(c, ptr, len);
+  }
+
+private:
+    uint8_t * ptr;
+    size_t len;
+};
