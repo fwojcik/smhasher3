@@ -82,7 +82,7 @@ static bool DiffDistTest2(HashFn hash, const seed_t seed, bool drawDiagram) {
       hash(&k, sizeof(keytype), seed, &h1);
       addVCodeInput(&k, sizeof(keytype));
 
-      flipbit(&k, sizeof(keytype), keybit);
+      k.flipbit(keybit);
       hash(&k, sizeof(keytype), seed, &h2);
       addVCodeInput(&k, sizeof(keytype));
 
@@ -113,7 +113,7 @@ bool DiffDistTest(const HashInfo * hinfo, const bool verbose) {
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffDistTest2<uint64_t,hashtype>(hash, seed, verbose);
+    result &= DiffDistTest2<Blob<64>,hashtype>(hash, seed, verbose);
 
     printf("%s\n", result ? "" : g_failstr);
 
