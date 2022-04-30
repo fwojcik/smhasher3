@@ -46,25 +46,6 @@
  */
 #include <algorithm>
 
-//-----------------------------------------------------------------------------
-
-static inline void flipbit ( void * block, int len, uint32_t bit )
-{
-  uint8_t * b = (uint8_t*)block;
-
-  int byte = bit >> 3;
-  bit = bit & 0x7;
-
-  if(byte < len) b[byte] ^= (1 << bit);
-}
-
-template< typename T >
-inline void flipbit ( T & blob, uint32_t bit )
-{
-  flipbit(&blob,sizeof(T),bit);
-}
-
-//-----------------------------------------------------------------------------
 extern const uint32_t hzb[256];
 
 //-----------------------------------------------------------------------------
