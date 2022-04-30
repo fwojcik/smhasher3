@@ -71,10 +71,14 @@ inline void flipbit ( T & blob, uint32_t bit )
 //-----------------------------------------------------------------------------
 extern const uint32_t hzb[256];
 
-template < int _bits >
+#define _bytes ((_bits+7)/8)
+template < unsigned _bits >
 class Blob {
 
 public:
+  //----------
+  // constructors
+
   Blob() {
     memset(bytes, 0, sizeof(bytes));
   }
@@ -87,6 +91,9 @@ public:
 
   Blob(uint64_t x) :
       Blob((x = COND_BSWAP(x, isBE()), &x), sizeof(x)) {};
+
+  //----------
+  // unary operators
 
   uint8_t & operator [] (int i) {
     //assert(i < sizeof(bytes));
@@ -103,58 +110,8 @@ public:
     return *this;
   }
 
-  void printhex(const char * prefix = "") const {
-      constexpr size_t buflen = 4 + 2 * sizeof(bytes) + ((sizeof(bytes) + 3) / 4);
-      char buf[buflen];
-      char * p;
-
-      buf[0]          = '[';
-      buf[1]          = ' ';
-      // Space preceding the closing ']' gets added by the loop below
-      buf[buflen - 2] = ']';
-      buf[buflen - 1] = '\0';
-
-      // Print using MSB-first notation
-      p = &buf[2];
-      for (size_t i = sizeof(bytes); i != 0; i--) {
-          uint8_t vh = (bytes[i - 1] >> 4);
-          uint8_t vl = (bytes[i - 1] & 15);
-          *p++ = vh + ((vh <= 9) ? '0' : 'W'); // 'W' + 10 == 'a'
-          *p++ = vl + ((vl <= 9) ? '0' : 'W');
-          if ((i & 3) == 1) {
-              *p++ = ' ';
-          }
-      }
-
-      printf("%s%s\n", prefix, buf);
-  }
-
-  void printbits(const char * prefix = "") const {
-      constexpr size_t buflen = 4 + 9 * sizeof(bytes);
-      char buf[buflen];
-      char * p;
-
-      buf[0]          = '[';
-      buf[1]          = ' ';
-      // Space preceding the closing ']' gets added by the loop below
-      buf[buflen - 2] = ']';
-      buf[buflen - 1] = '\0';
-
-      // Print using MSB-first notation
-      p = &buf[2];
-      for (size_t i = sizeof(bytes); i != 0; i--) {
-          uint8_t v = bytes[i - 1];
-          for (int j = 7; j >= 0; j--) {
-              *p++ = (v & (1 << j)) ? '1' : '0';
-          }
-          *p++ = ' ';
-      }
-
-      printf("%s%s\n", prefix, buf);
-  }
-
   //----------
-  // boolean operations
+  // boolean operators
 
   bool operator < (const Blob & k) const {
     for(int i = sizeof(bytes) -1; i >= 0; i--) {
@@ -193,17 +150,101 @@ public:
     return *this;
   }
 
+  //----------
+  // interface
+
   FORCE_INLINE uint8_t getbit(size_t bit) const {
-      size_t byte = bit >> 3;
-      bit &= 7;
-      if (byte > sizeof(bytes)) return 0;
-      return (bytes[byte] >> bit) & 1;
+      return _getbit(bit, bytes, sizeof(bytes));
+  }
+
+  FORCE_INLINE void printhex(const char * prefix = "") const {
+      _printhex(prefix, bytes, sizeof(bytes));
+  }
+
+  FORCE_INLINE void printbits(const char * prefix = "") const {
+      _printbits(prefix, bytes, sizeof(bytes));
   }
 
   FORCE_INLINE uint32_t highzerobits(void) const {
-      const size_t len = sizeof(bytes);
+      return _highzerobits(bytes, sizeof(bytes));
+  }
+
+  FORCE_INLINE uint32_t window(size_t start, size_t count) const {
+      return _window(start, count, bytes, sizeof(bytes));
+  }
+
+  FORCE_INLINE void reversebits(void) {
+      _reversebits(bytes, sizeof(bytes));
+  }
+
+  FORCE_INLINE void lrot(size_t c) {
+      _lrot(c, bytes, sizeof(bytes));
+  }
+
+protected:
+  //----------
+  // implementations
+
+  static FORCE_INLINE uint8_t _getbit(size_t bit, const uint8_t * bytes, const size_t len) {
+      size_t byte = bit >> 3;
+      bit &= 7;
+      if (byte > len) return 0;
+      return (bytes[byte] >> bit) & 1;
+  }
+
+  static void _printhex(const char * prefix, const uint8_t * bytes, const size_t len) {
+      const size_t buflen = 4 + 2 * len + ((len + 3) / 4);
+      char buf[buflen];
+      char * p;
+
+      buf[0]          = '[';
+      buf[1]          = ' ';
+      // Space preceding the closing ']' gets added by the loop below
+      buf[buflen - 2] = ']';
+      buf[buflen - 1] = '\0';
+
+      // Print using MSB-first notation
+      p = &buf[2];
+      for (size_t i = len; i != 0; i--) {
+          uint8_t vh = (bytes[i - 1] >> 4);
+          uint8_t vl = (bytes[i - 1] & 15);
+          *p++ = vh + ((vh <= 9) ? '0' : 'W'); // 'W' + 10 == 'a'
+          *p++ = vl + ((vl <= 9) ? '0' : 'W');
+          if ((i & 3) == 1) {
+              *p++ = ' ';
+          }
+      }
+
+      printf("%s%s\n", prefix, buf);
+  }
+
+  static void _printbits(const char * prefix, const uint8_t * bytes, const size_t len) {
+      const size_t buflen = 4 + 9 * len;
+      char buf[buflen];
+      char * p;
+
+      buf[0]          = '[';
+      buf[1]          = ' ';
+      // Space preceding the closing ']' gets added by the loop below
+      buf[buflen - 2] = ']';
+      buf[buflen - 1] = '\0';
+
+      // Print using MSB-first notation
+      p = &buf[2];
+      for (size_t i = len; i != 0; i--) {
+          uint8_t v = bytes[i - 1];
+          for (int j = 7; j >= 0; j--) {
+              *p++ = (v & (1 << j)) ? '1' : '0';
+          }
+          *p++ = ' ';
+      }
+
+      printf("%s%s\n", prefix, buf);
+  }
+
+  static FORCE_INLINE uint32_t _highzerobits(const uint8_t * bytes, const size_t len) {
       uint32_t zb = 0;
-      for(size_t i = len - 1; i >= 0; i--) {
+      for (ssize_t i = len - 1; i >= 0; i--) {
           zb += hzb[bytes[i]];
           if (bytes[i] != 0) {
               break;
@@ -214,9 +255,9 @@ public:
 
   // Bit-windowing function.
   // Select some N-bit subset of the Blob, where N <= 24.
-  FORCE_INLINE uint32_t window(size_t start, size_t count) const {
+  static FORCE_INLINE uint32_t _window(size_t start, size_t count, const uint8_t * bytes, const size_t len) {
       assume(count <= 24);
-      const size_t bitlen = 8 * sizeof(bytes);
+      const size_t bitlen = 8 * len;
       const uint32_t mask = (1 << count) - 1;
       uint32_t v;
 
@@ -225,7 +266,7 @@ public:
           v = COND_BSWAP(v, isBE());
           v >>= (start & 7);
       } else {
-          memcpy(&v, &bytes[sizeof(bytes) - 4], 4);
+          memcpy(&v, &bytes[len - 4], 4);
           v = COND_BSWAP(v, isBE());
           v >>= 32 + start - bitlen;
           if ((start + count) > bitlen) {
@@ -239,20 +280,24 @@ public:
       return v & mask;
   }
 
+  // from the "Bit Twiddling Hacks" webpage
+  static FORCE_INLINE uint8_t _byterev(uint8_t b) {
+      return ((b * UINT64_C(0x0802) & UINT64_C(0x22110)) |
+              (b * UINT64_C(0x8020) & UINT64_C(0x88440)))  * UINT64_C(0x10101) >> 16;
+  }
+
   // 0xf00f1001 => 0x8008f00f
-  FORCE_INLINE void reversebits(void) {
-      const size_t len = sizeof(bytes);
+  static FORCE_INLINE void _reversebits(uint8_t * bytes, const size_t len) {
       uint8_t tmp[len];
 
       for (size_t i = 0; i < len; i++)
-          tmp[len - i - 1] = byterev(bytes[i]);
+          tmp[len - i - 1] = _byterev(bytes[i]);
       memcpy(bytes, tmp, len);
   }
 
-  void lrot(size_t c) {
+  static void _lrot(size_t c, uint8_t * bytes, const size_t len) {
       const size_t byteoffset = c >> 3;
       const size_t bitoffset  = c & 7;
-      const size_t len = sizeof(bytes);
       uint8_t tmp[len];
 
       for (size_t i = 0; i < len; i++) {
@@ -268,17 +313,10 @@ public:
           }
       }
   }
-  //----------
 
 private:
-  uint8_t bytes[(_bits+7)/8];
-
-  // from the "Bit Twiddling Hacks" webpage
-  static FORCE_INLINE uint8_t byterev(uint8_t b) {
-      return ((b * UINT64_C(0x0802) & UINT64_C(0x22110)) |
-              (b * UINT64_C(0x8020) & UINT64_C(0x88440)))  * UINT64_C(0x10101) >> 16;
-  }
-
+  //----------
+  uint8_t bytes[_bytes];
 };
 
 // from the "Bit Twiddling Hacks" webpage
