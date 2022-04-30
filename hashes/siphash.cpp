@@ -418,7 +418,7 @@ REGISTER_FAMILY(siphash,
 REGISTER_HASH(siphash_2_4,
   $.desc = "SipHash 2-4",
   $.hash_flags =
-        0,
+        FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
         FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
@@ -432,7 +432,7 @@ REGISTER_HASH(siphash_2_4,
 REGISTER_HASH(siphash_1_3,
   $.desc = "SipHash 1-3",
   $.hash_flags =
-        0,
+        FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
         FLAG_IMPL_TYPE_PUNNING |
         FLAG_IMPL_LICENSE_MIT,
@@ -446,7 +446,7 @@ REGISTER_HASH(siphash_1_3,
 REGISTER_HASH(siphash_half,
   $.desc = "SipHash half-width version",
   $.hash_flags =
-        0,
+        FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,

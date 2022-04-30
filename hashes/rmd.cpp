@@ -704,6 +704,7 @@ REGISTER_HASH(rmd128,
   $.desc = "RIPE-MD 128",
   $.hash_flags =
         FLAG_HASH_NO_SEED              |
+        FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE         |
@@ -721,6 +722,7 @@ REGISTER_HASH(rmd160,
   $.desc = "RIPE-MD 160",
   $.hash_flags =
         FLAG_HASH_NO_SEED              |
+        FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE         |
@@ -738,6 +740,7 @@ REGISTER_HASH(rmd256,
   $.desc = "RIPE-MD 256",
   $.hash_flags =
         FLAG_HASH_NO_SEED              |
+        FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE         |
