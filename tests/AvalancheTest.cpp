@@ -155,7 +155,7 @@ static void calcBiasRange ( const HashFn hash, const seed_t seed,
                                          1 << 3);
 #endif
 
-  uint8_t K[keybytes];
+  uint8_t buf[keybytes];
   hashtype A,B;
   int irep;
 
@@ -165,16 +165,16 @@ static void calcBiasRange ( const HashFn hash, const seed_t seed,
       if(irep % (reps/10) == 0) printf(".");
     }
 
-    memcpy(K,&keys[keybytes * irep],keybytes);
+    ExtBlob K(buf, &keys[keybytes * irep], keybytes);
     hash(K, keybytes, seed, &A);
 
     uint32_t * cursor = &bins[0];
 
     for(int iBit = 0; iBit < keybits; iBit++)
     {
-      flipbit(K,keybytes,iBit);
+      K.flipbit(iBit);
       hash(K, keybytes, seed, &B);
-      flipbit(K,keybytes,iBit);
+      K.flipbit(iBit);
 
       B ^= A;
 

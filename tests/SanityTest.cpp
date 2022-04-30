@@ -283,12 +283,12 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                 r.rand_p(buffer1, buflen);
                 r.rand_p(buffer2, buflen);
 
-                // Make 2 key pointers to the same data with different
-                // alignments. The rest of buffer2 is still random
-                // data that differs from buffer1, including data
-                // before the key pointers.
-                uint8_t * key1 = &buffer1[pad];
-                uint8_t * key2 = &buffer2[offset];
+                // Make 2 keys pointing to the same data with
+                // different alignments. The rest of buffer2 is still
+                // random data that differs from buffer1, including
+                // data before the keys.
+                ExtBlob key1(&buffer1[pad],    len);
+                ExtBlob key2(&buffer2[offset], len);
                 memcpy(key2, key1, len);
 
                 hash(key1, len, seed, hash1);
@@ -296,7 +296,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
 
                 for(int bit = 0; bit < (len * 8); bit++) {
                     // Flip a bit, hash the key -> we should get a different result.
-                    flipbit(key2, len, bit);
+                    key2.flipbit(bit);
                     hash(key2, len, seed, hash2);
                     addVCodeOutput(hash2, hashbytes);
 
@@ -307,7 +307,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                     }
 
                     // Flip it back, hash again -> we should get the original result.
-                    flipbit(key2, len, bit);
+                    key2.flipbit(bit);
                     hash(key2, len, seed, hash2);
 
                     if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
@@ -316,17 +316,18 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                     }
                 }
 
-                // Try altering every byte in buffer2 that isn't a key
-                // byte, and make sure the hash doesn't change, to try
-                // catching hashes that depend on out-of-bounds key
-                // bytes.
+                // Try altering bytes in buffer2 that aren't key bytes
+                // and making sure the hash doesn't change, to try to
+                // catch hashes that depend on out-of-bounds key bytes.
                 //
                 // I don't know how to catch hashes that merely read
                 // out-of-bounds key bytes, but doing that isn't
                 // necessarily an error or even unsafe; see:
                 // https://stackoverflow.com/questions/37800739/is-it-safe-to-read-past-the-end-of-a-buffer-within-the-same-page-on-x86-and-x64
-                for(uint8_t * ptr = key2 - pad; ptr < key2 + len + pad; ptr++) {
-                    if ((ptr >= key2) && (ptr < key2 + len)) { continue; }
+                uint8_t * const key2_start = buffer2 + offset;
+                uint8_t * const key2_end   = buffer2 + offset + len;
+                for(uint8_t * ptr = key2_start - pad; ptr < key2_end + pad; ptr++) {
+                    if ((ptr >= key2_start) && (ptr < key2_end)) { continue; }
                     *ptr ^= 0xFF;
                     hash(key2, len, seed, hash2);
                     if (memcmp(hash1, hash2, hashbytes) != 0) {
