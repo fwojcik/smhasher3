@@ -48,10 +48,6 @@
 
 //-----------------------------------------------------------------------------
 
-void printhex(const void * blob, size_t len, const char * prefix = "");
-
-//----------
-
 static inline void flipbit ( void * block, int len, uint32_t bit )
 {
   uint8_t * b = (uint8_t*)block;

@@ -39,31 +39,3 @@ const uint32_t hzb[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
-
-//-----------------------------------------------------------------------------
-void printhex(const void * blob, size_t len, const char * prefix) {
-    const uint8_t * bytes = (const uint8_t *)blob;
-    const size_t buflen = 4 + 2 * len + ((len + 3) / 4);
-    char buf[buflen];
-    char * p;
-
-    buf[0]          = '[';
-    buf[1]          = ' ';
-    // Space preceding the closing ']' gets added by the loop below
-    buf[buflen - 2] = ']';
-    buf[buflen - 1] = '\0';
-
-    // Print using MSB-first notation
-    p = &buf[2];
-    for (size_t i = len; i != 0; i--) {
-        uint8_t vh = (bytes[i - 1] >> 4);
-        uint8_t vl = (bytes[i - 1] & 15);
-        *p++ = vh + ((vh <= 9) ? '0' : 'W'); // 'W' + 10 == 'a'
-        *p++ = vl + ((vl <= 9) ? '0' : 'W');
-        if ((i & 3) == 1) {
-            *p++ = ' ';
-        }
-    }
-
-    printf("%s%s\n", prefix, buf);
-}

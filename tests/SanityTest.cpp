@@ -443,8 +443,8 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
             for (int j = 0; j < reps; j++) {
                 if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
                     maybeprintf("\nMismatch between main process and thread #%d at index %d\n", i, j);
-                    if (verbose) { printhex(&mainhashes[j * hashbytes],      hashbytes, "  main   :"); }
-                    if (verbose) { printhex(&threadhashes[i][j * hashbytes], hashbytes, "  thread :"); }
+                    if (verbose) { ExtBlob(&mainhashes[j * hashbytes]     , hashbytes).printhex("  main   :"); }
+                    if (verbose) { ExtBlob(&threadhashes[i][j * hashbytes], hashbytes).printhex("  thread :"); }
                     result = false;
                     break; // Only breaks out of j loop
                 }
