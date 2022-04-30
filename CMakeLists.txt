@@ -60,8 +60,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL GNU
   if(NOT CMAKE_CROSSCOMPILING)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
   endif()
-
-  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 endif()
 
 function(whole_archive_link_flags lib var)
