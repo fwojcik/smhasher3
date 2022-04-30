@@ -67,6 +67,7 @@ inline void flipbit ( T & blob, uint32_t bit )
 //-----------------------------------------------------------------------------
 extern const uint32_t hzb[256];
 
+//-----------------------------------------------------------------------------
 #define _bytes ((_bits+7)/8)
 template < unsigned _bits >
 class Blob {
@@ -167,6 +168,10 @@ public:
 
   FORCE_INLINE uint32_t window(size_t start, size_t count) const {
       return _window(start, count, bytes, sizeof(bytes));
+  }
+
+  FORCE_INLINE void flipbit(size_t bit) {
+      _flipbit(bit, bytes, sizeof(bytes));
   }
 
   FORCE_INLINE void reversebits(void) {
@@ -274,6 +279,14 @@ protected:
           }
       }
       return v & mask;
+  }
+
+  static FORCE_INLINE void _flipbit(size_t bit, uint8_t * bytes, const size_t len) {
+      const size_t byteoffset = bit >> 3;
+      const size_t bitoffset  = bit & 7;
+      if (byteoffset < len) {
+          bytes[byteoffset] ^= (1 << bitoffset);
+      }
   }
 
   // from the "Bit Twiddling Hacks" webpage
@@ -404,6 +417,10 @@ public:
 
   FORCE_INLINE uint32_t window(size_t start, size_t count) const {
       return _window(start, count, ptr, len);
+  }
+
+  FORCE_INLINE void flipbit(size_t bit) {
+      _flipbit(bit, ptr, len);
   }
 
   FORCE_INLINE void reversebits(void) {

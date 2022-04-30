@@ -97,7 +97,7 @@ static bool BicTest3(HashFn hash, const seed_t seed, const int reps, bool verbos
       addVCodeInput(keybit);
 
       hash(&key, keybytes, seed, &h1);
-      flipbit(key, keybit);
+      key.flipbit(keybit);
       hash(&key, keybytes, seed, &h2);
 
       hashtype d = h1 ^ h2;
@@ -238,7 +238,7 @@ void BicTest1 ( HashFn hash, const int keybit, const int reps, double & maxBias,
     r.rand_p(&key,keybytes);
     hash(&key,keybytes,g_seed,&h1);
 
-    flipbit(key,keybit);
+    key.flipbit(keybit);
     hash(&key,keybytes,g_seed,&h2);
 
     hashtype d = h1 ^ h2;
@@ -373,7 +373,7 @@ void BicTest2 ( HashFn hash, const int reps, bool verbose = true )
       {
         r.rand_p(&key,keybytes);
         hash(&key,keybytes,g_seed,&h1);
-        flipbit(key,keybit);
+        key.flipbit(keybit);
         hash(&key,keybytes,g_seed,&h2);
 
         hashtype d = h1 ^ h2;

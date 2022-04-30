@@ -131,7 +131,7 @@ static void DiffTestRecurse(const HashFn hash, const seed_t seed, keytype & k1, 
   {
     keytype k2_prev = k2;
 
-    flipbit(&k2, sizeof(k2), i);
+    k2.flipbit(i);
 
     bitsleft--;
 
@@ -150,7 +150,7 @@ static void DiffTestRecurse(const HashFn hash, const seed_t seed, keytype & k1, 
           DiffTestRecurse<false>(hash,seed,k1,k2,h1,h2,i+1,bitsleft,diffcounts);
     }
 
-    //flipbit(&k2,sizeof(k2),i);
+    //k2.flipbit(i);
     k2 = k2_prev;
     bitsleft++;
   }

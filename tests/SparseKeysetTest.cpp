@@ -68,7 +68,7 @@ static void SparseKeygenRecurse(HashFn hash, const seed_t seed,
     hashtype h;
 
     for (int i = start; i < nbits; i++) {
-        flipbit(k, i);
+        k.flipbit(i);
 
         if (inclusive || (bitsleft == 1)) {
             hash(&k, sizeof(keytype), seed, &h);
@@ -80,7 +80,7 @@ static void SparseKeygenRecurse(HashFn hash, const seed_t seed,
             SparseKeygenRecurse(hash, seed, i+1, bitsleft-1, inclusive, k, hashes);
         }
 
-        flipbit(k, i);
+        k.flipbit(i);
     }
 }
 
