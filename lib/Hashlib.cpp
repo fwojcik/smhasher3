@@ -25,15 +25,6 @@
 #include <algorithm>
 
 //-----------------------------------------------------------------------------
-// These are here only so that the linker will consider all the
-// translation units as "referred to", so it won't ignore them during
-// link time, so that all the global static initializers across all
-// the hash functions will actually fire. :-{
-
-unsigned refs();
-static unsigned dummy = refs();
-
-//-----------------------------------------------------------------------------
 typedef std::unordered_map<std::string, const HashInfo *> HashMap;
 typedef std::vector<const HashInfo *> HashMapOrder;
 
@@ -234,3 +225,8 @@ bool verifyAllHashes(bool verbose) {
     printf("\n");
     return result;
 }
+
+//-----------------------------------------------------------------------------
+// See Hashrefs.cpp.in for why these exist. You can very likely just ignore them.
+unsigned refs();
+static unsigned dummy = refs();

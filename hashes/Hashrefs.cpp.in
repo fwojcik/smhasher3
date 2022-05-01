@@ -19,6 +19,34 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
+/*
+ * Every REGISTER_HASH() call invokes register_hash() inside the
+ * initializer of a global HashInfo object. The goal is to add a
+ * reference to each HashInfo object to the global hashMap list in
+ * Hashlib.cpp, so users can query the list of hash functions.
+ *
+ * The C++ language standard specifies that the compiler is absolutely
+ * not allowed to optimize that call out, not even if it finds or can
+ * prove that those objects are unused. So you'd think that that'd be
+ * enough to guarantee that hashMap will contain those references at
+ * runtime after all the global constructors have fired. But NO!!!
+ * It turns out that the *linker* is allowed to not include any
+ * translation units that it detects are unused, so those per-hash
+ * HashInfo objects never get linked in!!!
+ *
+ * To get around this, every translation unit with REGISTER_HASH()
+ * calls must have exactly one call to REGISTER_FAMILY() so that a
+ * HASHNAME_ref global variable can be added to that file. This file's
+ * sole purpose is to touch each of those *_ref variables in order to
+ * force the linker to include all the translation units that contain
+ * hash functions.
+ *
+ * CMake is used to generate the giant list of USE_FAMILY() calls
+ * inside this file, so users only have to add any new hash
+ * implementation files to hashes/Hashsrc.cmake, instead of both there
+ * *and* this file.
+ */
+
 unsigned refs() {
 @HASH_USE_FAMILY_CALLS@
     return 0;
