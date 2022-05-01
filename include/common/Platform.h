@@ -164,8 +164,6 @@ static char* strndup(char const *s, size_t n)
 
 #else	//	!defined(_MSC_VER)
 
-#include <cstddef>
-#include <cstdlib>
 #include <cstdint>
 #include <inttypes.h>
 #if defined(HAVE_INT128)
@@ -225,9 +223,6 @@ inline uint64_t rotr64 ( uint64_t x, int8_t r )
 #define assume(x) do { if (!(x)) __builtin_unreachable(); } while (0)
 #define unreachable() __builtin_unreachable()
 #define prefetch(ptr) __builtin_prefetch(ptr)
-
-#include <strings.h>
-#define _stricmp strcasecmp
 
 #endif	//	!defined(_MSC_VER)
 
