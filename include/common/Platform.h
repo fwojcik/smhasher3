@@ -293,7 +293,7 @@ static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
 //-----------------------------------------------------------------------------
 // 32-bit integer manipulation functions. These move data in
 // alignment-safe ways, with optional byte swapping.
-#include <cstring>
+#include <cstring> // For memcpy
 
 template < bool bswap >
 static FORCE_INLINE uint64_t GET_U64(const uint8_t * b, const uint32_t i) {
