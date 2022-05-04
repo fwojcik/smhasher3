@@ -137,6 +137,7 @@ NEVER_INLINE static double timehash_small(HashFn hash, const seed_t seed,
 }
 
 //-----------------------------------------------------------------------------
+double stddev;
 
 static double SpeedTest(HashFn hash, seed_t seed, const int trials,
         const int blocksize, const int align,
@@ -203,6 +204,7 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
 
   delete [] buf;
 
+  stddev = CalcStdv(times);
   return CalcMean(times);
 }
 
@@ -262,12 +264,12 @@ static double TinySpeedTest ( HashFn hash, int maxkeysize, seed_t seed, bool ver
   {
     volatile int j = i;
     double cycles = SpeedTest(hash,seed,trials,j,0,0,0);
-    if(verbose) printf("  %2d-byte keys - %8.2f cycles/hash\n",j,cycles);
+    if(verbose) printf("  %2d-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",j,cycles,stddev,100.0*stddev/cycles);
     sum += cycles;
   }
   if (include_vary) {
     double cycles = SpeedTest(hash,seed,trials,maxkeysize,0,maxkeysize-1,0);
-    if(verbose) printf(" rnd-byte keys - %8.2f cycles/hash\n", cycles);
+    if(verbose) printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv)\n", cycles,stddev);
     // Deliberately not counted in the Average stat, so the two can be directly compared
   }
 
