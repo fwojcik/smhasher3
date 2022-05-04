@@ -1,9 +1,26 @@
+########################################
+# Instruction set availability detection
+########################################
+
+include(CheckIncludeFileCXX)
+
+if(PROCESSOR_FAMILY STREQUAL "Arm")
+  add_definitions(-DHAVE_NEON)
+  check_include_file_cxx("arm_neon.h" RESULT_NEON_INCLUDE)
+  if(RESULT_NEON_INCLUDE)
+    add_definitions(-DNEW_HAVE_ARM_NEON)
+    message(STATUS "ARM NEON available")
+  endif()
+  check_include_file_cxx("arm_acle.h" RESULT_ACLE_INCLUDE)
+  if(RESULT_ACLE_INCLUDE)
+    add_definitions(-DNEW_HAVE_ARM_ACLE)
+    message(STATUS "ARM ACLE available")
+  endif()
+endif()
+
 # Map of feature variable to the file that detects it.
 # Cmake doesn't have associative arrays, so just do this instead.
 set(detectVarsFilesMap
-  FEATURE_HINT_EXPECT      hint_expect.cpp
-  FEATURE_HINT_EXPECTP     hint_expectp.cpp
-  FEATURE_HINT_UNPREDICT   hint_unpredictable.cpp
   FEATURE_SSE2_FOUND       x86_64_sse2.cpp
   FEATURE_SSSE3_FOUND      x86_64_ssse3.cpp
   FEATURE_SSE41_FOUND      x86_64_sse41.cpp
@@ -41,7 +58,7 @@ function(lookupDetectFile var feature)
   endif()
 endfunction()
 
-# Compute the list of detection files their hashes
+# Compute the list detection source files plus their hashes
 set(isFile OFF)
 foreach(entry ${detectVarsFilesMap})
   if(isFile)

@@ -73,164 +73,17 @@ function(whole_archive_link_flags lib var)
 endfunction()
 
 ########################################
-# General system detection
-########################################
-
-message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
-
-if ((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
-    OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "i586")
-    OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "i686")
-    OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64") # freebsd
-    OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64") # windows
-    OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86"))
-  set(PROCESSOR_FAMILY "x86")
-elseif ((CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
-    OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
-  set(PROCESSOR_FAMILY "Arm")
-else ()
-  set(PROCESSOR_FAMILY "Other")
-endif()
-
-########################################
-# Endianness and size detection things
-########################################
-
-include(CheckTypeSize)
-set(CMAKE_REQUIRED_QUIET true)
-
-option(ENDIAN_DETECT_BUILDTIME "Try to detect system endianness at build time" ON)
-if (ENDIAN_DETECT_BUILDTIME AND (NOT DEFINED DETECTED_LITTLE_ENDIAN))
-  # Can't use include (TestBigEndian) because it does things
-  # we don't want, like sometimes guess endianness based on
-  # machine running cmake and causing fatal errors.
-  # So we include the relevant bits here.
-  #message(DEBUG "Checking target endianness")
-
-  CHECK_TYPE_SIZE("unsigned short" CMAKE_SIZEOF_UNSIGNED_SHORT)
-  if(CMAKE_SIZEOF_UNSIGNED_SHORT EQUAL 2)
-    set(CMAKE_16BIT_TYPE "unsigned short")
-  else()
-    CHECK_TYPE_SIZE("unsigned int"   CMAKE_SIZEOF_UNSIGNED_INT)
-    if(CMAKE_SIZEOF_UNSIGNED_INT EQUAL 2)
-      set(CMAKE_16BIT_TYPE "unsigned int")
-    else()
-      CHECK_TYPE_SIZE("unsigned long"  CMAKE_SIZEOF_UNSIGNED_LONG)
-      if(CMAKE_SIZEOF_UNSIGNED_LONG EQUAL 2)
-        set(CMAKE_16BIT_TYPE "unsigned long")
-      endif()
-    endif()
-  endif()
-
-  if(DEFINED CMAKE_16BIT_TYPE)
-    #message(DEBUG "Using ${CMAKE_16BIT_TYPE}")
-
-    configure_file(
-      "${CMAKE_ROOT}/Modules/TestEndianess.c.in"
-      "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c"
-      @ONLY)
-
-    file(READ "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c" TEST_ENDIANESS_FILE_CONTENT)
-
-    if(NOT DEFINED RESULT_ENDIAN_COMPILE)
-      try_compile(RESULT_ENDIAN_COMPILE "${CMAKE_BINARY_DIR}"
-	"${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c"
-	OUTPUT_VARIABLE OUTPUT
-	COPY_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/TestEndianess.bin")
-    endif()
-
-    if(RESULT_ENDIAN_COMPILE)
-      file(STRINGS
-        "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/TestEndianess.bin"
-	CMAKE_TEST_ENDIANESS_STRINGS_LE
-	LIMIT_COUNT 1
-	REGEX "THIS IS LITTLE ENDIAN")
-      file(STRINGS
-        "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/TestEndianess.bin"
-	CMAKE_TEST_ENDIANESS_STRINGS_BE
-	LIMIT_COUNT 1
-	REGEX "THIS IS BIG ENDIAN")
-    endif()
-  endif()
-
-  if((DEFINED CMAKE_TEST_ENDIANESS_STRINGS_LE) AND (DEFINED CMAKE_TEST_ENDIANESS_STRINGS_BE))
-    if(NOT (CMAKE_TEST_ENDIANESS_STRINGS_BE  AND  CMAKE_TEST_ENDIANESS_STRINGS_LE))
-      if(CMAKE_TEST_ENDIANESS_STRINGS_LE)
-        set(DETECTED_LITTLE_ENDIAN ON CACHE BOOL "Result of build time endian test" FORCE)
-      endif()
-      if(CMAKE_TEST_ENDIANESS_STRINGS_BE)
-        set(DETECTED_LITTLE_ENDIAN OFF CACHE BOOL "Result of build time endian test" FORCE)
-      endif()
-    endif()
-  endif()
-endif()
-
-if (ENDIAN_DETECT_BUILDTIME)
-  if(DEFINED DETECTED_LITTLE_ENDIAN)
-    if(DETECTED_LITTLE_ENDIAN)
-      message(STATUS "Setting target as little-endian")
-      add_definitions(-DFORCE_LITTLE_ENDIAN)
-    else()
-      message(STATUS "Setting target as big-endian")
-      add_definitions(-DFORCE_BIG_ENDIAN)
-    endif()
-  else()
-    message(WARNING "Cannot detect target endianness; falling back to runtime detection")
-  endif()
-else()
-  message(STATUS "Using runtime endianness detection")
-endif()
-
-if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  add_definitions(-DHAVE_32BIT_PLATFORM)
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  add_definitions(-DHAVE_64BIT_PLATFORM)
-endif()
-
-check_type_size(__int128 __INT128)
-if(HAVE___INT128)
-  add_definitions(-DHAVE_INT128)
-  message(STATUS "128-bit integers available")
-endif()
-
-########################################
 # Platform detection things
 ########################################
 
-set(DETECT_DIR ${CMAKE_SOURCE_DIR}/detect)
-
-include(${DETECT_DIR}/detect.cmake)
-
-include(CheckIncludeFileCXX)
-
-if(PROCESSOR_FAMILY STREQUAL "Arm")
-  add_definitions(-DHAVE_NEON)
-  check_include_file_cxx("arm_neon.h" RESULT_NEON_INCLUDE)
-  if(RESULT_NEON_INCLUDE)
-    add_definitions(-DNEW_HAVE_ARM_NEON)
-    message(STATUS "ARM NEON available")
-  endif()
-  check_include_file_cxx("arm_acle.h" RESULT_ACLE_INCLUDE)
-  if(RESULT_ACLE_INCLUDE)
-    add_definitions(-DNEW_HAVE_ARM_ACLE)
-    message(STATUS "ARM ACLE available")
-  endif()
-endif()
-
-find_package( Threads )
-if(NOT (MSVC))
-  if(NOT ("${CMAKE_THREAD_LIBS_INIT}" STREQUAL ""))
-    # Some Linux installations need the threading library linked
-    # in as "whole-archive", or required symbols get missed,
-    # leading to link failures. This shouldn't hurt to add if it
-    # is not required on this system.
-    whole_archive_link_flags("${CMAKE_THREAD_LIBS_INIT}" threads_link_command)
-  endif()
-endif()
-if(Threads_FOUND)
-  add_definitions(-DHAVE_THREADS)
-endif()
+set(DETECT_DIR ${CMAKE_SOURCE_DIR}/platform)
+set(CMAKE_REQUIRED_QUIET true)
+include(CheckTypeSize)
+include(${DETECT_DIR}/family.cmake)
+include(${DETECT_DIR}/intsize.cmake)
+include(${DETECT_DIR}/endian.cmake)
+include(${DETECT_DIR}/isa.cmake)
+include(${DETECT_DIR}/threads.cmake)
 
 ########################################
 # Specific source file requirements :-/
