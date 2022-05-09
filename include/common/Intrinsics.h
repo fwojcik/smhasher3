@@ -126,6 +126,16 @@ typedef  __vector unsigned long long vec_t;
 #endif
 
 //------------------------------------------------------------
+// Make prefetch() use intrinsic support, if available
+// This is helpful for MSVC, which doesn't have a usable
+// prefetch() implementation without this.
+
+#if defined(NEW_HAVE_SSE_2)
+#undef prefetch
+#define prefetch(x) _mm_prefetch(x, _MM_HINT_T0)
+#endif
+
+//------------------------------------------------------------
 // Vectorized byteswapping
 
 #if defined(NEW_HAVE_ARM_NEON)

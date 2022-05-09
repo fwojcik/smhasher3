@@ -18,3 +18,12 @@ elseif ((CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
 else ()
   set(PROCESSOR_FAMILY "Other")
 endif()
+
+if(MSVC)
+  message(STATUS "MSVC detected")
+  set(MSVC_IMPL
+    "#include <stdlib.h>\n"
+  )
+else()
+  set(MSVC_IMPL "")
+endif()

@@ -2,15 +2,28 @@
 # Fixed-width integer type detection
 ########################################
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  add_definitions(-DHAVE_32BIT_PLATFORM)
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  add_definitions(-DHAVE_64BIT_PLATFORM)
-endif()
+message(STATUS "Probing fixed-width integer variants")
 
-check_type_size(__int128 __INT128)
-if(HAVE___INT128)
-  add_definitions(-DHAVE_INT128)
-  message(STATUS "128-bit integers available")
-endif()
+set(FIXEDINT_VARIANTS
+  "signed and unsigned 8,16,32,64-bit integers"
+  "fixedint"
+  "\n"
+  5
+)
+findVariant(FIXEDINT)
 
+set(FIXEDINT_128_VARIANTS
+  "signed and unsigned 128-bit integers"
+  "fixedint128"
+  "\n"
+  2
+)
+findVariant(FIXEDINT_128)
+
+set(FIXEDINT_SEEDT_VARIANTS
+  "appropriate type for seed_t"
+  "seedt"
+  "${FIXEDINT_IMPL}\n"
+  3
+)
+findVariant(FIXEDINT_SEEDT)

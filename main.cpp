@@ -758,10 +758,6 @@ int main ( int argc, const char ** argv )
     hashToTest = arg;
   }
 
-  // Code runs on the 3rd CPU by default? only for speed tests
-  //SetAffinity((1 << 2));
-  //SelfTest();
-
   size_t timeBegin = monotonic_clock();
 
   if (g_testVerifyAll) {

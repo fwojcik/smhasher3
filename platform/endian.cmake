@@ -12,6 +12,8 @@ if (ENDIAN_DETECT_BUILDTIME AND (NOT DEFINED DETECTED_LITTLE_ENDIAN))
   # So instead we include the relevant bits here.
   #message(DEBUG "Checking target endianness")
 
+  include(CheckTypeSize)
+
   CHECK_TYPE_SIZE("unsigned short" CMAKE_SIZEOF_UNSIGNED_SHORT)
   if(CMAKE_SIZEOF_UNSIGNED_SHORT EQUAL 2)
     set(CMAKE_16BIT_TYPE "unsigned short")
@@ -70,14 +72,19 @@ if (ENDIAN_DETECT_BUILDTIME AND (NOT DEFINED DETECTED_LITTLE_ENDIAN))
   endif()
 endif()
 
+# isLE() and isBE() should NOT be constexpr
 if(ENDIAN_DETECT_BUILDTIME)
   if(DEFINED DETECTED_LITTLE_ENDIAN)
     if(DETECTED_LITTLE_ENDIAN)
       message(STATUS "Setting target as little-endian")
-      add_definitions(-DFORCE_LITTLE_ENDIAN)
+      set(ENDIAN_IMPL
+        "static FORCE_INLINE bool isLE(void) { return true' }\n\
+         static FORCE_INLINE bool isBE(void) { return false' }")
     else()
       message(STATUS "Setting target as big-endian")
-      add_definitions(-DFORCE_BIG_ENDIAN)
+      set(ENDIAN_IMPL
+        "static FORCE_INLINE bool isLE(void) { return false' }\n\
+         static FORCE_INLINE bool isBE(void) { return true' }")
     endif()
   else()
     message(WARNING "Cannot detect target endianness; falling back to runtime detection")
@@ -85,3 +92,21 @@ if(ENDIAN_DETECT_BUILDTIME)
 else()
   message(STATUS "Using runtime endianness detection")
 endif()
+
+if(NOT DEFINED ENDIAN_IMPL)
+  set(ENDIAN_IMPL
+    "static FORCE_INLINE bool isLE(void) {\n\
+     const uint32_t   value = 0xb000000e'\n\
+     const void *      addr = static_cast<const void *>(&value)'\n\
+     const uint8_t *   lsb  = static_cast<const uint8_t *>(addr)'\n\
+     return ((*lsb) == 0x0e)'\n }\n\
+static FORCE_INLINE bool isBE(void) {\n\
+    const uint32_t   value = 0xb000000e'\n\
+    const void *      addr = static_cast<const void *>(&value)'\n\
+    const uint8_t *   lsb  = static_cast<const uint8_t *>(addr)'\n\
+    return ((*lsb) == 0xb0)'\n }\n"
+  )
+endif()
+
+string(REGEX REPLACE "\n +" "\n" ENDIAN_IMPL ${ENDIAN_IMPL})
+string(REGEX REPLACE "'" ";" ENDIAN_IMPL ${ENDIAN_IMPL})

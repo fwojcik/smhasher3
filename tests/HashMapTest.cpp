@@ -54,6 +54,7 @@
 
 #include <string>
 #include <unordered_map>
+#undef prefetch
 #include <parallel_hashmap/phmap.h>
 #include <functional>
 

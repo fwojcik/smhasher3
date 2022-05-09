@@ -47,6 +47,14 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if !defined(HAVE_X86_64)
+  #if defined(__x86_64) || defined(_M_AMD64) || defined(_M_X64)
+    #define HAVE_X86_64
+  #elif defined(__i386__)
+    #define HAVE_X86_32
+  #endif
+#endif
+
 #define NSEC_PER_SEC 1000000000ULL
 
 //-----------------------------------------------------------------------------
