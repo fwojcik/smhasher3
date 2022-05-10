@@ -2,6 +2,8 @@
 # Instruction set availability detection
 ########################################
 
+### Find header files
+
 include(CheckIncludeFileCXX)
 
 if(PROCESSOR_FAMILY STREQUAL "Arm")
@@ -18,8 +20,25 @@ if(PROCESSOR_FAMILY STREQUAL "Arm")
   endif()
 endif()
 
+
+###  Find support for instruction set features
+
 # Map of feature variable to the file that detects it.
 # Cmake doesn't have associative arrays, so just do this instead.
+
+# Lookup feature var in the map
+function(lookupDetectFile var feature)
+  list(FIND detectVarsFilesMap ${feature} index)
+  if (index EQUAL -1)
+    message(FATAL_ERROR "Cannot find ${feature} in detectVarsFilesMap; skipping detection")
+    set(${var} OFF)
+  else()
+    math(EXPR index "${index} + 1")
+    list(GET detectVarsFilesMap ${index} filename)
+    set(${var} ${filename} PARENT_SCOPE)
+  endif()
+endfunction()
+
 set(detectVarsFilesMap
   FEATURE_SSE2_FOUND       x86_64_sse2.cpp
   FEATURE_SSSE3_FOUND      x86_64_ssse3.cpp
@@ -45,65 +64,46 @@ set(detectVarsFilesMap
   FEATURE_PPCASM_FOUND     ppc_asm.cpp
 )
 
-# Lookup feature var in the map
-function(lookupDetectFile var feature)
-  list(FIND detectVarsFilesMap ${feature} index)
-  if (index EQUAL -1)
-    message(FATAL_ERROR "Cannot find ${feature} in detectVarsFilesMap; skipping detection")
-    set(${var} OFF)
-  else()
-    math(EXPR index "${index} + 1")
-    list(GET detectVarsFilesMap ${index} filename)
-    set(${var} ${filename} PARENT_SCOPE)
-  endif()
-endfunction()
-
-# Compute the list detection source files plus their hashes
-set(isFile OFF)
-foreach(entry ${detectVarsFilesMap})
-  if(isFile)
-    file(SHA256 ${DETECT_DIR}/${entry} filehash)
-    list(APPEND detectFiles ${DETECT_DIR}/${entry})
-    list(APPEND detectFileHashes ${filehash})
-    set(isFile OFF)
-  else()
-    set(isFile ON)
-  endif()
-endforeach()
-# Stringify hash list
-set(detectFileHashes "${detectFileHashes}")
-
-# Mark cmake configuration as depending on detection files
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${detectFiles})
-
-# Unset all the feature detection variables if any of their hashes
-# changed, since there's apparently NO OTHER WAY of clearing these
-# cached variables iff the files post-date the CMake cache... :-{
-if((DEFINED LAST_DETECT_HASH) AND (LAST_DETECT_HASH STREQUAL detectFileHashes))
-  message(STATUS "Using cached instruction-set detection")
-else()
-  message(STATUS "Clearing instruction-set detection cache, reprobing")
-  set(isFile OFF)
-  foreach(entry ${detectVarsFilesMap})
-    if(isFile)
-      set(isFile OFF)
-    else()
-      unset(${entry} CACHE)
-      unset(${entry})
-      set(isFile ON)
-    endif()
-  endforeach()
-  set(LAST_DETECT_HASH ${detectFileHashes} CACHE STRING "Internal use only" FORCE)
-endif()  
-
 # Function for detection of features via try_compile(), with caching
-# of results
+# of results. try_compile() implicitly caches the result var value,
+# but if any of the detection input files change, then the variables
+# will be cleared via setVarsDepend() below.
 function(feature_detect var)
   if (NOT DEFINED ${var})
     lookupDetectFile(file ${var})
     try_compile(${var} ${CMAKE_BINARY_DIR} ${DETECT_DIR}/${file})
   endif()
 endfunction()
+
+########################################
+
+# Compute the list of detection source files and the list of variables
+# whose caching status depends on those source files. These are two
+# independent lists which merely happen to be the same length
+# here. Their contents do not necessarily have to depend on each other
+# for setConfigureDepends() to work. If any of the files change, then
+# all of the variables are cleared, and so all of the ISA detections
+# happen again. This allows complex dependencies between them to work.
+#
+# By depending on this .cmake file, the cache will be cleared if the
+# list of files were to ever change, as this file is the only one that
+# can change it.
+
+set(isFile OFF)
+unset(detectVars)
+set(detectFiles "${DETECT_DIR}/isa.cmake")
+foreach(entry ${detectVarsFilesMap})
+  if(isFile)
+    list(APPEND detectFiles "${DETECT_DIR}/${entry}")
+    set(isFile OFF)
+  else()
+    list(APPEND detectVars "${entry}")
+    set(isFile ON)
+  endif()
+endforeach()
+
+checkCachedVarsDepend(DETECT "instruction-set availability")
+setCachedVarsDepend(DETECT detectVars detectFiles)
 
 ########################################
 
@@ -185,7 +185,9 @@ if(FEATURE_SSE2_FOUND)
   endif()
 endif()
 
+
 if(MSVC)
+
   feature_detect(FEATURE_UMULH_FOUND)
   if(FEATURE_UMULH_FOUND)
     add_definitions(-DNEW_HAVE_UMULH)
@@ -197,7 +199,9 @@ if(MSVC)
     add_definitions(-DNEW_HAVE_UMUL128)
     message(STATUS "  x86_64 MSVC full 128-bit multiply intrinsic available")
   endif()
+
 else()
+
   feature_detect(FEATURE_X64ASM_FOUND)
   if(FEATURE_X64ASM_FOUND)
     add_definitions(-DNEW_HAVE_X64_ASM)

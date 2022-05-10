@@ -104,3 +104,71 @@ function(findVariant prefix)
   #message(STATUS "setting ${impl} to ${IMPL}")
   set(${impl} ${IMPL} PARENT_SCOPE)
 endfunction()
+
+# Function to associate a list of files with a list of variables, such
+# that if *any* file in the given list changes, then *all* of the
+# variables in the given list are cleared and removed from CMake's
+# cache as well as current memory.
+#
+# This apparently has to happen manually, since there's NO OTHER WAY
+# of clearing these cached variables iff the files post-date the CMake
+# cache... :-{
+function(setCachedVarsDepend PREFIX varListVar fileListVar)
+
+  # Mark cmake configuration as depending on the files, so that the
+  # needed code will even run when they change (as CMake will just
+  # skip reconfiguing unless it detects that it needs to).
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${${fileListVar}})
+
+  # Record all of the hashes of all given files
+  unset(fileHashes)
+  foreach(file ${${fileListVar}} "${DETECT_DIR}/functions.cmake")
+    file(SHA256 ${file} filehash)
+    list(APPEND fileHashes ${filehash})
+  endforeach()
+
+  # Cache the list of variables, the list of files and their hashes
+  # under the given prefix
+  set("${PREFIX}varList"  "${${varListVar}}"  CACHE STRING "List of ${PREFIX} variables" FORCE)
+  set("${PREFIX}fileList" "${${fileListVar}}" CACHE STRING "List of files for ${PREFIX} variables" FORCE)
+  set("${PREFIX}hashList" "${fileHashes}"     CACHE STRING "List of hashes of ${PREFIX} files" FORCE)
+
+endfunction()
+
+# Function that actually does unset all the given variables if any of
+# the associated files changed.
+#
+# Note that due to the way CMake's cache works, this function should
+# actually be called *before* setCachedVarsDepend() with a given prefix.
+function(checkCachedVarsDepend PREFIX desc)
+
+  if((NOT DEFINED ${PREFIX}hashList) OR (NOT DEFINED ${PREFIX}fileList) OR
+     (NOT DEFINED ${PREFIX}varList))
+    message(STATUS "Probing ${desc}")
+    return()
+  endif()
+
+  unset(fileHashes)
+  foreach(file ${${PREFIX}fileList} "${DETECT_DIR}/functions.cmake")
+    if(NOT EXISTS ${file})
+      #message(STATUS "File not found: ${file}")
+      set(fileHashes "thisstringnevermatches")
+      break()
+    endif()
+    file(SHA256 ${file} filehash)
+    list(APPEND fileHashes ${filehash})
+  endforeach()
+
+  if(${PREFIX}hashList STREQUAL fileHashes)
+    message(STATUS "Using cached ${desc}")
+    return()
+  endif()
+
+  message(STATUS "Clearing ${desc} cache, reprobing")
+  foreach(varname ${${PREFIX}varList} ${PREFIX}hashList ${PREFIX}fileList ${PREFIX}varList)
+    #message(STATUS "Clearing ${varname}")
+    unset(${varname} CACHE)
+    unset(${varname})
+  endforeach()
+
+endfunction()
