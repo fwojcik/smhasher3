@@ -115,9 +115,21 @@ endfunction()
 # cache... :-{
 function(setCachedVarsDepend PREFIX varListVar fileListVar)
 
+  # If the cached data didn't change, then don't do anything except
+  # for telling CMake AGAIN what files the config depends on, because
+  # if it reconfigures for some reason other than these files then it
+  # will forget about them  :-{
+  if((DEFINED ${PREFIX}hashList) AND (DEFINED ${PREFIX}fileList) AND
+     (DEFINED ${PREFIX}varList))
+    #message(STATUS "Making config depend on: ${${PREFIX}fileList}")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${${PREFIX}fileList})
+    return()
+  endif()
+
   # Mark cmake configuration as depending on the files, so that the
   # needed code will even run when they change (as CMake will just
   # skip reconfiguing unless it detects that it needs to).
+  #message(STATUS "Making config depend on: ${${fileListVar}}")
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${${fileListVar}})
 
   # Record all of the hashes of all given files
