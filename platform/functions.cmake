@@ -16,7 +16,7 @@ function(findVariant prefix)
   list(REMOVE_AT VARIANTS 0 1 2 3)
 
   # The file that is used to verify each variant's suitability
-  set(FILENAME "${DETECT_DIR}/${FILEPREFIX}_test.cpp")
+  set(SRCFILENAME "${DETECT_DIR}/${FILEPREFIX}_test.cpp")
 
   # Record if the fallback implementation was chosen
   set(${isfallback} FALSE)
@@ -67,7 +67,7 @@ function(findVariant prefix)
     file(WRITE ${CMAKE_BINARY_DIR}/curvariant.h
       "${PREAMBLE}${ATTEMPT}")
     try_compile(WORKED ${CMAKE_BINARY_DIR}
-      SOURCES ${FILENAME}
+      SOURCES ${SRCFILENAME}
       CMAKE_FLAGS -DINCLUDE_DIRECTORIES:PATH=${CMAKE_BINARY_DIR}
       OUTPUT_VARIABLE dump
     )
