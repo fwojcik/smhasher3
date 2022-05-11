@@ -2,7 +2,11 @@
 # Fixed-width integer type detection
 ########################################
 
-message(STATUS "Probing fixed-width integer variants")
+checkCachedVarsDepend(FIXEDINT "fixed-width integer variants")
+
+# Tell findVariant() where to store the files and variables it touches
+set(VARIANT_VARLISTVAR  "FIXEDINT_VARLIST")
+set(VARIANT_FILELISTVAR "FIXEDINT_FILELIST")
 
 set(FIXEDINT_VARIANTS
   "signed and unsigned 8,16,32,64-bit integers"
@@ -27,3 +31,10 @@ set(FIXEDINT_SEEDT_VARIANTS
   3
 )
 findVariant(FIXEDINT_SEEDT)
+
+# By depending on this .cmake file, the cache will be cleared if the
+# list of files were to ever change, as this file is the only one that
+# can change it.
+list(APPEND FIXEDINT_FILELIST "${DETECT_DIR}/intsize.cmake")
+
+setCachedVarsDepend(FIXEDINT FIXEDINT_VARLIST FIXEDINT_FILELIST)

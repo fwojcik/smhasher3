@@ -2,7 +2,11 @@
 # Various compiler hints and bit manipulations
 ########################################
 
-message(STATUS "Probing compiler builtin function variants")
+checkCachedVarsDepend(BUILTINS "compiler builtin function variants")
+
+# Tell findVariant() where to store the files and variables it touches
+set(VARIANT_VARLISTVAR  "BUILTINS_VARLIST")
+set(VARIANT_FILELISTVAR "BUILTINS_FILELIST")
 
 set(LIKELY_VARIANTS
   "likely() / unlikely()"
@@ -141,3 +145,12 @@ set(CLZ64_VARIANTS
   6
 )
 findVariant(CLZ64)
+
+# By depending on this .cmake file, the cache will be cleared if the
+# list of files were to ever change, as this file is the only one that
+# can change it.
+list(APPEND BUILTINS_FILELIST "${DETECT_DIR}/builtins.cmake")
+# These also depend on the fixed-size int implementation
+list(APPEND BUILTINS_FILELIST "${DETECT_DIR}/intsize.cmake")
+
+setCachedVarsDepend(BUILTINS BUILTINS_VARLIST BUILTINS_FILELIST)

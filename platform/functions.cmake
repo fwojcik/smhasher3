@@ -1,7 +1,26 @@
 function(findVariant prefix)
   set(impl        "${prefix}_IMPL")
+  set(implfile    "${prefix}_IMPLFILE")
   set(isfallback  "${prefix}_FALLBACK")
   set(variantsvar "${prefix}_VARIANTS")
+
+  #message(STATUS "Given: ${${variantsvar}}")
+
+  # If the result of findVariant is cached, just use that. See below
+  # for why the implementation itself cannot be cached and has to be
+  # reread from the file.
+  if((DEFINED ${isfallback}) AND (DEFINED ${implfile}) AND (EXISTS ${${implfile}}))
+    file(READ "${${implfile}}" IMPL)
+    string(REGEX REPLACE "\n$" "" IMPL "${IMPL}")
+    set(${impl} ${IMPL} PARENT_SCOPE)
+    list(GET ${variantsvar} 0 desc)
+    if(${isfallback})
+      message(STATUS "  ${desc} not found, using fallback")
+    else()
+      message(STATUS "  ${desc} found")
+    endif()
+    return()
+  endif()
 
   # Make a copy of the input variants list
   set(VARIANTS ${${variantsvar}})
@@ -17,6 +36,7 @@ function(findVariant prefix)
 
   # The file that is used to verify each variant's suitability
   set(SRCFILENAME "${DETECT_DIR}/${FILEPREFIX}_test.cpp")
+  list(APPEND ${VARIANT_FILELISTVAR} "${SRCFILENAME}")
 
   # Record if the fallback implementation was chosen
   set(${isfallback} FALSE)
@@ -61,7 +81,9 @@ function(findVariant prefix)
     # resulting Platform.h file is compact and not full of blank lines.
     file(READ "${FN}" ATTEMPT)
     string(REGEX REPLACE "\n$" "" ATTEMPT "${ATTEMPT}")
-    #message(STATUS ${ATTEMPT})
+    list(APPEND ${VARIANT_FILELISTVAR} "${FN}")
+    #message(STATUS "Trying ${FN}")
+    #message(STATUS "${PREAMBLE}${ATTEMPT}")
 
     # Write out the variant and see if it works.
     file(WRITE ${CMAKE_BINARY_DIR}/curvariant.h
@@ -102,7 +124,23 @@ function(findVariant prefix)
   endif()
 
   #message(STATUS "setting ${impl} to ${IMPL}")
+
+  # Cache the chosen variant's file and fallback status. We can't
+  # cache the actual implementation because C++ often uses lines that
+  # end in semi-colons (;) and that interfere's with CMake's string
+  # handling... :-(
+  set(${implfile} "${FN}" CACHE STRING "Implementation of ${desc}" FORCE)
+  set(${isfallback} ${${isfallback}} CACHE BOOL "Implementation of ${desc} is fallback" FORCE)
+
+  # Mark the cachable variables that this changes
+  list(APPEND ${VARIANT_VARLISTVAR} "${implfile}" "${isfallback}")
+
+  # "Return" the impl to the parent context, as well as the lists of
+  # cached files and variables
   set(${impl} ${IMPL} PARENT_SCOPE)
+  set(${VARIANT_FILELISTVAR} ${${VARIANT_FILELISTVAR}} PARENT_SCOPE)
+  set(${VARIANT_VARLISTVAR} ${${VARIANT_VARLISTVAR}} PARENT_SCOPE)
+
 endfunction()
 
 # Function to associate a list of files with a list of variables, such
