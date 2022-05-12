@@ -40,7 +40,7 @@
 #define EXTRA_ELEMENTS  (((FARSH_MAX_HASHES-1) * FARSH_EXTRA_KEY_SIZE) / sizeof(uint32_t))
 
 /* STRIPE bytes of key material plus extra keys for hashes up to 1024 bits long */
-alignas(2*alignof(__m128i)) static const uint32_t FARSH_KEYS [STRIPE_ELEMENTS + EXTRA_ELEMENTS] = {
+alignas(32) static const uint32_t FARSH_KEYS [STRIPE_ELEMENTS + EXTRA_ELEMENTS] = {
     0xb8fe6c39,0x23a44bbe,0x7c01812c,0xf721ad1c,0xded46de9,0x839097db,0x7240a4a4,0xb7b3671f,
     0xcb79e64e,0xccc0e578,0x825ad07d,0xccff7221,0xb8084674,0xf743248e,0xe03590e6,0x813a264c,
     0x3c2852bb,0x91c300cb,0x88d0658b,0x1b532ea3,0x71644897,0xa20df94e,0x3819ef46,0xa9deacd8,
