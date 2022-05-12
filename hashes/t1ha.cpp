@@ -1450,7 +1450,7 @@ static FORCE_INLINE bool probe(void (*hash)(const void * in, const size_t len, c
     const uint64_t actual = bswap ? GET_U64<true>(result, 0) : GET_U64<false>(result, 0);
     testno++;
     if (actual != reference) {
-        printf("Test %lu %016lx != %016lx\n", testno, actual, reference);
+        printf("Test %" PRIu64 " %016" PRIx64 " != %016" PRIx64 "\n", testno, actual, reference);
     }
     return actual != reference;
 }

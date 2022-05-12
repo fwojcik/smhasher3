@@ -118,7 +118,7 @@ static void progressdots(int cur, int min, int max, int totaldots) {
 static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t sentinel, bool verbose) {
     for (size_t i = 0; i < len; i++) {
         if (buf[i] != sentinel) {
-            maybeprintf(" %ld: 0x%02X != 0x%02X: ", i, buf[i], sentinel);
+            maybeprintf(" %" PRIu64 ": 0x%02X != 0x%02X: ", i, buf[i], sentinel);
             return false;
         }
     }
@@ -134,9 +134,9 @@ static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t 
         if (buf1[i] == buf2[i]) { continue; }
         if (checksentinels &&
                 (buf1[i] == sentinel1) && (buf2[i] == sentinel2)) {
-            maybeprintf(" output byte %ld not altered:", i);
+            maybeprintf(" output byte %" PRIu64 " not altered:", i);
         } else {
-            maybeprintf(" output byte %ld inconsistent (0x%02X != 0x%02X):",
+            maybeprintf(" output byte %" PRIu64 " inconsistent (0x%02X != 0x%02X):",
                     i, buf1[i], buf2[i]);
         }
         break;

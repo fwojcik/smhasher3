@@ -113,7 +113,7 @@ static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool dr
   uint64_t totalkeys = 2 + 2*chooseUpToK(bigseed ? 64 : 32, maxbits);
   uint64_t cnt = 0;
 
-  printf("Keyset 'SparseSeed' - %ld keys\n", totalkeys);
+  printf("Keyset 'SparseSeed' - %" PRId64 " keys\n", totalkeys);
 
   const char text[64] = "Sphinx of black quartz, judge my vow";
   const int len = (int)strlen(text);

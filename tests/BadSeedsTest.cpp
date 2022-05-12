@@ -116,7 +116,7 @@ static bool BadSeedsKnown(const HashInfo * hinfo) {
     bool result = true;
     const std::set<seed_t> & seeds = hinfo->badseeds;
 
-    printf("Testing %lu known bad seeds:\n", seeds.size());
+    printf("Testing %" PRIu64 " known bad seeds:\n", seeds.size());
 
     for (seed_t seed : seeds) {
         bool thisresult = true;
