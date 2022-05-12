@@ -7,13 +7,13 @@
 include(CheckIncludeFileCXX)
 
 if(PROCESSOR_FAMILY STREQUAL "Arm")
-  check_include_file_cxx("arm_neon.h" RESULT_NEON_INCLUDE)
-  if(RESULT_NEON_INCLUDE)
+  check_include_file_cxx("arm_neon.h" HAVE_ARM_NEON)
+  if(HAVE_ARM_NEON)
     add_definitions(-DHAVE_ARM_NEON)
     message(STATUS "ARM NEON available")
   endif()
-  check_include_file_cxx("arm_acle.h" RESULT_ACLE_INCLUDE)
-  if(RESULT_ACLE_INCLUDE)
+  check_include_file_cxx("arm_acle.h" HAVE_ARM_ACLE)
+  if(HAVE_ARM_ACLE)
     add_definitions(-DHAVE_ARM_ACLE)
     message(STATUS "ARM ACLE available")
   endif()
@@ -39,30 +39,30 @@ function(lookupDetectFile var feature)
 endfunction()
 
 set(detectVarsFilesMap
-  FEATURE_SSE2_FOUND       x86_64_sse2.cpp
-  FEATURE_SSSE3_FOUND      x86_64_ssse3.cpp
-  FEATURE_SSE41_FOUND      x86_64_sse41.cpp
-  FEATURE_XOP_FOUND        x86_64_xop.cpp
-  FEATURE_X64CRC_FOUND     x86_64_crc.cpp
-  FEATURE_X64CLMUL_FOUND   x86_64_clmul.cpp
-  FEATURE_AESNI_FOUND      x86_64_aes.cpp
-  FEATURE_X64SHA1_FOUND    x86_64_sha1.cpp
-  FEATURE_X64SHA2_FOUND    x86_64_sha2.cpp
-  FEATURE_AVX_FOUND        x86_64_avx.cpp
-  FEATURE_AVX2_FOUND       x86_64_avx2.cpp
-  FEATURE_AVX512F_FOUND    x86_64_avx512_f.cpp
-  FEATURE_AVX512BW_FOUND   x86_64_avx512_bw.cpp
-  FEATURE_UMULH_FOUND      x86_64_umulh.cpp
-  FEATURE_UMUL128_FOUND    x86_64_umul128.cpp
-  FEATURE_X64ASM_FOUND     x86_64_asm.cpp
-  FEATURE_ARMAES_FOUND     arm_aes.cpp
-  FEATURE_ARMSHA1_FOUND    arm_neon_sha1.cpp
-  FEATURE_ARMSHA2_FOUND    arm_neon_sha2.cpp
-  FEATURE_ARMASM32_FOUND   arm_asm.cpp
-  FEATURE_ARMASM64_FOUND   arm_asm64.cpp
-  FEATURE_PPCVSX_FOUND     ppc_vsx.cpp
-  FEATURE_PPCAES_FOUND     ppc_aes.cpp
-  FEATURE_PPCASM_FOUND     ppc_asm.cpp
+  HAVE_SSE_2             x86_64_sse2.cpp
+  HAVE_SSSE_3            x86_64_ssse3.cpp
+  HAVE_SSE_4_1           x86_64_sse41.cpp
+  HAVE_XOP               x86_64_xop.cpp
+  HAVE_X86_64_CRC32C     x86_64_crc.cpp
+  HAVE_X86_64_CLMUL      x86_64_clmul.cpp
+  HAVE_X86_64_AES        x86_64_aes.cpp
+  HAVE_X86_64_SHA1       x86_64_sha1.cpp
+  HAVE_X86_64_SHA2       x86_64_sha2.cpp
+  HAVE_AVX               x86_64_avx.cpp
+  HAVE_AVX2              x86_64_avx2.cpp
+  HAVE_AVX512_F          x86_64_avx512_f.cpp
+  HAVE_AVX512_BW         x86_64_avx512_bw.cpp
+  HAVE_UMULH             x86_64_umulh.cpp
+  HAVE_UMUL128           x86_64_umul128.cpp
+  HAVE_X86_64_ASM        x86_64_asm.cpp
+  HAVE_ARM_AES           arm_aes.cpp
+  HAVE_ARM_SHA1          arm_neon_sha1.cpp
+  HAVE_ARM_SHA2          arm_neon_sha2.cpp
+  HAVE_ARM_ASM           arm_asm.cpp
+  HAVE_ARM64_ASM         arm_asm64.cpp
+  HAVE_PPC_VSX           ppc_vsx.cpp
+  HAVE_PPC_AES           ppc_aes.cpp
+  HAVE_PPC_ASM           ppc_asm.cpp
 )
 
 # Function for detection of features via try_compile(), with caching
@@ -72,7 +72,10 @@ set(detectVarsFilesMap
 function(feature_detect var)
   if (NOT DEFINED ${var})
     lookupDetectFile(file ${var})
-    try_compile(${var} ${CMAKE_BINARY_DIR} ${DETECT_DIR}/${file})
+    try_compile(${var} ${CMAKE_BINARY_DIR} ${DETECT_DIR}/${file}
+          OUTPUT_VARIABLE dump
+    )
+    #message(STATUS "Got ${dump}")
   endif()
 endfunction()
 
@@ -108,29 +111,29 @@ setCachedVarsDepend(DETECT detectVars detectFiles)
 
 ########################################
 
-feature_detect(FEATURE_SSE2_FOUND)
-if(FEATURE_SSE2_FOUND)
+feature_detect(HAVE_SSE_2)
+if(HAVE_SSE_2)
   add_definitions(-DHAVE_SSE_2)
   message(STATUS "  x86_64 SSE 2 intrinsics available")
 
-  feature_detect(FEATURE_SSSE3_FOUND)
-  if(FEATURE_SSSE3_FOUND)
+  feature_detect(HAVE_SSSE_3)
+  if(HAVE_SSSE_3)
     add_definitions(-DHAVE_SSSE_3)
     message(STATUS "  x86_64 SSSE3 intrinsics available")
 
-    feature_detect(FEATURE_SSE41_FOUND)
-    if(FEATURE_SSE41_FOUND)
+    feature_detect(HAVE_SSE_4_1)
+    if(HAVE_SSE_4_1)
       add_definitions(-DHAVE_SSE_4_1)
       message(STATUS "  x86_64 SSE 4.1 intrinsics available")
 
-      feature_detect(FEATURE_XOP_FOUND)
-      if(FEATURE_XOP_FOUND)
+      feature_detect(HAVE_XOP)
+      if(HAVE_XOP)
 	add_definitions(-DHAVE_XOP)
 	message(STATUS "  x86_64 XOP intrinsics available")
       endif()
 
-      feature_detect(FEATURE_X64CRC_FOUND)
-      if(FEATURE_X64CRC_FOUND)
+      feature_detect(HAVE_X86_64_CRC32C)
+      if(HAVE_X86_64_CRC32C)
         # This allegedly falls into a MSVC CL 14.16.27023 32-bit
         # compiler bug. 14.28.29910 allegedly works fine.
         if (MSVC AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND (MSVC_VERSION LESS 1928))
@@ -142,49 +145,49 @@ if(FEATURE_SSE2_FOUND)
 	endif()
       endif()
 
-      feature_detect(FEATURE_X64CLMUL_FOUND)
-      if(FEATURE_X64CLMUL_FOUND)
+      feature_detect(HAVE_X86_64_CLMUL)
+      if(HAVE_X86_64_CLMUL)
 	add_definitions(-DHAVE_X86_64_CLMUL)
 	message(STATUS "  x86_64 CLMUL intrinsics available")
       endif()
 
-      feature_detect(FEATURE_AESNI_FOUND)
-      if(FEATURE_AESNI_FOUND)
+      feature_detect(HAVE_X86_64_AES)
+      if(HAVE_X86_64_AES)
 	add_definitions(-DHAVE_X86_64_AES)
 	message(STATUS "  x86_64 AES intrinsics available")
       endif()
 
-      feature_detect(FEATURE_X64SHA1_FOUND)
-      if(FEATURE_X64SHA1_FOUND)
+      feature_detect(HAVE_X86_64_SHA1)
+      if(HAVE_X86_64_SHA1)
 	add_definitions(-DHAVE_X86_64_SHA1)
 	message(STATUS "  x86_64 SHA-1 intrinsics available")
       endif()
 
-      feature_detect(FEATURE_X64SHA2_FOUND)
-      if(FEATURE_X64SHA2_FOUND)
+      feature_detect(HAVE_X86_64_SHA2)
+      if(HAVE_X86_64_SHA2)
 	add_definitions(-DHAVE_X86_64_SHA2)
 	message(STATUS "  x86_64 SHA-2 intrinsics available")
       endif()
 
-      feature_detect(FEATURE_AVX_FOUND)
-      if(FEATURE_AVX_FOUND)
+      feature_detect(HAVE_AVX)
+      if(HAVE_AVX)
 	add_definitions(-DHAVE_AVX)
 	message(STATUS "  x86_64 AVX intrinsics available")
 
-        feature_detect(FEATURE_AVX2_FOUND)
-        if(FEATURE_AVX2_FOUND)
+        feature_detect(HAVE_AVX2)
+        if(HAVE_AVX2)
   	  add_definitions(-DHAVE_AVX2)
  	  message(STATUS "  x86_64 AVX2 intrinsics available")
 
 	  # Foundational
-	  feature_detect(FEATURE_AVX512F_FOUND)
-	  if(FEATURE_AVX512F_FOUND)
+	  feature_detect(HAVE_AVX512_F)
+	  if(HAVE_AVX512_F)
 	    add_definitions(-DHAVE_AVX512_F)
 	    message(STATUS "  x86_64 AVX512-F intrinsics available")
 
 	    # Byte and Word
-	    feature_detect(FEATURE_AVX512BW_FOUND)
-	    if(FEATURE_AVX512BW_FOUND)
+	    feature_detect(HAVE_AVX512_BW)
+	    if(HAVE_AVX512_BW)
 	      add_definitions(-DHAVE_AVX512_BW)
 	      message(STATUS "  x86_64 AVX512-BW intrinsics available")
 	    endif()
@@ -198,70 +201,70 @@ endif()
 
 if(MSVC)
 
-  feature_detect(FEATURE_UMULH_FOUND)
-  if(FEATURE_UMULH_FOUND)
+  feature_detect(HAVE_UMULH)
+  if(HAVE_UMULH)
     add_definitions(-DHAVE_UMULH)
     message(STATUS "  x86_64 MSVC high 128-bit multiply intrinsic available")
   endif()
 
-  feature_detect(FEATURE_UMUL128_FOUND)
-  if(FEATURE_UMUL128_FOUND)
+  feature_detect(HAVE_UMUL128)
+  if(HAVE_UMUL128)
     add_definitions(-DHAVE_UMUL128)
     message(STATUS "  x86_64 MSVC full 128-bit multiply intrinsic available")
   endif()
 
 else()
 
-  feature_detect(FEATURE_X64ASM_FOUND)
-  if(FEATURE_X64ASM_FOUND)
+  feature_detect(HAVE_X86_64_ASM)
+  if(HAVE_X86_64_ASM)
     add_definitions(-DHAVE_X86_64_ASM)
     message(STATUS "  x86_64 __asm__() available")
   endif()
 
-  feature_detect(FEATURE_ARMAES_FOUND)
-  if(FEATURE_ARMAES_FOUND)
+  feature_detect(HAVE_ARM_AES)
+  if(HAVE_ARM_AES)
     add_definitions(-DHAVE_ARM_AES)
     message(STATUS "  ARM AES intrinsics available")
   endif()
 
-  feature_detect(FEATURE_ARMSHA1_FOUND)
-  if(FEATURE_ARMSHA1_FOUND)
+  feature_detect(HAVE_ARM_SHA1)
+  if(HAVE_ARM_SHA1)
     add_definitions(-DHAVE_ARM_SHA1)
     message(STATUS "  ARM SHA-1 intrinsics available")
   endif()
 
-  feature_detect(FEATURE_ARMSHA2_FOUND)
-  if(FEATURE_ARMSHA2_FOUND)
+  feature_detect(HAVE_ARM_SHA2)
+  if(HAVE_ARM_SHA2)
     add_definitions(-DHAVE_ARM_SHA2)
     message(STATUS "  ARM SHA-2 intrinsics available")
   endif()
 
-  feature_detect(FEATURE_ARMASM32_FOUND)
-  if(FEATURE_ARMASM32_FOUND)
+  feature_detect(HAVE_ARM_ASM)
+  if(HAVE_ARM_ASM)
     add_definitions(-DHAVE_ARM_ASM)
     message(STATUS "  ARM 32-bit __asm__() available")
   endif()
 
-  feature_detect(FEATURE_ARMASM64_FOUND)
-  if(FEATURE_ARMASM64_FOUND)
+  feature_detect(HAVE_ARM64_ASM)
+  if(HAVE_ARM64_ASM)
     add_definitions(-DHAVE_ARM64_ASM)
     message(STATUS "  ARM 64-bit __asm__() available")
   endif()
 
-  feature_detect(FEATURE_PPCVSX_FOUND)
-  if(FEATURE_PPCVSX_FOUND)
+  feature_detect(HAVE_PPC_VSX)
+  if(HAVE_PPC_VSX)
     add_definitions(-DHAVE_PPC_VSX)
     message(STATUS "  PPC VSX intrinsics available")
   endif()
 
-  feature_detect(FEATURE_PPCAES_FOUND)
-  if(FEATURE_PPCAES_FOUND)
+  feature_detect(HAVE_PPC_AES)
+  if(HAVE_PPC_AES)
     add_definitions(-DHAVE_PPC_AES)
     message(STATUS "  PPC AES intrinsics available")
   endif()
 
-  feature_detect(FEATURE_PPCASM_FOUND)
-  if(FEATURE_PPCASM_FOUND)
+  feature_detect(HAVE_PPC_ASM)
+  if(HAVE_PPC_ASM)
     add_definitions(-DHAVE_PPC_ASM)
     message(STATUS "  PPC __asm__() available")
   endif()
