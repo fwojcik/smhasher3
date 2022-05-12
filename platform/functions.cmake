@@ -34,6 +34,9 @@ function(findVariant prefix)
   list(GET VARIANTS 3 COUNT)
   list(REMOVE_AT VARIANTS 0 1 2 3)
 
+  # Expand the preamble
+  string(CONFIGURE "${PREAMBLE}" PREAMBLE @ONLY)
+
   # The file that is used to verify each variant's suitability
   set(SRCFILENAME "${DETECT_DIR}/${FILEPREFIX}_test.cpp")
   list(APPEND ${VARIANT_FILELISTVAR} "${SRCFILENAME}")

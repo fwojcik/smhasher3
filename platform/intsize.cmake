@@ -31,7 +31,7 @@ findVariant(FIXEDINT_128)
 set(FIXEDINT_SEEDT_VARIANTS
   "appropriate type for seed_t"
   "seedt"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   3
 )
 findVariant(FIXEDINT_SEEDT)

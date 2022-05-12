@@ -19,7 +19,7 @@ findVariant(LIKELY)
 set(EXPECTP_VARIANTS
   "expectp()"
   "expectp"
-  "${EXPECT_IMPL}\n"
+  "@EXPECT_IMPL@\n"
   3
 )
 # If we don't have useful likely()/unlikely() macros, then don't
@@ -49,7 +49,7 @@ findVariant(UNREACHABLE)
 set(ASSUME_VARIANTS
   "assume()"
   "assume"
-  "${UNREACHABLE_IMPL}\n"
+  "@UNREACHABLE_IMPL@\n"
   5
 )
 # If there's no real unreachable(), then delete that variant option
@@ -93,7 +93,7 @@ findVariant(RESTRICT)
 set(ROT32_VARIANTS
   "32-bit integer rotation"
   "rot32"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   3
 )
 findVariant(ROT32)
@@ -101,7 +101,7 @@ findVariant(ROT32)
 set(ROT64_VARIANTS
   "64-bit integer rotation"
   "rot64"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   4
 )
 findVariant(ROT64)
@@ -109,7 +109,7 @@ findVariant(ROT64)
 set(BSWAP_VARIANTS
   "Integer byteswapping"
   "bswap"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   3
 )
 findVariant(BSWAP)
@@ -117,7 +117,7 @@ findVariant(BSWAP)
 set(POPCOUNT32_VARIANTS
   "32-bit integer popcount"
   "popcount32"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   3
 )
 findVariant(POPCOUNT32)
@@ -125,7 +125,7 @@ findVariant(POPCOUNT32)
 set(POPCOUNT64_VARIANTS
   "64-bit integer popcount"
   "popcount64"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   6
 )
 findVariant(POPCOUNT64)
@@ -133,7 +133,7 @@ findVariant(POPCOUNT64)
 set(CLZ32_VARIANTS
   "32-bit integer count leading zero bits"
   "clz32"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   4
 )
 findVariant(CLZ32)
@@ -141,7 +141,7 @@ findVariant(CLZ32)
 set(CLZ64_VARIANTS
   "64-bit integer count leading zero bits"
   "clz64"
-  "${FIXEDINT_IMPL}\n"
+  "@FIXEDINT_IMPL@\n"
   6
 )
 findVariant(CLZ64)
