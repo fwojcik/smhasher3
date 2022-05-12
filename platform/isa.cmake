@@ -48,6 +48,7 @@ set(detectVarsFilesMap
   FEATURE_AESNI_FOUND      x86_64_aes.cpp
   FEATURE_X64SHA1_FOUND    x86_64_sha1.cpp
   FEATURE_X64SHA2_FOUND    x86_64_sha2.cpp
+  FEATURE_AVX_FOUND        x86_64_avx.cpp
   FEATURE_AVX2_FOUND       x86_64_avx2.cpp
   FEATURE_AVX512F_FOUND    x86_64_avx512_f.cpp
   FEATURE_AVX512BW_FOUND   x86_64_avx512_bw.cpp
@@ -164,24 +165,30 @@ if(FEATURE_SSE2_FOUND)
 	message(STATUS "  x86_64 SHA-2 intrinsics available")
       endif()
 
-      feature_detect(FEATURE_AVX2_FOUND)
-      if(FEATURE_AVX2_FOUND)
-	add_definitions(-DHAVE_AVX2)
-	message(STATUS "  x86_64 AVX2 intrinsics available")
+      feature_detect(FEATURE_AVX_FOUND)
+      if(FEATURE_AVX_FOUND)
+	add_definitions(-DHAVE_AVX)
+	message(STATUS "  x86_64 AVX intrinsics available")
 
-	# Foundational
-	feature_detect(FEATURE_AVX512F_FOUND)
-	if(FEATURE_AVX512F_FOUND)
-	  add_definitions(-DHAVE_AVX512_F)
-	  message(STATUS "  x86_64 AVX512-F intrinsics available")
+        feature_detect(FEATURE_AVX2_FOUND)
+        if(FEATURE_AVX2_FOUND)
+  	  add_definitions(-DHAVE_AVX2)
+ 	  message(STATUS "  x86_64 AVX2 intrinsics available")
 
-	  # Byte and Word
-	  feature_detect(FEATURE_AVX512BW_FOUND)
-	  if(FEATURE_AVX512BW_FOUND)
-	    add_definitions(-DHAVE_AVX512_BW)
-	    message(STATUS "  x86_64 AVX512-BW intrinsics available")
+	  # Foundational
+	  feature_detect(FEATURE_AVX512F_FOUND)
+	  if(FEATURE_AVX512F_FOUND)
+	    add_definitions(-DHAVE_AVX512_F)
+	    message(STATUS "  x86_64 AVX512-F intrinsics available")
+
+	    # Byte and Word
+	    feature_detect(FEATURE_AVX512BW_FOUND)
+	    if(FEATURE_AVX512BW_FOUND)
+	      add_definitions(-DHAVE_AVX512_BW)
+	      message(STATUS "  x86_64 AVX512-BW intrinsics available")
+	    endif()
 	  endif()
-	endif()
+        endif()
       endif()
     endif()
   endif()
