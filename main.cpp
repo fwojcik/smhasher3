@@ -644,10 +644,10 @@ int main ( int argc, const char ** argv )
 
   set_default_tests(true);
 
-#if defined(HAVE_64BIT_PLATFORM)
-  const char * defaulthash = "xxh3-64";
-#else
+#if defined(HAVE_32BIT_PLATFORM)
   const char * defaulthash = "wyhash-32";
+#else
+  const char * defaulthash = "xxh3-64";
 #endif
   const char * hashToTest = defaulthash;
 

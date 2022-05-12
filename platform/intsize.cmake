@@ -2,6 +2,10 @@
 # Fixed-width integer type detection
 ########################################
 
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  add_definitions(-DHAVE_32BIT_PLATFORM)
+endif()
+
 checkCachedVarsDepend(FIXEDINT "fixed-width integer variants")
 
 # Tell findVariant() where to store the files and variables it touches
