@@ -57,6 +57,7 @@ set(detectVarsFilesMap
   FEATURE_X64ASM_FOUND     x86_64_asm.cpp
   FEATURE_ARMAES_FOUND     arm_aes.cpp
   FEATURE_ARMSHA1_FOUND    arm_neon_sha1.cpp
+  FEATURE_ARMSHA2_FOUND    arm_neon_sha2.cpp
   FEATURE_ARMASM32_FOUND   arm_asm.cpp
   FEATURE_ARMASM64_FOUND   arm_asm64.cpp
   FEATURE_PPCVSX_FOUND     ppc_vsx.cpp
@@ -227,6 +228,12 @@ else()
   if(FEATURE_ARMSHA1_FOUND)
     add_definitions(-DHAVE_ARM_SHA1)
     message(STATUS "  ARM SHA-1 intrinsics available")
+  endif()
+
+  feature_detect(FEATURE_ARMSHA2_FOUND)
+  if(FEATURE_ARMSHA2_FOUND)
+    add_definitions(-DHAVE_ARM_SHA2)
+    message(STATUS "  ARM SHA-2 intrinsics available")
   endif()
 
   feature_detect(FEATURE_ARMASM32_FOUND)
