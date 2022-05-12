@@ -97,6 +97,7 @@ include(${DETECT_DIR}/isa.cmake)
 include(${DETECT_DIR}/threads.cmake)
 include(${DETECT_DIR}/timing.cmake)
 
+configure_file(${DETECT_DIR}/Timing.h.in ${CMAKE_BINARY_DIR}/include/Timing.h)
 configure_file(${DETECT_DIR}/Platform.h.in ${CMAKE_BINARY_DIR}/include/Platform.h)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
