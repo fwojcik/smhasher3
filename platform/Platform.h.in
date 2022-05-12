@@ -200,3 +200,39 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
   }
   #define verify(x) warn_if(x, #x, __FILE__, __LINE__)
 #endif
+
+//-----------------------------------------------------------------------------
+// Instruction-set architecture availability
+
+#cmakedefine HAVE_ARM_NEON
+#cmakedefine HAVE_ARM_ACLE
+#cmakedefine HAVE_IMMINTRIN
+#cmakedefine HAVE_AMMINTRIN
+#cmakedefine HAVE_X86INTRIN
+
+#cmakedefine HAVE_SSE_2
+#cmakedefine HAVE_SSSE_3
+#cmakedefine HAVE_SSE_4_1
+#cmakedefine HAVE_XOP
+#cmakedefine HAVE_X86_64_CRC32C
+#cmakedefine HAVE_X86_64_CLMUL
+#cmakedefine HAVE_X86_64_AES
+#cmakedefine HAVE_X86_64_SHA1
+#cmakedefine HAVE_X86_64_SHA2
+#cmakedefine HAVE_AVX
+#cmakedefine HAVE_AVX2
+#cmakedefine HAVE_AVX512_F
+#cmakedefine HAVE_AVX512_BW
+#cmakedefine HAVE_UMULH
+#cmakedefine HAVE_UMUL128
+#cmakedefine HAVE_X86_64_ASM
+#cmakedefine HAVE_ARM_AES
+#cmakedefine HAVE_ARM_SHA1
+#cmakedefine HAVE_ARM_SHA2
+#cmakedefine HAVE_ARM_ASM
+#cmakedefine HAVE_ARM64_ASM
+#cmakedefine HAVE_PPC_VSX
+#cmakedefine HAVE_PPC_AES
+#cmakedefine HAVE_PPC_ASM
+
+#cmakedefine HAVE_BROKEN_MSVC_CRC32C_HW

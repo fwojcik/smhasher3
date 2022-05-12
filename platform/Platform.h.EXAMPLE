@@ -232,3 +232,39 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
   }
   #define verify(x) warn_if(x, #x, __FILE__, __LINE__)
 #endif
+
+//-----------------------------------------------------------------------------
+// Instruction-set architecture availability
+
+/* #undef HAVE_ARM_NEON */
+/* #undef HAVE_ARM_ACLE */
+#define HAVE_IMMINTRIN
+/* #undef HAVE_AMMINTRIN */
+#define HAVE_X86INTRIN
+
+#define HAVE_SSE_2
+#define HAVE_SSSE_3
+#define HAVE_SSE_4_1
+/* #undef HAVE_XOP */
+#define HAVE_X86_64_CRC32C
+#define HAVE_X86_64_CLMUL
+#define HAVE_X86_64_AES
+#define HAVE_X86_64_SHA1
+#define HAVE_X86_64_SHA2
+#define HAVE_AVX
+#define HAVE_AVX2
+/* #undef HAVE_AVX512_F */
+/* #undef HAVE_AVX512_BW */
+/* #undef HAVE_UMULH */
+/* #undef HAVE_UMUL128 */
+#define HAVE_X86_64_ASM
+/* #undef HAVE_ARM_AES */
+/* #undef HAVE_ARM_SHA1 */
+/* #undef HAVE_ARM_SHA2 */
+/* #undef HAVE_ARM_ASM */
+/* #undef HAVE_ARM64_ASM */
+/* #undef HAVE_PPC_VSX */
+/* #undef HAVE_PPC_AES */
+/* #undef HAVE_PPC_ASM */
+
+/* #undef HAVE_BROKEN_MSVC_CRC32C_HW */
