@@ -27,25 +27,11 @@
  */
 #pragma once
 
-#if defined(HAVE_XOP)
-#  if defined(_MSC_VER)
-#    include <ammintrin.h>
-#  else
-#    include <x86intrin.h>
-#  endif
-#elif \
-    defined(HAVE_X86_64_SHA2)   ||   \
-    defined(HAVE_X86_64_SHA1)   ||   \
-    defined(HAVE_X86_64_AES)    ||   \
-    defined(HAVE_X86_64_CRC32C) ||   \
-    defined(HAVE_X86_64_CLMUL)  ||   \
-    defined(HAVE_AVX512_BW)     ||   \
-    defined(HAVE_AVX512_F)      ||   \
-    defined(HAVE_AVX2)          ||   \
-    defined(HAVE_AVX)           ||   \
-    defined(HAVE_SSE_4_1)       ||   \
-    defined(HAVE_SSSE_3)        ||   \
-    defined(HAVE_SSE_2)
+#if defined(HAVE_X86INTRIN)
+#  include <x86intrin.h>
+#elif defined(HAVE_AMMINTRIN)
+#  include <ammintrin.h>
+#elif defined(HAVE_IMMINTRIN)
 #  include <immintrin.h>
 #endif
 

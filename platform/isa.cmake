@@ -17,6 +17,24 @@ if(PROCESSOR_FAMILY STREQUAL "Arm")
     add_definitions(-DHAVE_ARM_ACLE)
     message(STATUS "ARM ACLE available")
   endif()
+elseif(PROCESSOR_FAMILY STREQUAL "x86")
+  check_include_file_cxx("immintrin.h" HAVE_IMMINTRIN)
+  if(HAVE_IMMINTRIN)
+    add_definitions(-DHAVE_IMMINTRIN)
+    check_include_file_cxx("x86intrin.h" HAVE_X86INTRIN)
+    if(HAVE_X86INTRIN)
+      add_definitions(-DHAVE_X86INTRIN)
+      message(STATUS "x86 universal intrinsic header available")
+    else()
+      check_include_file_cxx("ammintrin.h" HAVE_AMMINTRIN)
+      if(HAVE_AMMINTRIN)
+        add_definitions(-DHAVE_AMMINTRIN)
+        message(STATUS "x86 Intel and AMD intrinsic headers available")
+      else()
+        message(STATUS "x86 intrinsic header available")
+      endif()
+    endif()
+  endif()
 endif()
 
 
@@ -92,6 +110,10 @@ endfunction()
 # By depending on this .cmake file, the cache will be cleared if the
 # list of files were to ever change, as this file is the only one that
 # can change it.
+#
+# Unlike in the other .cmake files in platform/, the list of files and
+# variables can be computed "up-front" here, so the
+# setCachedVarsDepend() call doesn't need to wait until the end.
 
 set(isFile OFF)
 unset(detectVars)
@@ -198,7 +220,6 @@ if(HAVE_SSE_2)
   endif()
 endif()
 
-
 if(MSVC)
 
   feature_detect(HAVE_UMULH)
@@ -214,6 +235,11 @@ if(MSVC)
   endif()
 
 else()
+
+  # For the moment, I'm leaving all of these detections enabled on all
+  # platforms. This is to maybe accomadate future inclusions of
+  # SIMD-everywhere or similar intrinsic emulation headers. This may
+  # change in the future.
 
   feature_detect(HAVE_X86_64_ASM)
   if(HAVE_X86_64_ASM)
