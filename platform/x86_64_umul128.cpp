@@ -1,10 +1,8 @@
 // MSVC only
 #include <cstdio>
-#include <cstdint>
-#include <immintrin.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-typedef UINT64 uint64_t;
+#include <inttypes.h>
+
+#include "isa.h"
 
 int main(void) {
     uint64_t x = UINT64_C(0xfedcba98fedcba98);

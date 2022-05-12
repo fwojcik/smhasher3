@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include "isa.h"
 
 uint64_t rhi, a, b;
 

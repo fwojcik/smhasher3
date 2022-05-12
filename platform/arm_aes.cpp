@@ -1,9 +1,5 @@
 #include <cstdint>
-#include <arm_neon.h>
-
-#if defined(HAVE_ARM_ACLE)
-#include <arm_acle.h>
-#endif
+#include "isa.h"
 
 uint8_t * key;
 uint8_t * blk;

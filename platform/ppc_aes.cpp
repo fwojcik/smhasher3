@@ -1,7 +1,7 @@
 #include <cstdint>
 #define HAVE_PPC_VSX
-#include "../lib/Intrinsics.h"
-#include "../lib/AES-ppc.h"
+#include "isa.h"
+#include "../hashlib/AES-ppc.h"
 
 uint32_t RK[100];
 uint8_t pt[16];

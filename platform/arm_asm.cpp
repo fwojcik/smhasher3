@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include "isa.h"
 
 uint32_t rlo, rmi, rhi, a, b, addlo, addmi, addhi;
 

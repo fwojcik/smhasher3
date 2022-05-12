@@ -1,12 +1,4 @@
-#if defined(_MSC_VER)
-#  include <arm_neon.h>
-#else
-# include <stdint.h>
-# include <arm_neon.h>
-# if defined(HAVE_ARM_ACLE)
-#  include <arm_acle.h>
-# endif
-#endif
+#include "isa.h"
 
 int main(void) {
     uint32x4_t A, C;

@@ -91,9 +91,10 @@ function(feature_detect var)
   if (NOT DEFINED ${var})
     lookupDetectFile(file ${var})
     try_compile(${var} ${CMAKE_BINARY_DIR} ${DETECT_DIR}/${file}
-          OUTPUT_VARIABLE dump
+      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${CMAKE_SOURCE_DIR}/include/common;${CMAKE_BINARY_DIR}/include/"
+      OUTPUT_VARIABLE dump
     )
-    #message(STATUS "Got ${dump}")
+#    message(STATUS "Got result ${dump} for ${file}")
   endif()
 endfunction()
 
@@ -130,6 +131,21 @@ endforeach()
 
 checkCachedVarsDepend(DETECT "instruction-set availability")
 setCachedVarsDepend(DETECT detectVars detectFiles)
+
+########################################
+
+# Write out the necessary headers for testing intrinsics
+string(CONFIGURE "\
+@FIXEDINT_IMPL@\n\
+@FORCE_INLINE_IMPL@\n\
+#cmakedefine HAVE_ARM_NEON\n\
+#cmakedefine HAVE_ARM_ACLE\n\
+#cmakedefine HAVE_IMMINTRIN\n\
+#cmakedefine HAVE_AMMINTRIN\n\
+#cmakedefine HAVE_X86INTRIN\n\
+#include \"Intrinsics.h\"\n"
+  PREAMBLE @ONLY)
+file(WRITE ${CMAKE_BINARY_DIR}/include/isa.h "${PREAMBLE}")
 
 ########################################
 

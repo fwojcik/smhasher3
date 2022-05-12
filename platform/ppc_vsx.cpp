@@ -1,19 +1,5 @@
-#include <cstdint>
-
-# undef vector
-# undef pixel
-# undef bool
-#if defined(__s390x__)
-#  include <s390intrin.h>
-#else
-#  include <altivec.h>
-#endif
-
-#if defined(__ibmxl__) || (defined(_AIX) && defined(__xlC__))
-typedef  __vector unsigned char vec_t;
-#else
-typedef  __vector unsigned long long vec_t;
-#endif
+#define HAVE_PPC_VSX
+#include "isa.h"
 
 void FOO(const uint8_t * input1, const uint8_t * input2, uint8_t * output) {
     vec_t block = (vec_t)vec_vsx_ld(0, input1);
