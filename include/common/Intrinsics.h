@@ -25,7 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#define HAVE_INTRINSICS
+#pragma once
 
 #if defined(NEW_HAVE_XOP)
 #  if defined(_MSC_VER)
@@ -33,7 +33,6 @@
 #  else
 #    include <x86intrin.h>
 #  endif
-#  define HAVE_X64_INTRIN 1
 #elif \
     defined(NEW_HAVE_SHA2_X86_64)   ||   \
     defined(DNEW_HAVE_SHA1_X86_64)  ||   \
@@ -46,7 +45,6 @@
     defined(NEW_HAVE_SSSE3)         ||   \
     defined(NEW_HAVE_SSE_2)
 #  include <immintrin.h>
-#  define HAVE_X64_INTRIN 1
 #endif
 
 #if defined(NEW_HAVE_ARM_NEON)
