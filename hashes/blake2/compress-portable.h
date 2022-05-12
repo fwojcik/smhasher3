@@ -1,13 +1,13 @@
 #define G(r,i,a,b,c,d)			    \
   do {                                      \
     a = a + b + m[blake2_sigma[r][2*i+0]];  \
-    d = rotr64(d ^ a, 32);                  \
+    d = ROTR64(d ^ a, 32);                  \
     c = c + d;                              \
-    b = rotr64(b ^ c, 24);                  \
+    b = ROTR64(b ^ c, 24);                  \
     a = a + b + m[blake2_sigma[r][2*i+1]];  \
-    d = rotr64(d ^ a, 16);                  \
+    d = ROTR64(d ^ a, 16);                  \
     c = c + d;                              \
-    b = rotr64(b ^ c, 63);                  \
+    b = ROTR64(b ^ c, 63);                  \
   } while(0)
 
 #define ROUND(r)                    \
@@ -68,13 +68,13 @@ static void blake2_compress(blake2b_context * ctx, const uint8_t * in) {
 #define G(r,i,a,b,c,d)			    \
   do {                                      \
     a = a + b + m[blake2_sigma[r][2*i+0]];  \
-    d = rotr32(d ^ a, 16);                  \
+    d = ROTR32(d ^ a, 16);                  \
     c = c + d;                              \
-    b = rotr32(b ^ c, 12);                  \
+    b = ROTR32(b ^ c, 12);                  \
     a = a + b + m[blake2_sigma[r][2*i+1]];  \
-    d = rotr32(d ^ a,  8);                  \
+    d = ROTR32(d ^ a,  8);                  \
     c = c + d;                              \
-    b = rotr32(b ^ c,  7);                  \
+    b = ROTR32(b ^ c,  7);                  \
   } while(0)
 
 template < bool bswap >

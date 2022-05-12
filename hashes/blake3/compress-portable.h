@@ -4,13 +4,13 @@
 static FORCE_INLINE void g(uint32_t *state, size_t a, size_t b, size_t c, size_t d,
               uint32_t x, uint32_t y) {
   state[a] = state[a] + state[b] + x;
-  state[d] = rotr32(state[d] ^ state[a], 16);
+  state[d] = ROTR32(state[d] ^ state[a], 16);
   state[c] = state[c] + state[d];
-  state[b] = rotr32(state[b] ^ state[c], 12);
+  state[b] = ROTR32(state[b] ^ state[c], 12);
   state[a] = state[a] + state[b] + y;
-  state[d] = rotr32(state[d] ^ state[a], 8);
+  state[d] = ROTR32(state[d] ^ state[a], 8);
   state[c] = state[c] + state[d];
-  state[b] = rotr32(state[b] ^ state[c], 7);
+  state[b] = ROTR32(state[b] ^ state[c], 7);
 }
 
 static FORCE_INLINE void round_fn(uint32_t state[16], const uint32_t *msg, size_t round) {
