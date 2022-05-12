@@ -34,7 +34,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SHA2_X86_64) || defined(NEW_HAVE_SHA2_ARM)
+#if defined(HAVE_X86_64_SHA2) || defined(HAVE_ARM_SHA2)
 #include "Intrinsics.h"
 #endif
 
@@ -167,7 +167,7 @@ static void SHA256_Transform_portable(uint32_t state[8], const uint8_t buffer[64
   state[7] += h;
 }
 
-#if defined(NEW_HAVE_SHA2_X86_64)
+#if defined(HAVE_X86_64_SHA2)
 template < bool bswap >
 static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
   __m128i STATE0, STATE1;
@@ -355,7 +355,7 @@ static void SHA256_Transform_x64(uint32_t state[8], const uint8_t data[64]) {
 }
 #endif
 
-#if defined(NEW_HAVE_SHA2_ARM)
+#if defined(HAVE_ARM_SHA2)
 template < bool bswap >
 static void SHA256_Transform_neon(uint32_t state[8], const uint8_t data[64]) {
   uint32x4_t STATE0, STATE1, ABEF_SAVE, CDGH_SAVE;
@@ -517,10 +517,10 @@ static void SHA256_Transform_neon(uint32_t state[8], const uint8_t data[64]) {
 
 template < bool bswap >
 static void SHA256_Transform(uint32_t state[8], const uint8_t buffer[64]) {
-#if defined(NEW_HAVE_SHA2_X86_64)
+#if defined(HAVE_X86_64_SHA2)
     return SHA256_Transform_x64<bswap>(state, buffer);
 #endif
-#if defined(NEW_HAVE_SHA2_ARM)
+#if defined(HAVE_ARM_SHA2)
     return SHA256_Transform_neon<bswap>(state, buffer);
 #endif
     return SHA256_Transform_portable<bswap>(state, buffer);

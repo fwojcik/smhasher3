@@ -28,7 +28,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSSE_3) || defined(HAVE_SSE_2)
 #include "Intrinsics.h"
 #endif
 
@@ -99,7 +99,7 @@ static uint64_t siphash_portable(const uint64_t key[2], const uint8_t * m, size_
 }
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSSE_3) || defined(HAVE_SSE_2)
 typedef __m128i xmmi;
 typedef __m64 qmm;
 
@@ -140,7 +140,7 @@ static uint64_t siphash_sse(const uint64_t key[2], const uint8_t * m, size_t len
 	v02 = _mm_xor_si128(v02, _mm_unpacklo_epi64(k, k));
 	v13 = _mm_xor_si128(v13, _mm_unpackhi_epi64(k, k));
 
-#if defined(NEW_HAVE_SSSE3)
+#if defined(HAVE_SSSE_3)
 #define sipcompress() \
 	v11 = v13; \
 	v33 = v13; \
@@ -374,7 +374,7 @@ template < bool bswap >
 static void SipHash_2_4(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t key[2] = { seed, 0 };
     uint64_t h;
-#if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSSE_3) || defined(HAVE_SSE_2)
     h = siphash_sse<true, bswap>(key, (const uint8_t *)in, len);
 #else
     h = siphash_portable<true, bswap>(key, (const uint8_t *)in, len);
@@ -386,7 +386,7 @@ template < bool bswap >
 static void SipHash_1_3(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t key[2] = { seed, 0 };
     uint64_t h;
-#if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSSE_3) || defined(HAVE_SSE_2)
     h = siphash_sse<false, bswap>(key, (const uint8_t *)in, len);
 #else
     h = siphash_portable<false, bswap>(key, (const uint8_t *)in, len);

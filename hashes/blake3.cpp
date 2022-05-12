@@ -316,10 +316,10 @@ static void blake3_seed(blake3_hasher * hasher, uint32_t seedlo) {
 //     #define SIMD_DEGREE_OR_2
 //     #define SIMD_DEGREE
 //
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
 #include "Intrinsics.h"
 #include "blake3/compress-sse41.h"
-#elif defined(NEW_HAVE_SSE_2)
+#elif defined(HAVE_SSE_2)
 #include "Intrinsics.h"
 #include "blake3/compress-sse2.h"
 #else

@@ -27,7 +27,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_CLMUL_X86_64)
+#if defined(HAVE_X86_64_CLMUL)
 #include "Intrinsics.h"
 #include <cassert>
 
@@ -45,7 +45,7 @@ static inline void mul128(uint64_t x, uint64_t y, uint64_t & hi, uint64_t & lo) 
 // __builtin_uaddl_overflow(). XXX The builtin detection might happen
 // later, but for now this is good enough.
 static inline bool add_overflow(uint64_t x, uint64_t y, uint64_t * sumlo) {
-//#if defined(NEW_HAVE_BUILTIN_UADD)
+//#if defined(HAVE_BUILTIN_UADD)
 //    return __builtin_uaddl_overflow(x, y, sumlo);
 //#else
     uint64_t c = 0;
@@ -186,14 +186,14 @@ struct umash_fp {
 static inline const void * select_ptr(bool cond, const void * then, const void * otherwise) {
     const void * ret;
 
-#if defined(NEW_HAVE_X64_ASM)
+#if defined(HAVE_X86_64_ASM)
     /* Force strict evaluation of both arguments. */
     __asm__("" ::"r"(then), "r"(otherwise));
 #endif
 
     ret = (cond) ? then : otherwise;
 
-#if defined(NEW_HAVE_X64_ASM)
+#if defined(HAVE_X86_64_ASM)
     /* And also force the result to be materialised with a blackhole. */
     __asm__("" : "+r"(ret));
 #endif
@@ -1187,7 +1187,7 @@ REGISTER_FAMILY(umash,
   $.src_status = HashFamilyInfo::SRC_ACTIVE
 );
 
-#if defined(NEW_HAVE_CLMUL_X86_64)
+#if defined(HAVE_X86_64_CLMUL)
 
 REGISTER_HASH(umash_64,
   $.desc = "umash 64 (which == 0)",

@@ -27,27 +27,29 @@
  */
 #pragma once
 
-#if defined(NEW_HAVE_XOP)
+#if defined(HAVE_XOP)
 #  if defined(_MSC_VER)
 #    include <ammintrin.h>
 #  else
 #    include <x86intrin.h>
 #  endif
 #elif \
-    defined(NEW_HAVE_SHA2_X86_64)   ||   \
-    defined(DNEW_HAVE_SHA1_X86_64)  ||   \
-    defined(NEW_HAVE_AES_X86_64)    ||   \
-    defined(NEW_HAVE_CRC32C_X86_64) ||   \
-    defined(NEW_HAVE_AVX512_BW)     ||   \
-    defined(NEW_HAVE_AVX512_F)      ||   \
-    defined(NEW_HAVE_AVX2)          ||   \
-    defined(NEW_HAVE_SSE_4_1)       ||   \
-    defined(NEW_HAVE_SSSE3)         ||   \
-    defined(NEW_HAVE_SSE_2)
+    defined(HAVE_X86_64_SHA2)   ||   \
+    defined(HAVE_X86_64_SHA1)   ||   \
+    defined(HAVE_X86_64_AES)    ||   \
+    defined(HAVE_X86_64_CRC32C) ||   \
+    defined(HAVE_X86_64_CLMUL)  ||   \
+    defined(HAVE_AVX512_BW)     ||   \
+    defined(HAVE_AVX512_F)      ||   \
+    defined(HAVE_AVX2)          ||   \
+    defined(HAVE_AVX)           ||   \
+    defined(HAVE_SSE_4_1)       ||   \
+    defined(HAVE_SSSE_3)        ||   \
+    defined(HAVE_SSE_2)
 #  include <immintrin.h>
 #endif
 
-#if defined(NEW_HAVE_ARM_NEON)
+#if defined(HAVE_ARM_NEON)
     /* circumvent a clang bug */
 #  if defined(__GNUC__) || defined(__clang__)
 #    if defined(__ARM_NEON__) || defined(__ARM_NEON) || \
@@ -64,13 +66,13 @@
 #           undef inline
 #    endif
 #  endif
-#  if defined(NEW_HAVE_ARM_ACLE)
+#  if defined(HAVE_ARM_ACLE)
 #    include <arm_acle.h>
 #  endif
 #endif
 
 
-#if defined(NEW_HAVE_PPC_VSX)
+#if defined(HAVE_PPC_VSX)
 /*
  * Annoyingly, these headers _may_ define three macros: `bool`,
  * `vector`, and `pixel`. This is a problem for obvious reasons.
@@ -128,7 +130,7 @@ typedef  __vector unsigned long long vec_t;
 // This is helpful for MSVC, which doesn't have a usable
 // prefetch() implementation without this.
 
-#if defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSE_2)
 #undef prefetch
 #define prefetch(x) _mm_prefetch(x, _MM_HINT_T0)
 #endif
@@ -136,7 +138,7 @@ typedef  __vector unsigned long long vec_t;
 //------------------------------------------------------------
 // Vectorized byteswapping
 
-#if defined(NEW_HAVE_ARM_NEON)
+#if defined(HAVE_ARM_NEON)
 static FORCE_INLINE uint64x2_t Vbswap64_u64(const uint64x2_t v) {
     return vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(v)));
 }
@@ -145,7 +147,7 @@ static FORCE_INLINE uint32x4_t Vbswap32_u32(const uint32x4_t v) {
 }
 #endif
 
-#if defined(NEW_HAVE_AVX512_BW)
+#if defined(HAVE_AVX512_BW)
 static FORCE_INLINE __m512i mm512_bswap64(const __m512i v) {
     const __m512i MASK = _mm512_set_epi64(UINT64_C(0x08090a0b0c0d0e0f),
                                           UINT64_C(0x0001020304050607),
@@ -168,7 +170,7 @@ static FORCE_INLINE __m512i mm512_bswap32(const __m512i v) {
                                           UINT64_C(0x0405060700010203));
     return _mm512_shuffle_epi8(v, MASK);
 }
-#elif defined(NEW_HAVE_AVX512_F)
+#elif defined(HAVE_AVX512_F)
 static FORCE_INLINE __m512i mm512_bswap64(const __m512i v) {
     // Byteswapping 256 bits at a time, since _mm512_shuffle_epi8()
     // requires AVX512-BW in addition to AVX512-F.
@@ -201,7 +203,7 @@ static FORCE_INLINE __m512i mm512_bswap64(const __m512i v) {
 }
 #endif
 
-#if defined(NEW_HAVE_AVX2)
+#if defined(HAVE_AVX2)
 static FORCE_INLINE __m256i mm256_bswap64(const __m256i v) {
     const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f),
                                            UINT64_C(0x0001020304050607),
@@ -218,7 +220,7 @@ static FORCE_INLINE __m256i mm256_bswap32(const __m256i v) {
 }
 #endif
 
-#if defined(NEW_HAVE_SSSE3)
+#if defined(HAVE_SSSE_3)
 static FORCE_INLINE __m128i mm_bswap64(const __m128i v) {
     const __m128i MASK = _mm_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f),
                                         UINT64_C(0x0001020304050607));
@@ -229,7 +231,7 @@ static FORCE_INLINE __m128i mm_bswap32(const __m128i v) {
                                         UINT64_C(0x0405060700010203));
     return _mm_shuffle_epi8(v, MASK);
 }
-#elif defined(NEW_HAVE_SSE_2)
+#elif defined(HAVE_SSE_2)
 static FORCE_INLINE __m128i mm_bswap64(const __m128i v) {
     // Swap each pair of bytes
     __m128i tmp = _mm_or_si128(_mm_slri_epi16(v, 8),

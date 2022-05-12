@@ -58,7 +58,7 @@
 #include <math.h>
 
 // VCode might have already included this
-#if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_AVX2) || defined(HAVE_SSE_4_1)
 #include "Intrinsics.h"
 #endif
 
@@ -135,7 +135,7 @@ static void calcBiasRange ( const HashFn hash, const seed_t seed,
 {
   const int keybits = keybytes * 8;
   const int hashbytes = sizeof(hashtype);
-#if defined(NEW_HAVE_AVX2)
+#if defined(HAVE_AVX2)
   const __m256i ONE  = _mm256_set1_epi32(1);
   const __m256i MASK = _mm256_setr_epi32(
                                          1 << 0,
@@ -146,7 +146,7 @@ static void calcBiasRange ( const HashFn hash, const seed_t seed,
                                          1 << 5,
                                          1 << 6,
                                          1 << 7);
-#elif defined(NEW_HAVE_SSE_4_1)
+#elif defined(HAVE_SSE_4_1)
   const __m128i ONE  = _mm_set1_epi32(1);
   const __m128i MASK = _mm_setr_epi32(
                                          1 << 0,
@@ -178,7 +178,7 @@ static void calcBiasRange ( const HashFn hash, const seed_t seed,
 
       B ^= A;
 
-#if defined(NEW_HAVE_AVX2)
+#if defined(HAVE_AVX2)
       for(int oWord = 0; oWord < (hashbytes/4); oWord++) {
           // Get the next 32-bit chunk of the hash difference
           uint32_t word;
@@ -213,7 +213,7 @@ static void calcBiasRange ( const HashFn hash, const seed_t seed,
           _mm256_storeu_si256((__m256i *)cursor, cnt4);
           cursor += 8;
       }
-#elif defined(NEW_HAVE_SSE_4_1)
+#elif defined(HAVE_SSE_4_1)
       for(int oWord = 0; oWord < (hashbytes/4); oWord++) {
           // Get the next 32-bit chunk of the hash difference
           uint32_t word;

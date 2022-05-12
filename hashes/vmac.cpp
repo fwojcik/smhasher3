@@ -145,7 +145,7 @@ static inline void poly_step_portable(uint64_t & ah, uint64_t & al, const uint64
 //-----------------------------------------------------------------------------
 // SSE2-based 32-bit ASM code
 
-#if defined(HAVE_32BIT_PLATFORM) && defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_32BIT_PLATFORM) && defined(HAVE_SSE_2)
 
 template < bool bswap >
 static void nh_16_sse2(const uint8_t * mp, const uint64_t * kp, size_t nw, uint64_t & rh, uint64_t & rl) {
@@ -377,7 +377,7 @@ static void poly_step_sse2(uint64_t & ah, uint64_t & al, const uint64_t & kh,
 // Wrapper implementations
 template < bool bswap >
 static void nh_16(const uint8_t * mp, const uint64_t * kp, size_t nw, uint64_t & rh, uint64_t & rl) {
-#if defined(HAVE_32BIT_PLATFORM) && defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_32BIT_PLATFORM) && defined(HAVE_SSE_2)
     nh_16_sse2<bswap>(mp, kp, nw, rh, rl);
 #else
     nh_16_portable<bswap>(mp, kp, nw, rh, rl);
@@ -386,7 +386,7 @@ static void nh_16(const uint8_t * mp, const uint64_t * kp, size_t nw, uint64_t &
 
 template < bool bswap >
 static void nh_vmac_nhbytes(const uint8_t * mp, const uint64_t * kp, size_t nw, uint64_t & rh, uint64_t & rl) {
-#if defined(HAVE_32BIT_PLATFORM) && defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_32BIT_PLATFORM) && defined(HAVE_SSE_2)
     nh_16_sse2<bswap>(mp, kp, nw, rh, rl);
 #else
     nh_vmac_nhbytes_portable<bswap>(mp, kp, nw, rh, rl);
@@ -395,7 +395,7 @@ static void nh_vmac_nhbytes(const uint8_t * mp, const uint64_t * kp, size_t nw, 
 
 static void poly_step(uint64_t & ah, uint64_t & al, const uint64_t & kh,
         const uint64_t & kl, const uint64_t & mh, const uint64_t & ml) {
-#if defined(HAVE_32BIT_PLATFORM) && defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_32BIT_PLATFORM) && defined(HAVE_SSE_2)
     poly_step_sse2(ah, al, kh, kl, mh, ml);
 #else
     poly_step_portable(ah, al, kh, kl, mh, ml);
@@ -442,7 +442,7 @@ typedef struct {
 #endif // _MSC_VER
 
 static void vhash_abort(vmac_ctx_t *ctx) {
-#if defined(HAVE_32BIT_PLATFORM) && defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_32BIT_PLATFORM) && defined(HAVE_SSE_2)
     _mmm_empty /* SSE2 version of poly_step uses mmx instructions */
 #endif
 }

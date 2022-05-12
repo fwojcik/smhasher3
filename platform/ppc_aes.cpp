@@ -1,5 +1,5 @@
 #include <cstdint>
-#define NEW_HAVE_PPC_VSX
+#define HAVE_PPC_VSX
 #include "../lib/Intrinsics.h"
 #include "../lib/AES-ppc.h"
 

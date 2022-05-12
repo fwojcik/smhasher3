@@ -24,7 +24,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_CLMUL_X86_64)
+#if defined(HAVE_X86_64_CLMUL)
 
 #include "Intrinsics.h"
 #include <cassert>
@@ -444,7 +444,7 @@ REGISTER_FAMILY(clhash,
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-#if defined(NEW_HAVE_CLMUL_X86_64)
+#if defined(HAVE_X86_64_CLMUL)
 
 REGISTER_HASH(clhash,
   $.desc = "Carryless multiplication hash, with -DBITMIX",

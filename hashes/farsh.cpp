@@ -27,7 +27,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_AVX2) || defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_AVX2) || defined(HAVE_SSE_2)
 #include "Intrinsics.h"
 #endif
 
@@ -95,7 +95,7 @@ alignas(2*alignof(__m128i)) static const uint32_t FARSH_KEYS [STRIPE_ELEMENTS + 
 /* Internal: hash exactly STRIPE bytes */
 template < bool bswap >
 static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
-#if defined(NEW_HAVE_AVX2)
+#if defined(HAVE_AVX2)
     __m256i sum = _mm256_setzero_si256();  __m128i sum128;  int i;
     const __m256i *xdata = (const __m256i *) data;
     const __m256i *xkey  = (const __m256i *) key;
@@ -111,7 +111,7 @@ static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
     sum = _mm256_add_epi64 (sum, _mm256_shuffle_epi32(sum,3*4+2));              // return sum of four 64-bit values in the sum
     sum128 = _mm_add_epi64 (_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum,1));
     return *(uint64_t*) &sum128;
-#elif defined(NEW_HAVE_SSE_2)
+#elif defined(HAVE_SSE_2)
     __m128i sum = _mm_setzero_si128();  int i;
     const __m128i *xdata = (const __m128i *) data;
     const __m128i *xkey  = (const __m128i *) key;

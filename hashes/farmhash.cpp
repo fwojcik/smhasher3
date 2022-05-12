@@ -28,7 +28,7 @@
 
 #include <cassert>
 
-#if defined(NEW_HAVE_SSSE3) || defined(NEW_HAVE_SSE_4_1) || defined(NEW_HAVE_CRC32C_X86_64) || defined(NEW_HAVE_AES_X86_64) || defined(NEW_HAVE_AVX)
+#if defined(HAVE_SSE_4_1) || defined(HAVE_X86_64_CRC32C) || defined(HAVE_X86_64_AES)
 #include "Intrinsics.h"
 #define FARMHASH_USE_INTRIN
 #endif
@@ -544,7 +544,7 @@ static uint64_t farmhashxo::Hash64WithSeed(const uint8_t *s, size_t len, uint64_
 }
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
 namespace farmhashte {
     template < bool bswap >
     static inline uint64_t Hash64Long(const uint8_t* s, size_t n,
@@ -760,7 +760,7 @@ static uint64_t farmhashte::Hash64WithSeeds(const uint8_t *s, size_t len, uint64
 #endif
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
 namespace farmhashnt {
     template < bool bswap >
         static uint32_t Hash32(const uint8_t *s, size_t len);
@@ -902,7 +902,7 @@ static uint32_t farmhashmk::Hash32WithSeed(const uint8_t *s, size_t len, uint32_
 }
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_CRC32C_X86_64) && defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_CRC32C) && defined(HAVE_X86_64_AES)
 namespace farmhashsu {
     template < bool bswap >
         static uint32_t Hash32(const uint8_t *s, size_t len);
@@ -1093,7 +1093,7 @@ static uint32_t farmhashsu::Hash32WithSeed(const uint8_t *s, size_t len, uint32_
 #endif
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_CRC32C_X86_64)
+#if defined(HAVE_X86_64_CRC32C)
 namespace farmhashsa {
     template < bool bswap >
         static uint32_t Hash32(const uint8_t *s, size_t len);
@@ -1546,7 +1546,7 @@ static void FarmHashUO(const void * in, const size_t len, const seed_t seed, voi
 // Since the XO version of Hash64WithSeed is just a call to the UO
 // version, the XO version won't be tested explicitly.
 
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
 template < bool bswap >
 static void FarmHashTE(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t h = farmhashte::Hash64WithSeed<bswap>((const uint8_t *)in, len, seed);
@@ -1566,7 +1566,7 @@ static void FarmHashMK(const void * in, const size_t len, const seed_t seed, voi
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
-#if defined(NEW_HAVE_CRC32C_X86_64) && defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_CRC32C) && defined(HAVE_X86_64_AES)
 template < bool bswap >
 static void FarmHashSU(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = farmhashsu::Hash32WithSeed<bswap>((const uint8_t *)in, len, seed);
@@ -1574,7 +1574,7 @@ static void FarmHashSU(const void * in, const size_t len, const seed_t seed, voi
 }
 #endif
 
-#if defined(NEW_HAVE_CRC32C_X86_64)
+#if defined(HAVE_X86_64_CRC32C)
 template < bool bswap >
 static void FarmHashSA(const void * in, const size_t len, const seed_t seed, void * out) {
     uint32_t h = farmhashsa::Hash32WithSeed<bswap>((const uint8_t *)in, len, seed);
@@ -1655,7 +1655,7 @@ REGISTER_HASH(FarmHashUO_64,
   $.hashfn_bswap = FarmHashUO<true>
 );
 
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
 REGISTER_HASH(FarmHashTE_64,
   $.desc = "FarmHash Hash64WithSeed (TE version)",
   $.hash_flags =
@@ -1707,7 +1707,7 @@ REGISTER_HASH(FarmHashMK_32,
   $.hashfn_bswap = FarmHashMK<true>
 );
 
-#if defined(NEW_HAVE_CRC32C_X86_64) && defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_CRC32C) && defined(HAVE_X86_64_AES)
 REGISTER_HASH(FarmHashSU_32,
   $.desc = "FarmHash Hash32WithSeed (SU version)",
   $.hash_flags =
@@ -1727,7 +1727,7 @@ REGISTER_HASH(FarmHashSU_32,
 );
 #endif
 
-#if defined(NEW_HAVE_CRC32C_X86_64)
+#if defined(HAVE_X86_64_CRC32C)
 REGISTER_HASH(FarmHashSA_32,
   $.desc = "FarmHash Hash32WithSeed (SA version)",
   $.hash_flags =

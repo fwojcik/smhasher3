@@ -57,7 +57,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 #include "Intrinsics.h"
 
 template < uint32_t version, bool bswap >
@@ -176,7 +176,7 @@ REGISTER_FAMILY(falkhash,
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 
 // This falkhash v1 code is a re-implementation in C from the original
 // ASM. The previous implementation of falkhash in SMHasher

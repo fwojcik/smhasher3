@@ -28,7 +28,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_CRC32C_X86_64)
+#if defined(HAVE_X86_64_CRC32C)
 #include "Intrinsics.h"
 #endif
 
@@ -470,7 +470,7 @@ static uint128_t CityHash128(const char *s, size_t len) {
 }
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_CRC32C_X86_64)
+#if defined(HAVE_X86_64_CRC32C)
 
 // Requires len >= 240.
 template < bool bswap >
@@ -657,7 +657,7 @@ static void CityMurmur_128(const void * in, const size_t len, const seed_t seed,
     PUT_U64<bswap>(Uint128High64(h), (uint8_t *)out, 8);
 }
 
-#if defined(NEW_HAVE_CRC32C_X86_64)
+#if defined(HAVE_X86_64_CRC32C)
 
 template < bool bswap, uint32_t seedmode >
 static void CityCrc128(const void * in, const size_t len, const seed_t seed, void * out) {
@@ -821,7 +821,7 @@ REGISTER_HASH(citymurmur_seed3_128,
   $.hashfn_bswap = CityMurmur_128<true,3>
 );
 
-#if defined(NEW_HAVE_CRC32C_X86_64)
+#if defined(HAVE_X86_64_CRC32C)
 
 REGISTER_HASH(cityhashcrc_seed1_128,
   $.desc = "Google CityHashCrc128WithSeed (seeded low 64 bits)",

@@ -31,7 +31,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SSSE3)
+#if defined(HAVE_SSSE_3)
 #include "Intrinsics.h"
 #endif
 
@@ -57,7 +57,7 @@ static const uint8_t t[256] ={
 static uint16_t t16[65536];
 
 static bool pearson_hash_init (void) {
-#if !defined(NEW_HAVE_SSSE3)
+#if !defined(HAVE_SSSE_3)
   size_t i;
 
   for (i = 0; i < 65536; i++)
@@ -214,7 +214,7 @@ static void pearson_hash_64_portable(uint8_t * out, const uint8_t * in, size_t l
   }
 }
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 
 static void pearson_hash_256_aesni(uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in) {
   size_t i;
@@ -310,7 +310,7 @@ static void pearson_hash_64_aesni(uint8_t * out, const uint8_t * in, size_t len,
   _mm_storel_epi64((__m128i*)out , hash);
 }
 
-#elif defined(NEW_HAVE_SSSE3)
+#elif defined(HAVE_SSSE_3)
 
 static void pearson_hash_256_ssse3(uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in) {
   size_t i;
@@ -454,9 +454,9 @@ static void pearson_hash_64_ssse3(uint8_t * out, const uint8_t * in, size_t len,
 #endif
 
 static void pearson64(const void * in, const size_t len, const seed_t seed, void * out) {
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
   pearson_hash_64_aesni((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
-#elif defined(NEW_HAVE_SSSE3)
+#elif defined(HAVE_SSSE_3)
   pearson_hash_64_ssse3((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
 #else
   pearson_hash_64_portable((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
@@ -464,9 +464,9 @@ static void pearson64(const void * in, const size_t len, const seed_t seed, void
 }
 
 static void pearson128(const void * in, const size_t len, const seed_t seed, void * out) {
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
   pearson_hash_128_aesni((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
-#elif defined(NEW_HAVE_SSSE3)
+#elif defined(HAVE_SSSE_3)
   pearson_hash_128_ssse3((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
 #else
   pearson_hash_128_portable((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
@@ -474,9 +474,9 @@ static void pearson128(const void * in, const size_t len, const seed_t seed, voi
 }
 
 static void pearson256(const void * in, const size_t len, const seed_t seed, void * out) {
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
   pearson_hash_256_aesni((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
-#elif defined(NEW_HAVE_SSSE3)
+#elif defined(HAVE_SSSE_3)
   pearson_hash_256_ssse3((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);
 #else
   pearson_hash_256_portable((uint8_t *)out, (const uint8_t *)in, len, (uint64_t)seed);

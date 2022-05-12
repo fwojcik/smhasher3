@@ -33,9 +33,7 @@ typedef struct {
     uint32_t crc32_short[4][256];
 } crc_hw_table;
 
-// This allegedly falls into a MSVC CL 14.16.27023 32-bit compiler
-// bug. 14.28.29910 allegedly works fine.
-#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+#if defined(HAVE_X86_64_CRC32C)
 #include "Intrinsics.h"
 
 // Fancy hardware version
@@ -350,7 +348,7 @@ static void CRC32(const void * in, const size_t len, const seed_t seed, void * o
                 polynomial, table_poly);
         exit(1);
     }
-#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+#if defined(HAVE_X86_64_CRC32C)
     if (polynomial == POLY_CRC32C) {
         crc = crc32c_hw(crc, &hw_tables, in, len);
     } else
@@ -368,7 +366,7 @@ static void CRC32(const void * in, const size_t len, const seed_t seed, void * o
 template < uint32_t polynomial >
 static bool CRC32_init(void) {
     table_poly = polynomial;
-#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+#if defined(HAVE_X86_64_CRC32C)
     if (polynomial == POLY_CRC32C) {
         crc32_init_hw<polynomial>(&hw_tables);
     } else

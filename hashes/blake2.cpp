@@ -143,7 +143,7 @@ static void blake2_increment_counter( T * ctx, const uint64_t inc ) {
 //   template < typename T, bool bswap >
 //   static void blake2_compress(T * ctx, const uint8_t * in) {
 //   }
-#if defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSE_2)
 #include "Intrinsics.h"
 #include "blake2/compress-sse2-plus.h"
 #else

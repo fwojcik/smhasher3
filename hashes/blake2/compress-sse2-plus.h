@@ -11,7 +11,7 @@
 //-----------------------------------------------------------------------------
 // BLAKE2b code
 
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
 
 #define LOAD_MSG_0_1(b0, b1)  b0 = _mm_unpacklo_epi64(m0, m1); b1 = _mm_unpacklo_epi64(m2, m3);
 #define LOAD_MSG_0_2(b0, b1)  b0 = _mm_unpackhi_epi64(m0, m1); b1 = _mm_unpackhi_epi64(m2, m3);
@@ -115,14 +115,14 @@
 
 #endif
 
-#if defined(NEW_HAVE_SSSE3) && !defined(NEW_HAVE_XOP)
+#if defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
 #define _mm_roti_epi64(x, c)					 \
     (-(c) == 32) ? _mm_shuffle_epi32((x), _MM_SHUFFLE(2,3,0,1))  \
     : (-(c) == 24) ? _mm_shuffle_epi8((x), r24) \
     : (-(c) == 16) ? _mm_shuffle_epi8((x), r16) \
     : (-(c) == 63) ? _mm_xor_si128(_mm_srli_epi64((x), -(c)), _mm_add_epi64((x), (x)))  \
     : _mm_xor_si128(_mm_srli_epi64((x), -(c)), _mm_slli_epi64((x), 64-(-(c))))
-#elif !defined(NEW_HAVE_SSSE3) && !defined(NEW_HAVE_XOP)
+#elif !defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
 #define _mm_roti_epi64(r, c) _mm_xor_si128(_mm_srli_epi64( (r), -(c) ),_mm_slli_epi64( (r), 64-(-(c)) ))
 #endif
 
@@ -164,7 +164,7 @@
   row2l = _mm_roti_epi64(row2l, -63); \
   row2h = _mm_roti_epi64(row2h, -63); \
 
-#if defined(NEW_HAVE_SSSE3)
+#if defined(HAVE_SSSE_3)
 #define DIAGONALIZE(row1l,row2l,row3l,row4l,row1h,row2h,row3h,row4h) \
   t0 = _mm_alignr_epi8(row2h, row2l, 8); \
   t1 = _mm_alignr_epi8(row2l, row2h, 8); \
@@ -346,7 +346,7 @@ static void blake2_compress(blake2b_context * ctx, const uint8_t * in) {
 #define TOF(reg) _mm_castsi128_ps((reg))
 #define TOI(reg) _mm_castps_si128((reg))
 
-#if defined(NEW_HAVE_XOP)
+#if defined(HAVE_XOP)
 
 #define TOB(x) ((x)*4*0x01010101 + 0x03020100) /* ..or not TOB */
 
@@ -429,7 +429,7 @@ static void blake2_compress(blake2b_context * ctx, const uint8_t * in) {
 #define LOAD_MSG_9_4(buf) t1 = _mm_perm_epi8(m0, m2, _mm_set_epi32(TOB(0),TOB(0),TOB(0),TOB(7)) ); \
   buf = _mm_perm_epi8(t1, m3, _mm_set_epi32(TOB(4),TOB(6),TOB(0),TOB(3)) );
 
-#elif defined(NEW_HAVE_SSE_4_1)
+#elif defined(HAVE_SSE_4_1)
 
 #define LOAD_MSG_0_1(buf) buf = TOI(_mm_shuffle_ps(TOF(m0), TOF(m1), _MM_SHUFFLE(2,0,2,0)));
 #define LOAD_MSG_0_2(buf) buf = TOI(_mm_shuffle_ps(TOF(m0), TOF(m1), _MM_SHUFFLE(3,1,3,1)));
@@ -615,12 +615,12 @@ static void blake2_compress(blake2b_context * ctx, const uint8_t * in) {
 
 #endif
 
-#if defined(NEW_HAVE_SSSE3) && !defined(NEW_HAVE_XOP)
+#if defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
 #define _mm_roti_epi32(r, c) (			   \
                 (8==-(c)) ? _mm_shuffle_epi8(r,r8) \
               : (16==-(c)) ? _mm_shuffle_epi8(r,r16) \
               : _mm_xor_si128(_mm_srli_epi32( (r), -(c) ),_mm_slli_epi32( (r), 32-(-(c)) )) )
-#elif !defined(NEW_HAVE_SSSE3) && !defined(NEW_HAVE_XOP)
+#elif !defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
 #define _mm_roti_epi32(r, c) _mm_xor_si128(_mm_srli_epi32( (r), -(c) ),_mm_slli_epi32( (r), 32-(-(c)) ))
 #endif
 

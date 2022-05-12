@@ -41,11 +41,11 @@
 #define NMH_AVX2   2
 #define NMH_AVX512 3
 
-#if defined(NEW_HAVE_AVX_512_BW)
+#if defined(HAVE_AVX512_BW)
 #define NMH_VECTOR NMH_AVX512 /* _mm512_mullo_epi16 requires AVX512BW */
-#elif defined(NEW_HAVE_AVX_2)
+#elif defined(HAVE_AVX2)
 #define NMH_VECTOR NMH_AVX2
-#elif defined(NEW_HAVE_SSE_2)
+#elif defined(HAVE_SSE_2)
 #define NMH_VECTOR NMH_SSE2
 #else
 #define NMH_VECTOR NMH_SCALAR

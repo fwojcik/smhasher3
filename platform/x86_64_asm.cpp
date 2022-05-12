@@ -39,7 +39,7 @@ uint64_t multasm64(
             : "m" (var8)
             : "cc"
             );
-#if defined(NEW_HAVE_AVX2)
+#if defined(HAVE_AVX2)
     __asm__("mulx %3,%0,%1\n"
             : "=g" (var9), "=r" (var1)
             : "d" (var2), "g" (var3)

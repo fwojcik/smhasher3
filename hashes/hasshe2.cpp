@@ -31,7 +31,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSE_2)
 #include "Intrinsics.h"
 #endif
 
@@ -158,7 +158,7 @@ static void hasshe2_portable(const uint8_t * input_buf, size_t n_bytes, uint64_t
 }
 
 //------------------------------------------------------------
-#if defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSE_2)
 
 #define COMBINE_AND_MIX(c_1, c_2, s_1, s_2, in)                              \
   /* Phase 1: Perform four 32x32->64 bit multiplication with the             \
@@ -251,7 +251,7 @@ static void hasshe2_sse2(const uint8_t * input_buf, size_t n_bytes, uint64_t see
 
 template < bool orig, bool bswap >
 static void Hasshe2(const void * in, const size_t len, const seed_t seed, void * out) {
-#if defined(NEW_HAVE_SSE_2)
+#if defined(HAVE_SSE_2)
     hasshe2_sse2<orig,bswap>((const uint8_t *)in, len, (uint64_t)seed, out);
 #else
     hasshe2_portable<orig,bswap>((const uint8_t *)in, len, (uint64_t)seed, out);

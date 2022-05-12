@@ -28,7 +28,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_AES_X86_64) && defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_X86_64_AES) && defined(HAVE_SSE_4_1)
 
 #include "Intrinsics.h"
 
@@ -349,7 +349,7 @@ REGISTER_FAMILY(meowhash,
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-#if defined(NEW_HAVE_AES_X86_64) && defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_X86_64_AES) && defined(HAVE_SSE_4_1)
 
 REGISTER_HASH(MeowHash_32,
   $.desc = "MeowHash (0.5/calico, low 32 bits)",

@@ -56,13 +56,13 @@
 // 32x32->64 multiplication [rhi:rlo = a * b]
 static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uint32_t b) {
     // XXX Are either of these asm blocks better than just the plain code?
-#if 0 && defined(NEW_HAVE_ARM_ASM)
+#if 0 && defined(HAVE_ARM_ASM)
     __asm__("UMULL w%0, w%1, w%2, w%3\n"
             : "+r" (rlo), "+r" (rhi)
             : "r" (a), "r" (b)
             : "cc", "memory"
             );
-#elif 0 && defined(NEW_HAVE_X64_ASM)
+#elif 0 && defined(HAVE_X86_64_ASM)
     __asm__("mull  %[b]\n"
             : "=d" (rhi), "=a" (rlo)
             : "1" (a), [b] "rm" (b)
@@ -85,7 +85,7 @@ static FORCE_INLINE void mult32_64(uint64_t & r64, uint32_t a32, uint32_t b32) {
 
 // 96-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
 static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t& addlo, uint32_t& addmi, uint32_t& addhi) {
-#if defined(NEW_HAVE_ARM_ASM)
+#if defined(HAVE_ARM_ASM)
     __asm__("ADDS %w0, %w3, %w0\n"
             "ADCS %w1, %w4, %w1\n"
             "ADC  %w2, %w5, %w2\n"
@@ -93,7 +93,7 @@ static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint
             : "r" (addlo), "r" (addmi), "r" (addhi)
             : "cc"
             );
-#elif defined(NEW_HAVE_X64_ASM)
+#elif defined(HAVE_X86_64_ASM)
     __asm__("addl %3, %0\n"
             "adcl %4, %1\n"
             "adcl %5, %2\n"
@@ -114,7 +114,7 @@ static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint
 // 96-bit fused multiply addition [rhi:rmi:rlo += a * b]
 static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t a, uint32_t b) {
 // These #defines are not correct; some arm seems to not support this
-#if 0 && defined(NEW_HAVE_ARM_ASM)
+#if 0 && defined(HAVE_ARM_ASM)
     uint32_t tmphi, tmplo;
     __asm__("UMULL %w3, %w4, %w5, %w6\n"
             "ADDS  %w0, %w3, %w0\n"
@@ -124,7 +124,7 @@ static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, u
             : "r" (a), "r" (b)
             : "cc"
             );
-#elif defined(NEW_HAVE_X64_ASM)
+#elif defined(HAVE_X86_64_ASM)
     uint32_t tmphi;
     __asm__("mull %5\n"
             "addl %%eax, %0\n"
@@ -143,7 +143,7 @@ static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, u
 
 // 64x64->128 multiplication [rhi:rlo = a * b]
 static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
-#if defined(NEW_HAVE_ARM64_ASM)
+#if defined(HAVE_ARM64_ASM)
     /*
      * AARCH64 needs 2 insns to calculate 128-bit result of the
      * multiplication.  If we use a generic code we actually call a
@@ -161,12 +161,12 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
             : "=r" (rhi)
             : "r" (a), "r" (b)
             );
-#elif defined(NEW_HAVE_UMUL128)
+#elif defined(HAVE_UMUL128)
     rlo = _umul128(a, b, &rhi);
-#elif defined(NEW_HAVE_UMULH)
+#elif defined(HAVE_UMULH)
     rlo = a * b;
     rhi = __umulh(a, b);
-#elif defined(NEW_HAVE_AVX2) && defined(NEW_HAVE_X64_ASM)
+#elif defined(HAVE_AVX2) && defined(HAVE_X86_64_ASM)
     /*
      * We want to use AVX2 insn MULX instead of generic x86-64 MULQ
      * where it is possible.  Although on modern Intel processors MULQ
@@ -177,7 +177,7 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
             : "=r" (rhi), "=r" (rlo)
             : "d" (a), "r" (b)
             );
-#elif defined(NEW_HAVE_X64_ASM)
+#elif defined(HAVE_X86_64_ASM)
     __asm__("mulq %[b]\n"
             : "=d" (rhi), "=a" (rlo)
             : "1" (a), [b] "rm" (b)
@@ -238,7 +238,7 @@ static FORCE_INLINE void mult64_128_nocarry(uint64_t& rlo, uint64_t& rhi, uint64
 
 // 128-bit addition special case [rhi:rlo += 0:addlo]
 static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo) {
-#if defined(NEW_HAVE_X64_ASM)
+#if defined(HAVE_X86_64_ASM)
     __asm__("addq %2, %0\n"
             "adcq $0, %1\n"
 #if defined(DEBUG)
@@ -266,7 +266,7 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo) {
 
 // 128-bit addition [rhi:rlo += addhi:addlo]
 static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo, uint64_t addhi) {
-#if defined(NEW_HAVE_X64_ASM)
+#if defined(HAVE_X86_64_ASM)
     __asm__("addq %2, %0\n"
             "adcq %3, %1\n"
 #if defined(DEBUG)
@@ -301,7 +301,7 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo, ui
 
 // 192-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
 static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uint64_t& addlo, uint64_t& addmi, uint64_t& addhi) {
-#if defined(NEW_HAVE_X64_ASM)
+#if defined(HAVE_X86_64_ASM)
     __asm__("addq %3, %0\n"
             "adcq %4, %1\n"
             "adcq %5, %2\n"
@@ -333,7 +333,7 @@ static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uin
 
 // 128-bit fused multiply addition [rhi:rlo += a * b]
 static FORCE_INLINE void fma64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
-#if defined(NEW_HAVE_X64_ASM)
+#if defined(HAVE_X86_64_ASM)
     /*
      * Dummy variable to tell the compiler that the register rax is
      * input and clobbered but not actually output; see assembler code
@@ -368,7 +368,7 @@ static FORCE_INLINE void fma64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uin
 
 // 192-bit fused multiply addition [rhi:rmi:rlo += a * b]
 static FORCE_INLINE void fma64_192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uint64_t a, uint64_t b) {
-#if defined(NEW_HAVE_X64_ASM)
+#if defined(HAVE_X86_64_ASM)
     /*
      * Dummy variable to tell the compiler that the register rax is
      * input and clobbered but not actually output; see assembler code

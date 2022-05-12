@@ -34,12 +34,12 @@
 
 #include "Intrinsics.h"
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 #  include "AES-aesni.h"
-#elif defined(NEW_HAVE_AES_ARM)
+#elif defined(HAVE_ARM_AES)
 #  include "AES-arm.h"
 #  include "AES-portable.h" // ARM doesn't have any AES keygen intrinsics
-#elif defined(NEW_HAVE_AES_PPC)
+#elif defined(HAVE_PPC_AES)
 #  include "AES-ppc.h"
 #  include "AES-portable.h" // PPC doesn't really have any AES keygen intrinsics
 #else
@@ -54,9 +54,9 @@ static inline void _bswap_subkeys(uint32_t rk[], int subkeys) {
 
 static int AES_KeySetup_Enc(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey[], int keyBits) {
     // STATIC_ASSERT(keyBits == 128);
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
     return AES_KeySetup_Enc_AESNI(rk, cipherKey, keyBits);
-#elif defined(NEW_HAVE_AES_ARM)
+#elif defined(HAVE_ARM_AES)
     int Nr = AES_KeySetup_Enc_portable(rk, cipherKey, keyBits);
     if (isLE()) {
         _bswap_subkeys(rk, 4*(Nr+1));
@@ -69,9 +69,9 @@ static int AES_KeySetup_Enc(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey
 
 static int AES_KeySetup_Dec(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey[], int keyBits) {
     // STATIC_ASSERT(keyBits == 128);
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
     return AES_KeySetup_Dec_AESNI(rk, cipherKey, keyBits);
-#elif defined(NEW_HAVE_AES_ARM)
+#elif defined(HAVE_ARM_AES)
     int Nr = AES_KeySetup_Dec_portable(rk, cipherKey, keyBits);
     if (isLE()) {
         _bswap_subkeys(rk, 4*(Nr+1));
@@ -84,11 +84,11 @@ static int AES_KeySetup_Dec(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey
 
 template < int Nr >
 static void AES_Encrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t pt[16], uint8_t ct[16]) {
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
     AES_Encrypt_AESNI<Nr>(rk, pt, ct);
-#elif defined(NEW_HAVE_AES_ARM)
+#elif defined(HAVE_ARM_AES)
     AES_Encrypt_ARM<Nr>(rk, pt, ct);
-#elif defined(NEW_HAVE_AES_PPC)
+#elif defined(HAVE_PPC_AES)
     AES_Encrypt_PPC<Nr>(rk, pt, ct);
 #else
     AES_Encrypt_portable<Nr>(rk, pt, ct);
@@ -97,11 +97,11 @@ static void AES_Encrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t pt[16],
 
 template < int Nr >
 static void AES_Decrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t ct[16], uint8_t pt[16]) {
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
     AES_Decrypt_AESNI<Nr>(rk, pt, ct);
-#elif defined(NEW_HAVE_AES_ARM)
+#elif defined(HAVE_ARM_AES)
     AES_Decrypt_ARM<Nr>(rk, pt, ct);
-#elif defined(NEW_HAVE_AES_PPC)
+#elif defined(HAVE_PPC_AES)
     AES_Decrypt_PPC<Nr>(rk, pt, ct);
 #else
     AES_Decrypt_portable<Nr>(rk, pt, ct);
@@ -109,11 +109,11 @@ static void AES_Decrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t ct[16],
 }
 
 static void AES_EncryptRound(const uint32_t rk[4], uint8_t block[16]) {
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
     AES_EncryptRound_AESNI(rk, block);
-#elif defined(NEW_HAVE_AES_ARM)
+#elif defined(HAVE_ARM_AES)
     AES_EncryptRound_ARM(rk, block);
-#elif defined(NEW_HAVE_AES_PPC)
+#elif defined(HAVE_PPC_AES)
     AES_EncryptRound_PPC(rk, block);
 #else
     AES_EncryptRound_portable(rk, block);
@@ -121,11 +121,11 @@ static void AES_EncryptRound(const uint32_t rk[4], uint8_t block[16]) {
 }
 
 static void AES_DecryptRound(const uint32_t rk[4], uint8_t block[16]) {
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
     AES_DecryptRound_AESNI(rk, block);
-#elif defined(NEW_HAVE_AES_ARM)
+#elif defined(HAVE_ARM_AES)
     AES_DecryptRound_ARM(rk, block);
-#elif defined(NEW_HAVE_AES_PPC)
+#elif defined(HAVE_PPC_AES)
     AES_DecryptRound_PPC(rk, block);
 #else
     AES_DecryptRound_portable(rk, block);

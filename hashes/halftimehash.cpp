@@ -81,7 +81,7 @@ namespace {
         static uint64_t LoadOne(uint64_t entropy) { return entropy; }
     };
 
-#if defined(NEW_HAVE_ARM_NEON)
+#if defined(HAVE_ARM_NEON)
     using u128 = uint64x2_t;
 
     inline u128 LeftShift(u128 a, int i) { return vshlq_s64(a, vdupq_n_s64(i)); }
@@ -125,7 +125,7 @@ namespace {
         static u128 LoadOne(uint64_t entropy) { return vdupq_n_s64(entropy); }
     };
 
-#elif defined(NEW_HAVE_SSE_2)
+#elif defined(HAVE_SSE_2)
     using u128 = __m128i;
 
     inline u128 LeftShift(u128 a, int i) { return _mm_slli_epi64(a, i); }
@@ -164,7 +164,7 @@ namespace {
     };
 #endif
 
-#if defined(NEW_HAVE_AVX2)
+#if defined(HAVE_AVX2)
     using u256 = __m256i;
 
     inline u256 Plus(u256 a, u256 b) { return _mm256_add_epi64(a, b); }
@@ -210,7 +210,7 @@ namespace {
     };
 #endif
 
-#if defined(NEW_HAVE_AVX512_F)
+#if defined(HAVE_AVX512_F)
     using u512 = __m512i;
 
     inline u512 Plus(u512 a, u512 b) { return _mm512_add_epi64(a, b); }
@@ -251,7 +251,7 @@ namespace {
         return Plus(summand, Times(factor1, factor2));
     }
 
-#if defined(NEW_HAVE_ARM_NEON)
+#if defined(HAVE_ARM_NEON)
     template <>
     u128 MultiplyAdd(const u128 & summand, const u128 & factor1, const u128 & factor2) {
         return vmlal_u32(summand, vmovn_u64(factor1), vmovn_u64(factor2));
@@ -1039,7 +1039,7 @@ inline void V1Scalar(const uint64_t* entropy, const uint8_t* uint8_t_input, size
       entropy, uint8_t_input, length, output);
 }
 
-#if defined(NEW_HAVE_ARM_NEON)
+#if defined(HAVE_ARM_NEON)
 template <unsigned dimension, unsigned in_width, unsigned encoded_dimension,
           unsigned out_width, bool bswap>
 inline void V2Neon(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
@@ -1063,8 +1063,8 @@ inline void V4Neon(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t
   return Hash<RepeatWrapper<BlockWrapper128<bswap>, 4>, dimension, in_width, encoded_dimension,
               out_width>(entropy, uint8_t_input, length, output);
 }
-#else // NEW_HAVE_ARM_NEON
-#if defined(NEW_HAVE_SSE_2)
+#else // HAVE_ARM_NEON
+#if defined(HAVE_SSE_2)
 template <unsigned dimension, unsigned in_width, unsigned encoded_dimension,
           unsigned out_width, bool bswap>
 inline void V2Sse2(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
@@ -1090,7 +1090,7 @@ inline void V4Sse2(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t
 }
 #endif
 
-#if defined(NEW_HAVE_AVX2)
+#if defined(HAVE_AVX2)
 template <unsigned dimension, unsigned in_width, unsigned encoded_dimension,
           unsigned out_width, bool bswap>
 inline void V3Avx2(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
@@ -1108,7 +1108,7 @@ inline void V4Avx2(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t
 }
 #endif
 
-#if defined(NEW_HAVE_AVX512_F)
+#if defined(HAVE_AVX512_F)
 template <unsigned dimension, unsigned in_width, unsigned encoded_dimension,
           unsigned out_width, bool bswap>
 inline void V4Avx512(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
@@ -1118,7 +1118,7 @@ inline void V4Avx512(const uint64_t* entropy, const uint8_t* uint8_t_input, size
 }
 #endif
 
-#endif // NEW_HAVE_ARM_NEON
+#endif // HAVE_ARM_NEON
 
 template <unsigned out_width, bool bswap>
 static inline void V4(const uint64_t* entropy, const uint8_t* uint8_t_input, size_t length,
@@ -1157,28 +1157,28 @@ static inline void V1(const uint64_t* entropy, const uint8_t* uint8_t_input, siz
 
 // XXX Assumes (e.g.) AVX512F implies having AVX2 and SSE2
 
-#if defined(NEW_HAVE_ARM_NEON)
+#if defined(HAVE_ARM_NEON)
 
 SPECIALIZE_4(4, Neon)
 SPECIALIZE_4(3, Neon)
 SPECIALIZE_4(2, Neon)
 SPECIALIZE_4(1, Scalar)
 
-#elif defined(NEW_HAVE_AVX512_F)
+#elif defined(HAVE_AVX512_F)
 
 SPECIALIZE_4(4, Avx512)
 SPECIALIZE_4(3, Avx2)
 SPECIALIZE_4(2, Sse2)
 SPECIALIZE_4(1, Scalar)
 
-#elif defined(NEW_HAVE_AVX2)
+#elif defined(HAVE_AVX2)
 
 SPECIALIZE_4(4, Avx2)
 SPECIALIZE_4(3, Avx2)
 SPECIALIZE_4(2, Sse2)
 SPECIALIZE_4(1, Scalar)
 
-#elif defined(NEW_HAVE_SSE_2)
+#elif defined(HAVE_SSE_2)
 
 SPECIALIZE_4(4, Sse2)
 SPECIALIZE_4(3, Sse2)

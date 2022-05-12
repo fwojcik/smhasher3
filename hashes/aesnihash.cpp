@@ -35,7 +35,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 #include "Intrinsics.h"
 
 template < bool bswap >

@@ -58,7 +58,7 @@
 
 #include "Mathmult.h"
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 #include "Intrinsics.h"
 #endif
 
@@ -904,7 +904,7 @@ static uint64_t t1ha2_final(t1ha_context_t * RESTRICT ctx,
 
 //------------------------------------------------------------
 // T1HA0 (AES versions)
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 
 // versionA is t1ha0_ia32aes_avx1/t1ha0_ia32aes_noavx, which appear to
 // be identical. versionB is t1ha0_ia32aes_avx2, which does not appear
@@ -1016,7 +1016,7 @@ static uint64_t t1ha0_aes_impl(const void *data, size_t len, uint64_t seed) {
 
     x = _mm_add_epi64(_mm_aesdec_si128(x, _mm_aesenc_si128(y, x)), y);
 #if defined(HAVE_32BIT_PLATFORM)
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
     a = (uint32_t)_mm_extract_epi32(x, 0) |
         (uint64_t)_mm_extract_epi32(x, 1) << 32;
     b = (uint32_t)_mm_extract_epi32(x, 2) |
@@ -1030,14 +1030,14 @@ static uint64_t t1ha0_aes_impl(const void *data, size_t len, uint64_t seed) {
 #endif
     _mm_empty();
 #else /* HAVE_32BIT_PLATFORM */
-#if defined(NEW_HAVE_SSE_4_1)
+#if defined(HAVE_SSE_4_1)
     a = _mm_extract_epi64(x, 0);
     b = _mm_extract_epi64(x, 1);
 #else
     a = _mm_cvtsi128_si64(x);
     b = _mm_cvtsi128_si64(_mm_unpackhi_epi64(x, x));
 #endif
-#if defined(NEW_HAVE_AVX)
+#if defined(HAVE_AVX)
     _mm256_zeroall();
 #endif
 #endif
@@ -1181,7 +1181,7 @@ static void t1ha2_incr(const void * in, const size_t len, const seed_t seed, voi
     }
 }
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 template < bool bswap >
 static void t1ha0_aesA(const void * in, const size_t len, const seed_t seed, void * out) {
     uint64_t hash;
@@ -1391,7 +1391,7 @@ static const uint64_t t1ha_refval_2stream128[81] = { UINT64_C(0xCD2801D3B92237D6
   UINT64_C(0x9405FC61440DE25D), UINT64_C(0x35EB280A157979B6), UINT64_C(0x48D40D6A525297AC), UINT64_C(0x6A87DC185054BADA)
 };
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 static const uint64_t t1ha_refval_ia32aes_a[81] = { 0,
   UINT64_C(0x772C7311BE32FF42), UINT64_C(0xB231AC660E5B23B5), UINT64_C(0x71F6DF5DA3B4F532), UINT64_C(0x555859635365F660),
   UINT64_C(0xE98808F1CD39C626), UINT64_C(0x2EB18FAF2163BB09), UINT64_C(0x7B9DD892C8019C87), UINT64_C(0xE2B1431C4DA4D15A),
@@ -1574,7 +1574,7 @@ static bool t1ha2_incr_selftest(void) {
     return !failed;
 }
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 static bool t1ha0_aes_selftest(void) {
     bool failed = false;
 
@@ -1707,7 +1707,7 @@ REGISTER_HASH(t1ha2_incr_128,
   $.initfn = t1ha2_incr_selftest
 );
 
-#if defined(NEW_HAVE_AES_X86_64)
+#if defined(HAVE_X86_64_AES)
 REGISTER_HASH(t1ha0_aesA,
   $.desc = "Fast Positive Hash #0a (AES-NI)",
   $.hash_flags =

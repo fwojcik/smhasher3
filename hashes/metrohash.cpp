@@ -26,7 +26,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+#if defined(HAVE_X86_64_CRC32C)
 #include "Intrinsics.h"
 #else
 uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v);
@@ -341,7 +341,7 @@ REGISTER_HASH(metrohash2_64,
   $.badseeds = {}
 );
 
-#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+#if defined(HAVE_X86_64_CRC32C)
 
 REGISTER_HASH(metrohashcrc1_64,
   $.desc = "Metrohash-crc v1 variant 1, 64-bit version (unofficial)",
@@ -430,7 +430,7 @@ REGISTER_HASH(metrohash2_128,
   $.badseeds = {}
 );
 
-#if defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
+#if defined(HAVE_X86_64_CRC32C)
 
 REGISTER_HASH(metrohashcrc1_128,
   $.desc = "Metrohash-crc v1 variant 1, 128-bit version",

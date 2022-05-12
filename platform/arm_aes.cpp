@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <arm_neon.h>
 
-#if defined(NEW_HAVE_ARM_ACLE)
+#if defined(HAVE_ARM_ACLE)
 #include <arm_acle.h>
 #endif
 

@@ -80,15 +80,11 @@ extern uint32_t g_resultVCode;
 
 //-----------------------------------------------------------------------------
 // HW CRC32c wrappers/accessors
-#if defined(NEW_HAVE_ARM_ACLE)
+#if defined(HAVE_ARM_ACLE)
 #  include "Intrinsics.h"
 #  define HWCRC_U64 __crc32cd
 #  define HWCRC_U8  __crc32cb
-#elif defined(NEW_HAVE_CRC32C_X86_64) && !defined(HAVE_BROKEN_MSVC_CRC32C_HW)
-#  include "Intrinsics.h"
-#  define HWCRC_U64 _mm_crc32_u64
-#  define HWCRC_U8  _mm_crc32_u8
-#elif defined(NEW_HAVE_ARM64_ASM)
+#elif defined(HAVE_ARM64_ASM)
 static inline uint32_t _hwcrc_asm64(uint32_t crc, uint64_t data) {
     __asm__ __volatile__("crc32cx %w[c], %w[c], %x[v]\n"
             : [c] "+r"(crc)
@@ -103,7 +99,11 @@ static inline uint32_t _hwcrc_asm8(uint32_t crc, uint8_t data) {
 }
 #  define HWCRC_U64 _hwcrc_asm64
 #  define HWCRC_U8  _hwcrc_asm8
-#elif defined(NEW_HAVE_X64_ASM)
+#elif defined(HAVE_X86_64_CRC32C)
+#  include "Intrinsics.h"
+#  define HWCRC_U64 _mm_crc32_u64
+#  define HWCRC_U8  _mm_crc32_u8
+#elif defined(HAVE_X86_64_ASM)
 static inline uint32_t _hwcrc_asm64(uint64_t crc, uint64_t data) {
     __asm__ __volatile__("crc32q %1, %0\n"
             : "+r"(crc)

@@ -54,8 +54,8 @@
 //
 // We also use it to prevent unwanted constant folding for AArch64 in
 // XXH3_initCustomSecret_scalar().
-#if defined(NEW_HAVE_X64_ASM) || defined(NEW_HAVE_ARM_ASM) || \
-    defined(NEW_HAVE_ARM64_ASM) || defined(NEW_HAVE_PPC_ASM)
+#if defined(HAVE_X86_64_ASM) || defined(HAVE_ARM_ASM) || \
+    defined(HAVE_ARM64_ASM) || defined(HAVE_PPC_ASM)
 #define XXH_COMPILER_GUARD(var) __asm__ __volatile__("" : "+r" (var))
 #else
 #define XXH_COMPILER_GUARD(var) ((void)var)
@@ -390,7 +390,7 @@ alignas(64) static const uint8_t XXH3_kSecret[XXH3_SECRET_DEFAULT_SIZE] = {
 // fwojcik: This is NOT true on my Ryzen 2 chip with gcc 9.3. Enabling
 // this actually makes xxh3-64 go from 15.5 bytes/cycle down to 7.1!!!
 // It's over twice as fast without this!
-#if 0 && defined(NEW_HAVE_AVX2)
+#if 0 && defined(HAVE_AVX2)
 /*
  * UGLY HACK:
  * GCC usually generates the best code with -O3 for xxHash.
@@ -1069,8 +1069,8 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar(void * RESTRICT customSecr
 #  define XXH_HAS_BUILTIN(x) 0
 #endif
 
-#if !defined(FORCE_SCALAR) && defined(NEW_HAVE_PPC_VSX) &&              \
-    !defined(NEW_HAVE_PPC_ASM) && !defined(__s390x__) &&                \
+#if !defined(FORCE_SCALAR) && defined(HAVE_PPC_VSX) &&              \
+    !defined(HAVE_PPC_ASM) && !defined(__s390x__) &&                \
     !(defined(__clang__) && XXH_HAS_BUILTIN(__builtin_altivec_vmuleuw))
 #warning "PPC mulo/mule compiler support not found; falling back to scalar code"
 #define FORCE_SCALAR
@@ -1080,31 +1080,31 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar(void * RESTRICT customSecr
 #define XXH_VECTOR    XXH_SCALAR
 #define XXH_ACC_ALIGN 8
 #define XXH_SEC_ALIGN 8
-#elif defined(NEW_HAVE_ARM_NEON)
+#elif defined(HAVE_ARM_NEON)
 #define XXH_VECTOR    XXH_NEON
 #define XXH_ACC_ALIGN 16
 #define XXH_SEC_ALIGN 8
 #include "Intrinsics.h"
 #include "xxhash/xxh3-arm.h"
-#elif defined(NEW_HAVE_PPC_VSX)
+#elif defined(HAVE_PPC_VSX)
 #define XXH_VECTOR    XXH_VSX
 #define XXH_ACC_ALIGN 16
 #define XXH_SEC_ALIGN 8
 #include "Intrinsics.h"
 #include "xxhash/xxh3-ppc.h"
-#elif defined(NEW_HAVE_AVX512_F)
+#elif defined(HAVE_AVX512_F)
 #define XXH_VECTOR    XXH_AVX512
 #define XXH_ACC_ALIGN 64
 #define XXH_SEC_ALIGN 64
 #include "Intrinsics.h"
 #include "xxhash/xxh3-avx512.h"
-#elif defined(NEW_HAVE_AVX2)
+#elif defined(HAVE_AVX2)
 #define XXH_VECTOR    XXH_AVX2
 #define XXH_ACC_ALIGN 32
 #define XXH_SEC_ALIGN 32
 #include "Intrinsics.h"
 #include "xxhash/xxh3-avx2.h"
-#elif defined(NEW_HAVE_SSE_2)
+#elif defined(HAVE_SSE_2)
 #define XXH_VECTOR    XXH_SSE2
 #define XXH_ACC_ALIGN 16
 #define XXH_SEC_ALIGN 16

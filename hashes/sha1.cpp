@@ -39,7 +39,7 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#if defined(NEW_HAVE_SHA1_X86_64) || defined(NEW_HAVE_SHA1_ARM)
+#if defined(HAVE_X86_64_SHA1) || defined(HAVE_ARM_SHA1)
 #include "Intrinsics.h"
 #endif
 
@@ -198,7 +198,7 @@ static void SHA1_Transform_portable(uint32_t state[5], const uint8_t buffer[64])
   state[4] += e;
 }
 
-#if defined(NEW_HAVE_SHA1_X86_64)
+#if defined(HAVE_X86_64_SHA1)
 template < bool bswap >
 static void SHA1_Transform_sha1NI(uint32_t state[5], const uint8_t buffer[64]) {
     __m128i ABCD, ABCD_SAVE, E0, E0_SAVE, E1;
@@ -383,7 +383,7 @@ static void SHA1_Transform_sha1NI(uint32_t state[5], const uint8_t buffer[64]) {
 }
 #endif
 
-#if defined(NEW_HAVE_SHA1_ARM)
+#if defined(HAVE_ARM_SHA1)
 template < bool bswap >
 static void SHA1_Transform_neon(uint32_t state[5], const uint8_t buffer[64]) {
     uint32x4_t ABCD, ABCD_SAVED;
@@ -560,10 +560,10 @@ static void SHA1_Transform_neon(uint32_t state[5], const uint8_t buffer[64]) {
 
 template < bool bswap >
 static void SHA1_Transform(uint32_t state[5], const uint8_t buffer[64]) {
-#if defined(NEW_HAVE_SHA1_X86_64)
+#if defined(HAVE_X86_64_SHA1)
     return SHA1_Transform_sha1NI<bswap>(state, buffer);
 #endif
-#if defined(NEW_HAVE_SHA1_ARM)
+#if defined(HAVE_ARM_SHA1)
     return SHA1_Transform_neon<bswap>(state, buffer);
 #endif
     return SHA1_Transform_portable<bswap>(state, buffer);
