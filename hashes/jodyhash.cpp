@@ -90,7 +90,11 @@ static T jody_block_hash(const uint8_t * RESTRICT data, const size_t count, cons
         partial_salt = JODY_HASH_CONSTANT & tail_mask[len];
         element = (sizeof(T) == 4) ?
             GET_U32<bswap>(data, 0) : GET_U64<bswap>(data, 0) ;
-        element &= tail_mask[len];
+        if (isLE() ^ bswap) {
+            element &= tail_mask[len];
+        } else {
+            element >>= (sizeof(T) - len) * 8;
+        }
         hash += element;
         hash += partial_salt;
         hash = (hash << JODY_HASH_SHIFT) | hash >> (sizeof(T) * 8 - JODY_HASH_SHIFT);
@@ -133,7 +137,7 @@ REGISTER_HASH(jodyhash_32,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0xFB47D60D,
-  $.verification_BE = 0x0D890FF8,
+  $.verification_BE = 0xB94C9789,
   $.hashfn_native = jodyhash32<false>,
   $.hashfn_bswap = jodyhash32<true>
 );
@@ -150,7 +154,7 @@ REGISTER_HASH(jodyhash_64,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x9F09E57F,
-  $.verification_BE = 0xD7CE749A,
+  $.verification_BE = 0xF9CDDA2C,
   $.hashfn_native = jodyhash64<false>,
   $.hashfn_bswap = jodyhash64<true>
 );

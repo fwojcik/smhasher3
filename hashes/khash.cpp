@@ -98,9 +98,15 @@ static void khash32(const void * in, const size_t len, const seed_t seed, void *
         hash ^= khash32_fn(GET_U32<bswap>(dw, 0), seed, K);
         dw += 4;
     }
-    if (len & 3) {
-        // the unsafe variant with overflow. see FNV2 for a safe byte-stepper.
-        hash ^= khash32_fn(GET_U32<bswap>(dw, 0), seed, UINT32_C(0xf3bcc908));
+    const size_t flen = len & 3;
+    if (flen) {
+        uint32_t last;
+        if (isLE() ^ bswap) {
+            last = GET_U32<bswap>(dw, 0) & ((1 << (flen * 8)) - 1);
+        } else {
+            last = GET_U32<bswap>(dw, 0) >> (32 - (flen * 8));
+        }
+        hash ^= khash32_fn(last, seed, K);
     }
     PUT_U32<bswap>(hash, (uint8_t *)out, 0);
 }
@@ -116,9 +122,15 @@ static void khash64(const void * in, const size_t len, const seed_t seed, void *
         hash ^= khash64_fn(GET_U64<bswap>(dw, 0), seed64);
         dw += 8;
     }
-    if (len & 7) {
-        // the unsafe variant with overflow. see FNV2 for a safe byte-stepper.
-        hash ^= khash32_fn(GET_U32<bswap>(dw, 0), seed, UINT32_C(0xf3bcc908));
+    const size_t flen = len & 7;
+    if (flen) {
+        uint64_t last;
+        if (isLE() ^ bswap) {
+            last = GET_U64<bswap>(dw, 0) & ((UINT64_C(1) << (flen * 8)) - 1);
+        } else {
+            last = GET_U64<bswap>(dw, 0) >> (64 - (flen * 8));
+        }
+        hash ^= khash64_fn(last, seed64);
     }
     PUT_U64<bswap>(hash, (uint8_t *)out, 0);
 }
@@ -139,8 +151,8 @@ REGISTER_HASH(khash32,
         FLAG_IMPL_ROTATE        |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
-  $.verification_LE = 0x99B3FFCD,
-  $.verification_BE = 0x065E87FB,
+  $.verification_LE = 0xA17DA29E,
+  $.verification_BE = 0x59073F57,
   $.hashfn_native = khash32<false>,
   $.hashfn_bswap = khash32<true>
 );
@@ -155,8 +167,8 @@ REGISTER_HASH(khash64,
         FLAG_IMPL_ROTATE        |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
-  $.verification_LE = 0xAB5518A1,
-  $.verification_BE = 0xEA6D509F,
+  $.verification_LE = 0x44BD88C4,
+  $.verification_BE = 0xCF3003D1,
   $.hashfn_native = khash64<false>,
   $.hashfn_bswap = khash64<true>
 );

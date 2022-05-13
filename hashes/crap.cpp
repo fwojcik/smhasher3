@@ -62,7 +62,7 @@ static uint32_t Crap8_impl(const uint8_t * key, size_t len, uint32_t seed) {
         if (isLE() ^ bswap) {
             c8mix(GET_U32<bswap>(key, 0) & ((1 << (len * 8)) - 1));
         } else {
-            c8mix(GET_U32<bswap>(key, 0) >> (len * 8));
+            c8mix(GET_U32<bswap>(key, 0) >> (32 -(len * 8)));
         }
     }
     c8fold(h ^ k, n, k, k);
@@ -98,7 +98,7 @@ static uint32_t CrapWow_impl(const uint8_t * key, size_t len, uint32_t seed) {
         if (isLE() ^ bswap) {
             cwmixa(GET_U32<bswap>(key, 0) & ((1 << (len * 8)) - 1));
         } else {
-            cwmixa(GET_U32<bswap>(key, 0) >> (len * 8));
+            cwmixa(GET_U32<bswap>(key, 0) >> (32 - (len * 8)));
         }
     }
 
@@ -136,7 +136,7 @@ static uint64_t CrapWow64_impl(const uint8_t * key, size_t len, uint64_t seed) {
         if (isLE() ^ bswap) {
             cwmixa(GET_U64<bswap>(key, 0) & ((UINT64_C(1) << (len * 8)) - 1));
         } else {
-            cwmixa(GET_U64<bswap>(key, 0) >> (len * 8));
+            cwmixa(GET_U64<bswap>(key, 0) >> (64 - (len * 8)));
         }
     }
 
@@ -181,7 +181,7 @@ REGISTER_HASH(Crap8,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x743E97A1,
-  $.verification_BE = 0x654BEC11,
+  $.verification_BE = 0xDFE06AD9,
   $.hashfn_native = Crap8<false>,
   $.hashfn_bswap = Crap8<true>
 );
@@ -196,7 +196,7 @@ REGISTER_HASH(CrapWow_32,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x49ECB015,
-  $.verification_BE = 0x48D6A4ED,
+  $.verification_BE = 0x4EF994DF,
   $.hashfn_native = CrapWow<false>,
   $.hashfn_bswap = CrapWow<true>
 );
@@ -211,7 +211,7 @@ REGISTER_HASH(CrapWow_64,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x669D3A9B,
-  $.verification_BE = 0xDF06EEC4,
+  $.verification_BE = 0xCBB7690C,
   $.hashfn_native = CrapWow64<false>,
   $.hashfn_bswap = CrapWow64<true>
 );

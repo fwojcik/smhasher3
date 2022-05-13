@@ -157,9 +157,14 @@ static void FNV_YoshimitsuTRIAD(const void * in, const size_t olen, const seed_t
     memcpy(out, &hash32A, 4);
 }
 
+template < bool keeplsb >
 static FORCE_INLINE uint64_t _PADr_KAZE(uint64_t x, int n) {
     if (n >= 64) return 0;
-    return (x << n) >> n;
+    if (keeplsb) {
+        return (x << n) >> n;
+    } else {
+        return (x >> n);
+    }
 }
 
 template < bool bswap >
@@ -177,7 +182,11 @@ static void FNV_Totenschiff(const void * in, const size_t olen, const seed_t see
     }
 
     // Here len is 1..8. when (8-8) the QWORD remains intact
-    PADDEDby8 = _PADr_KAZE(GET_U64<bswap>(p, 0), (8 - len) << 3);
+    if (isLE() ^ bswap) {
+        PADDEDby8 = _PADr_KAZE<true>(GET_U64<bswap>(p, 0), (8 - len) << 3);
+    } else {
+        PADDEDby8 = _PADr_KAZE<false>(GET_U64<bswap>(p, 0), (8 - len) << 3);
+    }
     hash64 = (hash64 ^ PADDEDby8) * PRIME;
 
     hash32 = (uint32_t)(hash64 ^ (hash64 >> 32));
@@ -213,8 +222,13 @@ static void FNV_Pippip_Yurii(const void * in, const size_t len, const seed_t see
             hash64 = (hash64 ^ (GET_U64<bswap>(str, NDhead))) * PRIME;
         }
     } else {
-        hash64 = (hash64 ^ _PADr_KAZE(GET_U64<bswap>(str, 0), (8 - len) << 3)) *
-            PRIME;
+        if (isLE() ^ bswap) {
+            hash64 = (hash64 ^ _PADr_KAZE<true>(GET_U64<bswap>(str, 0), (8 - len) << 3)) *
+                PRIME;
+        } else {
+            hash64 = (hash64 ^ _PADr_KAZE<false>(GET_U64<bswap>(str, 0), (8 - len) << 3)) *
+                PRIME;
+        }
     }
     hash32 = (uint32_t)(hash64 ^ (hash64 >> 32));
     hash32 = hash32 ^ (hash32 >> 16);
@@ -222,8 +236,6 @@ static void FNV_Pippip_Yurii(const void * in, const size_t len, const seed_t see
     hash32 = COND_BSWAP(hash32, bswap);
     memcpy(out, &hash32, 4);
 } // Last update: 2019-Oct-30, 14 C lines strong, Kaze.
-
-#undef _PADr_KAZE
 
 // Also https://www.codeproject.com/articles/716530/fastest-hash-function-for-table-lookups-in-c
 REGISTER_FAMILY(fnv,
@@ -352,7 +364,7 @@ REGISTER_HASH(fnvTS_32,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x95D95ACF,
-  $.verification_BE = 0xE64B5649,
+  $.verification_BE = 0xC16E2C8F,
   $.hashfn_native = FNV_Totenschiff<false>,
   $.hashfn_bswap = FNV_Totenschiff<true>,
   $.badseeds = {0x811c9dc5}
@@ -369,7 +381,7 @@ REGISTER_HASH(fnvPY_32,
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0xE79AE3E4,
-  $.verification_BE = 0x777764BD,
+  $.verification_BE = 0x90C8C706,
   $.hashfn_native = FNV_Pippip_Yurii<false>,
   $.hashfn_bswap = FNV_Pippip_Yurii<true>,
   $.badseeds = {0x811c9dc5}
