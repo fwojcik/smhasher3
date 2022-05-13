@@ -260,7 +260,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
 
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     const int hashbytes = hinfo->bits / 8;
-    const int reps = 1;
+    const int reps = 5;
     const int keymax = 128;
     const int pad = 16; // Max alignment offset tested
     const int buflen = keymax + pad*3;
@@ -270,71 +270,93 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
     uint8_t * buffer2 = new uint8_t[buflen];
     uint8_t * hash1 = new uint8_t[hashbytes];
     uint8_t * hash2 = new uint8_t[hashbytes];
+    uint8_t * hash3 = new uint8_t[hashbytes];
 
     maybeprintf("Running sanity check 2       ");
 
     for (int irep = 0; irep < reps; irep++) {
 
-        for(int len = 4; len <= keymax; len++) {
-            if (verbose) { progressdots(len + irep*keymax, 4, keymax + irep*keymax, 10); }
+        for(int len = 1; len <= keymax; len++) {
+            ExtBlob key1(&buffer1[pad],    len);
 
-            for(int offset = pad; offset < pad*2; offset++) {
-                // Fill the two buffers with different random data
-                r.rand_p(buffer1, buflen);
-                r.rand_p(buffer2, buflen);
+            // Fill the first buffer with random data
+            r.rand_p(buffer1, buflen);
 
-                // Make 2 keys pointing to the same data with
-                // different alignments. The rest of buffer2 is still
-                // random data that differs from buffer1, including
-                // data before the keys.
-                ExtBlob key1(&buffer1[pad],    len);
-                ExtBlob key2(&buffer2[offset], len);
-                memcpy(key2, key1, len);
+            if (verbose) { progressdots(len + irep*keymax, 1, reps*keymax, 10); }
+            // Record the hash of key1. hash1 becomes the correct
+            // answer that the rest of the loop will test against.
+            hash(key1, len, seed, hash1);
+            addVCodeOutput(hash1, hashbytes);
 
-                hash(key1, len, seed, hash1);
-                addVCodeOutput(hash1, hashbytes);
+            // See if the hash behaves sanely using only key1
+            for(int bit = 0; bit < (len * 8); bit++) {
+                // Flip a bit, hash the key -> we should get a different result.
+                key1.flipbit(bit);
+                hash(key1, len, seed, hash2);
+                addVCodeOutput(hash2, hashbytes);
 
-                for(int bit = 0; bit < (len * 8); bit++) {
-                    // Flip a bit, hash the key -> we should get a different result.
-                    key2.flipbit(bit);
-                    hash(key2, len, seed, hash2);
-                    addVCodeOutput(hash2, hashbytes);
-
-                    if (unlikely(memcmp(hash1, hash2, hashbytes) == 0)) {
-                        maybeprintf(" flipped bit %d, got identical output:", bit);
-                        result = false;
-                        goto end_sanity;
-                    }
-
-                    // Flip it back, hash again -> we should get the original result.
-                    key2.flipbit(bit);
-                    hash(key2, len, seed, hash2);
-
-                    if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
-                        result = false;
-                        goto end_sanity;
-                    }
+                if (unlikely(memcmp(hash1, hash2, hashbytes) == 0)) {
+                    maybeprintf(" flipped bit %d, got identical output:", bit);
+                    result = false;
+                    goto end_sanity;
                 }
 
-                // Try altering bytes in buffer2 that aren't key bytes
-                // and making sure the hash doesn't change, to try to
-                // catch hashes that depend on out-of-bounds key bytes.
+                // Flip it back, hash again -> we should get the original result.
+                key1.flipbit(bit);
+                hash(key1, len, seed, hash2);
+
+                if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
+                    result = false;
+                    goto end_sanity;
+                }
+            }
+
+            for(int offset = pad; offset < pad*2; offset++) {
+                // Make key2 have alignment independent of key1
+                ExtBlob key2(&buffer2[offset], len);
+
+                // Fill the second buffer with different random data
+                r.rand_p(buffer2, buflen);
+
+                // Make key2 have the same data as key1. The rest of
+                // buffer2 is still random data that differs from
+                // buffer1, including data before the keys.
+                memcpy(key2, key1, len);
+
+                // Now see if key2's hash matches
+                hash(key2, len, seed, hash2);
+                addVCodeOutput(hash2, hashbytes);
+
+                // If it doesn't, then try seeing why.
+                //
+                // Make buffer2 an offset-copy of buffer1. Then try
+                // altering bytes in buffer2 that aren't key bytes and
+                // making sure the hash doesn't change, to try to
+                // catch hashes that depend on out-of-bounds key
+                // bytes.
                 //
                 // I don't know how to catch hashes that merely read
                 // out-of-bounds key bytes, but doing that isn't
                 // necessarily an error or even unsafe; see:
-                // https://stackoverflow.com/questions/37800739/is-it-safe-to-read-past-the-end-of-a-buffer-within-the-same-page-on-x86-and-x64
-                uint8_t * const key2_start = buffer2 + offset;
-                uint8_t * const key2_end   = buffer2 + offset + len;
-                for(uint8_t * ptr = key2_start - pad; ptr < key2_end + pad; ptr++) {
-                    if ((ptr >= key2_start) && (ptr < key2_end)) { continue; }
-                    *ptr ^= 0xFF;
-                    hash(key2, len, seed, hash2);
-                    if (memcmp(hash1, hash2, hashbytes) != 0) {
-                        maybeprintf(" changing non-key byte altered hash: ");
-                        result = false;
-                        goto end_sanity;
+                // https://stackoverflow.com/questions/37800739/
+                if (unlikely(memcmp(hash1, hash2, hashbytes) != 0)) {
+                    memcpy(buffer2 + offset - pad, buffer1, len + 2 * pad);
+                    uint8_t * const key2_start = buffer2 + offset;
+                    uint8_t * const key2_end   = buffer2 + offset + len;
+                    for(uint8_t * ptr = key2_start - pad; ptr < key2_end + pad; ptr++) {
+                        if ((ptr >= key2_start) && (ptr < key2_end)) { continue; }
+                        *ptr ^= 0xFF;
+                        hash(key2, len, seed, hash3);
+                        if (memcmp(hash2, hash3, hashbytes) != 0) {
+                            maybeprintf(" changing single non-key byte altered hash: ");
+                            result = false;
+                            goto end_sanity;
+                        }
                     }
+                    // Just in case the reason couldn't be pinpointed...
+                    maybeprintf(" changing some non-key byte altered hash: ");
+                    result = false;
+                    goto end_sanity;
                 }
             }
         }
