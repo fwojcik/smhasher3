@@ -52,14 +52,14 @@ uint32_t HashInfo::_ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::en
   memset(hashes,0,hashbytes*256);
   memset(total,0,hashbytes);
 
-  // Hash keys of the form {0}, {0,1}, {0,1,2}... up to N=255, using
+  // Hash keys of the form {}, {0}, {0,1}, {0,1,2}... up to N=255, using
   // 256-N as the seed
   for(int i = 0; i < 256; i++) {
     seed_t seed = 256 - i;
     seed = hinfo->Seed(seed, true, 1);
-    key[i] = (uint8_t)i;
     hash(key, i, seed, &hashes[i*hashbytes]);
     addVCodeInput(key, i);
+    key[i] = (uint8_t)i;
   }
 
   // Then hash the result array
