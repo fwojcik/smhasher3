@@ -93,14 +93,27 @@ static HashMapOrder defaultSort(HashMap & map) {
     std::sort(hashes.begin(), hashes.end(),
             [](const HashInfo * a, const HashInfo * b) {
                 int r;
-                if (a->isMock() != b->isMock())               return a->isMock();
+                // Mock hashes go before others
+                if (a->isMock() != b->isMock())
+                    return a->isMock();
+                // Mock hashes use sort_order over all other criteria
                 if (a->isMock() && (a->sort_order != b->sort_order))
-                                                              return (a->sort_order < b->sort_order);
-                if (a->isCrypto() != b->isCrypto())           return a->isCrypto();
-                if ((r = strcmp(a->family, b->family)) != 0)  return (r < 0);
-                if (a->bits != b->bits)                       return (a->bits < b->bits);
-                if (a->sort_order != b->sort_order)           return (a->sort_order < b->sort_order);
-                if ((r = strcmp(a->name, b->name)) != 0)      return (r < 0);
+                    return (a->sort_order < b->sort_order);
+                // Cryptographic hashes go before non-crypto
+                if (a->isCrypto() != b->isCrypto())
+                    return a->isCrypto();
+                // Then sort by family (case-insensitive)
+                if ((r = strcasecmp(a->family, b->family)) != 0)
+                    return (r < 0);
+                // Then by hash output size (smaller first)
+                if (a->bits != b->bits)
+                    return (a->bits < b->bits);
+                // Then by explicit sort_order
+                if (a->sort_order != b->sort_order)
+                    return (a->sort_order < b->sort_order);
+                // And finally by hash name (case-insensitive)
+                if ((r = strcasecmp(a->name, b->name)) != 0)
+                    return (r < 0);
                 return false;
             });
     return hashes;
