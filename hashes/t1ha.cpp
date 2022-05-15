@@ -1124,7 +1124,7 @@ static void t1ha1(const void * in, const size_t len, const seed_t seed, void * o
 
 template < enum t1ha_modes mode, bool xwidth >
 static void t1ha2(const void * in, const size_t len, const seed_t seed, void * out) {
-    alignas(alignof(max_align_t)) t1ha_state256_t state;
+    alignas(16) t1ha_state256_t state;
     uint64_t hash, xhash = 0;
     uint64_t length = (uint64_t)len;
     const bool use_unaligned =
@@ -1167,7 +1167,7 @@ static void t1ha2(const void * in, const size_t len, const seed_t seed, void * o
 // selftests to use published KAT tables.
 template < enum t1ha_modes mode, bool xwidth, bool selftest_seeding = false >
 static void t1ha2_incr(const void * in, const size_t len, const seed_t seed, void * out) {
-    alignas(alignof(max_align_t)) t1ha_context_t ctx;
+    alignas(16) t1ha_context_t ctx;
     uint64_t hash, xhash = 0;
     uint64_t length = (uint64_t)len;
 

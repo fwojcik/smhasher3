@@ -65,7 +65,7 @@
 #define NMH_PRIME32_4  UINT32_C(0x27D4EB2F)
 
 // Pseudorandom secret taken directly from FARSH
-alignas(alignof(max_align_t)) static const uint32_t NMH_ACC_INIT[32] = {
+alignas(16) static const uint32_t NMH_ACC_INIT[32] = {
     UINT32_C(0xB8FE6C39), UINT32_C(0x23A44BBE), UINT32_C(0x7C01812C), UINT32_C(0xF721AD1C),
     UINT32_C(0xDED46DE9), UINT32_C(0x839097DB), UINT32_C(0x7240A4A4), UINT32_C(0xB7B3671F),
     UINT32_C(0xCB79E64E), UINT32_C(0xCCC0E578), UINT32_C(0x825AD07D), UINT32_C(0xCCFF7221),
@@ -82,19 +82,19 @@ alignas(alignof(max_align_t)) static const uint32_t NMH_ACC_INIT[32] = {
 #define __NMH_M2 UINT32_C(0x29A7935D)
 #define __NMH_M3 UINT32_C(0x55D35831)
 
-alignas(alignof(max_align_t)) static const uint32_t __NMH_M1_V[32] = {
+alignas(16) static const uint32_t __NMH_M1_V[32] = {
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
 };
-alignas(alignof(max_align_t)) static const uint32_t __NMH_M2_V[32] = {
+alignas(16) static const uint32_t __NMH_M2_V[32] = {
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
 };
-alignas(alignof(max_align_t)) static const uint32_t __NMH_M3_V[32] = {
+alignas(16) static const uint32_t __NMH_M3_V[32] = {
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
@@ -467,8 +467,8 @@ static inline void NMHASH32_long_round(uint32_t * const RESTRICT accX,
 template < bool bswap >
 static uint32_t NMHASH32_long(const uint8_t* const RESTRICT p,
         size_t const len, uint32_t const seed) {
-    alignas(alignof(max_align_t)) uint32_t accX[sizeof(NMH_ACC_INIT)/sizeof(*NMH_ACC_INIT)];
-    alignas(alignof(max_align_t)) uint32_t accY[sizeof(accX)/sizeof(*accX)];
+    alignas(16) uint32_t accX[sizeof(NMH_ACC_INIT)/sizeof(*NMH_ACC_INIT)];
+    alignas(16) uint32_t accY[sizeof(accX)/sizeof(*accX)];
     size_t const nbRounds = (len - 1) / (sizeof(accX) + sizeof(accY));
     size_t i;
     uint32_t sum = 0;
