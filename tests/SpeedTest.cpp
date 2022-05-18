@@ -301,13 +301,13 @@ bool SpeedTest(const HashInfo * hinfo) {
 
 void ShortSpeedTestHeader(void) {
     printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n\n");
-    printf("%-25s  %11s  %11s  %11s  %11s  %11s  \n",
+    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n",
             "Name", "   Bulk    ", " 1-8 bytes ", "9-16 bytes",
             "17-24 bytes", "25-32 bytes");
-    printf("%-25s  %11s  %11s  %11s  %11s  %11s  \n",
+    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n",
             "-------------------------", "-----------",
-            "-----------", "-----------",
-            "-----------", "-----------");
+            "------------------", "------------------",
+            "------------------", "------------------");
 }
 
 void ShortSpeedTest(const HashInfo * hinfo) {
@@ -343,12 +343,16 @@ void ShortSpeedTest(const HashInfo * hinfo) {
     for (int i = 1; i <= 4; i++) {
         const int baselen = i * 8;
         double cycles = 0.0;
+        double worstdevpct = 0.0;
         for (int j = 0; j < 8; j++) {
             double curcyc = SpeedTest(hash, seed, TINY_TRIALS,
                     baselen + j, basealignoffset, 0, maxvaryalign);
+            double devpct = 100.0*stddev/curcyc;
             cycles += curcyc;
+            if (worstdevpct < devpct)
+                worstdevpct = devpct;
         }
-        printf("    %7.2f  ", cycles/8.0);
+        printf("    %7.2f [%5.3f] ", cycles/8.0, worstdevpct);
     }
 
     printf("\n");
