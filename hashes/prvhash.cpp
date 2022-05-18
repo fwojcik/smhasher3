@@ -218,7 +218,7 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
     uint8_t fbytes[PRH64S_LEN * 2 + 24];
     uint8_t * ptr = fbytes;
     size_t MsgExtra = 0;
-    
+
     memcpy(ptr, Msg, MsgLen);
     ptr += MsgLen;
 
@@ -234,7 +234,7 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
 
     fb = (MsgLen0 == 0) ? 1 :
         (uint8_t)(1 << (*(ptr - 1) >> 7));
-    
+
     ptr[sizeof(uint64_t) - 1] = fb;
     ptr += sizeof(uint64_t);
     MsgExtra += sizeof(uint64_t);
@@ -242,10 +242,10 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
     if (((ptr - fbytes) % PRH64S_LEN) != 0) {
         MsgExtra += PRH64S_LEN - ((ptr - fbytes) % PRH64S_LEN);
     }
-    
+
     MsgLen += MsgExtra;
     ptr = fbytes;
-    
+
     while (MsgLen >= PRH64S_LEN) {
         for (int j = 0; j <  PRH64S_PAR; j++) {
             const uint64_t m = GET_U64<bswap>(ptr, 0);
@@ -341,7 +341,7 @@ REGISTER_HASH(prvhash64_128,
   $.hashfn_native = prvhash128<false>,
   $.hashfn_bswap = prvhash128<true>
 );
-            
+
 REGISTER_HASH(prvhash64s_64,
   $.desc = "prvhash64 v4.3 streaming mode 64-bit output",
   $.hash_flags =
