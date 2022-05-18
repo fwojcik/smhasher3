@@ -185,6 +185,7 @@ REGISTER_HASH(perl_jenkins_old,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS   |
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 32,
   $.verification_LE = 0xEE05869B,
@@ -198,6 +199,7 @@ REGISTER_HASH(perl_jenkins_hard,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_SLOW           |
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 32,
   $.verification_LE = 0x1C216B25,

@@ -98,7 +98,6 @@ REGISTER_HASH(mx3,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_64         |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
@@ -113,7 +112,6 @@ REGISTER_HASH(mx3_old,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_64         |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,

@@ -1626,7 +1626,6 @@ REGISTER_HASH(FarmHashNA_64,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1643,7 +1642,6 @@ REGISTER_HASH(FarmHashUO_64,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1661,7 +1659,6 @@ REGISTER_HASH(FarmHashTE_64,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT          |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1676,9 +1673,8 @@ REGISTER_HASH(FarmHashTE_64,
 REGISTER_HASH(FarmHashNT_32,
   $.desc = "FarmHash Hash32WithSeed (NT version)",
   $.hash_flags =
-        0,
+        FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_128BIT          |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1694,7 +1690,7 @@ REGISTER_HASH(FarmHashNT_32,
 REGISTER_HASH(FarmHashMK_32,
   $.desc = "FarmHash Hash32WithSeed (MK version)",
   $.hash_flags =
-        0,
+        FLAG_HASH_SMALL_SEED,
   $.impl_flags =
         FLAG_IMPL_MULTIPLY        |
         FLAG_IMPL_ROTATE          |
@@ -1711,10 +1707,10 @@ REGISTER_HASH(FarmHashMK_32,
 REGISTER_HASH(FarmHashSU_32,
   $.desc = "FarmHash Hash32WithSeed (SU version)",
   $.hash_flags =
+        FLAG_HASH_SMALL_SEED  |
         FLAG_HASH_AES_BASED   |
         FLAG_HASH_CRC_BASED   ,
   $.impl_flags =
-        FLAG_IMPL_128BIT          |
         FLAG_IMPL_MULTIPLY        |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1731,6 +1727,7 @@ REGISTER_HASH(FarmHashSU_32,
 REGISTER_HASH(FarmHashSA_32,
   $.desc = "FarmHash Hash32WithSeed (SA version)",
   $.hash_flags =
+        FLAG_HASH_SMALL_SEED  |
         FLAG_HASH_CRC_BASED   ,
   $.impl_flags =
         FLAG_IMPL_MULTIPLY        |
@@ -1748,7 +1745,7 @@ REGISTER_HASH(FarmHashSA_32,
 REGISTER_HASH(FarmHashCC_32,
   $.desc = "FarmHash Hash32WithSeed (CC version)",
   $.hash_flags =
-        0,
+        FLAG_HASH_SMALL_SEED,
   $.impl_flags =
         FLAG_IMPL_MULTIPLY        |
         FLAG_IMPL_ROTATE          |
@@ -1764,9 +1761,8 @@ REGISTER_HASH(FarmHashCC_32,
 REGISTER_HASH(FarmHashCC_seed1_128,
   $.desc = "FarmHash Hash128WithSeed (CC version, seeded low 64 bit)",
   $.hash_flags =
-        0,
+        FLAG_HASH_XL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1781,9 +1777,8 @@ REGISTER_HASH(FarmHashCC_seed1_128,
 REGISTER_HASH(FarmHashCC_seed2_128,
   $.desc = "FarmHash Hash128WithSeed (CC version, seeded high 64 bit)",
   $.hash_flags =
-        0,
+        FLAG_HASH_XL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1798,9 +1793,8 @@ REGISTER_HASH(FarmHashCC_seed2_128,
 REGISTER_HASH(FarmHashCC_seed3_128,
   $.desc = "FarmHash Hash128WithSeed (CC version, seeded low+high 64 bit)",
   $.hash_flags =
-        0,
+        FLAG_HASH_XL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1815,9 +1809,8 @@ REGISTER_HASH(FarmHashCC_seed3_128,
 REGISTER_HASH(FarmHashCM_seed1_128,
   $.desc = "FarmHash CityMurmur (CC version, seeded low 64 bit)",
   $.hash_flags =
-        0,
+        FLAG_HASH_XL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1832,9 +1825,8 @@ REGISTER_HASH(FarmHashCM_seed1_128,
 REGISTER_HASH(FarmHashCM_seed2_128,
   $.desc = "FarmHash CityMurmur (CC version, seeded high 64 bit)",
   $.hash_flags =
-        0,
+        FLAG_HASH_XL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -1849,9 +1841,8 @@ REGISTER_HASH(FarmHashCM_seed2_128,
 REGISTER_HASH(FarmHashCM_seed3_128,
   $.desc = "FarmHash CityMurmur (CC version, seeded low+high 64 bit)",
   $.hash_flags =
-        0,
+        FLAG_HASH_XL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,

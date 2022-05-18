@@ -2593,9 +2593,10 @@ REGISTER_FAMILY(PMP_mutilinear,
 REGISTER_HASH(PMPML_32,
   $.desc = "PMP_Multilinear 32-bit",
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE ,
   $.impl_flags =
         FLAG_IMPL_TYPE_PUNNING |
+        FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
   $.verification_LE = 0xF3199670,
@@ -2608,9 +2609,10 @@ REGISTER_HASH(PMPML_32,
 REGISTER_HASH(PMPML_64,
   $.desc = "PMP_Multilinear 64-bit",
   $.hash_flags =
-	      0,
+        FLAG_HASH_LOOKUP_TABLE ,
   $.impl_flags =
-        FLAG_IMPL_TYPE_PUNNING |
+        FLAG_IMPL_TYPE_PUNNING     |
+        FLAG_IMPL_MULTIPLY_64_128  |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 64,
   $.verification_LE = 0xB776D2B9,

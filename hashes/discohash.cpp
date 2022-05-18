@@ -209,9 +209,9 @@ REGISTER_HASH(discohash64_old,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
+        FLAG_IMPL_SLOW             |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xBEBB4185,
@@ -226,9 +226,9 @@ REGISTER_HASH(discohash64_new,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
+        FLAG_IMPL_SLOW             |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xFBA72400,
@@ -243,9 +243,9 @@ REGISTER_HASH(discohash128_old,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
+        FLAG_IMPL_SLOW             |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x000ED2A6,
@@ -260,9 +260,9 @@ REGISTER_HASH(discohash128_new,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
+        FLAG_IMPL_SLOW             |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x231868B1,

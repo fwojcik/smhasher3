@@ -749,8 +749,10 @@ REGISTER_HASH(nmhash,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_MULTIPLY     |
-        FLAG_IMPL_ROTATE       |
+        FLAG_IMPL_TYPE_PUNNING   |
+        FLAG_IMPL_MULTIPLY       |
+        FLAG_IMPL_ROTATE         |
+        FLAG_IMPL_SHIFT_VARIABLE |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
   $.verification_LE = 0x12A30553,
@@ -764,8 +766,10 @@ REGISTER_HASH(nmhashx,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
-        FLAG_IMPL_MULTIPLY     |
-        FLAG_IMPL_ROTATE       |
+        FLAG_IMPL_TYPE_PUNNING   |
+        FLAG_IMPL_MULTIPLY       |
+        FLAG_IMPL_ROTATE         |
+        FLAG_IMPL_SHIFT_VARIABLE |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
   $.verification_LE = 0xA8580227,

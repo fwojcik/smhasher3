@@ -78,6 +78,7 @@ REGISTER_HASH(pengyhash,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 64,
   $.verification_LE = 0x1FC2217B,

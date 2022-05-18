@@ -380,6 +380,7 @@ REGISTER_HASH(Spookyhash_v1_32,
   $.hash_flags =
         0,
   $.impl_flags =
+      FLAG_IMPL_ROTATE                 |
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
   $.verification_LE = 0x3F798BBB,
@@ -393,6 +394,7 @@ REGISTER_HASH(Spookyhash_v1_64,
   $.hash_flags =
         0,
   $.impl_flags =
+      FLAG_IMPL_ROTATE                 |
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
   $.verification_LE = 0xA7F955F1,
@@ -406,6 +408,7 @@ REGISTER_HASH(Spookyhash_v1_128,
   $.hash_flags =
         0,
   $.impl_flags =
+      FLAG_IMPL_ROTATE                 |
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
   $.verification_LE = 0x8D263080,
@@ -419,6 +422,7 @@ REGISTER_HASH(Spookyhash_v2_32,
   $.hash_flags =
         0,
   $.impl_flags =
+      FLAG_IMPL_ROTATE                 |
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
   $.verification_LE = 0xA48BE265,
@@ -433,6 +437,7 @@ REGISTER_HASH(Spookyhash_v2_64,
   $.hash_flags =
         0,
   $.impl_flags =
+      FLAG_IMPL_ROTATE                 |
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
   $.verification_LE = 0x972C4BDC,
@@ -447,6 +452,7 @@ REGISTER_HASH(Spookyhash_v2_128,
   $.hash_flags =
         0,
   $.impl_flags =
+      FLAG_IMPL_ROTATE                 |
       FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
   $.verification_LE = 0x893CFCBE,

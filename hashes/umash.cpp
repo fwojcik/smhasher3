@@ -1192,9 +1192,11 @@ REGISTER_FAMILY(umash,
 REGISTER_HASH(umash_64,
   $.desc = "umash 64 (which == 0)",
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE        |
+        FLAG_HASH_CLMUL_BASED,
   $.impl_flags =
-        FLAG_IMPL_TYPE_PUNNING |
+        FLAG_IMPL_MULTIPLY_64_128     |
+        FLAG_IMPL_ROTATE              |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x36A264CD,
@@ -1207,9 +1209,11 @@ REGISTER_HASH(umash_64,
 REGISTER_HASH(umash_reseed_64,
   $.desc = "umash 64 (which == 0, with full reseeding)",
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE        |
+        FLAG_HASH_CLMUL_BASED,
   $.impl_flags =
-        FLAG_IMPL_TYPE_PUNNING |
+        FLAG_IMPL_MULTIPLY_64_128     |
+        FLAG_IMPL_ROTATE              |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x161495C6,
@@ -1223,8 +1227,11 @@ REGISTER_HASH(umash_reseed_64,
 REGISTER_HASH(umash_128,
   $.desc = "umash 128",
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE        |
+        FLAG_HASH_CLMUL_BASED,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_128     |
+        FLAG_IMPL_ROTATE              |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x63857D05,
@@ -1237,8 +1244,11 @@ REGISTER_HASH(umash_128,
 REGISTER_HASH(umash_reseed_128,
   $.desc = "umash 128 (with full reseeding)",
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE        |
+        FLAG_HASH_CLMUL_BASED,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_128     |
+        FLAG_IMPL_ROTATE              |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x36D4EC95,

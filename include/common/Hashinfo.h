@@ -24,10 +24,10 @@
     FLAG_EXPAND(HASH_CRYPTOGRAPHIC)                    \
     FLAG_EXPAND(HASH_CRYPTOGRAPHIC_WEAK)               \
     FLAG_EXPAND(HASH_CRC_BASED)                        \
-    FLAG_EXPAND(HASH_SHA_BASED)                        \
     FLAG_EXPAND(HASH_AES_BASED)                        \
     FLAG_EXPAND(HASH_CLMUL_BASED)                      \
     FLAG_EXPAND(HASH_LOOKUP_TABLE)                     \
+    FLAG_EXPAND(HASH_XL_SEED)                          \
     FLAG_EXPAND(HASH_SMALL_SEED)                       \
     FLAG_EXPAND(HASH_NO_SEED)                          \
     FLAG_EXPAND(HASH_SYSTEM_SPECIFIC)                  \
@@ -42,13 +42,14 @@
     FLAG_EXPAND(IMPL_TYPE_PUNNING)                     \
     FLAG_EXPAND(IMPL_INCREMENTAL)                      \
     FLAG_EXPAND(IMPL_INCREMENTAL_DIFFERENT)            \
-    FLAG_EXPAND(IMPL_64BIT)                            \
     FLAG_EXPAND(IMPL_128BIT)                           \
     FLAG_EXPAND(IMPL_MULTIPLY)                         \
     FLAG_EXPAND(IMPL_MULTIPLY_64_64)                   \
     FLAG_EXPAND(IMPL_MULTIPLY_64_128)                  \
     FLAG_EXPAND(IMPL_MULTIPLY_128_128)                 \
     FLAG_EXPAND(IMPL_ROTATE)                           \
+    FLAG_EXPAND(IMPL_ROTATE_VARIABLE)                  \
+    FLAG_EXPAND(IMPL_SHIFT_VARIABLE)                   \
     FLAG_EXPAND(IMPL_DIVIDE)                           \
     FLAG_EXPAND(IMPL_MODULUS)                          \
     FLAG_EXPAND(IMPL_ASM)                              \

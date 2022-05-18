@@ -293,9 +293,8 @@ REGISTER_FAMILY(metrohash,
 REGISTER_HASH(metrohash_64,
   $.desc = "Metrohash v1 base variant, 64-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -310,9 +309,8 @@ REGISTER_HASH(metrohash_64,
 REGISTER_HASH(metrohash1_64,
   $.desc = "Metrohash v1 variant 1, 64-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -327,9 +325,8 @@ REGISTER_HASH(metrohash1_64,
 REGISTER_HASH(metrohash2_64,
   $.desc = "Metrohash v1 variant 2, 64-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -346,9 +343,8 @@ REGISTER_HASH(metrohash2_64,
 REGISTER_HASH(metrohashcrc1_64,
   $.desc = "Metrohash-crc v1 variant 1, 64-bit version (unofficial)",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        FLAG_HASH_CRC_BASED,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -363,9 +359,8 @@ REGISTER_HASH(metrohashcrc1_64,
 REGISTER_HASH(metrohashcrc2_64,
   $.desc = "Metrohash-crc v1 variant 2, 64-bit version (unofficial)",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -382,9 +377,8 @@ REGISTER_HASH(metrohashcrc2_64,
 REGISTER_HASH(metrohash_128,
   $.desc = "Metrohash v1 base variant, 128-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -399,9 +393,8 @@ REGISTER_HASH(metrohash_128,
 REGISTER_HASH(metrohash1_128,
   $.desc = "Metrohash v1 variant 1, 128-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -416,9 +409,8 @@ REGISTER_HASH(metrohash1_128,
 REGISTER_HASH(metrohash2_128,
   $.desc = "Metrohash v1 variant 2, 128-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -435,9 +427,8 @@ REGISTER_HASH(metrohash2_128,
 REGISTER_HASH(metrohashcrc1_128,
   $.desc = "Metrohash-crc v1 variant 1, 128-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
@@ -452,9 +443,8 @@ REGISTER_HASH(metrohashcrc1_128,
 REGISTER_HASH(metrohashcrc2_128,
   $.desc = "Metrohash-crc v1 variant 1, 128-bit version",
   $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
+        0,
   $.impl_flags =
-        FLAG_IMPL_64BIT            |
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,

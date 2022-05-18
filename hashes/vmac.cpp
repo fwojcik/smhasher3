@@ -531,7 +531,7 @@ static uint64_t l3hash(uint64_t p1, uint64_t p2, uint64_t k1, uint64_t k2, uint6
 template < bool bswap >
 static uint64_t vhash(const uint8_t * mptr, size_t mbytes, uint64_t seed, vmac_ctx_t * ctx) {
     uint64_t rh, rl;
-    const uint64_t *kptr = (uint64_t *)ctx->nhkey;
+    const uint64_t * kptr = ctx->nhkey;
     size_t i, remaining;
     uint64_t ch, cl;
     uint64_t pkh = (ctx->polykey[0] ^ ROTR64(seed, 24)) & mpoly;
@@ -625,8 +625,11 @@ REGISTER_FAMILY(vmac,
 REGISTER_HASH(VHASH_32,
   $.desc = "VHASH_32, by Ted Krovetz and Wei Dai",
   $.hash_flags =
+        FLAG_HASH_AES_BASED              |
         FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_128        |
+        FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_ASM                    |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
@@ -639,8 +642,11 @@ REGISTER_HASH(VHASH_32,
 REGISTER_HASH(VHASH_64,
   $.desc = "VHASH_64, by Ted Krovetz and Wei Dai",
   $.hash_flags =
+        FLAG_HASH_AES_BASED              |
         FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_128        |
+        FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_ASM                    |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,

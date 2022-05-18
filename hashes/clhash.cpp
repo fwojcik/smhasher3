@@ -454,6 +454,7 @@ REGISTER_HASH(clhash,
         FLAG_HASH_NO_SEED          |
         FLAG_HASH_SYSTEM_SPECIFIC  ,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 64,
   $.verification_LE = 0x578865A5,
@@ -471,6 +472,7 @@ REGISTER_HASH(clhash_nomix,
         FLAG_HASH_NO_SEED          |
         FLAG_HASH_SYSTEM_SPECIFIC  ,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_LICENSE_GPL3,
   $.bits = 64,
   $.verification_LE = 0xDD8248E4,

@@ -268,7 +268,7 @@ REGISTER_HASH(hasshe2,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT                  |
+        FLAG_IMPL_SANITY_FAILS           |
         FLAG_IMPL_MULTIPLY               |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,
@@ -283,7 +283,6 @@ REGISTER_HASH(hasshe2_tweaked,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY               |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,

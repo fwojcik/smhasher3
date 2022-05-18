@@ -90,6 +90,7 @@ REGISTER_HASH(aesnihash,
         FLAG_HASH_NO_SEED        |
         FLAG_HASH_AES_BASED,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS   |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 64,
   $.verification_LE = 0xA68E0D42,

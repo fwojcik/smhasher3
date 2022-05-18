@@ -1603,6 +1603,7 @@ REGISTER_HASH(t1ha0,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_MULTIPLY               |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_ZLIB           ,
@@ -1619,7 +1620,7 @@ REGISTER_HASH(t1ha1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT                  |
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_ZLIB           ,
@@ -1636,8 +1637,8 @@ REGISTER_HASH(t1ha2_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_TYPE_PUNNING           |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_ZLIB           ,
@@ -1654,8 +1655,8 @@ REGISTER_HASH(t1ha2_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_TYPE_PUNNING           |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_ZLIB           ,
@@ -1672,8 +1673,8 @@ REGISTER_HASH(t1ha2_incr_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_TYPE_PUNNING           |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_INCREMENTAL            |
@@ -1692,8 +1693,8 @@ REGISTER_HASH(t1ha2_incr_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_TYPE_PUNNING           |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_INCREMENTAL            |
@@ -1713,7 +1714,7 @@ REGISTER_HASH(t1ha0_aesA,
   $.hash_flags =
         FLAG_HASH_AES_BASED              ,
   $.impl_flags =
-        FLAG_IMPL_64BIT                  |
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_ZLIB           ,
@@ -1730,7 +1731,7 @@ REGISTER_HASH(t1ha0_aesB,
   $.hash_flags =
         FLAG_HASH_AES_BASED              ,
   $.impl_flags =
-        FLAG_IMPL_64BIT                  |
+        FLAG_IMPL_READ_PAST_EOB          |
         FLAG_IMPL_MULTIPLY_64_128        |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_ZLIB           ,

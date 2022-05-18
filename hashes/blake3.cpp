@@ -653,6 +653,7 @@ REGISTER_HASH(blake3,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT          |
         FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_VERY_SLOW            |
         FLAG_IMPL_ROTATE               |
         FLAG_IMPL_INCREMENTAL          ,
   $.bits = 256,

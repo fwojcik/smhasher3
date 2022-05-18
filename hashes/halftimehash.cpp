@@ -1311,9 +1311,11 @@ REGISTER_HASH(halftimehash64,
   $.desc = "Halftime Hash (64-bit blocks)",
   $.sort_order = 10,
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE ,
   $.impl_flags =
         FLAG_IMPL_SLOW         |
+        FLAG_IMPL_MULTIPLY     |
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
   $.verification_LE = 0xED42E424,
@@ -1327,9 +1329,11 @@ REGISTER_HASH(halftimehash128,
   $.desc = "Halftime Hash (128-bit blocks)",
   $.sort_order = 20,
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE ,
   $.impl_flags =
         FLAG_IMPL_SLOW         |
+        FLAG_IMPL_MULTIPLY     |
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
   $.verification_LE = 0x952DF141,
@@ -1343,9 +1347,11 @@ REGISTER_HASH(halftimehash256,
   $.desc = "Halftime Hash (256-bit blocks)",
   $.sort_order = 30,
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE ,
   $.impl_flags =
         FLAG_IMPL_SLOW         |
+        FLAG_IMPL_MULTIPLY     |
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
   $.verification_LE = 0x912330EA,
@@ -1359,9 +1365,11 @@ REGISTER_HASH(halftimehash512,
   $.desc = "Halftime Hash (512-bit blocks)",
   $.sort_order = 40,
   $.hash_flags =
-        0,
+        FLAG_HASH_LOOKUP_TABLE ,
   $.impl_flags =
         FLAG_IMPL_SLOW         |
+        FLAG_IMPL_MULTIPLY     |
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT  ,
   $.bits = 64,
   $.verification_LE = 0x1E0F99EA,

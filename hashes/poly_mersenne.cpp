@@ -168,9 +168,9 @@ REGISTER_FAMILY(poly_mersenne,
 REGISTER_HASH(poly_mersenne_1,
   $.desc = "Degree 1 Hashing mod 2^61-1",
   $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE         |
         FLAG_HASH_SYSTEM_SPECIFIC,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
         FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
         FLAG_IMPL_LICENSE_BSD,
@@ -185,9 +185,9 @@ REGISTER_HASH(poly_mersenne_1,
 REGISTER_HASH(poly_mersenne_2,
   $.desc = "Degree 2 Hashing mod 2^61-1",
   $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE         |
         FLAG_HASH_SYSTEM_SPECIFIC,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
         FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
         FLAG_IMPL_LICENSE_BSD,
@@ -204,9 +204,9 @@ REGISTER_HASH(poly_mersenne_2,
 REGISTER_HASH(poly_mersenne_3,
   $.desc = "Degree 3 Hashing mod 2^61-1",
   $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE         |
         FLAG_HASH_SYSTEM_SPECIFIC,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
         FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
         FLAG_IMPL_LICENSE_BSD,
@@ -223,9 +223,9 @@ REGISTER_HASH(poly_mersenne_3,
 REGISTER_HASH(poly_mersenne_4,
   $.desc = "Degree 4 Hashing mod 2^61-1",
   $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE         |
         FLAG_HASH_SYSTEM_SPECIFIC,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
         FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
         FLAG_IMPL_LICENSE_BSD,

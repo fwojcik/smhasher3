@@ -194,7 +194,7 @@ REGISTER_HASH(fletcher2_64,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x890767C0,
@@ -208,7 +208,7 @@ REGISTER_HASH(fletcher2_128,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x70FD3480,
@@ -223,7 +223,7 @@ REGISTER_HASH(fletcher4_64,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x47660EB7,
@@ -237,7 +237,7 @@ REGISTER_HASH(fletcher4_256,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 256,
   $.verification_LE = 0x1F1358EF,
@@ -266,7 +266,6 @@ REGISTER_HASH(fletcher64,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT        |
         FLAG_IMPL_MODULUS      |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,

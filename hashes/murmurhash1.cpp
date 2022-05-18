@@ -87,7 +87,6 @@ REGISTER_HASH(murmur1_32,
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
         FLAG_IMPL_MULTIPLY         |
-        FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x9EA7D056,

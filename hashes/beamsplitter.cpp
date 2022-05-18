@@ -434,8 +434,7 @@ REGISTER_HASH(beamsplitter64,
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
         FLAG_IMPL_VERY_SLOW        |
-        FLAG_IMPL_64BIT            |
-        FLAG_IMPL_ROTATE           |
+        FLAG_IMPL_ROTATE_VARIABLE  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x1BDF358B,

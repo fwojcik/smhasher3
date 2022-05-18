@@ -187,9 +187,9 @@ REGISTER_FAMILY(falkhash,
 REGISTER_HASH(falkhash_v1,
   $.desc = "Falkhash v1",
   $.hash_flags =
-        0,
+        FLAG_HASH_AES_BASED,
   $.impl_flags =
-      FLAG_IMPL_LICENSE_MIT,
+        FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0xAEF96E69,
   $.verification_BE = 0xDAE2ECE4,
@@ -200,7 +200,7 @@ REGISTER_HASH(falkhash_v1,
 REGISTER_HASH(falkhash_v2,
   $.desc = "Falkhash v2",
   $.hash_flags =
-        0,
+        FLAG_HASH_AES_BASED,
   $.impl_flags =
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,

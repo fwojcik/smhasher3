@@ -324,7 +324,7 @@ REGISTER_HASH(tabulation_32,
         FLAG_HASH_LOOKUP_TABLE         |
         FLAG_HASH_SYSTEM_SPECIFIC,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
+        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
         FLAG_IMPL_MULTIPLY_64_128      |
         FLAG_IMPL_LICENSE_BSD,
   $.bits = 32,
@@ -342,6 +342,7 @@ REGISTER_HASH(tabulation_64,
         FLAG_HASH_LOOKUP_TABLE         |
         FLAG_HASH_SYSTEM_SPECIFIC,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
         FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
         FLAG_IMPL_LICENSE_BSD,

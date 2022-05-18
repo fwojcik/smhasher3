@@ -354,9 +354,10 @@ REGISTER_FAMILY(meowhash,
 REGISTER_HASH(MeowHash_32,
   $.desc = "MeowHash (0.5/calico, low 32 bits)",
   $.hash_flags =
-        FLAG_HASH_NO_SEED     |
+        FLAG_HASH_NO_SEED       |
         FLAG_HASH_AES_BASED,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB |
         FLAG_IMPL_LICENSE_ZLIB,
   $.bits = 32,
   $.verification_LE = 0xE9E94FF2,
@@ -368,9 +369,10 @@ REGISTER_HASH(MeowHash_32,
 REGISTER_HASH(MeowHash_64,
   $.desc = "MeowHash (0.5/calico, low 64 bits)",
   $.hash_flags =
-        FLAG_HASH_NO_SEED     |
+        FLAG_HASH_NO_SEED       |
         FLAG_HASH_AES_BASED,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB |
         FLAG_IMPL_LICENSE_ZLIB,
   $.bits = 64,
   $.verification_LE = 0x4C9F52A6,
@@ -382,9 +384,10 @@ REGISTER_HASH(MeowHash_64,
 REGISTER_HASH(MeowHash_128,
   $.desc = "MeowHash (0.5/calico)",
   $.hash_flags =
-        FLAG_HASH_NO_SEED     |
+        FLAG_HASH_NO_SEED       |
         FLAG_HASH_AES_BASED,
   $.impl_flags =
+        FLAG_IMPL_READ_PAST_EOB |
         FLAG_IMPL_LICENSE_ZLIB,
   $.bits = 128,
   $.verification_LE = 0x7C648489,

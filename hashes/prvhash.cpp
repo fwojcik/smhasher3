@@ -321,6 +321,9 @@ REGISTER_HASH(prvhash64_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_64  |
+        FLAG_IMPL_ROTATE          |
+        FLAG_IMPL_SHIFT_VARIABLE  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xD37C7E74,
@@ -334,6 +337,9 @@ REGISTER_HASH(prvhash64_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_MULTIPLY_64_64  |
+        FLAG_IMPL_ROTATE          |
+        FLAG_IMPL_SHIFT_VARIABLE  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0xB447480F,
@@ -347,6 +353,10 @@ REGISTER_HASH(prvhash64s_64,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_SLOW            |
+        FLAG_IMPL_MULTIPLY_64_64  |
+        FLAG_IMPL_ROTATE          |
+        FLAG_IMPL_SHIFT_VARIABLE  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x891521D6,
@@ -360,6 +370,10 @@ REGISTER_HASH(prvhash64s_128,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_SLOW            |
+        FLAG_IMPL_MULTIPLY_64_64  |
+        FLAG_IMPL_ROTATE          |
+        FLAG_IMPL_SHIFT_VARIABLE  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x0199728A,

@@ -146,9 +146,9 @@ REGISTER_HASH(seahash,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT          |
         FLAG_IMPL_MULTIPLY_64_64 |
         FLAG_IMPL_ROTATE         |
+        FLAG_IMPL_SHIFT_VARIABLE |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xF0374078,

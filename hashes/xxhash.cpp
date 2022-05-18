@@ -1429,7 +1429,6 @@ REGISTER_HASH(xxHash_64,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE        |
-        FLAG_IMPL_64BIT               |
         FLAG_IMPL_MULTIPLY_64_64      |
         FLAG_IMPL_ROTATE              |
         FLAG_IMPL_LICENSE_BSD,
@@ -1443,6 +1442,7 @@ REGISTER_HASH(xxHash_64,
 REGISTER_HASH(xxh3_64,
   $.desc = "xxh3, 64-bit version",
   $.hash_flags =
+        FLAG_HASH_LOOKUP_TABLE        |
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE        |
@@ -1459,6 +1459,7 @@ REGISTER_HASH(xxh3_64,
 REGISTER_HASH(xxh3_128,
   $.desc = "xxh3, 128-bit version",
   $.hash_flags =
+        FLAG_HASH_LOOKUP_TABLE        |
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE        |

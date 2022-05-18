@@ -278,7 +278,7 @@ REGISTER_HASH(murmur2_32_64,
 REGISTER_HASH(murmur2a_32,
   $.desc = "MurmurHash v2a, 32-bit version using variant mixing",
   $.hash_flags =
-        0,
+        FLAG_HASH_SMALL_SEED,
   $.impl_flags =
         FLAG_IMPL_MULTIPLY        |
         FLAG_IMPL_LICENSE_MIT,

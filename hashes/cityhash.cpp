@@ -698,7 +698,6 @@ REGISTER_HASH(cityhash_32,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED      ,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -714,7 +713,6 @@ REGISTER_HASH(cityhash_64,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -730,7 +728,6 @@ REGISTER_HASH(cityhash_seed1_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -746,7 +743,6 @@ REGISTER_HASH(cityhash_seed2_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -762,7 +758,6 @@ REGISTER_HASH(cityhash_seed3_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -778,7 +773,6 @@ REGISTER_HASH(citymurmur_seed1_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -794,7 +788,6 @@ REGISTER_HASH(citymurmur_seed2_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -810,7 +803,6 @@ REGISTER_HASH(citymurmur_seed3_128,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -828,7 +820,6 @@ REGISTER_HASH(cityhashcrc_seed1_128,
   $.hash_flags =
         FLAG_HASH_CRC_BASED       ,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -844,7 +835,6 @@ REGISTER_HASH(cityhashcrc_seed2_128,
   $.hash_flags =
         FLAG_HASH_CRC_BASED       ,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -860,7 +850,6 @@ REGISTER_HASH(cityhashcrc_seed3_128,
   $.hash_flags =
         FLAG_HASH_CRC_BASED       ,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
         FLAG_IMPL_LICENSE_MIT     ,
@@ -877,9 +866,9 @@ REGISTER_HASH(cityhashcrc_256,
         FLAG_HASH_NO_SEED         |
         FLAG_HASH_CRC_BASED       ,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_ROTATE          |
+        FLAG_IMPL_SLOW            |
         FLAG_IMPL_LICENSE_MIT     ,
   $.bits = 256,
   $.verification_LE = 0x4A282558,

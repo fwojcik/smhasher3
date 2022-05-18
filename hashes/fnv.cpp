@@ -248,6 +248,7 @@ REGISTER_HASH(fibonacci32,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
@@ -263,7 +264,7 @@ REGISTER_HASH(fibonacci64,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_64BIT          |
+        FLAG_IMPL_SANITY_FAILS   |
         FLAG_IMPL_MULTIPLY_64_64 |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
@@ -295,7 +296,6 @@ REGISTER_HASH(fnv1a_64,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT          |
         FLAG_IMPL_MULTIPLY_64_64 |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
@@ -312,6 +312,7 @@ REGISTER_HASH(fnv2_32,
         FLAG_HASH_NO_SEED      |
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
@@ -326,7 +327,7 @@ REGISTER_HASH(fnv2_64,
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
+        FLAG_IMPL_SANITY_FAILS    |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
@@ -359,6 +360,7 @@ REGISTER_HASH(fnvTS_32,
         FLAG_HASH_NO_SEED      |
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_READ_PAST_EOB|
         FLAG_IMPL_LICENSE_MIT,
@@ -376,6 +378,7 @@ REGISTER_HASH(fnvPY_32,
         FLAG_HASH_NO_SEED      |
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
+        FLAG_IMPL_SANITY_FAILS |
         FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_READ_PAST_EOB|
         FLAG_IMPL_LICENSE_MIT,

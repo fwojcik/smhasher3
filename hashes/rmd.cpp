@@ -708,7 +708,9 @@ REGISTER_HASH(rmd128,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW            |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0xC9B0B675,
@@ -726,7 +728,9 @@ REGISTER_HASH(rmd160,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW            |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 160,
   $.verification_LE = 0x8613F5B2,
@@ -744,7 +748,9 @@ REGISTER_HASH(rmd256,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_INCREMENTAL          |
         FLAG_IMPL_VERY_SLOW            |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 256,
   $.verification_LE = 0x870A973A,

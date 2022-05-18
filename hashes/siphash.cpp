@@ -420,7 +420,9 @@ REGISTER_HASH(siphash_2_4,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
+        FLAG_IMPL_SLOW         |
         FLAG_IMPL_TYPE_PUNNING |
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x57B661ED,
@@ -434,7 +436,9 @@ REGISTER_HASH(siphash_1_3,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
+        FLAG_IMPL_SLOW         |
         FLAG_IMPL_TYPE_PUNNING |
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x8936B193,
@@ -448,6 +452,7 @@ REGISTER_HASH(siphash_half,
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
   $.impl_flags =
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0xD2BE7FD8,
@@ -461,6 +466,7 @@ REGISTER_HASH(siphash_tiny,
   $.hash_flags =
         0,
   $.impl_flags =
+        FLAG_IMPL_ROTATE       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x75C732C0,

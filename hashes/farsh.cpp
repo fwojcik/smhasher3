@@ -237,7 +237,7 @@ REGISTER_HASH(farsh32,
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
+        FLAG_IMPL_SANITY_FAILS    |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
@@ -252,7 +252,7 @@ REGISTER_HASH(farsh64,
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
+        FLAG_IMPL_SANITY_FAILS    |
         FLAG_IMPL_MULTIPLY_64_64  |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
@@ -267,8 +267,9 @@ REGISTER_HASH(farsh128,
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
+        FLAG_IMPL_SANITY_FAILS    |
         FLAG_IMPL_MULTIPLY_64_64  |
+        FLAG_IMPL_SLOW            |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 128,
   $.verification_LE = 0x82B6CBEC,
@@ -282,8 +283,9 @@ REGISTER_HASH(farsh256,
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,
   $.impl_flags =
-        FLAG_IMPL_64BIT           |
+        FLAG_IMPL_SANITY_FAILS    |
         FLAG_IMPL_MULTIPLY_64_64  |
+        FLAG_IMPL_VERY_SLOW       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 256,
   $.verification_LE = 0xFEBEA0BC,

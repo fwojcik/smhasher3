@@ -207,6 +207,7 @@ REGISTER_HASH(blockpearson_64,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE           |
+        FLAG_IMPL_MULTIPLY_64_64         |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
   $.verification_LE = 0x14C3D184,
@@ -221,6 +222,7 @@ REGISTER_HASH(blockpearson_128,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE           |
+        FLAG_IMPL_MULTIPLY_64_64         |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
   $.verification_LE = 0x6BEFE6EA,
@@ -235,6 +237,8 @@ REGISTER_HASH(blockpearson_256,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE           |
+        FLAG_IMPL_SLOW                   |
+        FLAG_IMPL_MULTIPLY_64_64         |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,
   $.verification_LE = 0x999B3C19,

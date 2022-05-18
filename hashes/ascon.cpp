@@ -389,7 +389,6 @@ REGISTER_HASH(ascon_XOF_32,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
@@ -409,7 +408,6 @@ REGISTER_HASH(ascon_XOFa_32,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 32,
@@ -429,7 +427,6 @@ REGISTER_HASH(ascon_XOF_64,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
@@ -449,7 +446,6 @@ REGISTER_HASH(ascon_XOFa_64,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
@@ -469,7 +465,6 @@ REGISTER_HASH(ascon_XOF_128,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
@@ -489,7 +484,6 @@ REGISTER_HASH(ascon_XOFa_128,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
@@ -509,7 +503,6 @@ REGISTER_HASH(ascon_XOF_160,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 160,
@@ -529,7 +522,6 @@ REGISTER_HASH(ascon_XOFa_160,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 160,
@@ -549,7 +541,6 @@ REGISTER_HASH(ascon_XOF_224,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 224,
@@ -569,7 +560,6 @@ REGISTER_HASH(ascon_XOFa_224,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 224,
@@ -589,7 +579,6 @@ REGISTER_HASH(ascon_XOF_256,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,
@@ -609,7 +598,6 @@ REGISTER_HASH(ascon_XOFa_256,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_BE           |
         FLAG_IMPL_VERY_SLOW              |
-        FLAG_IMPL_64BIT                  |
         FLAG_IMPL_ROTATE                 |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,

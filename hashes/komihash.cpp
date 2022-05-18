@@ -360,8 +360,8 @@ REGISTER_HASH(komihash,
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
         FLAG_IMPL_CANONICAL_LE        |
-        FLAG_IMPL_128BIT              |
         FLAG_IMPL_MULTIPLY_64_128     |
+        FLAG_IMPL_SHIFT_VARIABLE      |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x703624A4,

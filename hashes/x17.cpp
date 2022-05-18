@@ -53,6 +53,7 @@ REGISTER_HASH(x17,
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
+        FLAG_IMPL_SLOW         |
         FLAG_IMPL_MULTIPLY     |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,

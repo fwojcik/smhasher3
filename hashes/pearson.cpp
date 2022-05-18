@@ -491,8 +491,10 @@ REGISTER_FAMILY(pearson,
 REGISTER_HASH(pearson_64,
   $.desc = "Pearson hash, 8 lanes using AES sbox",
   $.hash_flags =
-	      0,
+        FLAG_HASH_AES_BASED               |
+        FLAG_HASH_LOOKUP_TABLE,
   $.impl_flags =
+        FLAG_IMPL_SLOW                    |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 64,
   $.verification_LE = 0x12E4C8CD,
@@ -505,8 +507,10 @@ REGISTER_HASH(pearson_64,
 REGISTER_HASH(pearson_128,
   $.desc = "Pearson hash, 16 lanes using AES sbox",
   $.hash_flags =
-	      0,
+        FLAG_HASH_AES_BASED               |
+        FLAG_HASH_LOOKUP_TABLE,
   $.impl_flags =
+        FLAG_IMPL_SLOW                    |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 128,
   $.verification_LE = 0xDC5048A3,
@@ -519,8 +523,10 @@ REGISTER_HASH(pearson_128,
 REGISTER_HASH(pearson_256,
   $.desc = "Pearson hash, 32 lanes using AES sbox",
   $.hash_flags =
-	      0,
+        FLAG_HASH_AES_BASED               |
+        FLAG_HASH_LOOKUP_TABLE,
   $.impl_flags =
+        FLAG_IMPL_SLOW                    |
         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
   $.bits = 256,
   $.verification_LE = 0xA9B1DE02,

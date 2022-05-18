@@ -282,8 +282,8 @@ REGISTER_HASH(mum1_exact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xCB93DE58,
@@ -297,8 +297,8 @@ REGISTER_HASH(mum1_exact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x3EEAE2D4,
@@ -312,8 +312,8 @@ REGISTER_HASH(mum1_exact_3,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x7C0A2F98,
@@ -327,8 +327,8 @@ REGISTER_HASH(mum1_exact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x280B2CC6,
@@ -342,8 +342,8 @@ REGISTER_HASH(mum1_inexact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x689214DF,
@@ -357,8 +357,8 @@ REGISTER_HASH(mum1_inexact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xA973C6C0,
@@ -367,13 +367,13 @@ REGISTER_HASH(mum1_inexact_2,
   $.hashfn_bswap = mum_aligned<1,2,true,false>
 );
 
- REGISTER_HASH(mum1_inexact_3,
+REGISTER_HASH(mum1_inexact_3,
   $.desc = "Mum-hash v1, unroll 2^3, inexact mult, for any-alignment reads",
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x5FC8FC51,
@@ -387,8 +387,8 @@ REGISTER_HASH(mum1_inexact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x2EF256D3,
@@ -402,8 +402,8 @@ REGISTER_HASH(mum1_realign_exact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x9E323D13,
@@ -417,8 +417,8 @@ REGISTER_HASH(mum1_realign_exact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x139A630F,
@@ -432,8 +432,8 @@ REGISTER_HASH(mum1_realign_exact_3,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x0F1AC6C6,
@@ -447,8 +447,8 @@ REGISTER_HASH(mum1_realign_exact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xF47885FE,
@@ -462,8 +462,8 @@ REGISTER_HASH(mum1_realign_inexact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xE11FC923,
@@ -477,8 +477,8 @@ REGISTER_HASH(mum1_realign_inexact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xBAFC050E,
@@ -487,13 +487,13 @@ REGISTER_HASH(mum1_realign_inexact_2,
   $.hashfn_bswap = mum_realign<1,2,true,false>
 );
 
- REGISTER_HASH(mum1_realign_inexact_3,
+REGISTER_HASH(mum1_realign_inexact_3,
   $.desc = "Mum-hash v1, unroll 2^3, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x56FA3D86,
@@ -507,8 +507,8 @@ REGISTER_HASH(mum1_realign_inexact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x59787144,
@@ -522,8 +522,8 @@ REGISTER_HASH(mum2_exact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x9B36F94C,
@@ -537,8 +537,8 @@ REGISTER_HASH(mum2_exact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x40427228,
@@ -552,8 +552,8 @@ REGISTER_HASH(mum2_exact_3,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xB5D1CB5C,
@@ -567,8 +567,8 @@ REGISTER_HASH(mum2_exact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x59AEDABF,
@@ -582,8 +582,8 @@ REGISTER_HASH(mum2_inexact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x1CC6D1E3,
@@ -597,8 +597,8 @@ REGISTER_HASH(mum2_inexact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x62325A27,
@@ -607,13 +607,13 @@ REGISTER_HASH(mum2_inexact_2,
   $.hashfn_bswap = mum_aligned<2,2,true,false>
 );
 
- REGISTER_HASH(mum2_inexact_3,
+REGISTER_HASH(mum2_inexact_3,
   $.desc = "Mum-hash v2, unroll 2^3, inexact mult, for any-alignment reads",
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xF4DD9947,
@@ -627,8 +627,8 @@ REGISTER_HASH(mum2_inexact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x62C46C55,
@@ -642,8 +642,8 @@ REGISTER_HASH(mum2_realign_exact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x3A8751BE,
@@ -657,8 +657,8 @@ REGISTER_HASH(mum2_realign_exact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x7C85EF5A,
@@ -672,8 +672,8 @@ REGISTER_HASH(mum2_realign_exact_3,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x93F25600,
@@ -687,8 +687,8 @@ REGISTER_HASH(mum2_realign_exact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xA0DC8DF8,
@@ -702,8 +702,8 @@ REGISTER_HASH(mum2_realign_inexact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x2D06BA6A,
@@ -717,8 +717,8 @@ REGISTER_HASH(mum2_realign_inexact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xF645F70A,
@@ -727,13 +727,13 @@ REGISTER_HASH(mum2_realign_inexact_2,
   $.hashfn_bswap = mum_realign<2,2,true,false>
 );
 
- REGISTER_HASH(mum2_realign_inexact_3,
+REGISTER_HASH(mum2_realign_inexact_3,
   $.desc = "Mum-hash v2, unroll 2^3, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xA8F0601A,
@@ -747,8 +747,8 @@ REGISTER_HASH(mum2_realign_inexact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x53A9484D,
@@ -762,8 +762,8 @@ REGISTER_HASH(mum3_exact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x3D14C6E2,
@@ -777,8 +777,8 @@ REGISTER_HASH(mum3_exact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x3A556EB2,
@@ -792,8 +792,8 @@ REGISTER_HASH(mum3_exact_3,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x8BD72B8C,
@@ -807,8 +807,8 @@ REGISTER_HASH(mum3_exact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x0AD998DF,
@@ -822,8 +822,8 @@ REGISTER_HASH(mum3_inexact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x475D666B,
@@ -837,8 +837,8 @@ REGISTER_HASH(mum3_inexact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xF6E13B23,
@@ -847,13 +847,13 @@ REGISTER_HASH(mum3_inexact_2,
   $.hashfn_bswap = mum_aligned<3,2,true,false>
 );
 
- REGISTER_HASH(mum3_inexact_3,
+REGISTER_HASH(mum3_inexact_3,
   $.desc = "Mum-hash v3, unroll 2^3, inexact mult, for any-alignment reads",
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xB5560703,
@@ -867,8 +867,8 @@ REGISTER_HASH(mum3_inexact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xE96A20C0,
@@ -882,8 +882,8 @@ REGISTER_HASH(mum3_realign_exact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x26B6E56E,
@@ -897,8 +897,8 @@ REGISTER_HASH(mum3_realign_exact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x6A60097E,
@@ -912,8 +912,8 @@ REGISTER_HASH(mum3_realign_exact_3,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xD45801EE,
@@ -927,8 +927,8 @@ REGISTER_HASH(mum3_realign_exact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x65C49B24,
@@ -942,8 +942,8 @@ REGISTER_HASH(mum3_realign_inexact_1,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xFB3DE98D,
@@ -957,8 +957,8 @@ REGISTER_HASH(mum3_realign_inexact_2,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0xBFD7CE56,
@@ -967,13 +967,13 @@ REGISTER_HASH(mum3_realign_inexact_2,
   $.hashfn_bswap = mum_realign<3,2,true,false>
 );
 
- REGISTER_HASH(mum3_realign_inexact_3,
+REGISTER_HASH(mum3_realign_inexact_3,
   $.desc = "Mum-hash v3, unroll 2^3, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x68CB735E,
@@ -987,8 +987,8 @@ REGISTER_HASH(mum3_realign_inexact_4,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
+        FLAG_IMPL_ROTATE               |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x4975BD5E,
@@ -1002,7 +1002,6 @@ REGISTER_HASH(mir_exact,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_128BIT               |
         FLAG_IMPL_MULTIPLY_64_128      |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,

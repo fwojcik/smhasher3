@@ -178,6 +178,7 @@ REGISTER_HASH(Crap8,
         FLAG_HASH_SMALL_SEED,
   $.impl_flags =
         FLAG_IMPL_READ_PAST_EOB  |
+        FLAG_IMPL_MULTIPLY       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x743E97A1,
@@ -193,6 +194,7 @@ REGISTER_HASH(CrapWow_32,
   $.impl_flags =
         FLAG_IMPL_SANITY_FAILS   |
         FLAG_IMPL_READ_PAST_EOB  |
+        FLAG_IMPL_MULTIPLY       |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 32,
   $.verification_LE = 0x49ECB015,
@@ -206,8 +208,9 @@ REGISTER_HASH(CrapWow_64,
   $.hash_flags =
         0,
   $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS   |
-        FLAG_IMPL_READ_PAST_EOB  |
+        FLAG_IMPL_SANITY_FAILS    |
+        FLAG_IMPL_READ_PAST_EOB   |
+        FLAG_IMPL_MULTIPLY_64_128 |
         FLAG_IMPL_LICENSE_MIT,
   $.bits = 64,
   $.verification_LE = 0x669D3A9B,
