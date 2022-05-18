@@ -73,14 +73,6 @@ public:
         uint64_t *hash2);       // in/out: in seed 2, out hash value 2
 
     //
-    // left rotate a 64-bit value by k bytes
-    //
-    static FORCE_INLINE uint64_t Rot64(uint64_t x, int k)
-    {
-        return (x << k) | (x >> (64 - k));
-    }
-
-    //
     // This is used if the input is 96 bytes long or longer.
     //
     // The internal state is fully overwritten every 96 bytes.
@@ -100,18 +92,18 @@ public:
         uint64_t &s4, uint64_t &s5, uint64_t &s6, uint64_t &s7,
         uint64_t &s8, uint64_t &s9, uint64_t &s10,uint64_t &s11)
     {
-      s0 += GET_U64<bswap>(data, 8*0);      s2 ^= s10;  s11 ^= s0;    s0 = Rot64(s0,11);   s11 += s1;
-      s1 += GET_U64<bswap>(data, 8*1);      s3 ^= s11;   s0 ^= s1;    s1 = Rot64(s1,32);    s0 += s2;
-      s2 += GET_U64<bswap>(data, 8*2);      s4 ^= s0;    s1 ^= s2;    s2 = Rot64(s2,43);    s1 += s3;
-      s3 += GET_U64<bswap>(data, 8*3);      s5 ^= s1;    s2 ^= s3;    s3 = Rot64(s3,31);    s2 += s4;
-      s4 += GET_U64<bswap>(data, 8*4);      s6 ^= s2;    s3 ^= s4;    s4 = Rot64(s4,17);    s3 += s5;
-      s5 += GET_U64<bswap>(data, 8*5);      s7 ^= s3;    s4 ^= s5;    s5 = Rot64(s5,28);    s4 += s6;
-      s6 += GET_U64<bswap>(data, 8*6);      s8 ^= s4;    s5 ^= s6;    s6 = Rot64(s6,39);    s5 += s7;
-      s7 += GET_U64<bswap>(data, 8*7);      s9 ^= s5;    s6 ^= s7;    s7 = Rot64(s7,57);    s6 += s8;
-      s8 += GET_U64<bswap>(data, 8*8);     s10 ^= s6;    s7 ^= s8;    s8 = Rot64(s8,55);    s7 += s9;
-      s9 += GET_U64<bswap>(data, 8*9);     s11 ^= s7;    s8 ^= s9;    s9 = Rot64(s9,54);    s8 += s10;
-      s10 += GET_U64<bswap>(data, 8*10);    s0 ^= s8;    s9 ^= s10;   s10 = Rot64(s10,22);  s9 += s11;
-      s11 += GET_U64<bswap>(data, 8*11);    s1 ^= s9;   s10 ^= s11;   s11 = Rot64(s11,46); s10 += s0;
+      s0 += GET_U64<bswap>(data, 8*0);      s2 ^= s10;  s11 ^= s0;    s0 = ROTL64(s0,11);   s11 += s1;
+      s1 += GET_U64<bswap>(data, 8*1);      s3 ^= s11;   s0 ^= s1;    s1 = ROTL64(s1,32);    s0 += s2;
+      s2 += GET_U64<bswap>(data, 8*2);      s4 ^= s0;    s1 ^= s2;    s2 = ROTL64(s2,43);    s1 += s3;
+      s3 += GET_U64<bswap>(data, 8*3);      s5 ^= s1;    s2 ^= s3;    s3 = ROTL64(s3,31);    s2 += s4;
+      s4 += GET_U64<bswap>(data, 8*4);      s6 ^= s2;    s3 ^= s4;    s4 = ROTL64(s4,17);    s3 += s5;
+      s5 += GET_U64<bswap>(data, 8*5);      s7 ^= s3;    s4 ^= s5;    s5 = ROTL64(s5,28);    s4 += s6;
+      s6 += GET_U64<bswap>(data, 8*6);      s8 ^= s4;    s5 ^= s6;    s6 = ROTL64(s6,39);    s5 += s7;
+      s7 += GET_U64<bswap>(data, 8*7);      s9 ^= s5;    s6 ^= s7;    s7 = ROTL64(s7,57);    s6 += s8;
+      s8 += GET_U64<bswap>(data, 8*8);     s10 ^= s6;    s7 ^= s8;    s8 = ROTL64(s8,55);    s7 += s9;
+      s9 += GET_U64<bswap>(data, 8*9);     s11 ^= s7;    s8 ^= s9;    s9 = ROTL64(s9,54);    s8 += s10;
+      s10 += GET_U64<bswap>(data, 8*10);    s0 ^= s8;    s9 ^= s10;   s10 = ROTL64(s10,22);  s9 += s11;
+      s11 += GET_U64<bswap>(data, 8*11);    s1 ^= s9;   s10 ^= s11;   s11 = ROTL64(s11,46); s10 += s0;
     }
 
     //
@@ -135,18 +127,18 @@ public:
         uint64_t &h4, uint64_t &h5, uint64_t &h6, uint64_t &h7,
         uint64_t &h8, uint64_t &h9, uint64_t &h10,uint64_t &h11)
     {
-        h11+= h1;    h2 ^= h11;   h1 = Rot64(h1,44);
-	h0 += h2;    h3 ^= h0;    h2 = Rot64(h2,15);
-	h1 += h3;    h4 ^= h1;    h3 = Rot64(h3,34);
-	h2 += h4;    h5 ^= h2;    h4 = Rot64(h4,21);
-	h3 += h5;    h6 ^= h3;    h5 = Rot64(h5,38);
-	h4 += h6;    h7 ^= h4;    h6 = Rot64(h6,33);
-	h5 += h7;    h8 ^= h5;    h7 = Rot64(h7,10);
-	h6 += h8;    h9 ^= h6;    h8 = Rot64(h8,13);
-	h7 += h9;    h10^= h7;    h9 = Rot64(h9,38);
-	h8 += h10;   h11^= h8;    h10= Rot64(h10,53);
-	h9 += h11;   h0 ^= h9;    h11= Rot64(h11,42);
-	h10+= h0;    h1 ^= h10;   h0 = Rot64(h0,54);
+        h11+= h1;    h2 ^= h11;   h1 = ROTL64(h1,44);
+        h0 += h2;    h3 ^= h0;    h2 = ROTL64(h2,15);
+        h1 += h3;    h4 ^= h1;    h3 = ROTL64(h3,34);
+        h2 += h4;    h5 ^= h2;    h4 = ROTL64(h4,21);
+        h3 += h5;    h6 ^= h3;    h5 = ROTL64(h5,38);
+        h4 += h6;    h7 ^= h4;    h6 = ROTL64(h6,33);
+        h5 += h7;    h8 ^= h5;    h7 = ROTL64(h7,10);
+        h6 += h8;    h9 ^= h6;    h8 = ROTL64(h8,13);
+        h7 += h9;    h10^= h7;    h9 = ROTL64(h9,38);
+        h8 += h10;   h11^= h8;    h10= ROTL64(h10,53);
+        h9 += h11;   h0 ^= h9;    h11= ROTL64(h11,42);
+        h10+= h0;    h1 ^= h10;   h0 = ROTL64(h0,54);
     }
 
     template < uint32_t version, bool bswap >
@@ -154,7 +146,7 @@ public:
         uint64_t &h0, uint64_t &h1, uint64_t &h2, uint64_t &h3,
         uint64_t &h4, uint64_t &h5, uint64_t &h6, uint64_t &h7,
         uint64_t &h8, uint64_t &h9, uint64_t &h10,uint64_t &h11,
-	const uint8_t * data)
+    const uint8_t * data)
     {
         if (version == 2) {
             h0  += GET_U64<bswap>(data, 8*0);    h1 += GET_U64<bswap>(data, 8*1);
@@ -188,18 +180,18 @@ public:
     //
     static FORCE_INLINE void ShortMix(uint64_t &h0, uint64_t &h1, uint64_t &h2, uint64_t &h3)
     {
-        h2 = Rot64(h2,50);  h2 += h3;  h0 ^= h2;
-        h3 = Rot64(h3,52);  h3 += h0;  h1 ^= h3;
-        h0 = Rot64(h0,30);  h0 += h1;  h2 ^= h0;
-        h1 = Rot64(h1,41);  h1 += h2;  h3 ^= h1;
-        h2 = Rot64(h2,54);  h2 += h3;  h0 ^= h2;
-        h3 = Rot64(h3,48);  h3 += h0;  h1 ^= h3;
-        h0 = Rot64(h0,38);  h0 += h1;  h2 ^= h0;
-        h1 = Rot64(h1,37);  h1 += h2;  h3 ^= h1;
-        h2 = Rot64(h2,62);  h2 += h3;  h0 ^= h2;
-        h3 = Rot64(h3,34);  h3 += h0;  h1 ^= h3;
-        h0 = Rot64(h0,5);   h0 += h1;  h2 ^= h0;
-        h1 = Rot64(h1,36);  h1 += h2;  h3 ^= h1;
+        h2 = ROTL64(h2,50);  h2 += h3;  h0 ^= h2;
+        h3 = ROTL64(h3,52);  h3 += h0;  h1 ^= h3;
+        h0 = ROTL64(h0,30);  h0 += h1;  h2 ^= h0;
+        h1 = ROTL64(h1,41);  h1 += h2;  h3 ^= h1;
+        h2 = ROTL64(h2,54);  h2 += h3;  h0 ^= h2;
+        h3 = ROTL64(h3,48);  h3 += h0;  h1 ^= h3;
+        h0 = ROTL64(h0,38);  h0 += h1;  h2 ^= h0;
+        h1 = ROTL64(h1,37);  h1 += h2;  h3 ^= h1;
+        h2 = ROTL64(h2,62);  h2 += h3;  h0 ^= h2;
+        h3 = ROTL64(h3,34);  h3 += h0;  h1 ^= h3;
+        h0 = ROTL64(h0,5);   h0 += h1;  h2 ^= h0;
+        h1 = ROTL64(h1,36);  h1 += h2;  h3 ^= h1;
     }
 
     //
@@ -216,17 +208,17 @@ public:
     //
     static FORCE_INLINE void ShortEnd(uint64_t &h0, uint64_t &h1, uint64_t &h2, uint64_t &h3)
     {
-        h3 ^= h2;  h2 = Rot64(h2,15);  h3 += h2;
-        h0 ^= h3;  h3 = Rot64(h3,52);  h0 += h3;
-        h1 ^= h0;  h0 = Rot64(h0,26);  h1 += h0;
-        h2 ^= h1;  h1 = Rot64(h1,51);  h2 += h1;
-        h3 ^= h2;  h2 = Rot64(h2,28);  h3 += h2;
-        h0 ^= h3;  h3 = Rot64(h3,9);   h0 += h3;
-        h1 ^= h0;  h0 = Rot64(h0,47);  h1 += h0;
-        h2 ^= h1;  h1 = Rot64(h1,54);  h2 += h1;
-        h3 ^= h2;  h2 = Rot64(h2,32);  h3 += h2;
-        h0 ^= h3;  h3 = Rot64(h3,25);  h0 += h3;
-        h1 ^= h0;  h0 = Rot64(h0,63);  h1 += h0;
+        h3 ^= h2;  h2 = ROTL64(h2,15);  h3 += h2;
+        h0 ^= h3;  h3 = ROTL64(h3,52);  h0 += h3;
+        h1 ^= h0;  h0 = ROTL64(h0,26);  h1 += h0;
+        h2 ^= h1;  h1 = ROTL64(h1,51);  h2 += h1;
+        h3 ^= h2;  h2 = ROTL64(h2,28);  h3 += h2;
+        h0 ^= h3;  h3 = ROTL64(h3,9);   h0 += h3;
+        h1 ^= h0;  h0 = ROTL64(h0,47);  h1 += h0;
+        h2 ^= h1;  h1 = ROTL64(h1,54);  h2 += h1;
+        h3 ^= h2;  h2 = ROTL64(h2,32);  h3 += h2;
+        h0 ^= h3;  h3 = ROTL64(h3,25);  h0 += h3;
+        h1 ^= h0;  h0 = ROTL64(h0,63);  h1 += h0;
     }
 
 private:
@@ -277,7 +269,7 @@ void SpookyHash::Short(const void *message, size_t length, uint64_t *hash1, uint
 
         // handle all complete sets of 32 bytes
         for (; ptr < end; ptr += 32) {
-	    c += GET_U64<bswap>(ptr, 0);
+            c += GET_U64<bswap>(ptr, 0);
             d += GET_U64<bswap>(ptr, 8);
             ShortMix(a,b,c,d);
             a += GET_U64<bswap>(ptr, 16);
@@ -289,7 +281,7 @@ void SpookyHash::Short(const void *message, size_t length, uint64_t *hash1, uint
             c += GET_U64<bswap>(ptr, 0);
             d += GET_U64<bswap>(ptr, 8);
             ShortMix(a,b,c,d);
-	    ptr += 16;
+            ptr += 16;
             remainder -= 16;
         }
     }
