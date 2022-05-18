@@ -64,18 +64,10 @@
 // since that would affect results too much.
 
 //-----------------------------------------------------------------------------
-// We view our timing values as a series of random variables V that has been
-// contaminated with occasional outliers due to cache misses, thread
-// preemption, etcetera. To filter out the outliers, we search for the largest
-// subset of V such that all its values are within three standard deviations
-// of the mean.
-
-//-----------------------------------------------------------------------------
 // We really want the rdtsc() calls to bracket the function call as tightly
 // as possible, but that's hard to do portably. We'll try and get as close as
 // possible by marking the function as NEVER_INLINE (to keep the optimizer from
 // moving it) and marking the timing variables as "volatile register".
-
 NEVER_INLINE static int64_t timehash(HashFn hash, const seed_t seed,
         const void * const key, int len) {
   volatile int64_t begin, end;
@@ -196,16 +188,15 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
     if(t > 0) times.push_back(t);
   }
 
+  delete [] buf;
+
   //----------
 
   std::sort(times.begin(),times.end());
 
   FilterOutliers(times);
-
-  delete [] buf;
-
   stddev = CalcStdv(times);
-  return CalcMean(times);
+  return times[0];
 }
 
 //-----------------------------------------------------------------------------
