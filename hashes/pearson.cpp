@@ -222,12 +222,12 @@ static void pearson_hash_256_aesni(uint8_t * out, const uint8_t * in, size_t len
   uint8_t upper[8] = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
   uint8_t lower[8] = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
 
-  uint64_t upper_hash_mask = *(uint64_t*)&upper;
-  uint64_t lower_hash_mask = *(uint64_t*)&lower;
+  uint64_t upper_hash_mask = GET_U64<false>(upper, 0);
+  uint64_t lower_hash_mask = GET_U64<false>(lower, 0);
 
   __m128i tmp = _mm_set1_epi8(0x10);
 
-  __m128i hash_mask = _mm_set_epi64 ((__m64)lower_hash_mask, (__m64)upper_hash_mask);
+  __m128i hash_mask = _mm_set_epi64x(lower_hash_mask, upper_hash_mask);
   __m128i high_hash_mask = _mm_xor_si128 (tmp, hash_mask);
   __m128i hash= _mm_set_epi64x(hash_in, hash_in);
   __m128i high_hash= _mm_set_epi64x(hash_in, hash_in);
@@ -262,10 +262,10 @@ static void pearson_hash_128_aesni(uint8_t * out, const uint8_t * in, size_t len
   uint8_t upper[8] = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
   uint8_t lower[8] = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
 
-  uint64_t upper_hash_mask = *(uint64_t*)&upper;
-  uint64_t lower_hash_mask = *(uint64_t*)&lower;
+  uint64_t upper_hash_mask = GET_U64<false>(upper, 0);
+  uint64_t lower_hash_mask = GET_U64<false>(lower, 0);
 
-  __m128i hash_mask = _mm_set_epi64 ((__m64)lower_hash_mask, (__m64)upper_hash_mask);
+  __m128i hash_mask = _mm_set_epi64x (lower_hash_mask, upper_hash_mask);
   __m128i hash = _mm_set_epi64x(hash_in, hash_in);
 
   // table lookup preparation
@@ -318,12 +318,12 @@ static void pearson_hash_256_ssse3(uint8_t * out, const uint8_t * in, size_t len
   uint8_t upper[8] = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
   uint8_t lower[8] = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
 
-  uint64_t upper_hash_mask = *(uint64_t*)&upper;
-  uint64_t lower_hash_mask = *(uint64_t*)&lower;
+  uint64_t upper_hash_mask = GET_U64<false>(upper, 0);
+  uint64_t lower_hash_mask = GET_U64<false>(lower, 0);
 
   __m128i tmp = _mm_set1_epi8(0x10);
 
-  __m128i hash_mask = _mm_set_epi64 ((__m64)lower_hash_mask, (__m64)upper_hash_mask);
+  __m128i hash_mask = _mm_set_epi64x (lower_hash_mask, upper_hash_mask);
   __m128i high_hash_mask = _mm_xor_si128 (tmp, hash_mask);
   __m128i hash= _mm_set_epi64x(hash_in, hash_in);
   __m128i high_hash= _mm_set_epi64x(hash_in, hash_in);
@@ -380,10 +380,10 @@ static void pearson_hash_128_ssse3(uint8_t * out, const uint8_t * in, size_t len
   uint8_t upper[8] = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
   uint8_t lower[8] = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
 
-  uint64_t upper_hash_mask = *(uint64_t*)&upper;
-  uint64_t lower_hash_mask = *(uint64_t*)&lower;
+  uint64_t upper_hash_mask = GET_U64<false>(upper, 0);
+  uint64_t lower_hash_mask = GET_U64<false>(lower, 0);
 
-  __m128i hash_mask = _mm_set_epi64 ((__m64)lower_hash_mask, (__m64)upper_hash_mask);
+  __m128i hash_mask = _mm_set_epi64x (lower_hash_mask, upper_hash_mask);
   __m128i hash = _mm_set_epi64x(hash_in, hash_in);
 
   // table lookup preparation

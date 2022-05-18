@@ -665,7 +665,7 @@ static struct umash_oh oh_varblock(const uint64_t *params, uint64_t tag,
     /* The final block processes `remaining > 0` bytes. */
     size_t remaining = 1 + ((n_bytes - 1) % sizeof(v128));
     size_t end_full_pairs = (n_bytes - remaining) / sizeof(uint64_t);
-    const void *last_ptr = (const uint8_t *)block + n_bytes - sizeof(v128);
+    const uint8_t * last_ptr = (const uint8_t *)block + n_bytes - sizeof(v128);
     size_t i;
 
     for (i = 0; i < end_full_pairs; i += 2) {
@@ -686,8 +686,8 @@ static struct umash_oh oh_varblock(const uint64_t *params, uint64_t tag,
     {
         uint64_t x, y, enh_hi, enh_lo;
 
-        x = GET_U64<bswap>((const uint8_t *)last_ptr, 0);
-        y = GET_U64<bswap>((const uint8_t *)last_ptr, 8);
+        x = GET_U64<bswap>(last_ptr, 0);
+        y = GET_U64<bswap>(last_ptr, 8);
 
         x += params[i];
         y += params[i + 1];
@@ -710,7 +710,7 @@ static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
     /* The final block processes `remaining > 0` bytes. */
     size_t remaining = 1 + ((n_bytes - 1) % sizeof(v128));
     size_t end_full_pairs = (n_bytes - remaining) / sizeof(uint64_t);
-    const void *last_ptr = (const char *)block + n_bytes - sizeof(v128);
+    const uint8_t * last_ptr = (const uint8_t *)block + n_bytes - sizeof(v128);
     size_t i;
 
     lrc = v128_create(params[UMASH_OH_PARAM_COUNT], params[UMASH_OH_PARAM_COUNT + 1]);
@@ -761,8 +761,8 @@ static void oh_varblock_fprint(struct umash_oh dst[2], const uint64_t *params,
     {
         uint64_t x, y, kx, ky, enh_hi, enh_lo;
 
-        x = GET_U64<bswap>((const uint8_t *)last_ptr, 0);
-        y = GET_U64<bswap>((const uint8_t *)last_ptr, 8);
+        x = GET_U64<bswap>(last_ptr, 0);
+        y = GET_U64<bswap>(last_ptr, 8);
 
         kx = x + params[end_full_pairs];
         ky = y + params[end_full_pairs + 1];
@@ -864,7 +864,7 @@ static struct umash_fp umash_fp_long(const uint64_t multipliers[2][2], const uin
         UPDATE(1);
 #undef UPDATE
 
-        data = (const char *)data + BLOCK_SIZE;
+        data = (const uint8_t *)data + BLOCK_SIZE;
         n_bytes -= BLOCK_SIZE;
     }
 

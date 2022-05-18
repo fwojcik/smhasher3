@@ -410,8 +410,7 @@ static void beamsplitter_64(const void * in, const size_t len, const seed_t seed
     //printf("state = %#018" PRIx64 " %#018" PRIx64 "\n",
     //  state[0], state[1] );
 
-    uint8_t output[STATE] = {0};
-    uint64_t * h = (uint64_t *)output;
+    uint64_t h[2] = {0};
 
     // The new combination step
     h[0] = state[2];

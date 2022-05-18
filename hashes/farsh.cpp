@@ -94,7 +94,7 @@ alignas(32) static const uint32_t FARSH_KEYS [STRIPE_ELEMENTS + EXTRA_ELEMENTS] 
 
 /* Internal: hash exactly STRIPE bytes */
 template < bool bswap >
-static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
+static uint64_t farsh_full_block (const uint8_t *data, const uint32_t *key) {
 #if defined(HAVE_AVX2)
     __m256i sum = _mm256_setzero_si256();  __m128i sum128;  int i;
     const __m256i *xdata = (const __m256i *) data;
@@ -110,7 +110,7 @@ static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
     }
     sum = _mm256_add_epi64 (sum, _mm256_shuffle_epi32(sum,3*4+2));              // return sum of four 64-bit values in the sum
     sum128 = _mm_add_epi64 (_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum,1));
-    return *(uint64_t*) &sum128;
+    return _mm_cvtsi128_si64(sum128);
 #elif defined(HAVE_SSE_2)
     __m128i sum = _mm_setzero_si128();  int i;
     const __m128i *xdata = (const __m128i *) data;
@@ -125,12 +125,12 @@ static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
         sum = _mm_add_epi64(sum,res);
     }
     sum = _mm_add_epi64 (sum, _mm_shuffle_epi32(sum,3*4+2));                    // return sum of two 64-bit values in the sum
-    return *(uint64_t*) &sum;
+    return _mm_cvtsi128_si64(sum);
 #else
     uint64_t sum = 0;  int i;
     for (i=0; i < STRIPE_ELEMENTS; i+=2) {
-        sum += (COND_BSWAP(data[i], bswap) + key[i]) *
-            (uint64_t)(COND_BSWAP(data[i+1], bswap) + key[i+1]);
+        sum += (GET_U32<bswap>(data, i*4) + key[i]) *
+            (uint64_t)(GET_U32<bswap>(data, (i+1)*4) + key[i+1]);
     }
     return sum;
 #endif
@@ -138,17 +138,17 @@ static uint64_t farsh_full_block (const uint32_t *data, const uint32_t *key) {
 
 /* Internal: hash less than STRIPE bytes, with careful handling of partial uint32_t pair at the end of buffer */
 template < bool bswap >
-static uint64_t farsh_partial_block(const uint32_t *data, size_t bytes, const uint32_t *key) {
+static uint64_t farsh_partial_block(const uint8_t *data, size_t bytes, const uint32_t *key) {
     uint64_t sum = 0;  int i;
     size_t elements = (bytes/sizeof(uint32_t)) & (~1);
 
     uint32_t extra_data[2] = {0};
     size_t extra_bytes = bytes - elements*sizeof(uint32_t);
-    memcpy (extra_data, data+elements, extra_bytes);
+    memcpy (extra_data, data+4*elements, extra_bytes);
 
     for (i=0; i < elements; i+=2)
-        sum += (COND_BSWAP(data[i],bswap) + key[i]) *
-            (uint64_t)(COND_BSWAP(data[i+1],bswap) + key[i+1]);
+        sum += (GET_U32<bswap>(data, i*4) + key[i]) *
+            (uint64_t)(GET_U32<bswap>(data, (i+1)*4) + key[i+1]);
     if (extra_bytes)
         sum += (COND_BSWAP(extra_data[0],bswap) + key[i]) *
             (uint64_t)(COND_BSWAP(extra_data[1],bswap) + key[i+1]);
@@ -190,17 +190,17 @@ static uint32_t farsh_final (uint64_t sum) {
 template < bool bswap >
 static uint32_t farsh_keyed (const void *data, size_t bytes, const void *key, uint64_t seed) {
     uint64_t sum = seed;
-    const char *ptr     = (const char*) data;
-    const uint32_t *key_ptr = (const uint32_t*) key;
+    const uint8_t *  ptr     = (const uint8_t *)  data;
+    const uint32_t * key_ptr = (const uint32_t *) key;
     while (bytes >= STRIPE) {
         size_t chunk = STRIPE;
-        uint64_t h = farsh_full_block<bswap>((const uint32_t*)ptr, key_ptr);
+        uint64_t h = farsh_full_block<bswap>(ptr, key_ptr);
         sum = farsh_combine (sum, h);
         ptr += chunk;  bytes -= chunk;
     }
     if (bytes) {
         size_t chunk = bytes;
-        uint64_t h = farsh_partial_block<bswap>((const uint32_t*)ptr, chunk, key_ptr);
+        uint64_t h = farsh_partial_block<bswap>(ptr, chunk, key_ptr);
         sum = farsh_combine (sum, h);
         ptr += chunk;  bytes -= chunk;
     }
@@ -211,7 +211,7 @@ template < bool bswap >
 static void farsh_keyed_n (const void *data, size_t bytes, const void *key, int n, uint64_t seed, void *hash) {
     uint32_t * hash_ptr = (uint32_t*)hash;
     for (int i = 0; i < n; i++)
-        hash_ptr[i] = COND_BSWAP(farsh_keyed<bswap>(data, bytes, (const char*)key + i*FARSH_EXTRA_KEY_SIZE, seed), bswap);
+        hash_ptr[i] = COND_BSWAP(farsh_keyed<bswap>(data, bytes, (const uint8_t*)key + i*FARSH_EXTRA_KEY_SIZE, seed), bswap);
 }
 
 template < bool bswap >
@@ -219,7 +219,7 @@ static void farsh_n (const void *data, size_t bytes, int k, int n, uint64_t seed
     /* FARSH_KEYS contains only material for the hashes 0..FARSH_MAX_HASHES-1 */
     if (k+n > FARSH_MAX_HASHES) return;
 
-    farsh_keyed_n<bswap>(data, bytes, (const char*)FARSH_KEYS + k*FARSH_EXTRA_KEY_SIZE, n, seed, hash);
+    farsh_keyed_n<bswap>(data, bytes, (const uint8_t*)FARSH_KEYS + k*FARSH_EXTRA_KEY_SIZE, n, seed, hash);
 }
 
 template < bool bswap, uint32_t hashcount >

@@ -55,13 +55,13 @@ static FORCE_INLINE uint64_t fmix64(uint64_t k) {
 // handle aligned reads, do the conversion here
 
 template < bool bswap >
-static FORCE_INLINE uint32_t getblock32(const uint32_t * p, int64_t i) {
-    return GET_U32<bswap>((const uint8_t *)p+(4*i), 0);
+static FORCE_INLINE uint32_t getblock32(const uint8_t * p, int64_t i) {
+    return GET_U32<bswap>(p+(4*i), 0);
 }
 
 template < bool bswap >
-static FORCE_INLINE uint64_t getblock64(const uint64_t * p, int64_t i) {
-    return GET_U64<bswap>((const uint8_t *)p+(8*i), 0);
+static FORCE_INLINE uint64_t getblock64(const uint8_t * p, int64_t i) {
+    return GET_U64<bswap>(p+(8*i), 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ static void MurmurHash3_32(const void * in, const size_t len, const seed_t seed,
   //----------
   // body
 
-  const uint32_t * blocks = (const uint32_t *)(data + nblocks*4);
+  const uint8_t * blocks = data + nblocks*4;
 
   for (ssize_t i = -nblocks; i; i++) {
     uint32_t k1 = getblock32<bswap>(blocks,i);
@@ -95,7 +95,7 @@ static void MurmurHash3_32(const void * in, const size_t len, const seed_t seed,
   //----------
   // tail
 
-  const uint8_t * tail = (const uint8_t *)(data + nblocks*4);
+  const uint8_t * tail = data + nblocks*4;
 
   uint32_t k1 = 0;
 
@@ -135,7 +135,7 @@ static void MurmurHash3_32_128(const void * in, const size_t len, const seed_t s
   //----------
   // body
 
-  const uint32_t * blocks = (const uint32_t *)(data + nblocks*16);
+  const uint8_t * blocks = data + nblocks*16;
 
   for (ssize_t i = -nblocks; i; i++) {
     uint32_t k1 = getblock32<bswap>(blocks,i*4+0);
@@ -163,7 +163,7 @@ static void MurmurHash3_32_128(const void * in, const size_t len, const seed_t s
   //----------
   // tail
 
-  const uint8_t * tail = (const uint8_t *)(data + nblocks*16);
+  const uint8_t * tail = data + nblocks*16;
 
   uint32_t k1 = 0;
   uint32_t k2 = 0;
@@ -233,7 +233,7 @@ static void MurmurHash3_128(const void * in, const size_t len, const seed_t seed
   //----------
   // body
 
-  const uint64_t * blocks = (const uint64_t *)(data);
+  const uint8_t * blocks = data;
 
   for (size_t i = 0; i < nblocks; i++) {
     uint64_t k1 = getblock64<bswap>(blocks,i*2+0);
@@ -251,7 +251,7 @@ static void MurmurHash3_128(const void * in, const size_t len, const seed_t seed
   //----------
   // tail
 
-  const uint8_t * tail = (const uint8_t *)(data + nblocks*16);
+  const uint8_t * tail = data + nblocks*16;
 
   uint64_t k1 = 0;
   uint64_t k2 = 0;
