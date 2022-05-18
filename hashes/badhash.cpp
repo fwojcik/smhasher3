@@ -39,8 +39,7 @@ static void BadHash(const void * in, const size_t len, const seed_t seed, void *
         h ^= *data++;
     }
 
-    h = COND_BSWAP(h, bswap);
-    memcpy(out, &h, sizeof(h));
+    PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
@@ -53,8 +52,7 @@ static void sumhash8(const void * in, const size_t len, const seed_t seed, void 
         h += *data++;
     }
 
-    h = COND_BSWAP(h, bswap);
-    memcpy(out, &h, sizeof(h));
+    PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template < bool bswap >
@@ -64,9 +62,8 @@ static void sumhash32(const void * in, const size_t len, const seed_t seed, void
     uint32_t h                  = seed;
 
     while (data < end) {
-        uint32_t d;
-        memcpy(&d, data++, 4);
-        h += COND_BSWAP(d, bswap);
+        h += GET_U32<bswap>((const uint8_t *)data, 0);
+        data++;
     }
 
     if (len & 3) {
@@ -77,8 +74,7 @@ static void sumhash32(const void * in, const size_t len, const seed_t seed, void
         }
     }
 
-    h = COND_BSWAP(h, bswap);
-    memcpy(out, &h, sizeof(h));
+    PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 REGISTER_FAMILY(badhash,
