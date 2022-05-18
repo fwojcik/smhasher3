@@ -342,9 +342,13 @@ void ShortSpeedTest(const HashInfo * hinfo) {
     // alignment during each test.
     for (int i = 1; i <= 4; i++) {
         const int baselen = i * 8;
-        double cycles = SpeedTest(hash, seed, trials,
-                baselen, basealignoffset, 7, maxvaryalign);
-        printf("    %7.2f  ", cycles);
+        double cycles = 0.0;
+        for (int j = 0; j < 8; j++) {
+            double curcyc = SpeedTest(hash, seed, TINY_TRIALS,
+                    baselen + j, basealignoffset, 0, maxvaryalign);
+            cycles += curcyc;
+        }
+        printf("    %7.2f  ", cycles/8.0);
     }
 
     printf("\n");
