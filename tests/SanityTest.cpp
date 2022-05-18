@@ -650,12 +650,19 @@ bool SanityTest(const HashInfo * hinfo, bool oneline) {
     threadresult &= ThreadingTest(hinfo, false, verbose);
     threadresult &= ThreadingTest(hinfo, true, verbose);
 
-    if (oneline) { printf("\n"); }
-
     if (!oneline && !threadresult) {
         DisableThreads();
     }
+
     result &= threadresult;
+
+    if ((hinfo->impl_flags & FLAG_IMPL_SANITY_FAILS) && result) {
+        printf("%sSANITY_FAILS set, but hash passed\n", oneline ? "\t" : "");
+    } else if (!(hinfo->impl_flags & FLAG_IMPL_SANITY_FAILS) && !result) {
+        printf("%sSANITY_FAILS unset, but hash failed\n", oneline ? "\t" : "");
+    } else if (oneline) {
+        printf("\n");
+    }
 
     return result;
 }
