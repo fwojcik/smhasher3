@@ -137,7 +137,7 @@ static void SeaHash(const void * in, const size_t len, const seed_t seed, void *
 }
 
 REGISTER_FAMILY(seahash,
-  $.src_url = "",
+  $.src_url = "https://gist.github.com/vstakhov/b58b855532a424cd634b6c7ea7baa1b9",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

@@ -185,6 +185,7 @@ static void aesrng(const void * in, const size_t len, const seed_t seed, void * 
 }
 
 REGISTER_FAMILY(aesrng,
+  $.src_url = "https://gitlab.com/fwojcik/smhasher3/-/blob/main/hashes/aesrng.cpp",
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 

@@ -1303,7 +1303,7 @@ static void HalftimeHash512(const void * in, const size_t len, const seed_t seed
 
 //------------------------------------------------------------
 REGISTER_FAMILY(halftimehash,
-  $.src_url = "",
+  $.src_url = "https://github.com/jbapple/HalftimeHash",
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 

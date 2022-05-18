@@ -161,6 +161,7 @@ static void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, 
 }
 
 REGISTER_FAMILY(poly_mersenne,
+  $.src_url = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

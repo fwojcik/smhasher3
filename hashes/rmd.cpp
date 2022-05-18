@@ -696,7 +696,7 @@ static bool rmd_test(void) {
 }
 
 REGISTER_FAMILY(rmd,
-  $.src_url = "",
+  $.src_url = "https://github.com/libtom/libtomcrypt/blob/develop/src/hashes/rmd128.c",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

@@ -78,6 +78,7 @@ static void sumhash32(const void * in, const size_t len, const seed_t seed, void
 }
 
 REGISTER_FAMILY(badhash,
+  $.src_url = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

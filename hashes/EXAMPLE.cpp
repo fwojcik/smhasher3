@@ -24,6 +24,7 @@ static void ###YOURHASHNAMEHash(const void * in, const size_t len, const seed_t 
 
 //------------------------------------------------------------
 REGISTER_FAMILY(###YOURHASHFAMILYNAME,
+  $.src_url = "###YOURREPOSITORYURL",
   $.src_status = HashFamilyInfo::SRC_###YOURSRCSTATUS
 );
 

@@ -44,6 +44,7 @@ static void DoNothingOAATHash(const void * in, const size_t len, const seed_t se
 }
 
 REGISTER_FAMILY(donothing,
+  $.src_url = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

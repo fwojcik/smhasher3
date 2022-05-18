@@ -184,7 +184,7 @@ static void fletcher64(const void * in, const size_t len, const seed_t seed, voi
 
 //------------------------------------------------------------
 REGISTER_FAMILY(fletcher,
-  $.src_url = "",
+  $.src_url = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

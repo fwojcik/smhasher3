@@ -308,7 +308,7 @@ static void MD5(const void * in, const size_t len, const seed_t seed, void * out
 }
 
 REGISTER_FAMILY(md5,
-  $.src_url = "",
+  $.src_url = "https://github.com/MattiaOng/md5-cracker/blob/master/md5.c",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

@@ -44,6 +44,7 @@ static void x17(const void * in, const size_t len, const seed_t seed, void * out
 
 //------------------------------------------------------------
 REGISTER_FAMILY(x17,
+  $.src_url = "https://github.com/aappleby/smhasher/blob/master/src/Hashes.cpp",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 

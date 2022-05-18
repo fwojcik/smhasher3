@@ -314,6 +314,7 @@ static void tabulation64(const void * in, const size_t len, const seed_t seed, v
 
 //-----------------------------------------------------------------------------
 REGISTER_FAMILY(tabulation,
+  $.src_url = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
