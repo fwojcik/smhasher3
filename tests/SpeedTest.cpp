@@ -59,6 +59,10 @@
 #include <functional>
 #include <cassert>
 
+constexpr int BULK_TRIALS  = 2999; // Timings per hash for large (>=128b) keys
+constexpr int TINY_TRIALS  = 200;  // Timings per hash for small (<128b) keys
+constexpr int TINY_SAMPLES = 15000;// Samples per timing run for small sizes
+
 //-----------------------------------------------------------------------------
 // This is functionally a speed test, and so will not inform VCodes,
 // since that would affect results too much.
@@ -93,20 +97,22 @@ NEVER_INLINE static int64_t timehash(HashFn hash, const seed_t seed,
 //   *) try to excercize as many data-dependent paths in the hash code
 //      as possible.
 //
-// The odd incr value and for() loop are to ensure that the LSB of the
-// key is altered every cycle on both big- and little-endian machines,
-// without needing an isLE()/isBE() call inside the loop. Altering
-// just one byte of the key would do this and would obviate the
-// undesirable behavior warned about below, but modifying a single
+// By having this return an integer, floating-point math is kept out
+// of this routine. This seems to improve timings slightly.
+//
+// The strange incr value and loop bound are to ensure that the LSB of
+// the key is altered every cycle on both big- and little-endian
+// machines, without needing an isLE()/isBE() call inside the loop.
+// Altering just one byte of the key would do this and would obviate
+// the undesirable behavior warned about below, but modifying a single
 // byte instead of a whole word is *surprisingly* expensive, even on
 // x64 platforms, which leads to unfairly inflated cycle counts.
 //
 // WARNING: This assumes that at least 4 bytes can be written to key!
-NEVER_INLINE static double timehash_small(HashFn hash, const seed_t seed,
+NEVER_INLINE static uint64_t timehash_small(HashFn hash, const seed_t seed,
         uint8_t * const key, int len) {
-  const int NUM_TRIALS = 30000;
   const uint64_t incr = 0x1000001;
-  uint64_t maxi = incr * NUM_TRIALS;
+  uint64_t maxi = incr * TINY_SAMPLES;
   volatile unsigned long long int begin, end;
   uint32_t hash_temp[16] = {0};
 
@@ -125,7 +131,7 @@ NEVER_INLINE static double timehash_small(HashFn hash, const seed_t seed,
 
   end = timer_end();
 
-  return ((double)(end - begin) / (double)NUM_TRIALS);
+  return end - begin;
 }
 
 //-----------------------------------------------------------------------------
@@ -179,8 +185,8 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
     r.rand_p(block,testsize);
 
     double t;
-    if (testsize < 100) {
-        t = timehash_small(hash,seed,block,testsize);
+    if (testsize < 128) {
+        t = (double)timehash_small(hash,seed,block,testsize)/(double)TINY_SAMPLES;
     } else {
         t = (double)timehash(hash,seed,block,testsize);
     }
@@ -204,7 +210,6 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
 
 static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary_size)
 {
-  const int trials = 2999;
   const int blocksize = 256 * 1024;
   const int maxvary = vary_size ? 127 : 0;
 
@@ -214,11 +219,11 @@ static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary
       printf("Bulk speed test - %d-byte keys\n",blocksize);
   double sumbpc = 0.0;
 
-  volatile double warmup_cycles = SpeedTest(hash,seed,trials,blocksize,0,0,0);
+  volatile double warmup_cycles = SpeedTest(hash,seed,BULK_TRIALS,blocksize,0,0,0);
 
   for(int align = 7; align >= 0; align--)
   {
-    double cycles = SpeedTest(hash,seed,trials,blocksize,align,maxvary,0);
+    double cycles = SpeedTest(hash,seed,BULK_TRIALS,blocksize,align,maxvary,0);
 
     double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
@@ -228,7 +233,7 @@ static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary
   }
   if (vary_align)
   {
-    double cycles = SpeedTest(hash,seed,trials,blocksize,0,maxvary,7);
+    double cycles = SpeedTest(hash,seed,BULK_TRIALS,blocksize,0,maxvary,7);
 
     double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
@@ -246,7 +251,6 @@ static void BulkSpeedTest ( HashFn hash, seed_t seed, bool vary_align, bool vary
 
 static double TinySpeedTest ( HashFn hash, int maxkeysize, seed_t seed, bool verbose, bool include_vary )
 {
-  const int trials = 999;
   double sum = 0.0;
 
   printf("Small key speed test - [1, %2d]-byte keys\n",maxkeysize);
@@ -254,12 +258,12 @@ static double TinySpeedTest ( HashFn hash, int maxkeysize, seed_t seed, bool ver
   for(int i = 1; i <= maxkeysize; i++)
   {
     volatile int j = i;
-    double cycles = SpeedTest(hash,seed,trials,j,0,0,0);
+    double cycles = SpeedTest(hash,seed,TINY_TRIALS,j,0,0,0);
     if(verbose) printf("  %2d-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",j,cycles,stddev,100.0*stddev/cycles);
     sum += cycles;
   }
   if (include_vary) {
-    double cycles = SpeedTest(hash,seed,trials,maxkeysize,0,maxkeysize-1,0);
+    double cycles = SpeedTest(hash,seed,TINY_TRIALS,maxkeysize,0,maxkeysize-1,0);
     if(verbose) printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv)\n", cycles,stddev);
     // Deliberately not counted in the Average stat, so the two can be directly compared
   }
@@ -311,7 +315,6 @@ void ShortSpeedTest(const HashInfo * hinfo) {
     bool result = true;
     Rand r(321321);
 
-    const int trials = 2000;
     const int maxvaryalign = 7;
     const int basealignoffset = 0;
 
@@ -325,10 +328,10 @@ void ShortSpeedTest(const HashInfo * hinfo) {
 
         // Do a warmup to get things into cache
         volatile double warmup_cycles =
-            SpeedTest(hash,seed,trials,baselen,0,0,0);
+            SpeedTest(hash,seed,BULK_TRIALS,baselen,0,0,0);
 
         // Do a bulk speed test, varying precise block size and alignment
-        double cycles = SpeedTest(hash, seed, trials,
+        double cycles = SpeedTest(hash, seed, BULK_TRIALS,
                 baselen, basealignoffset, maxvarylen, maxvaryalign);
         double curbpc = ((double)baselen - ((double)maxvarylen / 2)) / cycles;
         printf("    %8.2f  ", curbpc);
