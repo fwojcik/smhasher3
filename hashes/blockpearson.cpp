@@ -202,7 +202,7 @@ REGISTER_FAMILY(blockpearson,
 );
 
 REGISTER_HASH(blockpearson_64,
-  $.desc = "Pearson-inspired block hash",
+  $.desc = "Pearson-inspired block hash, 64-bit state",
   $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
@@ -216,7 +216,7 @@ REGISTER_HASH(blockpearson_64,
 );
 
 REGISTER_HASH(blockpearson_128,
-  $.desc = "Pearson hash, 16 lanes using AES sbox",
+  $.desc = "Pearson-inspired block hash, 128-bit state",
   $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
@@ -230,7 +230,7 @@ REGISTER_HASH(blockpearson_128,
 );
 
 REGISTER_HASH(blockpearson_256,
-  $.desc = "Pearson hash, 32 lanes using AES sbox",
+  $.desc = "Pearson-inspired block hash, 256-bit state",
   $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,
   $.impl_flags =
