@@ -131,7 +131,7 @@ static void perl_jenkins_old(const void * in, const size_t len, const seed_t see
 
 template < bool bswap >
 static void perl_jenkins_hard(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint32_t h = jenkinsOAAT_hard((const uint8_t *)in, len, (uint32_t)seed);
+    uint32_t h = jenkinsOAAT_hard((const uint8_t *)in, len, (uint64_t)seed);
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 

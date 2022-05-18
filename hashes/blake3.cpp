@@ -282,9 +282,14 @@ static void blake3_hasher_init(blake3_hasher * self) {
 }
 
 // Home-grown SMHasher3 seeding
-static void blake3_seed(blake3_hasher * hasher, uint32_t seedlo) {
+static void blake3_seed(blake3_hasher * hasher, uint64_t seed) {
+  const uint32_t seedlo = seed         & 0xFFFFFFFF;
+  const uint32_t seedhi = (seed >> 32) & 0xFFFFFFFF;
+
   hasher->key[0] ^= seedlo;
   hasher->chunk.cv[0] ^= seedlo;
+  hasher->key[1] ^= seedhi;
+  hasher->chunk.cv[1] ^= seedhi;
 }
 
 //
@@ -627,7 +632,7 @@ static void BLAKE3(const void * in, const size_t len, const seed_t seed, void * 
   blake3_hasher hasher;
 
   blake3_hasher_init(&hasher);
-  blake3_seed(&hasher, (uint32_t)seed);
+  blake3_seed(&hasher, seed);
   blake3_hasher_update(&hasher, in, len);
   blake3_hasher_finalize(&hasher, (uint8_t *)out, (outbits >= 256) ? 32 : (outbits+7)/8);
 }
@@ -637,10 +642,13 @@ REGISTER_FAMILY(blake3,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
+// The NO_SEED flag is not actually true, but need to replace
+// homegrown with real seeding.
 REGISTER_HASH(blake3,
   $.desc = "BLAKE 3, 256-bit digest",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_NO_SEED              |
         FLAG_HASH_ENDIAN_INDEPENDENT   ,
   $.impl_flags =
         FLAG_IMPL_LICENSE_MIT          |

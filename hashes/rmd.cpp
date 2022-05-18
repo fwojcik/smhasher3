@@ -565,7 +565,7 @@ static void rmd128(const void * in, const size_t len, const seed_t seed, void * 
   rmd_ctx ctx;
 
   rmd_init<128>          (&ctx);
-  rmd_seed               (&ctx, (uint32_t)seed);
+  rmd_seed               (&ctx, (uint64_t)seed);
   rmd_update<128, bswap> (&ctx, (const uint8_t *)in, len);
   rmd_done<128, bswap>   (&ctx, (uint8_t*)out);
 }
@@ -575,7 +575,7 @@ static void rmd160(const void * in, const size_t len, const seed_t seed, void * 
   rmd_ctx ctx;
 
   rmd_init<160>          (&ctx);
-  rmd_seed               (&ctx, (uint32_t)seed);
+  rmd_seed               (&ctx, (uint64_t)seed);
   rmd_update<160, bswap> (&ctx, (const uint8_t *)in, len);
   rmd_done<160, bswap>   (&ctx, (uint8_t*)out);
 }
@@ -585,7 +585,7 @@ static void rmd256(const void * in, const size_t len, const seed_t seed, void * 
   rmd_ctx ctx;
 
   rmd_init<256>          (&ctx);
-  rmd_seed               (&ctx, (uint32_t)seed);
+  rmd_seed               (&ctx, (uint64_t)seed);
   rmd_update<256, bswap> (&ctx, (const uint8_t *)in, len);
   rmd_done<256, bswap>   (&ctx, (uint8_t*)out);
 }
