@@ -1594,7 +1594,7 @@ static bool t1ha0_aes_selftest(void) {
 #endif
 
 REGISTER_FAMILY(t1ha,
-  $.src_url = "https://github.com/erthink/t1ha",
+  $.src_url = "https://web.archive.org/web/20211209095620/https://github.com/erthink/t1ha",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
