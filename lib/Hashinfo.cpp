@@ -21,17 +21,24 @@
 #include "VCode.h"
 
 #include <cstdio>
+#include <string>
 #include <algorithm>
 
-char * HashInfo::_fixup_name(const char * in) {
-    // Since dashes can't be in C/C++ identifiers, but humans want them
-    // in names, replace underscores with dashes.
-    char * out = strdup(in);
-    std::replace(&out[0], &out[strlen(out)], '_', '-');
-    return out;
+const char * HashInfo::_fixup_name(const char * in) {
+    // Since dashes can't be in C/C++ identifiers, but humans want
+    // them in names, replace underscores with dashes. Similarly,
+    // replace double underscores with dots.
+    std::string out(in);
+    do {
+        size_t p = out.find("__");
+        if (p == std::string::npos) break;
+        out.replace(p, 2, ".");
+    } while(true);
+    std::replace(&out[0], &out[out.length()], '_', '-');
+    return strdup(out.c_str());
 }
 
-char * HashFamilyInfo::_fixup_name(const char * in) {
+const char * HashFamilyInfo::_fixup_name(const char * in) {
     return HashInfo::_fixup_name(in);
 }
 

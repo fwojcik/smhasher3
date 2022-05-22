@@ -105,7 +105,7 @@ class HashInfo {
     };
 
   protected:
-    static char * _fixup_name(const char * in);
+    static const char * _fixup_name(const char * in);
 
   private:
     uint32_t _ComputedVerifyImpl(const HashInfo * hinfo, enum HashInfo::endianness endian) const;
@@ -241,5 +241,5 @@ public:
     src_url(NULL), src_status(SRC_UNKNOWN) { }
 
 private:
-    static char * _fixup_name(const char * in);
+    static const char * _fixup_name(const char * in);
 };
