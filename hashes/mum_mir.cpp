@@ -186,6 +186,14 @@ static void mum_aligned(const void * in, const size_t len, const seed_t seed, vo
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
+// fwojcik: I believe the fact that the realign versions of the
+// hash can have different hashes than the aligned version is
+// unintended behavior. The differences come only from 2 places:
+//    1) v1 and v3 of the hash have a per-block MUM step, and
+//    2) _mum_hash_aligned() uses "while (len > ....." instead of
+//      "while (len >= .....".
+// Based on this, I'm removing the realign variants for now.
+#if defined(NOTYET)
 template < uint32_t version, uint32_t unroll_power, bool bswap, bool exactmul >
 static void mum_realign(const void * in, const size_t olen, const seed_t seed, void * out) {
     const uint8_t * str = (const uint8_t *)in;
@@ -203,6 +211,7 @@ static void mum_realign(const void * in, const size_t olen, const seed_t seed, v
     h = _mum_final<version,exactmul>(h);
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // MIR hash internals
@@ -272,6 +281,7 @@ static void mir_hash(const void * in, const size_t olen, const seed_t seed, void
 }
 
 //-----------------------------------------------------------------------------
+// Also https://github.com/vnmakarov/mir/blob/master/mir-hash.h
 REGISTER_FAMILY(mum_mir,
   $.src_url = "https://github.com/vnmakarov/mum-hash",
   $.src_status = HashFamilyInfo::SRC_FROZEN
@@ -397,6 +407,7 @@ REGISTER_HASH(mum1_inexact_4,
   $.hashfn_bswap = mum_aligned<1,4,true,false>
 );
 
+#if defined(NOTYET)
 REGISTER_HASH(mum1_realign_exact_1,
   $.desc = "Mum-hash v1, unroll 2^1, exact mult, for aligned-only reads",
   $.hash_flags =
@@ -516,6 +527,7 @@ REGISTER_HASH(mum1_realign_inexact_4,
   $.hashfn_native = mum_realign<1,4,false,false>,
   $.hashfn_bswap = mum_realign<1,4,true,false>
 );
+#endif
 
 REGISTER_HASH(mum2_exact_1,
   $.desc = "Mum-hash v2, unroll 2^1, exact mult, for any-alignment reads",
@@ -637,6 +649,7 @@ REGISTER_HASH(mum2_inexact_4,
   $.hashfn_bswap = mum_aligned<2,4,true,false>
 );
 
+#if defined(NOTYET)
 REGISTER_HASH(mum2_realign_exact_1,
   $.desc = "Mum-hash v2, unroll 2^1, exact mult, for aligned-only reads",
   $.hash_flags =
@@ -756,6 +769,7 @@ REGISTER_HASH(mum2_realign_inexact_4,
   $.hashfn_native = mum_realign<2,4,false,false>,
   $.hashfn_bswap = mum_realign<2,4,true,false>
 );
+#endif
 
 REGISTER_HASH(mum3_exact_1,
   $.desc = "Mum-hash v3, unroll 2^1, exact mult, for any-alignment reads",
@@ -877,6 +891,7 @@ REGISTER_HASH(mum3_inexact_4,
   $.hashfn_bswap = mum_aligned<3,4,true,false>
 );
 
+#if defined(NOTYET)
 REGISTER_HASH(mum3_realign_exact_1,
   $.desc = "Mum-hash v3, unroll 2^1, exact mult, for aligned-only reads",
   $.hash_flags =
@@ -996,6 +1011,7 @@ REGISTER_HASH(mum3_realign_inexact_4,
   $.hashfn_native = mum_realign<3,4,false,false>,
   $.hashfn_bswap = mum_realign<3,4,true,false>
 );
+#endif
 
 REGISTER_HASH(mir_exact,
   $.desc = "MIR-hash, exact 128-bit mult",
