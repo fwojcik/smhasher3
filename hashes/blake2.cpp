@@ -281,6 +281,25 @@ REGISTER_HASH(blake2b_160,
   $.hashfn_bswap = BLAKE2B<160,160,true>
 );
 
+REGISTER_HASH(blake2b_128,
+  $.desc = "BLAKE 2b, 128-bit digest",
+  $.hash_flags =
+        FLAG_HASH_CRYPTOGRAPHIC        |
+        FLAG_HASH_ENDIAN_INDEPENDENT   |
+        FLAG_HASH_NO_SEED,
+  $.impl_flags =
+        FLAG_IMPL_LICENSE_MIT          |
+        FLAG_IMPL_CANONICAL_LE         |
+        FLAG_IMPL_ROTATE               |
+        FLAG_IMPL_INCREMENTAL          |
+        FLAG_IMPL_VERY_SLOW,
+  $.bits = 128,
+  $.verification_LE = 0x7DC97611,
+  $.verification_BE = 0xDD6695FD,
+  $.hashfn_native = BLAKE2B<128,128,false>,
+  $.hashfn_bswap = BLAKE2B<128,128,true>
+);
+
 REGISTER_HASH(blake2b_256_64,
   $.desc = "BLAKE 2b, 256-bit digest, bits 0-63",
   $.hash_flags =
