@@ -148,7 +148,7 @@ static uintptr_t seed_subkeys(uint64_t seed) {
     return (uintptr_t)(&chaskeys);
 }
 
-template < uint32_t rounds, uint32_t tagwords,bool bswap >
+template < uint32_t rounds, uint32_t tagwords, bool bswap >
 static void chaskey(const void * in, const size_t len, const seed_t seed, void * out) {
     const keys_t * keys = (const keys_t *)(uintptr_t)seed;
     chaskey_impl<rounds,tagwords,bswap>((uint8_t *)out, (const uint8_t *)in,
