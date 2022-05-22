@@ -188,7 +188,7 @@ REGISTER_FAMILY(fletcher,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(fletcher2_64,
+REGISTER_HASH(fletcher2__64,
   $.desc = "fletcher2 from ZFS (one lane, best 64 bits)",
   $.sort_order = 10,
   $.hash_flags =
@@ -203,7 +203,7 @@ REGISTER_HASH(fletcher2_64,
   $.hashfn_bswap = fletcher2_64<true>
 );
 
-REGISTER_HASH(fletcher2_128,
+REGISTER_HASH(fletcher2,
   $.desc = "fletcher2 from ZFS (one lane, all 128 bits)",
   $.hash_flags =
         FLAG_HASH_NO_SEED,
@@ -217,7 +217,7 @@ REGISTER_HASH(fletcher2_128,
   $.hashfn_bswap = fletcher2_128<true>
 );
 
-REGISTER_HASH(fletcher4_64,
+REGISTER_HASH(fletcher4__64,
   $.desc = "fletcher4 from ZFS (one lane, best 64 bits)",
   $.sort_order = 20,
   $.hash_flags =
@@ -232,7 +232,7 @@ REGISTER_HASH(fletcher4_64,
   $.hashfn_bswap = fletcher4_64<true>
 );
 
-REGISTER_HASH(fletcher4_256,
+REGISTER_HASH(fletcher4,
   $.desc = "fletcher4 from ZFS (one lane, all 256 bits)",
   $.hash_flags =
         FLAG_HASH_NO_SEED,
@@ -246,7 +246,7 @@ REGISTER_HASH(fletcher4_256,
   $.hashfn_bswap = fletcher4_256<true>
 );
 
-REGISTER_HASH(fletcher32,
+REGISTER_HASH(Fletcher_32,
   $.desc = "Fletcher's checksum, 32-bit, IV == len",
   $.hash_flags =
         FLAG_HASH_NO_SEED,
@@ -260,7 +260,7 @@ REGISTER_HASH(fletcher32,
   $.hashfn_bswap = fletcher32<true>
 );
 
-REGISTER_HASH(fletcher64,
+REGISTER_HASH(Fletcher_64,
   $.desc = "Fletcher's checksum, 64-bit, IV == len",
   $.sort_order = 0,
   $.hash_flags =

@@ -1621,7 +1621,7 @@ REGISTER_FAMILY(farmhash,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(FarmHashNA_64,
+REGISTER_HASH(FarmHash_64__NA,
   $.desc = "FarmHash Hash64WithSeed (NA version)",
   $.hash_flags =
         0,
@@ -1637,7 +1637,7 @@ REGISTER_HASH(FarmHashNA_64,
   $.hashfn_bswap = FarmHashNA<true>
 );
 
-REGISTER_HASH(FarmHashUO_64,
+REGISTER_HASH(FarmHash_64__UO,
   $.desc = "FarmHash Hash64WithSeed (UO version)",
   $.hash_flags =
         0,
@@ -1654,7 +1654,7 @@ REGISTER_HASH(FarmHashUO_64,
 );
 
 #if defined(HAVE_SSE_4_1)
-REGISTER_HASH(FarmHashTE_64,
+REGISTER_HASH(FarmHash_64__TE,
   $.desc = "FarmHash Hash64WithSeed (TE version)",
   $.hash_flags =
         0,
@@ -1670,7 +1670,7 @@ REGISTER_HASH(FarmHashTE_64,
   $.hashfn_bswap = FarmHashTE<true>
 );
 
-REGISTER_HASH(FarmHashNT_32,
+REGISTER_HASH(FarmHash_32__NT,
   $.desc = "FarmHash Hash32WithSeed (NT version)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -1687,7 +1687,7 @@ REGISTER_HASH(FarmHashNT_32,
 );
 #endif
 
-REGISTER_HASH(FarmHashMK_32,
+REGISTER_HASH(FarmHash_32__MK,
   $.desc = "FarmHash Hash32WithSeed (MK version)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -1704,7 +1704,7 @@ REGISTER_HASH(FarmHashMK_32,
 );
 
 #if defined(HAVE_X86_64_CRC32C) && defined(HAVE_X86_64_AES)
-REGISTER_HASH(FarmHashSU_32,
+REGISTER_HASH(FarmHash_32__SU,
   $.desc = "FarmHash Hash32WithSeed (SU version)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED  |
@@ -1724,7 +1724,7 @@ REGISTER_HASH(FarmHashSU_32,
 #endif
 
 #if defined(HAVE_X86_64_CRC32C)
-REGISTER_HASH(FarmHashSA_32,
+REGISTER_HASH(FarmHash_32__SA,
   $.desc = "FarmHash Hash32WithSeed (SA version)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED  |
@@ -1742,7 +1742,7 @@ REGISTER_HASH(FarmHashSA_32,
 );
 #endif
 
-REGISTER_HASH(FarmHashCC_32,
+REGISTER_HASH(FarmHash_32__CC,
   $.desc = "FarmHash Hash32WithSeed (CC version)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -1758,7 +1758,7 @@ REGISTER_HASH(FarmHashCC_32,
   $.hashfn_bswap = FarmHashCC_32<true>
 );
 
-REGISTER_HASH(FarmHashCC_seed1_128,
+REGISTER_HASH(FarmHash_128__CC__seed1,
   $.desc = "FarmHash Hash128WithSeed (CC version, seeded low 64 bit)",
   $.hash_flags =
         FLAG_HASH_XL_SEED,
@@ -1774,7 +1774,7 @@ REGISTER_HASH(FarmHashCC_seed1_128,
   $.hashfn_bswap = FarmHashCC_128<true,1>
 );
 
-REGISTER_HASH(FarmHashCC_seed2_128,
+REGISTER_HASH(FarmHash_128__CC__seed2,
   $.desc = "FarmHash Hash128WithSeed (CC version, seeded high 64 bit)",
   $.hash_flags =
         FLAG_HASH_XL_SEED,
@@ -1790,7 +1790,7 @@ REGISTER_HASH(FarmHashCC_seed2_128,
   $.hashfn_bswap = FarmHashCC_128<true,2>
 );
 
-REGISTER_HASH(FarmHashCC_seed3_128,
+REGISTER_HASH(FarmHash_128__CC__seed3,
   $.desc = "FarmHash Hash128WithSeed (CC version, seeded low+high 64 bit)",
   $.hash_flags =
         FLAG_HASH_XL_SEED,
@@ -1806,8 +1806,8 @@ REGISTER_HASH(FarmHashCC_seed3_128,
   $.hashfn_bswap = FarmHashCC_128<true,3>
 );
 
-REGISTER_HASH(FarmHashCM_seed1_128,
-  $.desc = "FarmHash CityMurmur (CC version, seeded low 64 bit)",
+REGISTER_HASH(FarmHash_128__CM__seed1,
+  $.desc = "FarmHash CityMurmur (CM version, seeded low 64 bit)",
   $.hash_flags =
         FLAG_HASH_XL_SEED,
   $.impl_flags =
@@ -1822,8 +1822,8 @@ REGISTER_HASH(FarmHashCM_seed1_128,
   $.hashfn_bswap = FarmHashCityMurmur_128<true,1>
 );
 
-REGISTER_HASH(FarmHashCM_seed2_128,
-  $.desc = "FarmHash CityMurmur (CC version, seeded high 64 bit)",
+REGISTER_HASH(FarmHash_128__CM__seed2,
+  $.desc = "FarmHash CityMurmur (CM version, seeded high 64 bit)",
   $.hash_flags =
         FLAG_HASH_XL_SEED,
   $.impl_flags =
@@ -1838,8 +1838,8 @@ REGISTER_HASH(FarmHashCM_seed2_128,
   $.hashfn_bswap = FarmHashCityMurmur_128<true,2>
 );
 
-REGISTER_HASH(FarmHashCM_seed3_128,
-  $.desc = "FarmHash CityMurmur (CC version, seeded low+high 64 bit)",
+REGISTER_HASH(FarmHash_128__CM__seed3,
+  $.desc = "FarmHash CityMurmur (CM version, seeded low+high 64 bit)",
   $.hash_flags =
         FLAG_HASH_XL_SEED,
   $.impl_flags =

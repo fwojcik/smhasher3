@@ -716,8 +716,8 @@ REGISTER_FAMILY(sha2,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(sha2_256_64,
-  $.desc = "SHA-2, bits 0-63",
+REGISTER_HASH(SHA_2_256__64,
+  $.desc = "SHA-256, bits 0-63",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |
@@ -736,8 +736,8 @@ REGISTER_HASH(sha2_256_64,
   $.hashfn_bswap = SHA256<64,true>
 );
 
-REGISTER_HASH(sha2_256,
-  $.desc = "SHA-2",
+REGISTER_HASH(SHA_2_256,
+  $.desc = "SHA-256",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |
@@ -756,8 +756,8 @@ REGISTER_HASH(sha2_256,
   $.hashfn_bswap = SHA256<256,true>
 );
 
-REGISTER_HASH(sha2_224_64,
-  $.desc = "SHA-2, bits 0-63",
+REGISTER_HASH(SHA_2_224__64,
+  $.desc = "SHA-224, bits 0-63",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |
@@ -776,8 +776,8 @@ REGISTER_HASH(sha2_224_64,
   $.hashfn_bswap = SHA224<64,true>
 );
 
-REGISTER_HASH(sha2_224,
-  $.desc = "SHA-2",
+REGISTER_HASH(SHA_2_224,
+  $.desc = "SHA-224",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
         FLAG_HASH_ENDIAN_INDEPENDENT   |

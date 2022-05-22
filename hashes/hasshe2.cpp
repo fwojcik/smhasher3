@@ -278,7 +278,7 @@ REGISTER_HASH(hasshe2,
   $.hashfn_bswap = Hasshe2<true,true>
 );
 
-REGISTER_HASH(hasshe2_tweaked,
+REGISTER_HASH(hasshe2__tweaked,
   $.desc = "hasshe2 (SSE2-oriented hash, tweaked to add len into IV)",
   $.hash_flags =
         FLAG_HASH_NO_SEED,

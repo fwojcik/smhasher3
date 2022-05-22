@@ -1668,7 +1668,7 @@ REGISTER_HASH(t1ha2_128,
   $.initfn = t1ha2_selftest
 );
 
-REGISTER_HASH(t1ha2_incr_64,
+REGISTER_HASH(t1ha2_64__incr,
   $.desc = "Fast Positive Hash #2 (portable, 64-bit core, incremental version)",
   $.hash_flags =
         0,
@@ -1688,7 +1688,7 @@ REGISTER_HASH(t1ha2_incr_64,
   $.initfn = t1ha2_incr_selftest
 );
 
-REGISTER_HASH(t1ha2_incr_128,
+REGISTER_HASH(t1ha2_128__incr,
   $.desc = "Fast Positive Hash #2 (portable, 64-bit core, incremental version)",
   $.hash_flags =
         0,
@@ -1709,7 +1709,7 @@ REGISTER_HASH(t1ha2_incr_128,
 );
 
 #if defined(HAVE_X86_64_AES)
-REGISTER_HASH(t1ha0_aesA,
+REGISTER_HASH(t1ha0__aesA,
   $.desc = "Fast Positive Hash #0a (AES-NI)",
   $.hash_flags =
         FLAG_HASH_AES_BASED              ,
@@ -1726,7 +1726,7 @@ REGISTER_HASH(t1ha0_aesA,
   $.initfn = t1ha0_aes_selftest
 );
 
-REGISTER_HASH(t1ha0_aesB,
+REGISTER_HASH(t1ha0__aesB,
   $.desc = "Fast Positive Hash #0b (AES-NI)",
   $.hash_flags =
         FLAG_HASH_AES_BASED              ,

@@ -693,7 +693,7 @@ REGISTER_FAMILY(cityhash,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(cityhash_32,
+REGISTER_HASH(CityHash_32,
   $.desc = "Google CityHash32WithSeed",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED      ,
@@ -708,7 +708,7 @@ REGISTER_HASH(cityhash_32,
   $.hashfn_bswap = City32<true>
 );
 
-REGISTER_HASH(cityhash_64,
+REGISTER_HASH(CityHash_64,
   $.desc = "Google CityHash64WithSeed",
   $.hash_flags =
         0,
@@ -723,7 +723,7 @@ REGISTER_HASH(cityhash_64,
   $.hashfn_bswap = City64<true>
 );
 
-REGISTER_HASH(cityhash_seed1_128,
+REGISTER_HASH(CityHash_128__seed1,
   $.desc = "Google CityHash128WithSeed (seeded low 64 bits)",
   $.hash_flags =
         0,
@@ -738,7 +738,7 @@ REGISTER_HASH(cityhash_seed1_128,
   $.hashfn_bswap = City128<true,1>
 );
 
-REGISTER_HASH(cityhash_seed2_128,
+REGISTER_HASH(CityHash_128__seed2,
   $.desc = "Google CityHash128WithSeed (seeded high 64 bits)",
   $.hash_flags =
         0,
@@ -753,7 +753,7 @@ REGISTER_HASH(cityhash_seed2_128,
   $.hashfn_bswap = City128<true,2>
 );
 
-REGISTER_HASH(cityhash_seed3_128,
+REGISTER_HASH(CityHash_128__seed3,
   $.desc = "Google CityHash128WithSeed (seeded low+high 64 bits)",
   $.hash_flags =
         0,
@@ -768,7 +768,7 @@ REGISTER_HASH(cityhash_seed3_128,
   $.hashfn_bswap = City128<true,3>
 );
 
-REGISTER_HASH(citymurmur_seed1_128,
+REGISTER_HASH(CityMurmur__seed1,
   $.desc = "CityMurmur (seeded low 64 bits)",
   $.hash_flags =
         0,
@@ -783,7 +783,7 @@ REGISTER_HASH(citymurmur_seed1_128,
   $.hashfn_bswap = CityMurmur_128<true,1>
 );
 
-REGISTER_HASH(citymurmur_seed2_128,
+REGISTER_HASH(CityMurmur__seed2,
   $.desc = "CityMurmur (seeded high 64 bits)",
   $.hash_flags =
         0,
@@ -798,7 +798,7 @@ REGISTER_HASH(citymurmur_seed2_128,
   $.hashfn_bswap = CityMurmur_128<true,2>
 );
 
-REGISTER_HASH(citymurmur_seed3_128,
+REGISTER_HASH(CityMurmur__seed3,
   $.desc = "CityMurmur (seeded low+high 64 bits)",
   $.hash_flags =
         0,
@@ -815,7 +815,7 @@ REGISTER_HASH(citymurmur_seed3_128,
 
 #if defined(HAVE_X86_64_CRC32C)
 
-REGISTER_HASH(cityhashcrc_seed1_128,
+REGISTER_HASH(CityHashCrc_128__seed1,
   $.desc = "Google CityHashCrc128WithSeed (seeded low 64 bits)",
   $.hash_flags =
         FLAG_HASH_CRC_BASED       ,
@@ -830,7 +830,7 @@ REGISTER_HASH(cityhashcrc_seed1_128,
   $.hashfn_bswap = CityCrc128<true,1>
 );
 
-REGISTER_HASH(cityhashcrc_seed2_128,
+REGISTER_HASH(CityHashCrc_128__seed2,
   $.desc = "Google CityHashCrc128WithSeed (seeded high 64 bits)",
   $.hash_flags =
         FLAG_HASH_CRC_BASED       ,
@@ -845,7 +845,7 @@ REGISTER_HASH(cityhashcrc_seed2_128,
   $.hashfn_bswap = CityCrc128<true,2>
 );
 
-REGISTER_HASH(cityhashcrc_seed3_128,
+REGISTER_HASH(CityHashCrc_128__seed3,
   $.desc = "Google CityHashCrc128WithSeed (seeded low+high 64 bits)",
   $.hash_flags =
         FLAG_HASH_CRC_BASED       ,
@@ -860,7 +860,7 @@ REGISTER_HASH(cityhashcrc_seed3_128,
   $.hashfn_bswap = CityCrc128<true,3>
 );
 
-REGISTER_HASH(cityhashcrc_256,
+REGISTER_HASH(CityHashCrc_256,
   $.desc = "Google CityHashCrc256 (with modified seeding)",
   $.hash_flags =
         FLAG_HASH_NO_SEED         |

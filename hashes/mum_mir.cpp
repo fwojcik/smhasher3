@@ -287,8 +287,8 @@ REGISTER_FAMILY(mum_mir,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(mum1_exact_1,
-  $.desc = "Mum-hash v1, unroll 2^1, exact mult, for any-alignment reads",
+REGISTER_HASH(mum1__exact__unroll1,
+  $.desc = "Mum-hash v1, unroll 2^1, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -302,8 +302,8 @@ REGISTER_HASH(mum1_exact_1,
   $.hashfn_bswap = mum_aligned<1,1,true,true>
 );
 
-REGISTER_HASH(mum1_exact_2,
-  $.desc = "Mum-hash v1, unroll 2^2, exact mult, for any-alignment reads",
+REGISTER_HASH(mum1__exact__unroll2,
+  $.desc = "Mum-hash v1, unroll 2^2, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -317,8 +317,8 @@ REGISTER_HASH(mum1_exact_2,
   $.hashfn_bswap = mum_aligned<1,2,true,true>
 );
 
-REGISTER_HASH(mum1_exact_3,
-  $.desc = "Mum-hash v1, unroll 2^3, exact mult, for any-alignment reads",
+REGISTER_HASH(mum1__exact__unroll3,
+  $.desc = "Mum-hash v1, unroll 2^3, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -332,8 +332,8 @@ REGISTER_HASH(mum1_exact_3,
   $.hashfn_bswap = mum_aligned<1,3,true,true>
 );
 
-REGISTER_HASH(mum1_exact_4,
-  $.desc = "Mum-hash v1, unroll 2^4, exact mult, for any-alignment reads",
+REGISTER_HASH(mum1__exact__unroll4,
+  $.desc = "Mum-hash v1, unroll 2^4, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -347,8 +347,8 @@ REGISTER_HASH(mum1_exact_4,
   $.hashfn_bswap = mum_aligned<1,4,true,true>
 );
 
-REGISTER_HASH(mum1_inexact_1,
-  $.desc = "Mum-hash v1, unroll 2^1, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum1__inexact__unroll1,
+  $.desc = "Mum-hash v1, unroll 2^1, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -362,8 +362,8 @@ REGISTER_HASH(mum1_inexact_1,
   $.hashfn_bswap = mum_aligned<1,1,true,false>
 );
 
-REGISTER_HASH(mum1_inexact_2,
-  $.desc = "Mum-hash v1, unroll 2^2, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum1__inexact__unroll2,
+  $.desc = "Mum-hash v1, unroll 2^2, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -377,8 +377,8 @@ REGISTER_HASH(mum1_inexact_2,
   $.hashfn_bswap = mum_aligned<1,2,true,false>
 );
 
-REGISTER_HASH(mum1_inexact_3,
-  $.desc = "Mum-hash v1, unroll 2^3, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum1__inexact__unroll3,
+  $.desc = "Mum-hash v1, unroll 2^3, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -392,8 +392,8 @@ REGISTER_HASH(mum1_inexact_3,
   $.hashfn_bswap = mum_aligned<1,3,true,false>
 );
 
-REGISTER_HASH(mum1_inexact_4,
-  $.desc = "Mum-hash v1, unroll 2^4, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum1__inexact__unroll4,
+  $.desc = "Mum-hash v1, unroll 2^4, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -408,7 +408,7 @@ REGISTER_HASH(mum1_inexact_4,
 );
 
 #if defined(NOTYET)
-REGISTER_HASH(mum1_realign_exact_1,
+REGISTER_HASH(mum1_realign__exact__unroll1,
   $.desc = "Mum-hash v1, unroll 2^1, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -423,7 +423,7 @@ REGISTER_HASH(mum1_realign_exact_1,
   $.hashfn_bswap = mum_realign<1,1,true,true>
 );
 
-REGISTER_HASH(mum1_realign_exact_2,
+REGISTER_HASH(mum1_realign__exact__unroll2,
   $.desc = "Mum-hash v1, unroll 2^2, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -438,7 +438,7 @@ REGISTER_HASH(mum1_realign_exact_2,
   $.hashfn_bswap = mum_realign<1,2,true,true>
 );
 
-REGISTER_HASH(mum1_realign_exact_3,
+REGISTER_HASH(mum1_realign__exact__unroll3,
   $.desc = "Mum-hash v1, unroll 2^3, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -453,7 +453,7 @@ REGISTER_HASH(mum1_realign_exact_3,
   $.hashfn_bswap = mum_realign<1,3,true,true>
 );
 
-REGISTER_HASH(mum1_realign_exact_4,
+REGISTER_HASH(mum1_realign__exact__unroll4,
   $.desc = "Mum-hash v1, unroll 2^4, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -468,7 +468,7 @@ REGISTER_HASH(mum1_realign_exact_4,
   $.hashfn_bswap = mum_realign<1,4,true,true>
 );
 
-REGISTER_HASH(mum1_realign_inexact_1,
+REGISTER_HASH(mum1_realign__inexact__unroll1,
   $.desc = "Mum-hash v1, unroll 2^1, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -483,7 +483,7 @@ REGISTER_HASH(mum1_realign_inexact_1,
   $.hashfn_bswap = mum_realign<1,1,true,false>
 );
 
-REGISTER_HASH(mum1_realign_inexact_2,
+REGISTER_HASH(mum1_realign__inexact__unroll2,
   $.desc = "Mum-hash v1, unroll 2^2, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -498,7 +498,7 @@ REGISTER_HASH(mum1_realign_inexact_2,
   $.hashfn_bswap = mum_realign<1,2,true,false>
 );
 
-REGISTER_HASH(mum1_realign_inexact_3,
+REGISTER_HASH(mum1_realign__inexact__unroll3,
   $.desc = "Mum-hash v1, unroll 2^3, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -513,7 +513,7 @@ REGISTER_HASH(mum1_realign_inexact_3,
   $.hashfn_bswap = mum_realign<1,3,true,false>
 );
 
-REGISTER_HASH(mum1_realign_inexact_4,
+REGISTER_HASH(mum1_realign__inexact__unroll4,
   $.desc = "Mum-hash v1, unroll 2^4, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -529,8 +529,8 @@ REGISTER_HASH(mum1_realign_inexact_4,
 );
 #endif
 
-REGISTER_HASH(mum2_exact_1,
-  $.desc = "Mum-hash v2, unroll 2^1, exact mult, for any-alignment reads",
+REGISTER_HASH(mum2__exact__unroll1,
+  $.desc = "Mum-hash v2, unroll 2^1, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -544,8 +544,8 @@ REGISTER_HASH(mum2_exact_1,
   $.hashfn_bswap = mum_aligned<2,1,true,true>
 );
 
-REGISTER_HASH(mum2_exact_2,
-  $.desc = "Mum-hash v2, unroll 2^2, exact mult, for any-alignment reads",
+REGISTER_HASH(mum2__exact__unroll2,
+  $.desc = "Mum-hash v2, unroll 2^2, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -559,8 +559,8 @@ REGISTER_HASH(mum2_exact_2,
   $.hashfn_bswap = mum_aligned<2,2,true,true>
 );
 
-REGISTER_HASH(mum2_exact_3,
-  $.desc = "Mum-hash v2, unroll 2^3, exact mult, for any-alignment reads",
+REGISTER_HASH(mum2__exact__unroll3,
+  $.desc = "Mum-hash v2, unroll 2^3, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -574,8 +574,8 @@ REGISTER_HASH(mum2_exact_3,
   $.hashfn_bswap = mum_aligned<2,3,true,true>
 );
 
-REGISTER_HASH(mum2_exact_4,
-  $.desc = "Mum-hash v2, unroll 2^4, exact mult, for any-alignment reads",
+REGISTER_HASH(mum2__exact__unroll4,
+  $.desc = "Mum-hash v2, unroll 2^4, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -589,8 +589,8 @@ REGISTER_HASH(mum2_exact_4,
   $.hashfn_bswap = mum_aligned<2,4,true,true>
 );
 
-REGISTER_HASH(mum2_inexact_1,
-  $.desc = "Mum-hash v2, unroll 2^1, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum2__inexact__unroll1,
+  $.desc = "Mum-hash v2, unroll 2^1, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -604,8 +604,8 @@ REGISTER_HASH(mum2_inexact_1,
   $.hashfn_bswap = mum_aligned<2,1,true,false>
 );
 
-REGISTER_HASH(mum2_inexact_2,
-  $.desc = "Mum-hash v2, unroll 2^2, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum2__inexact__unroll2,
+  $.desc = "Mum-hash v2, unroll 2^2, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -619,8 +619,8 @@ REGISTER_HASH(mum2_inexact_2,
   $.hashfn_bswap = mum_aligned<2,2,true,false>
 );
 
-REGISTER_HASH(mum2_inexact_3,
-  $.desc = "Mum-hash v2, unroll 2^3, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum2__inexact__unroll3,
+  $.desc = "Mum-hash v2, unroll 2^3, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -634,8 +634,8 @@ REGISTER_HASH(mum2_inexact_3,
   $.hashfn_bswap = mum_aligned<2,3,true,false>
 );
 
-REGISTER_HASH(mum2_inexact_4,
-  $.desc = "Mum-hash v2, unroll 2^4, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum2__inexact__unroll4,
+  $.desc = "Mum-hash v2, unroll 2^4, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -650,7 +650,7 @@ REGISTER_HASH(mum2_inexact_4,
 );
 
 #if defined(NOTYET)
-REGISTER_HASH(mum2_realign_exact_1,
+REGISTER_HASH(mum2_realign__exact__unroll1,
   $.desc = "Mum-hash v2, unroll 2^1, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -665,7 +665,7 @@ REGISTER_HASH(mum2_realign_exact_1,
   $.hashfn_bswap = mum_realign<2,1,true,true>
 );
 
-REGISTER_HASH(mum2_realign_exact_2,
+REGISTER_HASH(mum2_realign__exact__unroll2,
   $.desc = "Mum-hash v2, unroll 2^2, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -680,7 +680,7 @@ REGISTER_HASH(mum2_realign_exact_2,
   $.hashfn_bswap = mum_realign<2,2,true,true>
 );
 
-REGISTER_HASH(mum2_realign_exact_3,
+REGISTER_HASH(mum2_realign__exact__unroll3,
   $.desc = "Mum-hash v2, unroll 2^3, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -695,7 +695,7 @@ REGISTER_HASH(mum2_realign_exact_3,
   $.hashfn_bswap = mum_realign<2,3,true,true>
 );
 
-REGISTER_HASH(mum2_realign_exact_4,
+REGISTER_HASH(mum2_realign__exact__unroll4,
   $.desc = "Mum-hash v2, unroll 2^4, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -710,7 +710,7 @@ REGISTER_HASH(mum2_realign_exact_4,
   $.hashfn_bswap = mum_realign<2,4,true,true>
 );
 
-REGISTER_HASH(mum2_realign_inexact_1,
+REGISTER_HASH(mum2_realign__inexact__unroll1,
   $.desc = "Mum-hash v2, unroll 2^1, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -725,7 +725,7 @@ REGISTER_HASH(mum2_realign_inexact_1,
   $.hashfn_bswap = mum_realign<2,1,true,false>
 );
 
-REGISTER_HASH(mum2_realign_inexact_2,
+REGISTER_HASH(mum2_realign__inexact__unroll2,
   $.desc = "Mum-hash v2, unroll 2^2, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -740,7 +740,7 @@ REGISTER_HASH(mum2_realign_inexact_2,
   $.hashfn_bswap = mum_realign<2,2,true,false>
 );
 
-REGISTER_HASH(mum2_realign_inexact_3,
+REGISTER_HASH(mum2_realign__inexact__unroll3,
   $.desc = "Mum-hash v2, unroll 2^3, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -755,7 +755,7 @@ REGISTER_HASH(mum2_realign_inexact_3,
   $.hashfn_bswap = mum_realign<2,3,true,false>
 );
 
-REGISTER_HASH(mum2_realign_inexact_4,
+REGISTER_HASH(mum2_realign__inexact__unroll4,
   $.desc = "Mum-hash v2, unroll 2^4, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -771,8 +771,8 @@ REGISTER_HASH(mum2_realign_inexact_4,
 );
 #endif
 
-REGISTER_HASH(mum3_exact_1,
-  $.desc = "Mum-hash v3, unroll 2^1, exact mult, for any-alignment reads",
+REGISTER_HASH(mum3__exact__unroll1,
+  $.desc = "Mum-hash v3, unroll 2^1, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -786,8 +786,8 @@ REGISTER_HASH(mum3_exact_1,
   $.hashfn_bswap = mum_aligned<3,1,true,true>
 );
 
-REGISTER_HASH(mum3_exact_2,
-  $.desc = "Mum-hash v3, unroll 2^2, exact mult, for any-alignment reads",
+REGISTER_HASH(mum3__exact__unroll2,
+  $.desc = "Mum-hash v3, unroll 2^2, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -801,8 +801,8 @@ REGISTER_HASH(mum3_exact_2,
   $.hashfn_bswap = mum_aligned<3,2,true,true>
 );
 
-REGISTER_HASH(mum3_exact_3,
-  $.desc = "Mum-hash v3, unroll 2^3, exact mult, for any-alignment reads",
+REGISTER_HASH(mum3__exact__unroll3,
+  $.desc = "Mum-hash v3, unroll 2^3, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -816,8 +816,8 @@ REGISTER_HASH(mum3_exact_3,
   $.hashfn_bswap = mum_aligned<3,3,true,true>
 );
 
-REGISTER_HASH(mum3_exact_4,
-  $.desc = "Mum-hash v3, unroll 2^4, exact mult, for any-alignment reads",
+REGISTER_HASH(mum3__exact__unroll4,
+  $.desc = "Mum-hash v3, unroll 2^4, exact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -831,8 +831,8 @@ REGISTER_HASH(mum3_exact_4,
   $.hashfn_bswap = mum_aligned<3,4,true,true>
 );
 
-REGISTER_HASH(mum3_inexact_1,
-  $.desc = "Mum-hash v3, unroll 2^1, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum3__inexact__unroll1,
+  $.desc = "Mum-hash v3, unroll 2^1, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -846,8 +846,8 @@ REGISTER_HASH(mum3_inexact_1,
   $.hashfn_bswap = mum_aligned<3,1,true,false>
 );
 
-REGISTER_HASH(mum3_inexact_2,
-  $.desc = "Mum-hash v3, unroll 2^2, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum3__inexact__unroll2,
+  $.desc = "Mum-hash v3, unroll 2^2, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -861,8 +861,8 @@ REGISTER_HASH(mum3_inexact_2,
   $.hashfn_bswap = mum_aligned<3,2,true,false>
 );
 
-REGISTER_HASH(mum3_inexact_3,
-  $.desc = "Mum-hash v3, unroll 2^3, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum3__inexact__unroll3,
+  $.desc = "Mum-hash v3, unroll 2^3, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -876,8 +876,8 @@ REGISTER_HASH(mum3_inexact_3,
   $.hashfn_bswap = mum_aligned<3,3,true,false>
 );
 
-REGISTER_HASH(mum3_inexact_4,
-  $.desc = "Mum-hash v3, unroll 2^4, inexact mult, for any-alignment reads",
+REGISTER_HASH(mum3__inexact__unroll4,
+  $.desc = "Mum-hash v3, unroll 2^4, inexact mult",
   $.hash_flags =
         0,
   $.impl_flags =
@@ -892,7 +892,7 @@ REGISTER_HASH(mum3_inexact_4,
 );
 
 #if defined(NOTYET)
-REGISTER_HASH(mum3_realign_exact_1,
+REGISTER_HASH(mum3_realign__exact__unroll1,
   $.desc = "Mum-hash v3, unroll 2^1, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -907,7 +907,7 @@ REGISTER_HASH(mum3_realign_exact_1,
   $.hashfn_bswap = mum_realign<3,1,true,true>
 );
 
-REGISTER_HASH(mum3_realign_exact_2,
+REGISTER_HASH(mum3_realign__exact__unroll2,
   $.desc = "Mum-hash v3, unroll 2^2, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -922,7 +922,7 @@ REGISTER_HASH(mum3_realign_exact_2,
   $.hashfn_bswap = mum_realign<3,2,true,true>
 );
 
-REGISTER_HASH(mum3_realign_exact_3,
+REGISTER_HASH(mum3_realign__exact__unroll3,
   $.desc = "Mum-hash v3, unroll 2^3, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -937,7 +937,7 @@ REGISTER_HASH(mum3_realign_exact_3,
   $.hashfn_bswap = mum_realign<3,3,true,true>
 );
 
-REGISTER_HASH(mum3_realign_exact_4,
+REGISTER_HASH(mum3_realign__exact__unroll4,
   $.desc = "Mum-hash v3, unroll 2^4, exact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -952,7 +952,7 @@ REGISTER_HASH(mum3_realign_exact_4,
   $.hashfn_bswap = mum_realign<3,4,true,true>
 );
 
-REGISTER_HASH(mum3_realign_inexact_1,
+REGISTER_HASH(mum3_realign__inexact__unroll1,
   $.desc = "Mum-hash v3, unroll 2^1, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -967,7 +967,7 @@ REGISTER_HASH(mum3_realign_inexact_1,
   $.hashfn_bswap = mum_realign<3,1,true,false>
 );
 
-REGISTER_HASH(mum3_realign_inexact_2,
+REGISTER_HASH(mum3_realign__inexact__unroll2,
   $.desc = "Mum-hash v3, unroll 2^2, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -982,7 +982,7 @@ REGISTER_HASH(mum3_realign_inexact_2,
   $.hashfn_bswap = mum_realign<3,2,true,false>
 );
 
-REGISTER_HASH(mum3_realign_inexact_3,
+REGISTER_HASH(mum3_realign__inexact__unroll3,
   $.desc = "Mum-hash v3, unroll 2^3, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -997,7 +997,7 @@ REGISTER_HASH(mum3_realign_inexact_3,
   $.hashfn_bswap = mum_realign<3,3,true,false>
 );
 
-REGISTER_HASH(mum3_realign_inexact_4,
+REGISTER_HASH(mum3_realign__inexact__unroll4,
   $.desc = "Mum-hash v3, unroll 2^4, inexact mult, for aligned-only reads",
   $.hash_flags =
         0,
@@ -1013,7 +1013,7 @@ REGISTER_HASH(mum3_realign_inexact_4,
 );
 #endif
 
-REGISTER_HASH(mir_exact,
+REGISTER_HASH(mir__exact,
   $.desc = "MIR-hash, exact 128-bit mult",
   $.hash_flags =
         0,
@@ -1028,7 +1028,7 @@ REGISTER_HASH(mir_exact,
   $.badseeds = {0x0, 0x1, 0x2} // !! I think literally *ALL* seeds are bad
 );
 
-REGISTER_HASH(mir_inexact,
+REGISTER_HASH(mir__inexact,
   $.desc = "MIR-hash, inexact 128-bit mult",
   $.hash_flags =
         0,

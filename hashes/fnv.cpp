@@ -243,7 +243,7 @@ REGISTER_FAMILY(fnv,
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-REGISTER_HASH(fibonacci32,
+REGISTER_HASH(fibonacci_32,
   $.desc = "32-bit wordwise Fibonacci hash (Knuth)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -259,7 +259,7 @@ REGISTER_HASH(fibonacci32,
   $.badseeds = {0, UINT64_C(0xffffffff00000000)} /* !! all keys ending with 0x0000_0000 */
 );
 
-REGISTER_HASH(fibonacci64,
+REGISTER_HASH(fibonacci_64,
   $.desc = "64-bit wordwise Fibonacci hash (Knuth)",
   $.hash_flags =
         0,
@@ -275,8 +275,8 @@ REGISTER_HASH(fibonacci64,
   $.badseeds = {0, UINT64_C(0xffffffff00000000)} /* !! all keys ending with 0x0000_0000 */
 );
 
-REGISTER_HASH(fnv1a_32,
-  $.desc = "32-bit bytewise FNV1a (Fowler-Noll-Vo)",
+REGISTER_HASH(FNV_1a_32,
+  $.desc = "32-bit bytewise FNV-1a (Fowler-Noll-Vo)",
   $.hash_flags =
         FLAG_HASH_NO_SEED      |
         FLAG_HASH_SMALL_SEED,
@@ -291,8 +291,8 @@ REGISTER_HASH(fnv1a_32,
   $.badseeds = {0x811c9dc5}
 );
 
-REGISTER_HASH(fnv1a_64,
-  $.desc = "64-bit bytewise FNV1a (Fowler-Noll-Vo)",
+REGISTER_HASH(FNV_1a_64,
+  $.desc = "64-bit bytewise FNV-1a (Fowler-Noll-Vo)",
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
@@ -306,8 +306,8 @@ REGISTER_HASH(fnv1a_64,
   $.badseeds = {0x811c9dc5, 0xcbf29ce4, 0x84222325, UINT64_C(0xcbf29ce484222325)}
 );
 
-REGISTER_HASH(fnv2_32,
-  $.desc = "32-bit wordwise FNV2 (Fowler-Noll-Vo)",
+REGISTER_HASH(FNV_1a_32__wordwise,
+  $.desc = "32-bit wordwise hash based on FNV-1a",
   $.hash_flags =
         FLAG_HASH_NO_SEED      |
         FLAG_HASH_SMALL_SEED,
@@ -322,8 +322,8 @@ REGISTER_HASH(fnv2_32,
   $.hashfn_bswap = FNV2<uint32_t, true>
 );
 
-REGISTER_HASH(fnv2_64,
-  $.desc = "64-bit wordwise FNV2 (Fowler-Noll-Vo)",
+REGISTER_HASH(FNV_1a_64__wordwise,
+  $.desc = "64-bit wordwise hash based on FNV1-a",
   $.hash_flags =
         FLAG_HASH_NO_SEED,
   $.impl_flags =
@@ -337,7 +337,7 @@ REGISTER_HASH(fnv2_64,
   $.hashfn_bswap = FNV2<uint64_t, true>
 );
 
-REGISTER_HASH(fnvYT_32,
+REGISTER_HASH(FNV_YoshimitsuTRIAD,
   $.desc = "FNV-YoshimitsuTRIAD 32-bit (sanmayce)",
   $.hash_flags =
         FLAG_HASH_NO_SEED      |
@@ -354,7 +354,7 @@ REGISTER_HASH(fnvYT_32,
   $.badseeds = {0x811c9dc5, 0x23d4a49d}
 );
 
-REGISTER_HASH(fnvTS_32,
+REGISTER_HASH(FNV_Totenschiff,
   $.desc = "FNV-Totenschiff 32-bit (sanmayce)",
   $.hash_flags =
         FLAG_HASH_NO_SEED      |
@@ -372,7 +372,7 @@ REGISTER_HASH(fnvTS_32,
   $.badseeds = {0x811c9dc5}
 );
 
-REGISTER_HASH(fnvPY_32,
+REGISTER_HASH(FNV_PippipYurii,
   $.desc = "FNV-Pippip-Yurii 32-bit (sanmayce)",
   $.hash_flags =
         FLAG_HASH_NO_SEED      |

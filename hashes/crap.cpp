@@ -187,7 +187,7 @@ REGISTER_HASH(Crap8,
   $.hashfn_bswap = Crap8<true>
 );
 
-REGISTER_HASH(CrapWow_32,
+REGISTER_HASH(CrapWow,
   $.desc = "Noncryptohashzoo's CrapWow hash",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,

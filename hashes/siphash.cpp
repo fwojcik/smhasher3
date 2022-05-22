@@ -415,7 +415,7 @@ REGISTER_FAMILY(siphash,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(siphash_2_4,
+REGISTER_HASH(SipHash_2_4,
   $.desc = "SipHash 2-4",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
@@ -431,7 +431,7 @@ REGISTER_HASH(siphash_2_4,
   $.hashfn_bswap = SipHash_2_4<true>
 );
 
-REGISTER_HASH(siphash_1_3,
+REGISTER_HASH(SipHash_1_3,
   $.desc = "SipHash 1-3",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
@@ -447,7 +447,7 @@ REGISTER_HASH(siphash_1_3,
   $.hashfn_bswap = SipHash_1_3<true>
 );
 
-REGISTER_HASH(siphash_half,
+REGISTER_HASH(HalfSipHash,
   $.desc = "SipHash half-width version",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC,
@@ -461,7 +461,7 @@ REGISTER_HASH(siphash_half,
   $.hashfn_bswap = HalfSipHash<true>
 );
 
-REGISTER_HASH(siphash_tiny,
+REGISTER_HASH(TinySipHash,
   $.desc = "Damian Gryski's Tiny SipHash variant",
   $.hash_flags =
         0,

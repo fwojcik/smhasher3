@@ -488,7 +488,7 @@ REGISTER_FAMILY(pearson,
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-REGISTER_HASH(pearson_64,
+REGISTER_HASH(Pearson_64,
   $.desc = "Pearson hash, 8 lanes using AES sbox",
   $.hash_flags =
         FLAG_HASH_AES_BASED               |
@@ -504,7 +504,7 @@ REGISTER_HASH(pearson_64,
   $.initfn = pearson_hash_init
 );
 
-REGISTER_HASH(pearson_128,
+REGISTER_HASH(Pearson_128,
   $.desc = "Pearson hash, 16 lanes using AES sbox",
   $.hash_flags =
         FLAG_HASH_AES_BASED               |
@@ -520,7 +520,7 @@ REGISTER_HASH(pearson_128,
   $.initfn = pearson_hash_init
 );
 
-REGISTER_HASH(pearson_256,
+REGISTER_HASH(Pearson_256,
   $.desc = "Pearson hash, 32 lanes using AES sbox",
   $.hash_flags =
         FLAG_HASH_AES_BASED               |

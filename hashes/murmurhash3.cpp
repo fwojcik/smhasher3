@@ -300,7 +300,7 @@ REGISTER_FAMILY(murmur3,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(murmur3_32,
+REGISTER_HASH(MurmurHash3_32,
   $.desc = "MurmurHash v3, 32-bit version",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -317,7 +317,7 @@ REGISTER_HASH(murmur3_32,
   $.badseeds = {0xfca58b2d}
 );
 
-REGISTER_HASH(murmur3_32_128,
+REGISTER_HASH(MurmurHash3_128__int32,
   $.desc = "MurmurHash v3, 128-bit version using 32-bit variables",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -334,7 +334,7 @@ REGISTER_HASH(murmur3_32_128,
   $.badseeds = {0x239b961b}
 );
 
-REGISTER_HASH(murmur3_128,
+REGISTER_HASH(MurmurHash3_128,
   $.desc = "MurmurHash v3, 128-bit version using 64-bit variables",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,

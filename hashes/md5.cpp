@@ -312,7 +312,7 @@ REGISTER_FAMILY(md5,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(md5_32,
+REGISTER_HASH(MD5__32,
   $.desc = "MD5, bits 32-63",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
@@ -332,7 +332,7 @@ REGISTER_HASH(md5_32,
   $.hashfn_bswap = MD5<32,true>
 );
 
-REGISTER_HASH(md5_64,
+REGISTER_HASH(MD5__64,
   $.desc = "MD5, bits 32-95",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
@@ -352,7 +352,7 @@ REGISTER_HASH(md5_64,
   $.hashfn_bswap = MD5<64,true>
 );
 
-REGISTER_HASH(md5,
+REGISTER_HASH(MD5,
   $.desc = "MD5",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |

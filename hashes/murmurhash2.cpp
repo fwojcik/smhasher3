@@ -227,7 +227,7 @@ REGISTER_FAMILY(murmur2,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(murmur2_32,
+REGISTER_HASH(MurmurHash2_32,
   $.desc = "MurmurHash v2, 32-bit version",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -243,7 +243,7 @@ REGISTER_HASH(murmur2_32,
   $.badseeds = {0x10}
 );
 
-REGISTER_HASH(murmur2_64,
+REGISTER_HASH(MurmurHash2_64,
   $.desc = "MurmurHash v2, 64-bit version",
   $.hash_flags =
         0,
@@ -259,7 +259,7 @@ REGISTER_HASH(murmur2_64,
   $.badseeds = {UINT64_C(0xc6a4a7935bd1e995)}
 );
 
-REGISTER_HASH(murmur2_32_64,
+REGISTER_HASH(MurmurHash2_64__int32,
   $.desc = "MurmurHash v2, 64-bit version using 32-bit variables",
   $.hash_flags =
         0,
@@ -275,7 +275,7 @@ REGISTER_HASH(murmur2_32_64,
   $.badseeds = {0x10, UINT64_C(0xffffffff00000010)}
 );
 
-REGISTER_HASH(murmur2a_32,
+REGISTER_HASH(MurmurHash2a,
   $.desc = "MurmurHash v2a, 32-bit version using variant mixing",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,

@@ -1307,7 +1307,7 @@ REGISTER_FAMILY(halftimehash,
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-REGISTER_HASH(halftimehash64,
+REGISTER_HASH(HalftimeHash_64,
   $.desc = "Halftime Hash (64-bit blocks)",
   $.sort_order = 10,
   $.hash_flags =
@@ -1325,7 +1325,7 @@ REGISTER_HASH(halftimehash64,
   $.seedfn = halftime_hash_seed_init
 );
 
-REGISTER_HASH(halftimehash128,
+REGISTER_HASH(HalftimeHash_128,
   $.desc = "Halftime Hash (128-bit blocks)",
   $.sort_order = 20,
   $.hash_flags =
@@ -1343,7 +1343,7 @@ REGISTER_HASH(halftimehash128,
   $.seedfn = halftime_hash_seed_init
 );
 
-REGISTER_HASH(halftimehash256,
+REGISTER_HASH(HalftimeHash_256,
   $.desc = "Halftime Hash (256-bit blocks)",
   $.sort_order = 30,
   $.hash_flags =
@@ -1361,7 +1361,7 @@ REGISTER_HASH(halftimehash256,
   $.seedfn = halftime_hash_seed_init
 );
 
-REGISTER_HASH(halftimehash512,
+REGISTER_HASH(HalftimeHash_512,
   $.desc = "Halftime Hash (512-bit blocks)",
   $.sort_order = 40,
   $.hash_flags =

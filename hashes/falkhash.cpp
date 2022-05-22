@@ -184,7 +184,7 @@ REGISTER_FAMILY(falkhash,
 // reference implementation:
 //     1) For a hash len of 0, a hash result of 0 was forced, and
 //     2) The hash output was truncated to 64 bits.
-REGISTER_HASH(falkhash_v1,
+REGISTER_HASH(falkhash1,
   $.desc = "Falkhash v1",
   $.hash_flags =
         FLAG_HASH_AES_BASED,
@@ -197,7 +197,7 @@ REGISTER_HASH(falkhash_v1,
   $.hashfn_bswap = falkhash<1,true>
 );
 
-REGISTER_HASH(falkhash_v2,
+REGISTER_HASH(falkhash2,
   $.desc = "Falkhash v2",
   $.hash_flags =
         FLAG_HASH_AES_BASED,

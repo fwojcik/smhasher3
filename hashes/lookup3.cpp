@@ -86,7 +86,7 @@ REGISTER_FAMILY(lookup3,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(lookup3_32,
+REGISTER_HASH(lookup3__32,
   $.desc = "Bob Jenkins' lookup3 (32-bit output)",
   $.hash_flags =
         0,
@@ -100,7 +100,7 @@ REGISTER_HASH(lookup3_32,
   $.hashfn_bswap = lookup3<false,true>
 );
 
-REGISTER_HASH(lookup3_64,
+REGISTER_HASH(lookup3,
   $.desc = "Bob Jenkins' lookup3 (64-bit output)",
   $.hash_flags =
         0,

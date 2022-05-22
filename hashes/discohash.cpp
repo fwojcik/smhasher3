@@ -204,7 +204,7 @@ REGISTER_FAMILY(discohash,
 );
 
 // Yes, none of these have any bad seeds! See note at the top near "thread_local".
-REGISTER_HASH(discohash64_old,
+REGISTER_HASH(Discohash__old,
   $.desc = "Discohash (aka BEBB4185) prior version",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -221,7 +221,7 @@ REGISTER_HASH(discohash64_old,
   $.badseeds = {}
 );
 
-REGISTER_HASH(discohash64_new,
+REGISTER_HASH(Discohash,
   $.desc = "Discohash (aka BEBB4185)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -238,7 +238,7 @@ REGISTER_HASH(discohash64_new,
   $.badseeds = {}
 );
 
-REGISTER_HASH(discohash128_old,
+REGISTER_HASH(Discohash_128__old,
   $.desc = "Discohash (aka BEBB4185) prior version",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -255,7 +255,7 @@ REGISTER_HASH(discohash128_old,
   $.badseeds = {}
 );
 
-REGISTER_HASH(discohash128_new,
+REGISTER_HASH(Discohash_128,
   $.desc = "Discohash (aka BEBB4185)",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,

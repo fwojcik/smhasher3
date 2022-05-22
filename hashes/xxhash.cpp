@@ -1406,7 +1406,7 @@ REGISTER_FAMILY(xxhash,
   $.src_status = HashFamilyInfo::SRC_ACTIVE
 );
 
-REGISTER_HASH(xxHash_32,
+REGISTER_HASH(XXH_32,
   $.desc = "xxHash, 32-bit version",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED          |
@@ -1423,7 +1423,7 @@ REGISTER_HASH(xxHash_32,
   $.hashfn_bswap = XXH32<true>
 );
 
-REGISTER_HASH(xxHash_64,
+REGISTER_HASH(XXH_64,
   $.desc = "xxHash, 64-bit version",
   $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,
@@ -1439,7 +1439,7 @@ REGISTER_HASH(xxHash_64,
   $.hashfn_bswap = XXH64<true>
 );
 
-REGISTER_HASH(xxh3_64,
+REGISTER_HASH(XXH3_64,
   $.desc = "xxh3, 64-bit version",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE        |
@@ -1456,7 +1456,7 @@ REGISTER_HASH(xxh3_64,
   $.hashfn_bswap = XXH3_64<true>
 );
 
-REGISTER_HASH(xxh3_128,
+REGISTER_HASH(XXH3_128,
   $.desc = "xxh3, 128-bit version",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE        |

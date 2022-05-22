@@ -196,12 +196,12 @@ static void blockpearson_hash_64(const void * in, const size_t org_len, const se
   PUT_U64<!bswap>(hash1, (uint8_t *)out, 0);
 }
 
-REGISTER_FAMILY(blockpearson,
+REGISTER_FAMILY(pearsonblock,
   $.src_url = "https://github.com/Logan007/pearsonB",
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-REGISTER_HASH(blockpearson_64,
+REGISTER_HASH(PearsonBlock_64,
   $.desc = "Pearson-inspired block hash, 64-bit state",
   $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,
@@ -216,7 +216,7 @@ REGISTER_HASH(blockpearson_64,
   $.hashfn_bswap = blockpearson_hash_64<true>
 );
 
-REGISTER_HASH(blockpearson_128,
+REGISTER_HASH(PearsonBlock_128,
   $.desc = "Pearson-inspired block hash, 128-bit state",
   $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,
@@ -231,7 +231,7 @@ REGISTER_HASH(blockpearson_128,
   $.hashfn_bswap = blockpearson_hash_128<true>
 );
 
-REGISTER_HASH(blockpearson_256,
+REGISTER_HASH(PearsonBlock_256,
   $.desc = "Pearson-inspired block hash, 256-bit state",
   $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,

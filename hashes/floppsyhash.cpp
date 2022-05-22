@@ -147,7 +147,7 @@ REGISTER_HASH(floppsyhash,
   $.hashfn_bswap = floppsyhash<false,true>
 );
 
-REGISTER_HASH(floppsyhash_old,
+REGISTER_HASH(floppsyhash__old,
   $.desc = "Floppsyhash (old version, fka \"tifuhash\")",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED      |

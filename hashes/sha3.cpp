@@ -214,7 +214,7 @@ REGISTER_FAMILY(sha3,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(sha3_256_64,
+REGISTER_HASH(SHA_3_256__64,
   $.desc = "SHA-3, bits 0-63",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
@@ -233,7 +233,7 @@ REGISTER_HASH(sha3_256_64,
   $.hashfn_bswap = SHA3_256<64,true>
 );
 
-REGISTER_HASH(sha3_256,
+REGISTER_HASH(SHA_3,
   $.desc = "SHA-3",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |

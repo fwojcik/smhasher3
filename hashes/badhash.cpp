@@ -99,7 +99,7 @@ REGISTER_HASH(badhash,
   $.sort_order = 20
 );
 
-REGISTER_HASH(sumhash8,
+REGISTER_HASH(sum8hash,
   $.desc = "sum all 8-bit bytes",
   $.hash_flags =
         FLAG_HASH_MOCK,
@@ -116,7 +116,7 @@ REGISTER_HASH(sumhash8,
   $.sort_order = 30
 );
 
-REGISTER_HASH(sumhash32,
+REGISTER_HASH(sum32hash,
   $.desc = "sum all 32-bit words",
   $.hash_flags =
         FLAG_HASH_MOCK,

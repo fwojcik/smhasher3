@@ -2590,7 +2590,7 @@ REGISTER_FAMILY(PMP_mutilinear,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(PMPML_32,
+REGISTER_HASH(PMP_Multilinear_32,
   $.desc = "PMP_Multilinear 32-bit",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE ,
@@ -2606,7 +2606,7 @@ REGISTER_HASH(PMPML_32,
   $.hashfn_bswap = PMPML_32<true>
 );
 
-REGISTER_HASH(PMPML_64,
+REGISTER_HASH(PMP_Multilinear_64,
   $.desc = "PMP_Multilinear 64-bit",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE ,

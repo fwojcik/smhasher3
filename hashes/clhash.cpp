@@ -446,7 +446,7 @@ REGISTER_FAMILY(clhash,
 
 #if defined(HAVE_X86_64_CLMUL)
 
-REGISTER_HASH(clhash,
+REGISTER_HASH(CLhash__bitmix,
   $.desc = "Carryless multiplication hash, with -DBITMIX",
   $.hash_flags =
         FLAG_HASH_CLMUL_BASED      |
@@ -464,7 +464,7 @@ REGISTER_HASH(clhash,
   $.initfn = clhash_init
 );
 
-REGISTER_HASH(clhash_nomix,
+REGISTER_HASH(CLhash,
   $.desc = "Carryless multiplication hash, without -DBITMIX",
   $.hash_flags =
         FLAG_HASH_CLMUL_BASED      |

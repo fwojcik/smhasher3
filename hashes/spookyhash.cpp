@@ -375,7 +375,7 @@ REGISTER_FAMILY(spookyhash,
 );
 
 //{ 0x111af082, 0x26bb3cda, 0x94c4f96c, 0xec24c166 }
-REGISTER_HASH(Spookyhash_v1_32,
+REGISTER_HASH(SpookyHash1_32,
   $.desc = "SpookyHash v1, 32-bit result",
   $.hash_flags =
         0,
@@ -389,7 +389,7 @@ REGISTER_HASH(Spookyhash_v1_32,
   $.hashfn_bswap = spookyhash<1,32,true>
 );
 
-REGISTER_HASH(Spookyhash_v1_64,
+REGISTER_HASH(SpookyHash1_64,
   $.desc = "SpookyHash v1, 64-bit result",
   $.hash_flags =
         0,
@@ -403,7 +403,7 @@ REGISTER_HASH(Spookyhash_v1_64,
   $.hashfn_bswap = spookyhash<1,64,true>
 );
 
-REGISTER_HASH(Spookyhash_v1_128,
+REGISTER_HASH(SpookyHash1_128,
   $.desc = "SpookyHash v1, 128-bit result",
   $.hash_flags =
         0,
@@ -417,7 +417,7 @@ REGISTER_HASH(Spookyhash_v1_128,
   $.hashfn_bswap = spookyhash<1,128,true>
 );
 
-REGISTER_HASH(Spookyhash_v2_32,
+REGISTER_HASH(SpookyHash2_32,
   $.desc = "SpookyHash v2, 32-bit result",
   $.hash_flags =
         0,
@@ -432,7 +432,7 @@ REGISTER_HASH(Spookyhash_v2_32,
   $.sort_order = 10
 );
 
-REGISTER_HASH(Spookyhash_v2_64,
+REGISTER_HASH(SpookyHash2_64,
   $.desc = "SpookyHash v2, 64-bit result",
   $.hash_flags =
         0,
@@ -447,7 +447,7 @@ REGISTER_HASH(Spookyhash_v2_64,
   $.sort_order = 10
 );
 
-REGISTER_HASH(Spookyhash_v2_128,
+REGISTER_HASH(SpookyHash2_128,
   $.desc = "SpookyHash v2, 128-bit result",
   $.hash_flags =
         0,

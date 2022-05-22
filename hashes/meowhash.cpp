@@ -351,7 +351,7 @@ REGISTER_FAMILY(meowhash,
 
 #if defined(HAVE_X86_64_AES) && defined(HAVE_SSE_4_1)
 
-REGISTER_HASH(MeowHash_32,
+REGISTER_HASH(MeowHash__32,
   $.desc = "MeowHash (0.5/calico, low 32 bits)",
   $.hash_flags =
         FLAG_HASH_NO_SEED       |
@@ -366,7 +366,7 @@ REGISTER_HASH(MeowHash_32,
   $.hashfn_bswap = MeowHash32<true>
 );
 
-REGISTER_HASH(MeowHash_64,
+REGISTER_HASH(MeowHash__64,
   $.desc = "MeowHash (0.5/calico, low 64 bits)",
   $.hash_flags =
         FLAG_HASH_NO_SEED       |
@@ -381,7 +381,7 @@ REGISTER_HASH(MeowHash_64,
   $.hashfn_bswap = MeowHash64<true>
 );
 
-REGISTER_HASH(MeowHash_128,
+REGISTER_HASH(MeowHash,
   $.desc = "MeowHash (0.5/calico)",
   $.hash_flags =
         FLAG_HASH_NO_SEED       |

@@ -427,7 +427,7 @@ REGISTER_FAMILY(beamsplitter,
 );
 
 // Yes, this has no bad seeds! See note at the top near "thread_local".
-REGISTER_HASH(beamsplitter64,
+REGISTER_HASH(beamsplitter,
   $.desc = "A possibly universal hash made with a 10x64 s-box",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE     |

@@ -232,7 +232,7 @@ REGISTER_FAMILY(farsh,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(farsh32,
+REGISTER_HASH(FARSH_32,
   $.desc = "FARSH 32-bit (1 hash output)",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,
@@ -247,7 +247,7 @@ REGISTER_HASH(farsh32,
   $.hashfn_bswap = farsh<true,1>
 );
 
-REGISTER_HASH(farsh64,
+REGISTER_HASH(FARSH_64,
   $.desc = "FARSH 64-bit (2 hash outputs)",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,
@@ -262,7 +262,7 @@ REGISTER_HASH(farsh64,
   $.hashfn_bswap = farsh<true,2>
 );
 
-REGISTER_HASH(farsh128,
+REGISTER_HASH(FARSH_128,
   $.desc = "FARSH 128-bit (4 hash outputs)",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,
@@ -278,7 +278,7 @@ REGISTER_HASH(farsh128,
   $.hashfn_bswap = farsh<true,4>
 );
 
-REGISTER_HASH(farsh256,
+REGISTER_HASH(FARSH_256,
   $.desc = "FARSH 256-bit (8 hash outputs)",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE,

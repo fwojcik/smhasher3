@@ -744,7 +744,7 @@ REGISTER_FAMILY(nmhash,
   $.src_status = HashFamilyInfo::SRC_STABLEISH
 );
 
-REGISTER_HASH(nmhash,
+REGISTER_HASH(NMHASH,
   $.desc = "nmhash32 v2",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,
@@ -761,7 +761,7 @@ REGISTER_HASH(nmhash,
   $.hashfn_bswap = NMhash<true>
 );
 
-REGISTER_HASH(nmhashx,
+REGISTER_HASH(NMHASHX,
   $.desc = "nmhash32x v2",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,

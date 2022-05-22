@@ -1189,8 +1189,8 @@ REGISTER_FAMILY(umash,
 
 #if defined(HAVE_X86_64_CLMUL)
 
-REGISTER_HASH(umash_64,
-  $.desc = "umash 64 (which == 0)",
+REGISTER_HASH(UMASH_64,
+  $.desc = "UMASH-64 (which == 0)",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE        |
         FLAG_HASH_CLMUL_BASED,
@@ -1206,8 +1206,8 @@ REGISTER_HASH(umash_64,
   $.initfn = umash_init
 );
 
-REGISTER_HASH(umash_reseed_64,
-  $.desc = "umash 64 (which == 0, with full reseeding)",
+REGISTER_HASH(UMASH_64__reseed,
+  $.desc = "UMASH-64 (which == 0, with full reseeding)",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE        |
         FLAG_HASH_CLMUL_BASED,
@@ -1224,8 +1224,8 @@ REGISTER_HASH(umash_reseed_64,
   $.initfn = umash_init
 );
 
-REGISTER_HASH(umash_128,
-  $.desc = "umash 128",
+REGISTER_HASH(UMASH_128,
+  $.desc = "UMASH-128",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE        |
         FLAG_HASH_CLMUL_BASED,
@@ -1241,8 +1241,8 @@ REGISTER_HASH(umash_128,
   $.initfn = umash_init
 );
 
-REGISTER_HASH(umash_reseed_128,
-  $.desc = "umash 128 (with full reseeding)",
+REGISTER_HASH(UMASH_128__reseed,
+  $.desc = "UMASH-128 (with full reseeding)",
   $.hash_flags =
         FLAG_HASH_LOOKUP_TABLE        |
         FLAG_HASH_CLMUL_BASED,

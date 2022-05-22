@@ -64,6 +64,7 @@ static inline uint64_t _wyr3(const uint8_t * p, size_t k) {
 // regardless of platform.
 static inline uint64_t _wyrot(uint64_t x) { return ROTL64(x, 32); }
 
+// TODO: pass mum32bit template param through _wyhash64
 template < bool mum32bit, bool strict >
 static inline void _wymum(uint64_t *A, uint64_t *B){
   if (mum32bit) {
@@ -242,7 +243,7 @@ REGISTER_HASH(wyhash_32,
   $.badseeds = { 0x429dacdd, 0xd637dbf3 }
 );
 
-REGISTER_HASH(wyhash_64,
+REGISTER_HASH(wyhash,
   $.desc = "wyhash v3, 64-bit non-strict version",
   $.hash_flags =
 	0,
@@ -260,7 +261,7 @@ REGISTER_HASH(wyhash_64,
   $.badseeds = { 0x14cc886e, 0x1bf4ed84, UINT64_C(0x14cc886e14cc886e) } // all seeds with those lower bits ?
 );
 
-REGISTER_HASH(wyhash_strict_64,
+REGISTER_HASH(wyhash__strict,
   $.desc = "wyhash v3, 64-bit strict version",
   $.hash_flags =
 	0,

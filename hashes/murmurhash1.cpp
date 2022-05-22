@@ -81,7 +81,7 @@ REGISTER_FAMILY(murmur1,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(murmur1_32,
+REGISTER_HASH(MurmurHash1,
   $.desc = "MurmurHash v1",
   $.hash_flags =
         FLAG_HASH_SMALL_SEED,

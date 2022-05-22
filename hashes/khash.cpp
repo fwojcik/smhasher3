@@ -141,7 +141,7 @@ REGISTER_FAMILY(khash,
   $.src_status = HashFamilyInfo::SRC_ACTIVE
 );
 
-REGISTER_HASH(khash32,
+REGISTER_HASH(khash_32,
   $.desc = "K-Hash 32 bit mixer-based hash",
   $.hash_flags =
         0,
@@ -157,7 +157,7 @@ REGISTER_HASH(khash32,
   $.hashfn_bswap = khash32<true>
 );
 
-REGISTER_HASH(khash64,
+REGISTER_HASH(khash_64,
   $.desc = "K-Hash 64 bit mixer-based hash",
   $.hash_flags =
         0,

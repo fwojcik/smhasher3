@@ -622,8 +622,8 @@ REGISTER_FAMILY(vmac,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(VHASH_32,
-  $.desc = "VHASH_32, by Ted Krovetz and Wei Dai",
+REGISTER_HASH(VHASH__32,
+  $.desc = "VHASH low 32 bits, by Ted Krovetz and Wei Dai",
   $.hash_flags =
         FLAG_HASH_AES_BASED              |
         FLAG_HASH_CRYPTOGRAPHIC,
@@ -639,8 +639,8 @@ REGISTER_HASH(VHASH_32,
   $.hashfn_bswap = VHASH32<true>
 );
 
-REGISTER_HASH(VHASH_64,
-  $.desc = "VHASH_64, by Ted Krovetz and Wei Dai",
+REGISTER_HASH(VHASH,
+  $.desc = "VHASH, by Ted Krovetz and Wei Dai",
   $.hash_flags =
         FLAG_HASH_AES_BASED              |
         FLAG_HASH_CRYPTOGRAPHIC,

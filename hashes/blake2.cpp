@@ -300,7 +300,7 @@ REGISTER_HASH(blake2b_128,
   $.hashfn_bswap = BLAKE2B<128,128,true>
 );
 
-REGISTER_HASH(blake2b_256_64,
+REGISTER_HASH(blake2b_256__64,
   $.desc = "BLAKE 2b, 256-bit digest, bits 0-63",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
@@ -395,7 +395,7 @@ REGISTER_HASH(blake2s_128,
   $.hashfn_bswap = BLAKE2S<128,128,true>
 );
 
-REGISTER_HASH(blake2s_256_64,
+REGISTER_HASH(blake2s_256__64,
   $.desc = "BLAKE 2s, 256-bit digest, bits 0-63",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |

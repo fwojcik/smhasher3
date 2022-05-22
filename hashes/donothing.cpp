@@ -48,7 +48,7 @@ REGISTER_FAMILY(donothing,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(donothing32,
+REGISTER_HASH(donothing_32,
   $.desc = "Do-Nothing function (measure call overhead)",
   $.hash_flags =
         FLAG_HASH_MOCK,
@@ -62,7 +62,7 @@ REGISTER_HASH(donothing32,
   $.hashfn_bswap = DoNothingHash
 );
 
-REGISTER_HASH(donothing64,
+REGISTER_HASH(donothing_64,
   $.desc = "Do-Nothing function (measure call overhead)",
   $.hash_flags =
         FLAG_HASH_MOCK,
@@ -76,7 +76,7 @@ REGISTER_HASH(donothing64,
   $.hashfn_bswap = DoNothingHash
 );
 
-REGISTER_HASH(donothing128,
+REGISTER_HASH(donothing_128,
   $.desc = "Do-Nothing function (measure call overhead)",
   $.hash_flags =
         FLAG_HASH_MOCK,
@@ -90,7 +90,7 @@ REGISTER_HASH(donothing128,
   $.hashfn_bswap = DoNothingHash
 );
 
-REGISTER_HASH(donothingOAAT32,
+REGISTER_HASH(donothingOAAT_32,
   $.desc = "Do-Nothing OAAT function (measure call+OAAT overhead)",
   $.hash_flags =
         FLAG_HASH_MOCK,
@@ -105,7 +105,7 @@ REGISTER_HASH(donothingOAAT32,
   $.sort_order = 10
 );
 
-REGISTER_HASH(donothingOAAT64,
+REGISTER_HASH(donothingOAAT_64,
   $.desc = "Do-Nothing OAAT function (measure call+OAAT overhead)",
   $.hash_flags =
         FLAG_HASH_MOCK,
@@ -120,7 +120,7 @@ REGISTER_HASH(donothingOAAT64,
   $.sort_order = 10
 );
 
-REGISTER_HASH(donothingOAAT128,
+REGISTER_HASH(donothingOAAT_128,
   $.desc = "Do-Nothing OAAT function (measure call+OAAT overhead)",
   $.hash_flags =
         FLAG_HASH_MOCK,

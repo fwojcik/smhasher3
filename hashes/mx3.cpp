@@ -93,7 +93,7 @@ REGISTER_FAMILY(mx3,
   $.src_status = HashFamilyInfo::SRC_ACTIVE
 );
 
-REGISTER_HASH(mx3,
+REGISTER_HASH(mx3__v2,
   $.desc = "mx3 (revision 2)",
   $.hash_flags =
         0,
@@ -107,7 +107,7 @@ REGISTER_HASH(mx3,
   $.hashfn_bswap = mx3_v2<true>
 );
 
-REGISTER_HASH(mx3_old,
+REGISTER_HASH(mx3__v1,
   $.desc = "mx3 (revision 1)",
   $.hash_flags =
         0,

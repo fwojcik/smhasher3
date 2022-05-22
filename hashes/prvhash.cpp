@@ -316,7 +316,7 @@ REGISTER_FAMILY(prvhash,
   $.src_status = HashFamilyInfo::SRC_ACTIVE
 );
 
-REGISTER_HASH(prvhash64_64,
+REGISTER_HASH(prvhash_64,
   $.desc = "prvhash64 v4.3 64-bit output",
   $.hash_flags =
         0,
@@ -332,7 +332,7 @@ REGISTER_HASH(prvhash64_64,
   $.hashfn_bswap = prvhash64<true>
 );
 
-REGISTER_HASH(prvhash64_128,
+REGISTER_HASH(prvhash_128,
   $.desc = "prvhash64 v4.3 128-bit output",
   $.hash_flags =
         0,
@@ -348,7 +348,7 @@ REGISTER_HASH(prvhash64_128,
   $.hashfn_bswap = prvhash128<true>
 );
 
-REGISTER_HASH(prvhash64s_64,
+REGISTER_HASH(prvhash_64__incr,
   $.desc = "prvhash64 v4.3 streaming mode 64-bit output",
   $.hash_flags =
         0,
@@ -365,7 +365,7 @@ REGISTER_HASH(prvhash64s_64,
   $.hashfn_bswap = prvhash64s<true>
 );
 
-REGISTER_HASH(prvhash64s_128,
+REGISTER_HASH(prvhash_128__incr,
   $.desc = "prvhash64 v4.3 streaming mode 128-bit output",
   $.hash_flags =
         0,

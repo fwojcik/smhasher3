@@ -260,7 +260,7 @@ REGISTER_FAMILY(chaskey,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(chaskey_12_32,
+REGISTER_HASH(chaskey_12__32,
   $.desc = "Chaskey PRF (12 rounds, 32 bits)",
   $.sort_order = 20,
   $.hash_flags =
@@ -281,7 +281,7 @@ REGISTER_HASH(chaskey_12_32,
   $.hashfn_bswap = chaskey<12,1,true>
 );
 
-REGISTER_HASH(chaskey_12_64,
+REGISTER_HASH(chaskey_12__64,
   $.desc = "Chaskey PRF (12 rounds, 64 bits)",
   $.sort_order = 20,
   $.hash_flags =
@@ -302,7 +302,7 @@ REGISTER_HASH(chaskey_12_64,
   $.hashfn_bswap = chaskey<12,2,true>
 );
 
-REGISTER_HASH(chaskey_12_128,
+REGISTER_HASH(chaskey_12,
   $.desc = "Chaskey PRF (12 rounds, 128 bits)",
   $.sort_order = 20,
   $.hash_flags =
@@ -323,7 +323,7 @@ REGISTER_HASH(chaskey_12_128,
   $.hashfn_bswap = chaskey<12,4,true>
 );
 
-REGISTER_HASH(chaskey_8_32,
+REGISTER_HASH(chaskey_8__32,
   $.desc = "Chaskey PRF (8 rounds, 32 bits)",
   $.sort_order = 10,
   $.hash_flags =
@@ -343,7 +343,7 @@ REGISTER_HASH(chaskey_8_32,
   $.hashfn_bswap = chaskey<8,1,true>
 );
 
-REGISTER_HASH(chaskey_8_64,
+REGISTER_HASH(chaskey_8__64,
   $.desc = "Chaskey PRF (8 rounds, 64 bits)",
   $.sort_order = 10,
   $.hash_flags =
@@ -363,7 +363,7 @@ REGISTER_HASH(chaskey_8_64,
   $.hashfn_bswap = chaskey<8,2,true>
 );
 
-REGISTER_HASH(chaskey_8_128,
+REGISTER_HASH(chaskey_8,
   $.desc = "Chaskey PRF (8 rounds, 128 bits)",
   $.sort_order = 10,
   $.hash_flags =

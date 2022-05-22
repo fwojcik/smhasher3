@@ -729,7 +729,7 @@ REGISTER_FAMILY(sha1,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(sha1_32,
+REGISTER_HASH(SHA_1__32,
   $.desc = "SHA-1, bits 0-31",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
@@ -750,7 +750,7 @@ REGISTER_HASH(sha1_32,
   $.hashfn_bswap = SHA1<32,true>
 );
 
-REGISTER_HASH(sha1_64,
+REGISTER_HASH(SHA_1__64,
   $.desc = "SHA-1, bits 0-63",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |
@@ -771,7 +771,7 @@ REGISTER_HASH(sha1_64,
   $.hashfn_bswap = SHA1<64,true>
 );
 
-REGISTER_HASH(sha1,
+REGISTER_HASH(SHA_1,
   $.desc = "SHA-1",
   $.hash_flags =
         FLAG_HASH_CRYPTOGRAPHIC        |

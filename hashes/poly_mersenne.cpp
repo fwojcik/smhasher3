@@ -165,7 +165,7 @@ REGISTER_FAMILY(poly_mersenne,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(poly_mersenne_1,
+REGISTER_HASH(poly_mersenne__deg1,
   $.desc = "Degree 1 Hashing mod 2^61-1",
   $.hash_flags =
         FLAG_HASH_SYSTEM_SPECIFIC,
@@ -182,7 +182,7 @@ REGISTER_HASH(poly_mersenne_1,
   $.hashfn_bswap = Poly_Mersenne<1, true>
 );
 
-REGISTER_HASH(poly_mersenne_2,
+REGISTER_HASH(poly_mersenne__deg2,
   $.desc = "Degree 2 Hashing mod 2^61-1",
   $.hash_flags =
         FLAG_HASH_SYSTEM_SPECIFIC,
@@ -201,7 +201,7 @@ REGISTER_HASH(poly_mersenne_2,
   $.seedfixfn = excludeBadseeds
 );
 
-REGISTER_HASH(poly_mersenne_3,
+REGISTER_HASH(poly_mersenne__deg3,
   $.desc = "Degree 3 Hashing mod 2^61-1",
   $.hash_flags =
         FLAG_HASH_SYSTEM_SPECIFIC,
@@ -220,7 +220,7 @@ REGISTER_HASH(poly_mersenne_3,
   $.seedfixfn = excludeBadseeds
 );
 
-REGISTER_HASH(poly_mersenne_4,
+REGISTER_HASH(poly_mersenne__deg4,
   $.desc = "Degree 4 Hashing mod 2^61-1",
   $.hash_flags =
         FLAG_HASH_SYSTEM_SPECIFIC,

@@ -695,12 +695,12 @@ static bool rmd_test(void) {
    return result;
 }
 
-REGISTER_FAMILY(rmd,
+REGISTER_FAMILY(ripemd,
   $.src_url = "https://github.com/libtom/libtomcrypt/blob/develop/src/hashes/rmd128.c",
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(rmd128,
+REGISTER_HASH(RIPEMD_128,
   $.desc = "RIPE-MD 128",
   $.hash_flags =
         FLAG_HASH_NO_SEED              |
@@ -720,7 +720,7 @@ REGISTER_HASH(rmd128,
   $.hashfn_bswap = rmd128<true>
 );
 
-REGISTER_HASH(rmd160,
+REGISTER_HASH(RIPEMD_160,
   $.desc = "RIPE-MD 160",
   $.hash_flags =
         FLAG_HASH_NO_SEED              |
@@ -740,7 +740,7 @@ REGISTER_HASH(rmd160,
   $.hashfn_bswap = rmd160<true>
 );
 
-REGISTER_HASH(rmd256,
+REGISTER_HASH(RIPEMD_256,
   $.desc = "RIPE-MD 256",
   $.hash_flags =
         FLAG_HASH_NO_SEED              |

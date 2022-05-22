@@ -290,7 +290,7 @@ REGISTER_FAMILY(metrohash,
   $.src_status = HashFamilyInfo::SRC_FROZEN
 );
 
-REGISTER_HASH(metrohash_64,
+REGISTER_HASH(MetroHash_64,
   $.desc = "Metrohash v1 base variant, 64-bit version",
   $.hash_flags =
         0,
@@ -306,7 +306,7 @@ REGISTER_HASH(metrohash_64,
   $.badseeds = {}
 );
 
-REGISTER_HASH(metrohash1_64,
+REGISTER_HASH(MetroHash_64__var1,
   $.desc = "Metrohash v1 variant 1, 64-bit version",
   $.hash_flags =
         0,
@@ -322,7 +322,7 @@ REGISTER_HASH(metrohash1_64,
   $.badseeds = {}
 );
 
-REGISTER_HASH(metrohash2_64,
+REGISTER_HASH(MetroHash_64__var2,
   $.desc = "Metrohash v1 variant 2, 64-bit version",
   $.hash_flags =
         0,
@@ -340,7 +340,7 @@ REGISTER_HASH(metrohash2_64,
 
 #if defined(HAVE_X86_64_CRC32C)
 
-REGISTER_HASH(metrohashcrc1_64,
+REGISTER_HASH(MetroHashCrc_64__var1,
   $.desc = "Metrohash-crc v1 variant 1, 64-bit version (unofficial)",
   $.hash_flags =
         FLAG_HASH_CRC_BASED,
@@ -356,7 +356,7 @@ REGISTER_HASH(metrohashcrc1_64,
   $.badseeds = {}
 );
 
-REGISTER_HASH(metrohashcrc2_64,
+REGISTER_HASH(MetroHashCrc_64__var2,
   $.desc = "Metrohash-crc v1 variant 2, 64-bit version (unofficial)",
   $.hash_flags =
         0,
@@ -374,7 +374,7 @@ REGISTER_HASH(metrohashcrc2_64,
 
 #endif
 
-REGISTER_HASH(metrohash_128,
+REGISTER_HASH(MetroHash_128,
   $.desc = "Metrohash v1 base variant, 128-bit version",
   $.hash_flags =
         0,
@@ -390,7 +390,7 @@ REGISTER_HASH(metrohash_128,
   $.badseeds = {}
 );
 
-REGISTER_HASH(metrohash1_128,
+REGISTER_HASH(MetroHash_128__var1,
   $.desc = "Metrohash v1 variant 1, 128-bit version",
   $.hash_flags =
         0,
@@ -406,7 +406,7 @@ REGISTER_HASH(metrohash1_128,
   $.badseeds = {}
 );
 
-REGISTER_HASH(metrohash2_128,
+REGISTER_HASH(MetroHash_128__var2,
   $.desc = "Metrohash v1 variant 2, 128-bit version",
   $.hash_flags =
         0,
@@ -424,7 +424,7 @@ REGISTER_HASH(metrohash2_128,
 
 #if defined(HAVE_X86_64_CRC32C)
 
-REGISTER_HASH(metrohashcrc1_128,
+REGISTER_HASH(MetroHashCrc_128__var1,
   $.desc = "Metrohash-crc v1 variant 1, 128-bit version",
   $.hash_flags =
         0,
@@ -440,8 +440,8 @@ REGISTER_HASH(metrohashcrc1_128,
   $.badseeds = {}
 );
 
-REGISTER_HASH(metrohashcrc2_128,
-  $.desc = "Metrohash-crc v1 variant 1, 128-bit version",
+REGISTER_HASH(MetroHashCrc_128__var2,
+  $.desc = "Metrohash-crc v1 variant 2, 128-bit version",
   $.hash_flags =
         0,
   $.impl_flags =
