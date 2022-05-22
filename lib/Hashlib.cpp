@@ -127,6 +127,7 @@ std::vector<const HashInfo *> findAllHashes(void) {
 
 const HashInfo * findHash(const char * name) {
   std::string n = name;
+  // Search without regards to case
   std::transform(n.begin(), n.end(), n.begin(), ::tolower);
   // Since underscores can't be in names, the user must have meant a dash
   std::replace(n.begin(), n.end(), '_', '-');
@@ -140,6 +141,7 @@ const HashInfo * findHash(const char * name) {
 
 void listHashes(bool nameonly) {
     if (!nameonly) {
+        printf("Hashnames can be supplied using any case letters.\n\n");
         printf("%-25s %4s  %6s  %-60s\n",
             "Name", "Bits", "Type", "Description");
         printf("%-25s %4s  %6s  %-60s\n",

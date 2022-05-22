@@ -629,6 +629,8 @@ static void usage( void )
            "                 [--verbose] [--vcode] [--ncpu=N] [<hashname>]\n"
            "\n"
            "       SMHasher3 [--list]|[--listnames]|[--tests]|[--version]\n"
+           "\n"
+           "  Hashnames can be supplied using any case letters.\n"
            );
 }
 
