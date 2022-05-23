@@ -84,7 +84,7 @@ static FORCE_INLINE void mult32_64(uint64_t & r64, uint32_t a32, uint32_t b32) {
 }
 
 // 96-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
-static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t& addlo, uint32_t& addmi, uint32_t& addhi) {
+static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, const uint32_t& addlo, const uint32_t& addmi, const uint32_t& addhi) {
 #if defined(HAVE_ARM_ASM)
     __asm__("ADDS %w0, %w3, %w0\n"
             "ADCS %w1, %w4, %w1\n"
@@ -300,7 +300,7 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo, ui
 }
 
 // 192-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
-static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uint64_t& addlo, uint64_t& addmi, uint64_t& addhi) {
+static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, const uint64_t& addlo, const uint64_t& addmi, const uint64_t& addhi) {
 #if defined(HAVE_X86_64_ASM)
     __asm__("addq %3, %0\n"
             "adcq %4, %1\n"
@@ -318,7 +318,7 @@ static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uin
             : "m" (addlo), "m" (addmi), "m" (addhi)
 #else
             : "+g" (rlo), "+g" (rmi), "+g" (rhi)
-            : "g" (addlo), "g" (addmi), "g" (addhi)
+            : "rm" (addlo), "rm" (addmi), "rm" (addhi)
 #endif
             : "cc"
             );
