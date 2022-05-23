@@ -202,18 +202,11 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
     uint64_t tmplo   = alo * blo;
     uint64_t t, carry = 0;
 
-#if 1
     t = tmplo + (tmpmi_0 << 32);
     carry += (t < tmplo);
     rlo = t + (tmpmi_1 << 32);
     carry += (rlo < t);
     rhi = tmphi + (tmpmi_0 >> 32) + (tmpmi_1 >> 32) + carry;
-#else
-    // From xxHash, untested
-    t   = (tmplo   >> 32) + (tmpmi_0 & 0xFFFFFFFF) + tmpmi_1;
-    rhi = (tmpmi_0 >> 32) + (t >> 32)              + tmphi;
-    rlo = (t       << 32) | (tmplo   & 0xFFFFFFFF);
-#endif
 #endif
 }
 
