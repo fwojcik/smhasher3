@@ -242,6 +242,11 @@ bool verifyAllHashes(bool verbose) {
 }
 
 //-----------------------------------------------------------------------------
+// Run Mathmult unit tests via global constructor
+int Mathmult_selftest(void);
+static int selftest_result = Mathmult_selftest();
+
+//-----------------------------------------------------------------------------
 // See Hashrefs.cpp.in for why these exist. You can very likely just ignore them.
 unsigned refs();
 static unsigned dummy = refs();

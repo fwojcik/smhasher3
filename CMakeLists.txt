@@ -150,6 +150,7 @@ add_library(
   lib/Hashlib.cpp
   lib/Hashinfo.cpp
   lib/AEStables.cpp
+  lib/Mathmult.cpp
 #
   ${HASH_SRC_FILES}
 )
