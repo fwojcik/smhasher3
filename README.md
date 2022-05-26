@@ -55,6 +55,24 @@ or failure are appreciated, as are patches to make things work.
 Notes on licensing
 ------------------
 
+Files under hashes/, include/, lib/, and misc/ may have a variety of
+different different licenses, such as BSD 2, zlib, GPL3, public
+domain/unlicense/CC0, or MIT. Each file should have its license terms
+clearly stated at the top.
+
+Files under util/parallel_hashmap/ have the Apache 2 license.
+
+All other files in this distribution (including, but not limited to,
+main.cpp and files in platform/, tests/, and util/) are licensed under
+the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+I would prefer to have the above information in LICENSE, but Gitlab
+offers no way to manually set an advertised license, and so I need
+to rely on its auto-detection to find "GPL3" (which is at least
+closest to reality), so it lives here instead. :-/
+
 The original SMHasher's README says:
 
 > SMHasher is released under the MIT license.
