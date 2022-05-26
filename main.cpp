@@ -634,6 +634,10 @@ static void usage( void )
            );
 }
 
+#if defined(DEBUG)
+extern bool blobsort_test_result;
+#endif
+
 int main ( int argc, const char ** argv )
 {
   setbuf(stdout, NULL); // Unbuffer stdout always
@@ -643,6 +647,13 @@ int main ( int argc, const char ** argv )
     printf("Runtime endian detection failed! Cannot continue\n");
     exit(1);
   }
+
+#if defined(DEBUG)
+  if (!blobsort_test_result) {
+      printf("Blobsort self-test failed! Cannot continue\n");
+      exit(1);
+  }
+#endif
 
   set_default_tests(true);
 

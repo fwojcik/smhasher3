@@ -174,6 +174,7 @@ add_library(
   util/Platform.cpp
   util/Analyze.cpp
   util/Blob.cpp
+  util/Blobsort.cpp
   util/Stats.cpp
   util/VCode.cpp
 #
