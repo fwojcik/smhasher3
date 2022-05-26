@@ -1,3 +1,4 @@
+```
    _____ __  __ _    _           _              ____  
   / ____|  \/  | |  | |         | |            |___ \ 
  | (___ | \  / | |__| | __ _ ___| |__   ___ _ __ __) |
@@ -5,6 +6,7 @@
   ____) | |  | | |  | | (_| \__ \ | | |  __/ |  ___) |
  |_____/|_|  |_|_|  |_|\__,_|___/_| |_|\___|_| |____/ 
 =======================================================
+```
 
 Summary
 -------
@@ -17,24 +19,38 @@ both of those codebases up to their respective fork points is
 contained in this repository.
 
 The major differences from rurban's fork are:
-*) Fix several critical bugs
-*) Significant performance increases
-*) Better statistical foundations for some tests
-*) Report on p-values for almost all tests
-*) Better handling of threaded testing
-*) More consistent testing across systems and configurations
-*) More consistent and human-friendlier reporting formats
-*) Common framework code explicitly sharable across all hashes
-*) Flexible metadata system for both hashes and their implementations
-*) Support of more hash seed methods (64-bit seeds and ctx pointers)
-*) Ability to supply a global seed value for testing
-*) Test of varying alignments and buffer tail sizes during speed tests
-*) Refactored code to improve maintainability and rebuild times
-*) Reorganized code layout to improve readability
-*) Compilation-based platform probing and configuration
-*) Consistent code formatting
-*) More explicit license handling
-*) Fully C++11-based implementation
+- Fix several critical bugs
+- Significant performance increases
+- Better statistical foundations for some tests
+- Report on p-values for almost all tests
+- Better handling of threaded testing
+- More consistent testing across systems and configurations
+- More consistent and human-friendlier reporting formats
+- Common framework code explicitly sharable across all hashes
+- Flexible metadata system for both hashes and their implementations
+- Support of more hash seed methods (64-bit seeds and ctx pointers)
+- Ability to supply a global seed value for testing
+- Test of varying alignments and buffer tail sizes during speed tests
+- Refactored code to improve maintainability and rebuild times
+- Reorganized code layout to improve readability
+- Compilation-based platform probing and configuration
+- Consistent code formatting
+- More explicit license handling
+- Fully C++11-based implementation
+
+Current status
+--------------
+
+As of 2022-05-26, SMHasher3 is pre-beta. A beta1 release is expected soon.
+There is also planned a beta2 release at the least.
+
+This code has compiled and run successfully on Linux x64, arm, and powerpc
+using gcc and clang. Importantly, I do not have the ability to test on Mac
+or Windows environments. The goal is to support both, and the CMake files
+Should(tm) work in both environments, I feel the odds that I got
+everything perfect on the first go to be... small. So reports of success
+or failure are appreciated, as are patches to make things work.
+
 
 Notes on licensing
 ------------------
