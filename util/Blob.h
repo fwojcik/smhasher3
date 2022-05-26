@@ -88,6 +88,12 @@ public:
     return *this;
   }
 
+  Blob & operator = (const uint32_t & x) {
+    const uint32_t y = COND_BSWAP(x, isBE());
+    memcpy(bytes, &y, sizeof(y));
+    return *this;
+  }
+
   //----------
   // boolean operators
 
