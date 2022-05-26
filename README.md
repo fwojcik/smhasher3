@@ -12,9 +12,9 @@ Summary
 SMHasher3 is based on [the SMHasher fork maintained by Reini
 Urban](https://github.com/rurban/smhasher), which is in turn based on
 [the original SMHasher by Austin
-Appleby](https://github.com/aappleby/smhasher/). The history of both
-of those codebases up to their respective fork points is contained in
-this repository.
+Appleby](https://github.com/aappleby/smhasher/). The commit history of
+both of those codebases up to their respective fork points is
+contained in this repository.
 
 The major differences from rurban's fork are:
 *) Fix several critical bugs
@@ -71,14 +71,20 @@ the test code be explicitly under the GPL also should increase the
 odds that any new hash implementation being added to this project
 would not require any relicensing of the test code.
 
-The LICENSE file of this project has been updated to reflect this. I
-have added the GPL license text to many of the files that are covered
-by it, and I have added the text of the original MIT license, as well
-as a list of contibutor copyrights, explicitly to much code that is
-being distributed here under the GPL, in order to comply with the MIT
-license terms of the originals. Finally, other code files which are
-being distributed under non-GPL licenses will have their license added
-to them, to help remove confusion.
+This decision was not taken lightly, as I would prefer to keep the
+original authors' license when possible, as was done with the
+modifications made to the hash implmentations. I believe this to have
+been the least bad option to get the improvements in SMHasher3 out to
+the world.
+
+The LICENSE file of this project has been updated to reflect these
+terms. I have added the GPL license text to many of the files that are
+covered by it, and I have added the text of the original MIT license,
+as well as a list of contibutor copyrights, explicitly to much code
+that is being distributed here under the GPL, in order to comply with
+the MIT license terms of the originals. Finally, other code files
+which are being distributed under non-GPL licenses will have their
+license added to them, to help remove confusion.
 
 Other
 -----
