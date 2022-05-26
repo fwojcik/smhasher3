@@ -23,6 +23,8 @@ The major differences from rurban's fork are:
 - Significant performance increases
 - Better statistical foundations for some tests
 - Report on p-values for almost all tests
+
+Additional significant changes include:
 - Better handling of threaded testing
 - More consistent testing across systems and configurations
 - More consistent and human-friendlier reporting formats
