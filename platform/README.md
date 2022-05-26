@@ -1,6 +1,4 @@
-########################################
 # Why do pre-build header generation?
-########################################
 
 It is a sad fact that a good deal of very valuable functionality in
 C++ is not (yet?) usable in any standard way, but instead is put
@@ -58,9 +56,7 @@ some showstopping problem or incompatibility with it crops up, then I
 won't reject the option of some other approach.
 
 
-########################################
 # How does pre-build header generation work?
-########################################
 
 findVariant() is the CMake function that actually performs this
 logic. It tests a series of possible implementations of some given
@@ -108,29 +104,29 @@ FOO_VARIANTS is expected to be a list containing, in order:
      fallback variant, *even if there is no fallback*. This is to
      avoid having to do any directory/file lookups to determine if
      input dependencies have changed.
-  5+) (optional) The numbers of any variants which should be
-      skipped, in ascending numeric order. These are often set as a
-      result of previous findVariant() calls.
+  5) (optional) The numbers of any variants which should be
+     skipped, in ascending numeric order. These are often set as a
+     result of previous findVariant() calls.
 
 Again for example, assume that for #2 above the string "foo" was
 supplied, and for #4 the number 4 was supplied.
 
 In the platform/ directory, there will be:
 
-  *) a foo_test.cpp file, which should include "curvariant.h" and
-     then have some code to test the variant (static_assert() may or
-     may not be helpful here),
-  *) foo_variant1.h, foo_variant2.h, and foo_variant3.h, each of
-     which should contain a different possible way to implement the
-     same functionality, and very likely
-  *) foo_fallback.h, which should contain a compiler-agnostic way of
-     implementing the feature. As explained above, this could simply
-     be some form of "do nothing", or it could be a small utility
-     function (see "bswap_fallback.h" for a good example of
-     this). However, if the feature is so critical to compilation
-     that some compiler-specific implementation is _absolutely
-     required_ and no generic implementation is possible, then this
-     fallback file won't exist. That should be very rare, though.
+  - a foo_test.cpp file, which should `#include "curvariant.h"` and
+    then have some code to test the variant (static_assert() may or
+    may not be helpful here),
+  - foo_variant1.h, foo_variant2.h, and foo_variant3.h, each of
+    which should contain a different possible way to implement the
+    same functionality, and very likely
+  - foo_fallback.h, which should contain a compiler-agnostic way of
+    implementing the feature. As explained above, this could simply
+    be some form of "do nothing", or it could be a small utility
+    function (see "bswap_fallback.h" for a good example of
+    this). However, if the feature is so critical to compilation
+    that some compiler-specific implementation is _absolutely
+    required_ and no generic implementation is possible, then this
+    fallback file won't exist. That should be very rare, though.
 
 Since we use try_compile(), the foo_test.cpp file needs to go through
 the link step also, which means it needs to be a complete program
@@ -142,13 +138,11 @@ requirement that the resulting binary return success on the native
 platform iff cross-compilation is not being done.
 
 
-########################################
 # Where did the variants come from?
-########################################
 
 All of the non-trivial code in the platform/*.h files is based on code
 from one of three places:
 
-  *) Hedley [https://nemequ.github.io/hedley/]
-  *) Portable snippets [https://github.com/nemequ/portable-snippets]
-  *) NFFT [https://github.com/NFFT/nfft]
+  - Hedley [https://nemequ.github.io/hedley/]
+  - Portable snippets [https://github.com/nemequ/portable-snippets]
+  - FFT [https://github.com/NFFT/nfft]
