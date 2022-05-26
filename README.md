@@ -30,6 +30,7 @@ Additional significant changes include:
 - More consistent and human-friendlier reporting formats
 - Common framework code explicitly sharable across all hashes
 - Flexible metadata system for both hashes and their implementations
+- Major progress towards full big-endian support
 - Support of more hash seed methods (64-bit seeds and ctx pointers)
 - Ability to supply a global seed value for testing
 - Test of varying alignments and buffer tail sizes during speed tests
