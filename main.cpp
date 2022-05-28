@@ -797,7 +797,7 @@ int main ( int argc, const char ** argv )
 
   fprintf(outfile,
           "Verification value is 0x%08x - Testing took %f seconds\n\n",
-          vcode, double(timeEnd-timeBegin)/double(NSEC_PER_SEC));
+          vcode, (double)(timeEnd-timeBegin)/(double)NSEC_PER_SEC);
 
   return 0;
 }
