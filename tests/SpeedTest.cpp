@@ -202,7 +202,8 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
 
   FilterOutliers(times);
   stddev = CalcStdv(times);
-  return times[0];
+
+  return CalcMean(times);
 }
 
 //-----------------------------------------------------------------------------
