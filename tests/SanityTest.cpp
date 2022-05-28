@@ -440,6 +440,8 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
         // Compute all the hashes in order on the main process in order
         hashthings(hinfo, seed, reps, 0, seedthread, verbose, keys, mainhashes);
         addVCodeOutput(&mainhashes[0], reps * hashbytes);
+    } else {
+        maybeprintf(".....");
     }
 
     if (g_NCPU > 1) {
@@ -650,6 +652,13 @@ bool SanityTest(const HashInfo * hinfo, bool oneline) {
     threadresult &= ThreadingTest(hinfo, false, verbose);
     threadresult &= ThreadingTest(hinfo, true, verbose);
 
+    // If threading test cannot give meaningful results, then don't
+    // bother printing them out. :) But still run them above so the
+    // user can see *why* they were skipped.
+    if (g_NCPU == 1) {
+        goto out;
+    }
+
     if (!oneline && !threadresult) {
         DisableThreads();
     }
@@ -657,12 +666,14 @@ bool SanityTest(const HashInfo * hinfo, bool oneline) {
     result &= threadresult;
 
     if ((hinfo->impl_flags & FLAG_IMPL_SANITY_FAILS) && result) {
-        printf("%sSANITY_FAILS set, but hash passed\n", oneline ? "\t" : "");
+        printf("%sSANITY_FAILS set, but hash passed", oneline ? "\t" : "");
     } else if (!(hinfo->impl_flags & FLAG_IMPL_SANITY_FAILS) && !result) {
-        printf("%sSANITY_FAILS unset, but hash failed\n", oneline ? "\t" : "");
-    } else if (oneline) {
-        printf("\n");
+        printf("%sSANITY_FAILS unset, but hash failed", oneline ? "\t" : "");
     }
 
+ out:
+    if (oneline) {
+        printf("\n");
+    }
     return result;
 }
