@@ -169,7 +169,7 @@ static double SpeedTest(HashFn hash, seed_t seed, const int trials,
           std::swap(alignments[i], alignments[r.rand_range(i + 1)]);
   }
 
-  //----------w
+  //----------
 
   std::vector<double> times;
   times.reserve(trials);
