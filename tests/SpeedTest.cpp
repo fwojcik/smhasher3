@@ -264,7 +264,7 @@ static double TinySpeedTest ( HashFn hash, int maxkeysize, seed_t seed, bool ver
     sum += cycles;
   }
   if (include_vary) {
-    double cycles = SpeedTest(hash,seed,TINY_TRIALS,maxkeysize,0,maxkeysize-1,0);
+    double cycles = SpeedTest(hash,seed,TINY_TRIALS*8,maxkeysize,0,maxkeysize-1,0);
     if(verbose) printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv)\n", cycles,stddev);
     // Deliberately not counted in the Average stat, so the two can be directly compared
   }
