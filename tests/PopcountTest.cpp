@@ -158,7 +158,7 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   assert(hbits <= HASH_SIZE_MAX*8);
   assert(inputSize >= 4);
 
-  printf("Generating hashes from a linear sequence of %i-bit numbers "
+  printf("\nGenerating hashes from a linear sequence of %i-bit numbers "
          "with a step size of %d ... \n", inputSize*8, step);
 
   /* Notes on the ranking system.
@@ -306,6 +306,8 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   printf("\nResults from derivative hashes (XOR of 2 consecutive values) :\n");
   result &= PopcountResults(srefh, srefl, db1h, db1l, db0h, db0l);
 
+  printf("\n");
+
   // Similar threading problems for the outputs, so just hash in the
   // summary data.
   addVCodeOutput(&rawhash[0][0], 65 * sizeof(rawhash[0][0]));
@@ -323,7 +325,7 @@ bool PopcountTest(const HashInfo * hinfo, const bool extra) {
     const int step = ((hinfo->isVerySlow() || hinfo->bits > 128) && extra) ? 6 : 2;
     bool result = true;
 
-    printf("[[[ Popcount Tests ]]]\n\n");
+    printf("[[[ Popcount Tests ]]]\n");
 
     result &= PopcountTestImpl(hinfo, 4, step);
     if (extra) {
