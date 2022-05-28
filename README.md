@@ -63,6 +63,9 @@ different different licenses, such as BSD 2, zlib, GPL3, public
 domain/unlicense/CC0, or MIT. Each file should have its license terms
 clearly stated at the top.
 
+Files under results/ have the Creative Commons Attribution 4.0
+International license (CC BY 4.0).
+
 Files under util/parallel_hashmap/ have the Apache 2 license.
 
 All other files in this distribution (including, but not limited to,
