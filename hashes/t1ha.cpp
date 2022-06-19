@@ -123,7 +123,7 @@
 #define __GNUC_PREREQ(maj, min) 0
 #endif
 
-#ifndef __has_builtin
+#if !defined(__has_builtin)
 #define __has_builtin(x) (0)
 #endif
 

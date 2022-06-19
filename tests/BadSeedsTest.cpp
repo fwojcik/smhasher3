@@ -55,7 +55,7 @@
 
 #include "BadSeedsTest.h"
 
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
 #include <chrono>
 #include <atomic>
 #include <mutex>
@@ -142,7 +142,7 @@ static bool BadSeedsKnown(const HashInfo * hinfo) {
 }
 
 //-----------------------------------------------------------------------------
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
 static std::atomic<unsigned> seed_progress;
 static std::mutex print_mutex;
@@ -175,7 +175,7 @@ static void TestSeedRangeThread(const HashInfo * hinfo, const uint64_t hi,
     result = true;
 
     {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
         std::lock_guard<std::mutex> lock(print_mutex);
 #endif
         printf("Testing [0x%016" PRIx64 ", 0x%016" PRIx64 "] ... \n", hi | start, last);
@@ -196,7 +196,7 @@ static void TestSeedRangeThread(const HashInfo * hinfo, const uint64_t hi,
          * across all threads.
          */
         if ((seed & UINT64_C(0x1ffffff)) == UINT64_C(0x1ffffff)) {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
             std::lock_guard<std::mutex> lock(print_mutex);
 #endif
             unsigned count = ++seed_progress;
@@ -215,7 +215,7 @@ static void TestSeedRangeThread(const HashInfo * hinfo, const uint64_t hi,
         if (hashes[0] == zero) {
             bool known_seed = (std::find(seeds.begin(), seeds.end(), seed) != seeds.end());
             {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
                 std::lock_guard<std::mutex> lock(print_mutex);
 #endif
                 if (known_seed) {
@@ -233,7 +233,7 @@ static void TestSeedRangeThread(const HashInfo * hinfo, const uint64_t hi,
 
         /* Report if any collisions were found */
         if (FindCollisions(hashes, collisions, 1000, true) > 0) {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
             std::lock_guard<std::mutex> lock(print_mutex);
 #endif
             bool known_seed = (std::find(seeds.begin(), seeds.end(), seed) != seeds.end());
@@ -275,7 +275,7 @@ static bool TestManySeeds(const HashInfo * hinfo, const uint64_t hi, bool &newre
       TestSeedRangeThread<hashtype>(hinfo, hi, 0x0, 0xffffffff, result, newresult);
       printf("\n");
   } else {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
       // split into g_NCPU threads
       std::thread t[g_NCPU];
       const uint64_t len = UINT64_C(0x100000000) / g_NCPU;

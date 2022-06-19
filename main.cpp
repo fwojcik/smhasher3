@@ -728,7 +728,7 @@ int main ( int argc, const char ** argv )
         continue;
       }
       if (strncmp(arg,"--ncpu=", 7) == 0) {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
         errno = 0;
         char * endptr;
         long int Ncpu = strtol(&arg[7], &endptr, 0);

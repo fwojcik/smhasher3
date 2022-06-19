@@ -52,19 +52,19 @@
 /* Number of digits to emit beyond that specified by DBL_DECIMAL_DIG */
 #define EXTRA_DIGITS 0
 
-#ifndef USE_MPFI
-#ifndef USE_MPFR
+#if !defined(USE_MPFI)
+#if !defined(USE_MPFR)
 #error "Exactly one of USE_MPFI and USE_MPFR must be defined"
 #endif
 #endif
 
-#ifdef USE_MPFI
-#ifdef USE_MPFR
+#if defined(USE_MPFI)
+#if defined(USE_MPFR)
 #error "Exactly one of USE_MPFI and USE_MPFR must be defined"
 #endif
 #endif
 
-#ifdef USE_MPFI
+#if defined(USE_MPFI)
 #include <mpfi.h>
 #include <mpfi_io.h>
 typedef mpfi_t mp_t;
@@ -76,7 +76,7 @@ typedef mpfr_t mp_t;
 char buf[3*PRECISION];
 FILE * membuf;
 
-#ifdef USE_MPFI
+#if defined(USE_MPFI)
 #define MP(x,...) mpfi_##x(__VA_ARGS__)
 #else
 #define MP(x,...) mpfr_##x(__VA_ARGS__, MPFR_RNDN)
@@ -85,7 +85,7 @@ FILE * membuf;
 void printcoll(uint64_t balls, uint64_t log2bins) {
     mp_t m, n, p, e, f, c;
 
-#ifdef USE_MPFI
+#if defined(USE_MPFI)
     mpfi_init(m);
     mpfi_init(n);
     mpfi_init(p);
@@ -108,7 +108,7 @@ void printcoll(uint64_t balls, uint64_t log2bins) {
     MP(ui_sub, p, 1, p);
 
     /* Probability that a given bin is unoccupied after m balls */
-#ifdef USE_MPFI /* There is no mpfi_pow() :-(  */
+#if defined(USE_MPFI) /* There is no mpfi_pow() :-(  */
     /* p = log(1-(1/n)) */
     MP(log, p, p);
     /* p = m*log(1-(1/n)) */
@@ -148,7 +148,7 @@ void printcoll(uint64_t balls, uint64_t log2bins) {
     memset(buf, 0, sizeof(buf));
     MP(out_str, membuf, 10, 0, c);
     fflush(membuf);
-#ifdef USE_MPFI
+#if defined(USE_MPFI)
     /*
      * If we have interval bounds, ensure that the digits that fit in
      * a double match (that the bounds are tighter than a double can
@@ -178,7 +178,7 @@ void printcoll(uint64_t balls, uint64_t log2bins) {
     }
     printf("%s", buf);
 
-#ifdef USE_MPFI
+#if defined(USE_MPFI)
     mpfi_clear(m);
     mpfi_clear(n);
     mpfi_clear(p);

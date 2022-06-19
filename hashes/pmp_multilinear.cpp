@@ -100,7 +100,7 @@ typedef struct _ULARGELARGE_INTEGER__XX
     uint64_t HighPart;
 } ULARGELARGE_INTEGER__XX;
 
-#ifdef __arm__
+#if defined(__arm__)
 typedef struct { uint32_t value __attribute__((__packed__)); } unaligned_uint32;
 typedef struct { uint64_t value __attribute__((__packed__)); } unaligned_uint64;
 #else

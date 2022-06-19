@@ -156,7 +156,7 @@ static void nh_16_sse2(const uint8_t * mp, const uint64_t * kp, size_t nw, uint6
 	// block and the next block. To mask out high 32-bits, we use "movd"
 	// to move the lower 32-bits to the stack and then back. Surprisingly,
 	// this is faster than any other method.
-#ifdef __GNUC__
+#if defined(__GNUC__)
 	__asm__ __volatile__
 	(
 		".intel_syntax noprefix;"
@@ -241,7 +241,7 @@ static void nh_16_sse2(const uint8_t * mp, const uint64_t * kp, size_t nw, uint6
 		AS2(	movq	[eax], mm0)
 		AS2(	movq	[edx], mm5)
 		AS2(	add		esp, 12)
-#ifdef __GNUC__
+#if defined(__GNUC__)
 		".att_syntax prefix;"
 		:
 		: "S" (mp), "D" (kp), "c" (nw), "a" (&rl), "d" (&rh)
@@ -265,7 +265,7 @@ static void poly_step_sse2(uint64_t & ah, uint64_t & al, const uint64_t & kh,
 #define k2 [edx+0]
 #define k3 [edx+4]
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 	uint32_t temp;
 	__asm__ __volatile__
 	(
@@ -351,7 +351,7 @@ static void poly_step_sse2(uint64_t & ah, uint64_t & al, const uint64_t & kh,
 		AS2(	paddq	mm0, mm4)
 		AS2(	movq	a0, mm5)
 		AS2(	movq	a2, mm0)
-#ifdef __GNUC__
+#if defined(__GNUC__)
 		".att_syntax prefix;"
 		"mov %0, %%ebx;"
 		: "=m" (temp)
@@ -431,7 +431,7 @@ typedef struct {
 } vmac_ctx_t;
 
 //-----------------------------------------------------------------------------
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 #  if !defined(_WIN64)
 #    define _mmm_empty _mm_empty();
 #  else // _WIN64

@@ -242,7 +242,7 @@ static bool PopcountTestImpl(const HashInfo * hinfo, int inputSize, int step) {
   if (g_NCPU == 1) {
       PopcountThread(hinfo, seed, inputSize, 0, 0xffffffff, step, rawhash[0], xorhash[0]);
   } else {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
       // split into g_NCPU threads
       std::thread t[g_NCPU];
       printf("%d threads starting... ", g_NCPU);

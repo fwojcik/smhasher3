@@ -1063,7 +1063,7 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar(void * RESTRICT customSecr
 #define XXH_NEON   4
 #define XXH_VSX    5
 
-#ifdef __has_builtin
+#if defined(__has_builtin)
 #  define XXH_HAS_BUILTIN(x) __has_builtin(x)
 #else
 #  define XXH_HAS_BUILTIN(x) 0
@@ -1175,7 +1175,7 @@ static void XXH3_initCustomSecret(void * RESTRICT customSecret, uint64_t seed64)
 //------------------------------------------------------------
 // XXH3 and XXH3-128 long keys
 
-#ifdef __clang__
+#if defined(__clang__)
 #  define XXH_PREFETCH_DIST 320
 #elif (XXH_VECTOR == XXH_AVX512)
 #  define XXH_PREFETCH_DIST 512

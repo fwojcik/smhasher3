@@ -279,7 +279,7 @@ static bool AvalancheImpl(HashFn hash, const seed_t seed, const int keybits,
   if (g_NCPU == 1) {
       calcBiasRange<hashtype>(hash,seed,bins[0],keybytes,&keys[0],irep,reps,drawdots);
   } else {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
       std::thread t[g_NCPU];
       for (int i=0; i < g_NCPU; i++) {
           t[i] = std::thread {calcBiasRange<hashtype>,hash,seed,std::ref(bins[i]),keybytes,&keys[0],std::ref(irep),reps,drawdots};

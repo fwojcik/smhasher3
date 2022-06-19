@@ -58,7 +58,7 @@
 #include <map>
 #include <math.h>
 
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
 #include <atomic>
 typedef std::atomic<int> a_int;
 #else
@@ -210,7 +210,7 @@ static bool DiffTestImpl(HashFn hash, const seed_t seed, int diffbits, int reps,
   if ((g_NCPU == 1) || (reps < 10)) {
       DiffTestImplThread<keytype,hashtype>(hash,seed,diffcounts[0],&keys[0],diffbits,irep,reps);
   } else {
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
       std::thread t[g_NCPU];
       for (int i=0; i < g_NCPU; i++) {
           t[i] = std::thread {DiffTestImplThread<keytype,hashtype>,hash,seed,std::ref(diffcounts[i]),&keys[0],diffbits,std::ref(irep),reps};

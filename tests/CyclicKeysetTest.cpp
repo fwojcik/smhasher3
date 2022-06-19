@@ -126,7 +126,7 @@ template < typename hashtype >
 bool CyclicKeyTest(const HashInfo * hinfo, const bool verbose) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     bool result = true;
-#ifdef DEBUG
+#if defined(DEBUG)
     const int reps = 2;
 #else
     const int reps = hinfo->isVerySlow() ? 100000 : 1000000;

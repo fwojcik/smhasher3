@@ -542,13 +542,13 @@ struct EhcBadger {
   static void Load(const uint8_t input[dimension * in_width * sizeof(Block)],
                    Block output[dimension][in_width]) {
     static_assert(dimension * in_width <= 28, "");
-#ifndef __clang__
+#if !defined(__clang__)
 #pragma GCC unroll 28
 #else
 #pragma unroll
 #endif
     for (unsigned i = 0; i < dimension; ++i) {
-#ifndef __clang__
+#if !defined(__clang__)
 #pragma GCC unroll 28
 #else
 #pragma unroll
