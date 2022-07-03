@@ -46,13 +46,15 @@
 // Xorshift RNG based on code by George Marsaglia
 // http://en.wikipedia.org/wiki/Xorshift
 
-struct Rand
+class Rand
 {
+ private:
   uint32_t x;
   uint32_t y;
   uint32_t z;
   uint32_t w;
 
+ public:
   Rand()
   {
     reseed(uint32_t(0));
