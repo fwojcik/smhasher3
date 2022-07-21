@@ -111,22 +111,22 @@
 
 /* https://github.com/gcc-mirror/gcc/blob/38cf91e5/gcc/config/arm/arm.c#L22486 */
 /* https://github.com/llvm-mirror/llvm/blob/2c4ca683/lib/Target/ARM/ARMAsmPrinter.cpp#L399 */
-#if (defined(__GNUC__) || defined(__clang__)) &&                    \
+#if (defined(__GNUC__) || defined(__clang__)) && \
     (defined(__arm__) || defined(__thumb__) || defined(_M_ARM))
-#define XXH_SPLIT_IN_PLACE(in, outLo, outHi)                            \
-    do {                                                                \
-        /* Undocumented GCC/Clang operand modifier: */                  \
-        /*     %e0 = lower D half, %f0 = upper D half */                \
-        __asm__("vzip.32  %e0, %f0" : "+w" (in));                       \
-        (outLo) = vget_low_u32 (vreinterpretq_u32_u64(in));             \
-        (outHi) = vget_high_u32(vreinterpretq_u32_u64(in));             \
-    } while (0)
+  #define XXH_SPLIT_IN_PLACE(in, outLo, outHi)            \
+      do {                                                \
+      /* Undocumented GCC/Clang operand modifier: */      \
+      /*     %e0 = lower D half, %f0 = upper D half */    \
+      __asm__ ("vzip.32  %e0, %f0" : "+w" (in));                                                \
+      (outLo) = vget_low_u32(vreinterpretq_u32_u64(in));  \
+      (outHi) = vget_high_u32(vreinterpretq_u32_u64(in)); \
+      } while (0)
 #else
-#define XXH_SPLIT_IN_PLACE(in, outLo, outHi)    \
-    do {                                        \
-        (outLo) = vmovn_u64    (in);            \
-        (outHi) = vshrn_n_u64  ((in), 32);      \
-    } while (0)
+  #define XXH_SPLIT_IN_PLACE(in, outLo, outHi) \
+      do {                                     \
+      (outLo) = vmovn_u64(in);                 \
+      (outHi) = vshrn_n_u64((in), 32);         \
+      } while (0)
 #endif
 
 /*
@@ -142,14 +142,18 @@
  * unaligned load.
  */
 #if defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__)
+
 /* silence -Wcast-align */
-static FORCE_INLINE uint64x2_t XXH_vld1q_u64(void const* ptr) {
-    return *(uint64x2_t const*)ptr;
+static FORCE_INLINE uint64x2_t XXH_vld1q_u64( void const * ptr ) {
+    return *(uint64x2_t const *)ptr;
 }
+
 #else
-static FORCE_INLINE uint64x2_t XXH_vld1q_u64(void const* ptr) {
-    return vreinterpretq_u64_u8(vld1q_u8((uint8_t const*)ptr));
+
+static FORCE_INLINE uint64x2_t XXH_vld1q_u64( void const * ptr ) {
+    return vreinterpretq_u64_u8(vld1q_u8((uint8_t const *)ptr));
 }
+
 #endif
 
 // Controls the NEON to scalar ratio for XXH3
@@ -187,9 +191,9 @@ static FORCE_INLINE uint64x2_t XXH_vld1q_u64(void const* ptr) {
 //
 // XXH_ACC_NB is #defined already, back in the main file.
 #if (defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64) || defined(_M_ARM64EC))
-#define XXH3_NEON_LANES 6
+  #define XXH3_NEON_LANES 6
 #else
-#define XXH3_NEON_LANES XXH_ACC_NB
+  #define XXH3_NEON_LANES XXH_ACC_NB
 #endif
 
 /*
@@ -201,27 +205,27 @@ static FORCE_INLINE uint64x2_t XXH_vld1q_u64(void const* ptr) {
  *
  * See XXH3_NEON_LANES for configuring this and details about this optimization.
  */
-template < bool bswap >
-static FORCE_INLINE void XXH3_accumulate_512_neon(void * RESTRICT acc,
-        const void * RESTRICT input, const void * RESTRICT secret) {
-    uint64x2_t* const xacc = (uint64x2_t *) acc;
+template <bool bswap>
+static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const void * RESTRICT input,
+        const void * RESTRICT secret ) {
+    uint64x2_t    * const xacc    = (uint64x2_t *   )acc;
     /* We don't use a uint32x4_t pointer because it causes bus errors on ARMv7. */
-    uint8_t const* const xinput = (const uint8_t *) input;
-    uint8_t const* const xsecret  = (const uint8_t *) secret;
+    uint8_t const * const xinput  = (const uint8_t *)input;
+    uint8_t const * const xsecret = (const uint8_t *)secret;
 
     /* AArch64 uses both scalar and neon at the same time */
     for (size_t i = XXH3_NEON_LANES; i < XXH_ACC_NB; i++) {
         XXH3_scalarRound<bswap>(acc, input, secret, i);
     }
     for (size_t i = 0; i < XXH3_NEON_LANES / 2; i++) {
-        uint64x2_t acc_vec = xacc[i];
+        uint64x2_t acc_vec  = xacc[i];
         /* data_vec = xinput[i]; */
         uint64x2_t data_vec = XXH_vld1q_u64(xinput  + (i * 16));
         /* key_vec  = xsecret[i];  */
         uint64x2_t key_vec  = XXH_vld1q_u64(xsecret + (i * 16));
         if (bswap) {
-            data_vec        = Vbswap64_u64(data_vec);
-            key_vec         = Vbswap64_u64(key_vec);
+            data_vec = Vbswap64_u64(data_vec);
+            key_vec  = Vbswap64_u64(key_vec );
         }
         uint64x2_t data_key;
         uint32x2_t data_key_lo, data_key_hi;
@@ -229,24 +233,25 @@ static FORCE_INLINE void XXH3_accumulate_512_neon(void * RESTRICT acc,
         uint64x2_t acc_vec_2 = vextq_u64(data_vec, data_vec, 1);
         /* data_key = data_vec ^ key_vec; */
         data_key = veorq_u64(data_vec, key_vec);
-        /* data_key_lo = (uint32x2_t) (data_key & 0xFFFFFFFF);
+        /*
+         * data_key_lo = (uint32x2_t) (data_key & 0xFFFFFFFF);
          * data_key_hi = (uint32x2_t) (data_key >> 32);
-         * data_key = UNDEFINED; */
+         * data_key = UNDEFINED;
+         */
         XXH_SPLIT_IN_PLACE(data_key, data_key_lo, data_key_hi);
         /* acc_vec_2 += (uint64x2_t) data_key_lo * (uint64x2_t) data_key_hi; */
-        acc_vec_2 = vmlal_u32 (acc_vec_2, data_key_lo, data_key_hi);
+        acc_vec_2 = vmlal_u32(acc_vec_2, data_key_lo, data_key_hi);
         /* xacc[i] += acc_vec_2; */
-        acc_vec = vaddq_u64 (acc_vec, acc_vec_2);
-        xacc[i] = acc_vec;
+        acc_vec   = vaddq_u64(acc_vec, acc_vec_2);
+        xacc[i]   = acc_vec;
     }
 }
 
-template < bool bswap >
-static FORCE_INLINE void XXH3_scrambleAcc_neon(void * RESTRICT acc,
-        const void * RESTRICT secret) {
-    uint64x2_t* xacc       = (uint64x2_t*) acc;
-    uint8_t const* xsecret = (uint8_t const*) secret;
-    uint32x2_t prime       = vdup_n_u32 (XXH_PRIME32_1);
+template <bool bswap>
+static FORCE_INLINE void XXH3_scrambleAcc_neon( void * RESTRICT acc, const void * RESTRICT secret ) {
+    uint64x2_t *    xacc    = (uint64x2_t *   )acc;
+    uint8_t const * xsecret = (uint8_t const *)secret;
+    uint32x2_t      prime   = vdup_n_u32(XXH_PRIME32_1);
 
     /* AArch64 uses both scalar and neon at the same time */
     for (size_t i = XXH3_NEON_LANES; i < XXH_ACC_NB; i++) {
@@ -255,21 +260,23 @@ static FORCE_INLINE void XXH3_scrambleAcc_neon(void * RESTRICT acc,
     for (size_t i = 0; i < XXH3_NEON_LANES / 2; i++) {
         /* xacc[i] ^= (xacc[i] >> 47); */
         uint64x2_t acc_vec  = xacc[i];
-        uint64x2_t shifted  = vshrq_n_u64   (acc_vec, 47);
-        uint64x2_t data_vec = veorq_u64     (acc_vec, shifted);
+        uint64x2_t shifted  = vshrq_n_u64(acc_vec, 47);
+        uint64x2_t data_vec = veorq_u64(acc_vec, shifted);
 
         /* xacc[i] ^= xsecret[i]; */
-        uint64x2_t key_vec  = XXH_vld1q_u64 (xsecret + (i * 16));
+        uint64x2_t key_vec = XXH_vld1q_u64(xsecret + (i * 16));
         if (bswap) {
             key_vec = vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(key_vec)));
         }
-        uint64x2_t data_key = veorq_u64     (data_vec, key_vec);
+        uint64x2_t data_key = veorq_u64(data_vec, key_vec);
 
         /* xacc[i] *= XXH_PRIME32_1 */
         uint32x2_t data_key_lo, data_key_hi;
-        /* data_key_lo = (uint32x2_t) (xacc[i] & 0xFFFFFFFF);
+        /*
+         * data_key_lo = (uint32x2_t) (xacc[i] & 0xFFFFFFFF);
          * data_key_hi = (uint32x2_t) (xacc[i] >> 32);
-         * xacc[i] = UNDEFINED; */
+         * xacc[i] = UNDEFINED;
+         */
         XXH_SPLIT_IN_PLACE(data_key, data_key_lo, data_key_hi);
         {
             /*
@@ -290,7 +297,7 @@ static FORCE_INLINE void XXH3_scrambleAcc_neon(void * RESTRICT acc,
              * this bug completely.
              * See https://bugs.llvm.org/show_bug.cgi?id=39967
              */
-            uint64x2_t prod_hi = vmull_u32 (data_key_hi, prime);
+            uint64x2_t prod_hi = vmull_u32(data_key_hi, prime);
             /* xacc[i] = prod_hi << 32; */
             prod_hi = vshlq_n_u64(prod_hi, 32);
             /* xacc[i] += (prod_hi & 0xFFFFFFFF) * XXH_PRIME32_1; */

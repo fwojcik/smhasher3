@@ -33,29 +33,29 @@
 // hashes/Hashsrc.cmake, keeping the list sorted by size!
 
 //------------------------------------------------------------
-//###YOURHASHCODE
+// ###YOURHASHCODE
 
 //------------------------------------------------------------
-template < bool bswap >
-static void ###YOURHASHNAMEHash(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void ###YOURHASHNAMEHash( const void * in, const size_t len, const seed_t seed, void * out ) {
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 //------------------------------------------------------------
 REGISTER_FAMILY(###YOURHASHFAMILYNAME,
-  $.src_url = "###YOURREPOSITORYURL",
-  $.src_status = HashFamilyInfo::SRC_###YOURSRCSTATUS
-);
+   $.src_url    = "###YOURREPOSITORYURL",
+   $.src_status = HashFamilyInfo::SRC_###YOURSRCSTATUS
+ );
 
 REGISTER_HASH(###YOURHASHNAME,
-  $.desc = "",
-  $.hash_flags =
-        0,
-  $.impl_flags =
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0x0,
-  $.verification_BE = 0x0,
-  $.hashfn_native = ###YOURHASHNAMEHash<false>,
-  $.hashfn_bswap = ###YOURHASHNAMEHash<true>
-);
+   $.desc            = "",
+   $.hash_flags      =
+         0,
+   $.impl_flags      =
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits            = 32,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = ###YOURHASHNAMEHash<false>,
+   $.hashfn_bswap    = ###YOURHASHNAMEHash<true>
+ );

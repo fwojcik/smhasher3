@@ -28,14 +28,14 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-static void DoNothingHash(const void * in, const size_t len, const seed_t seed, void * out) {
+static void DoNothingHash( const void * in, const size_t len, const seed_t seed, void * out ) {
 }
 
-template < uint32_t hashlen, bool bswap >
-static void DoNothingOAATHash(const void * in, const size_t len, const seed_t seed, void * out) {
+template <uint32_t hashlen, bool bswap>
+static void DoNothingOAATHash( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint8_t *       data = (const uint8_t *)in;
     const uint8_t * const end  = &data[len];
-    uint32_t h                 = seed >> 32;
+    uint32_t h = seed >> 32;
 
     while (data < end) {
         h &= *data++;
@@ -44,93 +44,93 @@ static void DoNothingOAATHash(const void * in, const size_t len, const seed_t se
 }
 
 REGISTER_FAMILY(donothing,
-  $.src_url = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(donothing_32,
-  $.desc = "Do-Nothing function (measure call overhead)",
-  $.hash_flags =
-        FLAG_HASH_MOCK,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS     |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0x0,
-  $.verification_BE = 0x0,
-  $.hashfn_native = DoNothingHash,
-  $.hashfn_bswap = DoNothingHash
-);
+   $.desc       = "Do-Nothing function (measure call overhead)",
+   $.hash_flags =
+         FLAG_HASH_MOCK,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = DoNothingHash,
+   $.hashfn_bswap    = DoNothingHash
+ );
 
 REGISTER_HASH(donothing_64,
-  $.desc = "Do-Nothing function (measure call overhead)",
-  $.hash_flags =
-        FLAG_HASH_MOCK,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS     |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0x0,
-  $.verification_BE = 0x0,
-  $.hashfn_native = DoNothingHash,
-  $.hashfn_bswap = DoNothingHash
-);
+   $.desc       = "Do-Nothing function (measure call overhead)",
+   $.hash_flags =
+         FLAG_HASH_MOCK,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = DoNothingHash,
+   $.hashfn_bswap    = DoNothingHash
+ );
 
 REGISTER_HASH(donothing_128,
-  $.desc = "Do-Nothing function (measure call overhead)",
-  $.hash_flags =
-        FLAG_HASH_MOCK,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS     |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 128,
-  $.verification_LE = 0x0,
-  $.verification_BE = 0x0,
-  $.hashfn_native = DoNothingHash,
-  $.hashfn_bswap = DoNothingHash
-);
+   $.desc       = "Do-Nothing function (measure call overhead)",
+   $.hash_flags =
+         FLAG_HASH_MOCK,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 128,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = DoNothingHash,
+   $.hashfn_bswap    = DoNothingHash
+ );
 
 REGISTER_HASH(donothingOAAT_32,
-  $.desc = "Do-Nothing OAAT function (measure call+OAAT overhead)",
-  $.hash_flags =
-        FLAG_HASH_MOCK,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS     |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0x0,
-  $.verification_BE = 0x0,
-  $.hashfn_native = DoNothingOAATHash<32, false>,
-  $.hashfn_bswap = DoNothingOAATHash<32, true>,
-  $.sort_order = 10
-);
+   $.desc       = "Do-Nothing OAAT function (measure call+OAAT overhead)",
+   $.hash_flags =
+         FLAG_HASH_MOCK,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = DoNothingOAATHash<32, false>,
+   $.hashfn_bswap    = DoNothingOAATHash<32, true>,
+   $.sort_order      = 10
+ );
 
 REGISTER_HASH(donothingOAAT_64,
-  $.desc = "Do-Nothing OAAT function (measure call+OAAT overhead)",
-  $.hash_flags =
-        FLAG_HASH_MOCK,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS     |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0x0,
-  $.verification_BE = 0x0,
-  $.hashfn_native = DoNothingOAATHash<64, false>,
-  $.hashfn_bswap = DoNothingOAATHash<64, true>,
-  $.sort_order = 10
-);
+   $.desc       = "Do-Nothing OAAT function (measure call+OAAT overhead)",
+   $.hash_flags =
+         FLAG_HASH_MOCK,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = DoNothingOAATHash<64, false>,
+   $.hashfn_bswap    = DoNothingOAATHash<64, true>,
+   $.sort_order      = 10
+ );
 
 REGISTER_HASH(donothingOAAT_128,
-  $.desc = "Do-Nothing OAAT function (measure call+OAAT overhead)",
-  $.hash_flags =
-        FLAG_HASH_MOCK,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS     |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 128,
-  $.verification_LE = 0x0,
-  $.verification_BE = 0x0,
-  $.hashfn_native = DoNothingOAATHash<128, false>,
-  $.hashfn_bswap = DoNothingOAATHash<128, true>,
-  $.sort_order = 10
-);
+   $.desc       = "Do-Nothing OAAT function (measure call+OAAT overhead)",
+   $.hash_flags =
+         FLAG_HASH_MOCK,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 128,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = DoNothingOAATHash<128, false>,
+   $.hashfn_bswap    = DoNothingOAATHash<128, true>,
+   $.sort_order      = 10
+ );

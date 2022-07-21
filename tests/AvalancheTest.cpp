@@ -59,11 +59,11 @@
 
 // VCode might have already included this
 #if defined(HAVE_AVX2) || defined(HAVE_SSE_4_1)
-#include "Intrinsics.h"
+  #include "Intrinsics.h"
 #endif
 
 #if defined(HAVE_THREADS)
-#include <atomic>
+  #include <atomic>
 typedef std::atomic<int> a_int;
 #else
 typedef int a_int;
@@ -71,52 +71,48 @@ typedef int a_int;
 
 //-----------------------------------------------------------------------------
 
-static void PrintAvalancheDiagram ( int x, int y, int reps, double scale, uint32_t * bins )
-{
-  const char * symbols = ".123456789X";
+static void PrintAvalancheDiagram( int x, int y, int reps, double scale, uint32_t * bins ) {
+    const char * symbols = ".123456789X";
 
-  for(int i = 0; i < y; i++)
-  {
-    printf("[");
-    for(int j = 0; j < x; j++)
-    {
-      int k = (y - i) -1;
+    for (int i = 0; i < y; i++) {
+        printf("[");
+        for (int j = 0; j < x; j++) {
+            int k        = (y - i) - 1;
 
-      uint32_t bin = bins[k + (j*y)];
+            uint32_t bin = bins[k + (j * y)];
 
-      double b = double(bin) / double(reps);
-      b = fabs(b*2 - 1);
+            double b     = double(bin) / double(reps);
+            b  = fabs(b * 2 - 1);
 
-      b *= scale;
+            b *= scale;
 
-      int s = (int)floor(b*10);
+            int s = (int)floor(b * 10);
 
-      if(s > 10) s = 10;
-      if(s < 0) s = 0;
+            if (s > 10) { s = 10; }
+            if (s < 0) { s = 0; }
 
-      printf("%c",symbols[s]);
+            printf("%c", symbols[s]);
+        }
+
+        printf("]\n");
+        fflush(NULL);
     }
-
-    printf("]\n");
-    fflush(NULL);
-  }
 }
 
 //----------------------------------------------------------------------------
 
-static int maxBias ( uint32_t * counts, int buckets, int reps )
-{
-  int expected = reps / 2;
-  int worst = 0;
+static int maxBias( uint32_t * counts, int buckets, int reps ) {
+    int expected = reps / 2;
+    int worst    = 0;
 
-  for(int i = 0; i < buckets; i++)
-  {
-    int c = abs((int)counts[i] - expected);
-    if(worst < c)
-      worst = c;
-  }
+    for (int i = 0; i < buckets; i++) {
+        int c = abs((int)counts[i] - expected);
+        if (worst < c) {
+            worst = c;
+        }
+    }
 
-  return worst;
+    return worst;
 }
 
 //-----------------------------------------------------------------------------
@@ -127,217 +123,207 @@ static int maxBias ( uint32_t * counts, int buckets, int reps )
 // cause "echoes" of the patterns in the output, which in turn can cause the
 // hash function to fail to create an even, random distribution of hash values.
 
-template < typename hashtype >
-static void calcBiasRange ( const HashFn hash, const seed_t seed,
-                     std::vector<uint32_t> &bins,
-                     const int keybytes, const uint8_t * keys,
-                     a_int & irepp, const int reps, const bool verbose )
-{
-  const int keybits = keybytes * 8;
-  const int hashbytes = sizeof(hashtype);
+template <typename hashtype>
+static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uint32_t> & bins, const int keybytes,
+        const uint8_t * keys, a_int & irepp, const int reps, const bool verbose ) {
+    const int keybits   = keybytes * 8;
+    const int hashbytes = sizeof(hashtype);
+
 #if defined(HAVE_AVX2)
-  const __m256i ONE  = _mm256_set1_epi32(1);
-  const __m256i MASK = _mm256_setr_epi32(
-                                         1 << 0,
-                                         1 << 1,
-                                         1 << 2,
-                                         1 << 3,
-                                         1 << 4,
-                                         1 << 5,
-                                         1 << 6,
-                                         1 << 7);
+    const __m256i ONE  = _mm256_set1_epi32(1);
+    const __m256i MASK = _mm256_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7);
 #elif defined(HAVE_SSE_4_1)
-  const __m128i ONE  = _mm_set1_epi32(1);
-  const __m128i MASK = _mm_setr_epi32(
-                                         1 << 0,
-                                         1 << 1,
-                                         1 << 2,
-                                         1 << 3);
+    const __m128i ONE  = _mm_set1_epi32(1);
+    const __m128i MASK = _mm_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3);
 #endif
 
-  uint8_t buf[keybytes];
-  hashtype A,B;
-  int irep;
+    uint8_t  buf[keybytes];
+    hashtype A, B;
+    int      irep;
 
-  while ((irep = irepp++) < reps)
-  {
-    if(verbose) {
-      if(irep % (reps/10) == 0) printf(".");
-    }
+    while ((irep = irepp++) < reps) {
+        if (verbose) {
+            if (irep % (reps / 10) == 0) { printf("."); }
+        }
 
-    ExtBlob K(buf, &keys[keybytes * irep], keybytes);
-    hash(K, keybytes, seed, &A);
+        ExtBlob K( buf, &keys[keybytes * irep], keybytes );
+        hash(K, keybytes, seed, &A);
 
-    uint32_t * cursor = &bins[0];
+        uint32_t * cursor = &bins[0];
 
-    for(int iBit = 0; iBit < keybits; iBit++)
-    {
-      K.flipbit(iBit);
-      hash(K, keybytes, seed, &B);
-      K.flipbit(iBit);
+        for (int iBit = 0; iBit < keybits; iBit++) {
+            K.flipbit(iBit);
+            hash(K, keybytes, seed, &B);
+            K.flipbit(iBit);
 
-      B ^= A;
+            B ^= A;
 
 #if defined(HAVE_AVX2)
-      for(int oWord = 0; oWord < (hashbytes/4); oWord++) {
-          // Get the next 32-bit chunk of the hash difference
-          uint32_t word;
-          memcpy(&word, ((const uint8_t *)&B) + 4*oWord, 4);
+            for (int oWord = 0; oWord < (hashbytes / 4); oWord++) {
+                // Get the next 32-bit chunk of the hash difference
+                uint32_t word;
+                memcpy(&word, ((const uint8_t *)&B) + 4 * oWord, 4);
 
-          // Expand it out into 4 sets of 8 32-bit integer words, with
-          // each integer being zero or one.
-          __m256i base  = _mm256_set1_epi32(word);
-          __m256i incr1 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
-          base = _mm256_srli_epi32(base, 8);
-          __m256i incr2 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
-          base = _mm256_srli_epi32(base, 8);
-          __m256i incr3 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
-          base = _mm256_srli_epi32(base, 8);
-          __m256i incr4 =_mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+                // Expand it out into 4 sets of 8 32-bit integer words, with
+                // each integer being zero or one.
+                __m256i base  = _mm256_set1_epi32(word);
+                __m256i incr1 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+                base = _mm256_srli_epi32(base, 8);
+                __m256i incr2 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+                base = _mm256_srli_epi32(base, 8);
+                __m256i incr3 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
+                base = _mm256_srli_epi32(base, 8);
+                __m256i incr4 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
 
-          // Add these into the counts in bins[]
-          __m256i cnt1  = _mm256_loadu_si256((const __m256i *)cursor);
-          cnt1 = _mm256_add_epi32(cnt1, incr1);
-          _mm256_storeu_si256((__m256i *)cursor, cnt1);
-          cursor += 8;
-          __m256i cnt2  = _mm256_loadu_si256((const __m256i *)cursor);
-          cnt2 = _mm256_add_epi32(cnt2, incr2);
-          _mm256_storeu_si256((__m256i *)cursor, cnt2);
-          cursor += 8;
-          __m256i cnt3  = _mm256_loadu_si256((const __m256i *)cursor);
-          cnt3 = _mm256_add_epi32(cnt3, incr3);
-          _mm256_storeu_si256((__m256i *)cursor, cnt3);
-          cursor += 8;
-          __m256i cnt4  = _mm256_loadu_si256((const __m256i *)cursor);
-          cnt4 = _mm256_add_epi32(cnt4, incr4);
-          _mm256_storeu_si256((__m256i *)cursor, cnt4);
-          cursor += 8;
-      }
+                // Add these into the counts in bins[]
+                __m256i cnt1 = _mm256_loadu_si256((const __m256i *)cursor);
+                cnt1    = _mm256_add_epi32(cnt1, incr1);
+                _mm256_storeu_si256((__m256i *)cursor, cnt1);
+                cursor += 8;
+                __m256i cnt2 = _mm256_loadu_si256((const __m256i *)cursor);
+                cnt2    = _mm256_add_epi32(cnt2, incr2);
+                _mm256_storeu_si256((__m256i *)cursor, cnt2);
+                cursor += 8;
+                __m256i cnt3 = _mm256_loadu_si256((const __m256i *)cursor);
+                cnt3    = _mm256_add_epi32(cnt3, incr3);
+                _mm256_storeu_si256((__m256i *)cursor, cnt3);
+                cursor += 8;
+                __m256i cnt4 = _mm256_loadu_si256((const __m256i *)cursor);
+                cnt4    = _mm256_add_epi32(cnt4, incr4);
+                _mm256_storeu_si256((__m256i *)cursor, cnt4);
+                cursor += 8;
+            }
 #elif defined(HAVE_SSE_4_1)
-      for(int oWord = 0; oWord < (hashbytes/4); oWord++) {
-          // Get the next 32-bit chunk of the hash difference
-          uint32_t word;
-          memcpy(&word, ((const uint8_t *)&B) + 4*oWord, 4);
+            for (int oWord = 0; oWord < (hashbytes / 4); oWord++) {
+                // Get the next 32-bit chunk of the hash difference
+                uint32_t word;
+                memcpy(&word, ((const uint8_t *)&B) + 4 * oWord, 4);
 
-          // Expand it out into 8 sets of 4 32-bit integer words, with
-          // each integer being zero or one, and add them into the
-          // counts in bins[].
-          __m128i base = _mm_set1_epi32(word);
-          for (int i = 0; i < 8; i++) {
-              __m128i incr = _mm_min_epu32(_mm_and_si128(base, MASK), ONE);
-              __m128i cnt  = _mm_loadu_si128((const __m128i *)cursor);
-              cnt = _mm_add_epi32(cnt, incr);
-              _mm_storeu_si128((__m128i *)cursor, cnt);
-              base = _mm_srli_epi32(base, 4);
-              cursor += 4;
-          }
-      }
+                // Expand it out into 8 sets of 4 32-bit integer words, with
+                // each integer being zero or one, and add them into the
+                // counts in bins[].
+                __m128i base = _mm_set1_epi32(word);
+                for (int i = 0; i < 8; i++) {
+                    __m128i incr = _mm_min_epu32(_mm_and_si128(base, MASK), ONE);
+                    __m128i cnt  = _mm_loadu_si128((const __m128i *)cursor);
+                    cnt     = _mm_add_epi32(cnt, incr);
+                    _mm_storeu_si128((__m128i *)cursor, cnt);
+                    base    = _mm_srli_epi32(base, 4);
+                    cursor += 4;
+                }
+            }
 #else
-      for(int oByte = 0; oByte < hashbytes; oByte++) {
-          uint8_t byte = B[oByte];
-          for(int oBit = 0; oBit < 8; oBit++) {
-              (*cursor++) += byte & 1;
-              byte >>= 1;
-          }
-      }
+            for (int oByte = 0; oByte < hashbytes; oByte++) {
+                uint8_t byte = B[oByte];
+                for (int oBit = 0; oBit < 8; oBit++) {
+                    (*cursor++) += byte & 1;
+                    byte       >>= 1;
+                }
+            }
+#endif
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+template <typename hashtype>
+static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
+        const int reps, bool drawDiagram, bool drawdots ) {
+    Rand r( 48273 );
+
+    assert((keybits & 7) == 0);
+
+    const int keybytes  = keybits / 8;
+
+    const int hashbytes = sizeof(hashtype);
+    const int hashbits  = hashbytes * 8;
+
+    const int arraysize = keybits * hashbits;
+
+    printf("Testing %4d-bit keys -> %3d-bit hashes, %6d reps", keybits, hashbits, reps);
+    //----------
+    std::vector<uint8_t> keys( reps * keybytes );
+    for (int i = 0; i < reps; i++) {
+        r.rand_p(&keys[i * keybytes], keybytes);
+    }
+    addVCodeInput(&keys[0], reps * keybytes);
+
+    a_int irep( 0 );
+
+    std::vector<std::vector<uint32_t>> bins( g_NCPU );
+    for (unsigned i = 0; i < g_NCPU; i++) {
+        bins[i].resize(arraysize);
+    }
+
+    if (g_NCPU == 1) {
+        calcBiasRange<hashtype>(hash, seed, bins[0], keybytes, &keys[0], irep, reps, drawdots);
+    } else {
+#if defined(HAVE_THREADS)
+        std::thread t[g_NCPU];
+        for (int i = 0; i < g_NCPU; i++) {
+            t[i] = std::thread {
+                calcBiasRange<hashtype>, hash, seed, std::ref(bins[i]),
+                keybytes, &keys[0], std::ref(irep), reps, drawdots
+            };
+        }
+        for (int i = 0; i < g_NCPU; i++) {
+            t[i].join();
+        }
+        for (int i = 1; i < g_NCPU; i++) {
+            for (int b = 0; b < arraysize; b++) {
+                bins[0][b] += bins[i][b];
+            }
+        }
 #endif
     }
-  }
-}
 
-//-----------------------------------------------------------------------------
+    //----------
 
-template < typename hashtype >
-static bool AvalancheImpl(HashFn hash, const seed_t seed, const int keybits,
-         const int reps, bool drawDiagram, bool drawdots) {
-  Rand r(48273);
-
-  assert((keybits & 7)==0);
-
-  const int keybytes = keybits / 8;
-
-  const int hashbytes = sizeof(hashtype);
-  const int hashbits = hashbytes * 8;
-
-  const int arraysize = keybits * hashbits;
-
-  printf("Testing %4d-bit keys -> %3d-bit hashes, %6d reps",
-         keybits, hashbits, reps);
-  //----------
-  std::vector<uint8_t> keys(reps * keybytes);
-  for (int i = 0; i < reps; i++)
-    r.rand_p(&keys[i*keybytes],keybytes);
-  addVCodeInput(&keys[0], reps * keybytes);
-
-  a_int irep(0);
-
-  std::vector<std::vector<uint32_t> > bins(g_NCPU);
-  for (unsigned i = 0; i < g_NCPU; i++) {
-      bins[i].resize(arraysize);
-  }
-
-  if (g_NCPU == 1) {
-      calcBiasRange<hashtype>(hash,seed,bins[0],keybytes,&keys[0],irep,reps,drawdots);
-  } else {
-#if defined(HAVE_THREADS)
-      std::thread t[g_NCPU];
-      for (int i=0; i < g_NCPU; i++) {
-          t[i] = std::thread {calcBiasRange<hashtype>,hash,seed,std::ref(bins[i]),keybytes,&keys[0],std::ref(irep),reps,drawdots};
-      }
-      for (int i=0; i < g_NCPU; i++) {
-          t[i].join();
-      }
-      for (int i=1; i < g_NCPU; i++)
-          for (int b=0; b < arraysize; b++)
-              bins[0][b] += bins[i][b];
-#endif
-  }
-
-  //----------
-
-  int bias = maxBias(&bins[0][0], arraysize, reps);
-  bool result = true;
-
-  // Due to threading and memory complications, add the summed
-  // avalanche results instead of the hash values. Not ideal, but the
-  // "real" way is just too expensive.
-  addVCodeOutput(&bins[0][0], arraysize * sizeof(bins[0][0]));
-  addVCodeResult(bias);
-
-  result &= ReportBias(bias, reps, arraysize, drawDiagram);
-
-  recordTestResult(result, "Avalanche", keybits);
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
-
-template < typename hashtype >
-bool AvalancheTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    int  bias   = maxBias(&bins[0][0], arraysize, reps);
     bool result = true;
-    bool drawdots = true; //.......... progress dots
+
+    // Due to threading and memory complications, add the summed
+    // avalanche results instead of the hash values. Not ideal, but the
+    // "real" way is just too expensive.
+    addVCodeOutput(&bins[0][0], arraysize * sizeof(bins[0][0]));
+    addVCodeResult(bias);
+
+    result &= ReportBias(bias, reps, arraysize, drawDiagram);
+
+    recordTestResult(result, "Avalanche", keybits);
+
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+
+template <typename hashtype>
+bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+    const HashFn hash     = hinfo->hashFn(g_hashEndian);
+    bool         result   = true;
+    bool         drawdots = true; // .......... progress dots
 
     printf("[[[ Avalanche Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed, false, 2);
 
-    std::vector<int> testBitsvec =
-        { 24, 32, 40, 48, 56, 64, 72, 80, 96, 112, 128, 160 };
+    std::vector<int> testBitsvec = { 24, 32, 40, 48, 56, 64, 72, 80, 96, 112, 128, 160 };
     testBitsvec.reserve(50); // Workaround for GCC bug 100366
     if (hinfo->bits <= 64) {
         testBitsvec.insert(testBitsvec.end(), { 512, 1024 });
     }
     if (extra) {
-        testBitsvec.insert(testBitsvec.end(), { 192, 224, 256, 320, 384, 448, 512, 640,
-                                                768, 896, 1024, 1280, 1536 });
+        testBitsvec.insert(testBitsvec.end(), {
+            192, 224,  256,  320,  384, 448, 512, 640,
+            768, 896, 1024, 1280, 1536
+        });
     }
     std::sort(testBitsvec.begin(), testBitsvec.end());
     testBitsvec.erase(std::unique(testBitsvec.begin(), testBitsvec.end()), testBitsvec.end());
 
-    for (int testBits : testBitsvec) {
-        result &= AvalancheImpl<hashtype>(hash,seed,testBits,300000,verbose,drawdots);
+    for (int testBits: testBitsvec) {
+        result &= AvalancheImpl<hashtype>(hash, seed, testBits, 300000, verbose, drawdots);
     }
 
     printf("\n%s\n", result ? "" : g_failstr);

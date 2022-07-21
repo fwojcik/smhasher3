@@ -20,42 +20,43 @@
 
 #include <vector>
 
-unsigned register_hash(const HashInfo * hinfo);
+// Interface for hash implementations
+unsigned register_hash( const HashInfo * hinfo );
 
-const HashInfo * findHash(const char * name);
-std::vector<const HashInfo *> findAllHashes(void);
-void listHashes(bool nameonly);
+// Interface for consumer for getting hashes
+const HashInfo * findHash( const char * name );
+std::vector<const HashInfo *> findAllHashes( void );
+void listHashes( bool nameonly );
 
-bool verifyAllHashes(bool verbose);
-bool verifyHash(const HashInfo * hinfo,
-        enum HashInfo::endianness endian,
-        bool verbose, bool prefix);
+// Interface for ensuring hash is giving expected results
+bool verifyAllHashes( bool verbose );
+bool verifyHash( const HashInfo * hinfo, enum HashInfo::endianness endian, bool verbose, bool prefix );
 
 //-----------------------------------------------------------------------------
 
-#define CONCAT_INNER(x, y) x##y
-#define CONCAT(x,y) CONCAT_INNER(x, y)
+#define CONCAT_INNER(x, y) x ## y
+#define CONCAT(x, y) CONCAT_INNER(x, y)
 
-#define REGISTER_FAMILY(N, ...)                             \
-  static_assert(sizeof(#N) > 1,                             \
-      "REGISTER_FAMILY() needs a non-empty name");          \
-  static HashFamilyInfo THIS_HASH_FAMILY = []{              \
-    HashFamilyInfo $(#N);                                   \
-    __VA_ARGS__;                                            \
-    return $;                                               \
-  }();                                                      \
+#define REGISTER_FAMILY(N, ...)                    \
+  static_assert(sizeof(#N) > 1,                    \
+      "REGISTER_FAMILY() needs a non-empty name"); \
+  static HashFamilyInfo THIS_HASH_FAMILY = []{     \
+    HashFamilyInfo $(#N);                          \
+    __VA_ARGS__;                                   \
+    return $;                                      \
+  }();                                             \
   unsigned CONCAT(N,_ref)
 
-#define REGISTER_HASH(N, ...)                               \
-  static_assert(sizeof(#N) > 1,                             \
-      "REGISTER_HASH() needs a non-empty name");            \
-  static HashInfo CONCAT(Hash_,N) = []{                     \
-    HashInfo $(#N, THIS_HASH_FAMILY.name);                  \
-    __VA_ARGS__;                                            \
-    register_hash(&$);                                      \
-    return $;                                               \
+#define REGISTER_HASH(N, ...)                    \
+  static_assert(sizeof(#N) > 1,                  \
+      "REGISTER_HASH() needs a non-empty name"); \
+  static HashInfo CONCAT(Hash_,N) = []{          \
+    HashInfo $(#N, THIS_HASH_FAMILY.name);       \
+    __VA_ARGS__;                                 \
+    register_hash(&$);                           \
+    return $;                                    \
   }();
 
-#define USE_FAMILY(N)                                       \
-    extern unsigned CONCAT(N,_ref);                         \
+#define USE_FAMILY(N)               \
+    extern unsigned CONCAT(N,_ref); \
     CONCAT(N,_ref) = 1

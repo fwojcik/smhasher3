@@ -31,14 +31,15 @@
 #include "Hashlib.h"
 
 //-----------------------------------------------------------------------------
-template < bool bswap >
-static void MurmurHash1(const void * in, const size_t olen, const seed_t seed, void * out) {
-    //uint32_t MurmurHash1 ( const void * key, int len, uint32_t seed )
+template <bool bswap>
+static void MurmurHash1( const void * in, const size_t olen, const seed_t seed, void * out ) {
+    // uint32_t MurmurHash1 ( const void * key, int len, uint32_t seed )
     const uint32_t m = 0xc6a4a793;
     const uint32_t r = 16;
 
-    size_t len = olen;
-    uint32_t h = seed;
+    size_t   len     = olen;
+    uint32_t h       = seed;
+
     h ^= len * m;
 
     //----------
@@ -47,25 +48,25 @@ static void MurmurHash1(const void * in, const size_t olen, const seed_t seed, v
     while (len >= 4) {
         uint32_t k = GET_U32<bswap>(data, 0);
 
-        h += k;
-        h *= m;
-        h ^= h >> 16;
+        h    += k;
+        h    *= m;
+        h    ^= h >> 16;
 
         data += 4;
-        len -= 4;
+        len  -= 4;
     }
 
     //----------
-    switch(len) {
+    switch (len) {
     case 3:
-        h += data[2] << 16; /* FALLTHROUGH */
+            h += data[2] << 16; /* FALLTHROUGH */
     case 2:
-        h += data[1] << 8;  /* FALLTHROUGH */
+            h += data[1] <<  8; /* FALLTHROUGH */
     case 1:
-        h += data[0];
-        h *= m;
-        h ^= h >> r;
-    };
+            h += data[0];
+            h *= m;
+            h ^= h >> r;
+    }
 
     //----------
     h *= m;
@@ -77,22 +78,22 @@ static void MurmurHash1(const void * in, const size_t olen, const seed_t seed, v
 }
 
 REGISTER_FAMILY(murmur1,
-  $.src_url = "https://github.com/aappleby/smhasher/",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://github.com/aappleby/smhasher/",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(MurmurHash1,
-  $.desc = "MurmurHash v1",
-  $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
-  $.impl_flags =
-        FLAG_IMPL_MULTIPLY         |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0x9EA7D056,
-  $.verification_BE = 0x4B34A47A,
-  $.hashfn_native = MurmurHash1<false>,
-  $.hashfn_bswap = MurmurHash1<true>,
-  $.seedfixfn = excludeBadseeds,
-  $.badseeds = {0xc6a4a793}
-);
+   $.desc       = "MurmurHash v1",
+   $.hash_flags =
+         FLAG_HASH_SMALL_SEED,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY         |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0x9EA7D056,
+   $.verification_BE = 0x4B34A47A,
+   $.hashfn_native   = MurmurHash1<false>,
+   $.hashfn_bswap    = MurmurHash1<true>,
+   $.seedfixfn       = excludeBadseeds,
+   $.badseeds        = { 0xc6a4a793 }
+ );

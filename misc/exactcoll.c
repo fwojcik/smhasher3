@@ -53,36 +53,36 @@
 #define EXTRA_DIGITS 0
 
 #if !defined(USE_MPFI)
-#if !defined(USE_MPFR)
-#error "Exactly one of USE_MPFI and USE_MPFR must be defined"
-#endif
-#endif
-
-#if defined(USE_MPFI)
-#if defined(USE_MPFR)
-#error "Exactly one of USE_MPFI and USE_MPFR must be defined"
-#endif
+  #if !defined(USE_MPFR)
+    #error "Exactly one of USE_MPFI and USE_MPFR must be defined"
+  #endif
 #endif
 
 #if defined(USE_MPFI)
-#include <mpfi.h>
-#include <mpfi_io.h>
+  #if defined(USE_MPFR)
+    #error "Exactly one of USE_MPFI and USE_MPFR must be defined"
+  #endif
+#endif
+
+#if defined(USE_MPFI)
+  #include <mpfi.h>
+  #include <mpfi_io.h>
 typedef mpfi_t mp_t;
 #else
-#include <mpfr.h>
+  #include <mpfr.h>
 typedef mpfr_t mp_t;
 #endif
 
-char buf[3*PRECISION];
+char   buf[3 * PRECISION];
 FILE * membuf;
 
 #if defined(USE_MPFI)
-#define MP(x,...) mpfi_##x(__VA_ARGS__)
+  #define MP(x, ...) mpfi_ ## x(__VA_ARGS__)
 #else
-#define MP(x,...) mpfr_##x(__VA_ARGS__, MPFR_RNDN)
+  #define MP(x, ...) mpfr_ ## x(__VA_ARGS__, MPFR_RNDN)
 #endif
 
-void printcoll(uint64_t balls, uint64_t log2bins) {
+void printcoll( uint64_t balls, uint64_t log2bins ) {
     mp_t m, n, p, e, f, c;
 
 #if defined(USE_MPFI)
@@ -155,7 +155,7 @@ void printcoll(uint64_t balls, uint64_t log2bins) {
      * represent).
      */
     double lb = strtod(&buf[1], NULL);
-    double ub = strtod(strchr(buf, ',')+1, NULL);
+    double ub = strtod(strchr(buf, ',') + 1, NULL);
     if (lb != ub) {
         printf("BOUNDS DO NOT MATCH TO DOUBLE PRECISION!\n");
         printf("Increase PRECISION and recompile.\n");
@@ -190,7 +190,7 @@ void printcoll(uint64_t balls, uint64_t log2bins) {
 #endif
 }
 
-int main(void) {
+int main( void ) {
     mpfr_set_default_prec(PRECISION);
     membuf = fmemopen(buf, sizeof(buf), "w");
 
@@ -208,9 +208,9 @@ int main(void) {
         264097, 204800, 200000, 102774, 100000,
         77163, 50643, 6
     };
-    const uint64_t bits[] = {256, 224, 160, 128, 64, 55, 45, 42, 39, 36, 32, 29, 27, 24, 22, 19, 12, 8};
-    const uint64_t keycnt = sizeof(keys)/sizeof(keys[0]);
-    const uint64_t bitcnt = sizeof(bits)/sizeof(bits[0]);
+    const uint64_t bits[] = { 256, 224, 160, 128, 64, 55, 45, 42, 39, 36, 32, 29, 27, 24, 22, 19, 12, 8 };
+    const uint64_t keycnt = sizeof(keys) / sizeof(keys[0]);
+    const uint64_t bitcnt = sizeof(bits) / sizeof(bits[0]);
 
     printf("double realcoll[%d][%d] = {\n", keycnt, bitcnt);
 
@@ -222,12 +222,11 @@ int main(void) {
             printcoll(key, bit);
             if (j == bitcnt - 1) {
                 printf(" },\n");
-            } else if ((j%3)==2) {
+            } else if ((j % 3) == 2) {
                 printf(",\n      ");
             } else {
                 printf(", ");
             }
-
         }
     }
 

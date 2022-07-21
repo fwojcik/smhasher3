@@ -58,24 +58,23 @@
 // These sentinel bytes MUST be different values
 static const uint8_t sentinel1 = 0x5c;
 static const uint8_t sentinel2 = 0x36;
-static_assert(sentinel1 != sentinel2,
-        "valid sentinel bytes in SanityTest");
+static_assert(sentinel1 != sentinel2, "valid sentinel bytes in SanityTest");
 
 //----------------------------------------------------------------------------
 // Helper for printing out the right number of progress dots
 
-static void progressdots(int cur, int min, int max, int totaldots) {
+static void progressdots( int cur, int min, int max, int totaldots ) {
     // cur goes from [min, max]. When cur is max, totaldots should
     // have been printed. Print out enough dots, assuming either we
     // were called for cur-1, or that we are being called for the
     // first time with cur==min.
     assert(totaldots > 0);
-    assert(min < max);
-    assert(cur >= min);
-    assert(cur <= max);
+    assert(min < max    );
+    assert(cur >= min   );
+    assert(cur <= max   );
 
     int count = 0;
-    int span = max - min + 1;
+    int span  = max - min + 1;
     if (span > totaldots) {
         // Possibly zero dots per call.
         // Always print out one dot the first time through.
@@ -91,7 +90,7 @@ static void progressdots(int cur, int min, int max, int totaldots) {
     }
     if (count == 0) {
         int expect = (cur - min + 1) * totaldots / span;
-        int sofar =  (cur - min    ) * totaldots / span;
+        int sofar  = (cur - min    ) * totaldots / span;
         count = expect - sofar;
     }
 
@@ -115,7 +114,7 @@ static void progressdots(int cur, int min, int max, int totaldots) {
 
 #define maybeprintf(...) if (verbose) { printf(__VA_ARGS__); }
 
-static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t sentinel, bool verbose) {
+static bool verify_sentinel( const uint8_t * buf, size_t len, const uint8_t sentinel, bool verbose ) {
     for (size_t i = 0; i < len; i++) {
         if (buf[i] != sentinel) {
             maybeprintf(" %" PRIu64 ": 0x%02X != 0x%02X: ", i, buf[i], sentinel);
@@ -125,8 +124,8 @@ static bool verify_sentinel(const uint8_t * buf, size_t len, const uint8_t senti
     return true;
 }
 
-template < bool checksentinels >
-static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t len, bool verbose) {
+template <bool checksentinels>
+static bool verify_hashmatch( const uint8_t * buf1, const uint8_t * buf2, size_t len, bool verbose ) {
     if (likely(memcmp(buf1, buf2, len) == 0)) {
         return true;
     }
@@ -136,8 +135,7 @@ static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t 
                 (buf1[i] == sentinel1) && (buf2[i] == sentinel2)) {
             maybeprintf(" output byte %" PRIu64 " not altered:", i);
         } else {
-            maybeprintf(" output byte %" PRIu64 " inconsistent (0x%02X != 0x%02X):",
-                    i, buf1[i], buf2[i]);
+            maybeprintf(" output byte %" PRIu64 " inconsistent (0x%02X != 0x%02X):", i, buf1[i], buf2[i]);
         }
         break;
     }
@@ -149,32 +147,32 @@ static bool verify_hashmatch(const uint8_t * buf1, const uint8_t * buf2, size_t 
 // that hashing the same thing gives the same result.
 //
 // This test can halt early, so don't add input bytes to the VCode.
-bool SanityTest1(const HashInfo * hinfo, const seed_t seed, bool verbose) {
-    Rand r(883743);
-    bool result = true;
-    bool danger = false;
+bool SanityTest1( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+    Rand r( 883743 );
+    bool result            = true;
+    bool danger            = false;
 
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    const int hashbytes = hinfo->bits / 8;
-    const int reps = 10;
-    const int keymax = 256;
-    const int pad = 16*3;
-    const int buflen = keymax + pad;
+    const HashFn hash      = hinfo->hashFn(g_hashEndian);
+    const int    hashbytes = hinfo->bits / 8;
+    const int    reps      = 10;
+    const int    keymax    = 256;
+    const int    pad       = 16 * 3;
+    const int    buflen    = keymax + pad;
 
-    uint8_t * buffer1 = new uint8_t[buflen];
-    uint8_t * buffer2 = new uint8_t[buflen];
-    uint8_t * hash1 = new uint8_t[buflen];
-    uint8_t * hash2 = new uint8_t[buflen];
+    uint8_t * buffer1      = new uint8_t[buflen];
+    uint8_t * buffer2      = new uint8_t[buflen];
+    uint8_t * hash1        = new uint8_t[buflen];
+    uint8_t * hash2        = new uint8_t[buflen];
 
     maybeprintf("Running sanity check 1       ");
 
     memset(hash1, sentinel1, buflen);
     memset(hash2, sentinel2, buflen);
 
-    for(int irep = 0; irep < reps; irep++) {
-        if (irep % (reps/10) == 0) maybeprintf(".");
+    for (int irep = 0; irep < reps; irep++) {
+        if (irep % (reps / 10) == 0) { maybeprintf("."); }
 
-        for(int len = 0; len <= keymax; len++) {
+        for (int len = 0; len <= keymax; len++) {
             // Make 2 copies of some random input data, and hash one
             // of them.
             r.rand_p(buffer1, buflen);
@@ -191,8 +189,7 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed, bool verbose) {
             }
 
             // See if the hash overflowed its output buffer
-            if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes,
-                            sentinel1, verbose)) {
+            if (!verify_sentinel(hash1 + hashbytes, buflen - hashbytes, sentinel1, verbose)) {
                 maybeprintf(" hash overflowed output buffer (pass 1):");
                 result = false;
                 danger = true;
@@ -203,8 +200,7 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed, bool verbose) {
             hash(buffer1, len, seed, hash2);
 
             // See if the hash overflowed output buffer this time
-            if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes,
-                            sentinel2, verbose)) {
+            if (!verify_sentinel(hash2 + hashbytes, buflen - hashbytes, sentinel2, verbose)) {
                 maybeprintf(" hash overflowed output buffer (pass 2):");
                 result = false;
                 danger = true;
@@ -219,8 +215,8 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed, bool verbose) {
         }
     }
 
- end_sanity:
-    if(result == false) {
+  end_sanity:
+    if (result == false) {
         printf("%s", verbose ? " FAIL  !!!!!\n" : " FAIL");
     } else {
         printf("%s", verbose ? " PASS\n"        : " pass");
@@ -254,42 +250,41 @@ bool SanityTest1(const HashInfo * hinfo, const seed_t seed, bool verbose) {
 // This test is expensive, so only run 1 rep.
 //
 // This test can halt early, so don't add input bytes to the VCode.
-bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
-    Rand r(883744);
-    bool result = true;
+bool SanityTest2( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+    Rand r( 883744 );
+    bool result            = true;
 
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    const int hashbytes = hinfo->bits / 8;
-    const int reps = 5;
-    const int keymax = 128;
-    const int pad = 16; // Max alignment offset tested
-    const int buflen = keymax + pad*3;
+    const HashFn hash      = hinfo->hashFn(g_hashEndian);
+    const int    hashbytes = hinfo->bits / 8;
+    const int    reps      = 5;
+    const int    keymax    = 128;
+    const int    pad       = 16;// Max alignment offset tested
+    const int    buflen    = keymax + pad * 3;
 
     // XXX Check alignment!?!
-    uint8_t * buffer1 = new uint8_t[buflen];
-    uint8_t * buffer2 = new uint8_t[buflen];
-    uint8_t * hash1 = new uint8_t[hashbytes];
-    uint8_t * hash2 = new uint8_t[hashbytes];
-    uint8_t * hash3 = new uint8_t[hashbytes];
+    uint8_t * buffer1 = new uint8_t[buflen   ];
+    uint8_t * buffer2 = new uint8_t[buflen   ];
+    uint8_t * hash1   = new uint8_t[hashbytes];
+    uint8_t * hash2   = new uint8_t[hashbytes];
+    uint8_t * hash3   = new uint8_t[hashbytes];
 
     maybeprintf("Running sanity check 2       ");
 
     for (int irep = 0; irep < reps; irep++) {
-
-        for(int len = 1; len <= keymax; len++) {
-            ExtBlob key1(&buffer1[pad],    len);
+        for (int len = 1; len <= keymax; len++) {
+            ExtBlob key1( &buffer1[pad], len );
 
             // Fill the first buffer with random data
             r.rand_p(buffer1, buflen);
 
-            if (verbose) { progressdots(len + irep*keymax, 1, reps*keymax, 10); }
+            if (verbose) { progressdots(len + irep * keymax, 1, reps * keymax, 10); }
             // Record the hash of key1. hash1 becomes the correct
             // answer that the rest of the loop will test against.
             hash(key1, len, seed, hash1);
             addVCodeOutput(hash1, hashbytes);
 
             // See if the hash behaves sanely using only key1
-            for(int bit = 0; bit < (len * 8); bit++) {
+            for (int bit = 0; bit < (len * 8); bit++) {
                 // Flip a bit, hash the key -> we should get a different result.
                 key1.flipbit(bit);
                 hash(key1, len, seed, hash2);
@@ -311,9 +306,9 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                 }
             }
 
-            for(int offset = pad; offset < pad*2; offset++) {
+            for (int offset = pad; offset < pad * 2; offset++) {
                 // Make key2 have alignment independent of key1
-                ExtBlob key2(&buffer2[offset], len);
+                ExtBlob key2( &buffer2[offset], len );
 
                 // Fill the second buffer with different random data
                 r.rand_p(buffer2, buflen);
@@ -343,7 +338,7 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
                     memcpy(buffer2 + offset - pad, buffer1, len + 2 * pad);
                     uint8_t * const key2_start = buffer2 + offset;
                     uint8_t * const key2_end   = buffer2 + offset + len;
-                    for(uint8_t * ptr = key2_start - pad; ptr < key2_end + pad; ptr++) {
+                    for (uint8_t * ptr = key2_start - pad; ptr < key2_end + pad; ptr++) {
                         if ((ptr >= key2_start) && (ptr < key2_end)) { continue; }
                         *ptr ^= 0xFF;
                         hash(key2, len, seed, hash3);
@@ -362,8 +357,8 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
         }
     }
 
- end_sanity:
-    if(result == false) {
+  end_sanity:
+    if (result == false) {
         printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
     } else {
         printf("%s", verbose ? " PASS\n"        : " ... pass");
@@ -387,18 +382,18 @@ bool SanityTest2(const HashInfo * hinfo, const seed_t seed, bool verbose) {
 // Seed() is first called once in the main process, and 2) when Seed()
 // is called per-hash inside each thread.
 
-static void hashthings(const HashInfo * hinfo, seed_t seed,
-        uint32_t reps, uint32_t order, bool reseed, bool verbose,
-        std::vector<uint8_t> &keys, std::vector<uint8_t> &hashes) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
+static void hashthings( const HashInfo * hinfo, seed_t seed, uint32_t reps, uint32_t order, bool reseed,
+        bool verbose, std::vector<uint8_t> & keys, std::vector<uint8_t> & hashes ) {
+    const HashFn   hash      = hinfo->hashFn(g_hashEndian);
     const uint32_t hashbytes = hinfo->bits / 8;
 
     // Each thread should hash the keys in a different, random order
-    std::vector<int> idxs(reps);
+    std::vector<int> idxs( reps );
+
     if (order != 0) {
-        Rand r(46742 + order);
+        Rand r( 46742 + order );
         for (int i = 0; i < reps; i++) { idxs[i] = i; }
-        for(int i = reps - 1; i > 0; i--) {
+        for (int i = reps - 1; i > 0; i--) {
             std::swap(idxs[i], idxs[r.rand_range(i + 1)]);
         }
     }
@@ -412,19 +407,19 @@ static void hashthings(const HashInfo * hinfo, seed_t seed,
         if (reseed) { seed = hinfo->Seed(idx * UINT64_C(0xa5), true, 1); }
         hash(&keys[idx * reps], idx + 1, seed, &hashes[idx * hashbytes]);
         if (verbose && (order < 2)) { progressdots(i, 0, reps - 1, 4); }
-        if (order == 0) { addVCodeInput(&keys[idx * reps], idx + 1);}
+        if (order == 0) { addVCodeInput(&keys[idx * reps], idx + 1); }
     }
 }
 
-static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose) {
-    Rand r(609163);
+static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose ) {
+    Rand r( 609163 );
 
-    const uint32_t hashbytes = hinfo->bits / 8;
-    const uint32_t reps = 1024*16;
-    const uint32_t keybytes = (reps * reps);
-    std::vector<uint8_t> keys(keybytes);
-    std::vector<uint8_t> mainhashes(reps * hashbytes);
-    const seed_t seed = seedthread ? 0 : hinfo->Seed(0x12345, true, 1);
+    const uint32_t       hashbytes = hinfo->bits / 8;
+    const uint32_t       reps      = 1024 * 16;
+    const uint32_t       keybytes  = (reps * reps);
+    std::vector<uint8_t> keys( keybytes );
+    std::vector<uint8_t> mainhashes( reps * hashbytes );
+    const seed_t         seed = seedthread ? 0 : hinfo->Seed(0x12345, true, 1);
     bool result = true;
 
     maybeprintf("Running thread-safety test %d ", seedthread ? 2 : 1);
@@ -447,10 +442,12 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
     if (g_NCPU > 1) {
 #if defined(HAVE_THREADS)
         // Compute all the hashes in different random orders in threads
-        std::vector<std::vector<uint8_t> > threadhashes(g_NCPU, std::vector<uint8_t>(reps * hashbytes));
+        std::vector<std::vector<uint8_t>> threadhashes( g_NCPU, std::vector<uint8_t>(reps * hashbytes));
         std::thread t[g_NCPU];
         for (int i = 0; i < g_NCPU; i++) {
-            t[i] = std::thread {hashthings,hinfo,seed,reps,i+1,seedthread,verbose,std::ref(keys),std::ref(threadhashes[i])};
+            t[i] = std::thread {
+                hashthings, hinfo, seed, reps, i + 1, seedthread, verbose, std::ref(keys), std::ref(threadhashes[i])
+            };
         }
         for (int i = 0; i < g_NCPU; i++) {
             t[i].join();
@@ -468,7 +465,7 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
             for (int j = 0; j < reps; j++) {
                 if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
                     maybeprintf("\nMismatch between main process and thread #%d at index %d\n", i, j);
-                    if (verbose) { ExtBlob(&mainhashes[j * hashbytes]     , hashbytes).printhex("  main   :"); }
+                    if (verbose) { ExtBlob(&mainhashes[j * hashbytes], hashbytes).printhex("  main   :"); }
                     if (verbose) { ExtBlob(&threadhashes[i][j * hashbytes], hashbytes).printhex("  thread :"); }
                     result = false;
                     break; // Only breaks out of j loop
@@ -476,7 +473,7 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
             }
         }
 
-        if(result == false) {
+        if (result == false) {
             printf("%s", verbose ? " FAIL  !!!!!\n\n" : " ... FAIL");
         } else {
             printf("%s", verbose ? " PASS\n"         : " ... pass");
@@ -500,142 +497,136 @@ static bool ThreadingTest (const HashInfo * hinfo, bool seedthread, bool verbose
 //----------------------------------------------------------------------------
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
-bool AppendedZeroesTest (const HashInfo * hinfo, const seed_t seed, bool verbose) {
-  Rand r(173994);
+bool AppendedZeroesTest( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+    Rand r( 173994 );
 
-  const HashFn hash = hinfo->hashFn(g_hashEndian);
-  const int hashbytes = hinfo->bits / 8;
-  bool result = true;
+    const HashFn hash      = hinfo->hashFn(g_hashEndian);
+    const int    hashbytes = hinfo->bits / 8;
+    bool         result    = true;
 
-  maybeprintf("Running append zeroes test   ");
+    maybeprintf("Running append zeroes test   ");
 
-  for(int rep = 0; rep < 100; rep++)
-  {
-    if(rep % 10 == 0) maybeprintf(".");
+    for (int rep = 0; rep < 100; rep++) {
+        if (rep % 10 == 0) { maybeprintf("."); }
 
-    unsigned char key[256];
-    memset(key,0,sizeof(key));
+        unsigned char key[256];
+        memset(key, 0, sizeof(key));
 
-    r.rand_p(key,32);
-    // This test can halt early, so don't add input bytes to the VCode.
+        r.rand_p(key, 32);
+        // This test can halt early, so don't add input bytes to the VCode.
 
-    std::vector<std::vector<uint8_t>> hashes;
+        std::vector<std::vector<uint8_t>> hashes;
 
-    for(int i = 0; i < 32; i++) {
-      std::vector<uint8_t> h(hashbytes);
-      hash(key,32+i,seed,&h[0]);
-      hashes.push_back(h);
-      addVCodeOutput(&h[0], hashbytes);
-    }
+        for (int i = 0; i < 32; i++) {
+            std::vector<uint8_t> h( hashbytes );
+            hash(key, 32 + i, seed, &h[0]);
+            hashes.push_back(h);
+            addVCodeOutput(&h[0], hashbytes);
+        }
 
-    // Sort in little-endian order, for human friendliness
-    std::sort(hashes.begin(), hashes.end(),
-            [](const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
+        // Sort in little-endian order, for human friendliness
+        std::sort(hashes.begin(), hashes.end(), []( const std::vector<uint8_t> & a, const std::vector<uint8_t> & b ) {
                 for (int i = a.size() - 1; i >= 0; i--) {
                     if (a[i] != b[i]) {
                         return a[i] < b[i];
                     }
                 }
                 return false;
-            } );
+            });
 
-    for(int i = 1; i < 32; i++) {
-        if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
-            result = false;
-            goto done;
+        for (int i = 1; i < 32; i++) {
+            if (memcmp(&hashes[i][0], &hashes[i - 1][0], hashbytes) == 0) {
+                result = false;
+                goto done;
+            }
         }
     }
-  }
 
- done:
-  if(result == false) {
-      printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
-  } else {
-      printf("%s", verbose ? " PASS\n"        : " ... pass");
-  }
+  done:
+    if (result == false) {
+        printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
+    } else {
+        printf("%s", verbose ? " PASS\n"        : " ... pass");
+    }
 
-  recordTestResult(result, "Sanity", "Append zeroes");
+    recordTestResult(result, "Sanity", "Append zeroes");
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
 //----------------------------------------------------------------------------
 // Prepending zero bytes to a key should also always cause it to
 // produce a different hash value
-bool PrependedZeroesTest (const HashInfo * hinfo, const seed_t seed, bool verbose) {
-  Rand r(534281);
+bool PrependedZeroesTest( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+    Rand r( 534281 );
 
-  const HashFn hash = hinfo->hashFn(g_hashEndian);
-  const int hashbytes = hinfo->bits / 8;
-  bool result = true;
+    const HashFn hash      = hinfo->hashFn(g_hashEndian);
+    const int    hashbytes = hinfo->bits / 8;
+    bool         result    = true;
 
-  maybeprintf("Running prepend zeroes test  ");
+    maybeprintf("Running prepend zeroes test  ");
 
-  for(int rep = 0; rep < 100; rep++)
-  {
-    if(rep % 10 == 0) maybeprintf(".");
+    for (int rep = 0; rep < 100; rep++) {
+        if (rep % 10 == 0) { maybeprintf("."); }
 
-    unsigned char key[256];
-    memset(key,0,sizeof(key));
+        unsigned char key[256];
+        memset(key, 0, sizeof(key));
 
-    r.rand_p(key+32,32);
-    // This test can halt early, so don't add input bytes to the VCode.
+        r.rand_p(key + 32, 32);
+        // This test can halt early, so don't add input bytes to the VCode.
 
-    std::vector<std::vector<uint8_t>> hashes;
+        std::vector<std::vector<uint8_t>> hashes;
 
-    for(int i = 0; i < 32; i++) {
-      std::vector<uint8_t> h(hashbytes);
-      hash(key+32-i,32+i,seed,&h[0]);
-      hashes.push_back(h);
-      addVCodeOutput(&h[0], hashbytes);
-    }
+        for (int i = 0; i < 32; i++) {
+            std::vector<uint8_t> h( hashbytes );
+            hash(key + 32 - i, 32 + i, seed, &h[0]);
+            hashes.push_back(h);
+            addVCodeOutput(&h[0], hashbytes);
+        }
 
-    // Sort in little-endian order, for human friendliness
-    std::sort(hashes.begin(), hashes.end(),
-            [](const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
+        // Sort in little-endian order, for human friendliness
+        std::sort(hashes.begin(), hashes.end(), []( const std::vector<uint8_t> & a, const std::vector<uint8_t> & b ) {
                 for (int i = a.size() - 1; i >= 0; i--) {
                     if (a[i] != b[i]) {
                         return a[i] < b[i];
                     }
                 }
                 return false;
-            } );
+            });
 
-    for(int i = 1; i < 32; i++) {
-        if (memcmp(&hashes[i][0], &hashes[i-1][0], hashbytes) == 0) {
-	    result = false;
-	    goto done;
+        for (int i = 1; i < 32; i++) {
+            if (memcmp(&hashes[i][0], &hashes[i - 1][0], hashbytes) == 0) {
+                result = false;
+                goto done;
+            }
         }
     }
-  }
 
- done:
-  if(result == false) {
-      printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
-  } else {
-      printf("%s", verbose ? " PASS\n"        : " ... pass");
-  }
+  done:
+    if (result == false) {
+        printf("%s", verbose ? " FAIL  !!!!!\n" : " ... FAIL");
+    } else {
+        printf("%s", verbose ? " PASS\n"        : " ... pass");
+    }
 
-  recordTestResult(result, "Sanity", "Prepend zeroes");
+    recordTestResult(result, "Sanity", "Prepend zeroes");
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
-void SanityTestHeader(void) {
-    printf("%-25s   %13s     %13s     %13s\n",
-            "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
-    printf("%-25s   %13s     %13s     %13s\n",
-            "-------------------------", "-------------",
-            "-------------", "-------------");
+void SanityTestHeader( void ) {
+    printf("%-25s   %13s     %13s     %13s\n", "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
+    printf("%-25s   %13s     %13s     %13s\n", "-------------------------",
+            "-------------", "-------------", "-------------");
 }
 
-bool SanityTest(const HashInfo * hinfo, bool oneline) {
-    bool verbose = !oneline;
-    bool result = true;
+bool SanityTest( const HashInfo * hinfo, bool oneline ) {
+    bool verbose      = !oneline;
+    bool result       = true;
     bool threadresult = true;
 
     if (oneline) { printf("%-25s  ", hinfo->name); }
@@ -650,7 +641,7 @@ bool SanityTest(const HashInfo * hinfo, bool oneline) {
 
     // These should be last, as they re-seed
     threadresult &= ThreadingTest(hinfo, false, verbose);
-    threadresult &= ThreadingTest(hinfo, true, verbose);
+    threadresult &= ThreadingTest(hinfo, true , verbose);
 
     // If threading test cannot give meaningful results, then don't
     // bother printing them out. :) But still run them above so the
@@ -671,7 +662,7 @@ bool SanityTest(const HashInfo * hinfo, bool oneline) {
         printf("%sSANITY_FAILS unset, but hash failed", oneline ? "\t" : "");
     }
 
- out:
+  out:
     if (oneline) {
         printf("\n");
     }

@@ -60,59 +60,58 @@
 //-----------------------------------------------------------------------------
 // Keyset 'Perlin Noise' - X,Y coordinates on input & seed
 
-template< typename hashtype >
-static bool PerlinNoise (int Xbits, int Ybits, int inputLen, int step,
-        const HashInfo * hinfo, bool testColl, bool testDist, bool drawDiagram)
-{
-  assert(0 < Ybits && Ybits < 31);
-  assert(0 < Xbits && Xbits < 31);
-  assert(Xbits + Ybits < 31);
-  assert(inputLen*8 > Xbits);  // enough space to run the test
+template <typename hashtype>
+static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const HashInfo * hinfo,
+        bool testColl, bool testDist, bool drawDiagram ) {
+    assert(       0 < Ybits && Ybits < 31);
+    assert(       0 < Xbits && Xbits < 31);
+    assert(   Xbits + Ybits < 31         );
+    assert(inputLen * 8 > Xbits          ); // enough space to run the test
 
-  std::vector<hashtype> hashes;
-  int const xMax = (1 << Xbits);
-  int const yMax = (1 << Ybits);
-  const HashFn hash = hinfo->hashFn(g_hashEndian);
+    std::vector<hashtype> hashes;
+    int const    xMax = (1 << Xbits);
+    int const    yMax = (1 << Ybits);
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
 
 #define INPUT_LEN_MAX 256
-  assert(inputLen <= INPUT_LEN_MAX);
-  uint8_t key[INPUT_LEN_MAX] = {0};
+    assert(inputLen <= INPUT_LEN_MAX     );
+    uint8_t key[INPUT_LEN_MAX] = { 0 };
 
-  printf("Generating coordinates from %3i-byte keys - %d keys\n", inputLen, xMax * yMax);
+    printf("Generating coordinates from %3i-byte keys - %d keys\n", inputLen, xMax * yMax);
 
-  addVCodeInput(yMax);
-  // Since seeding can be expensive, loop over the seed-dependent
-  // variable first.
-  for (uint64_t y = 0; y < yMax; y++) {
-      const seed_t seed = hinfo->Seed(y, true);
-      for (uint64_t x = 0; x < xMax; x++) {
-          // Put x in little-endian order
-          uint64_t xin = COND_BSWAP(x, isBE());
-          memcpy(key, &xin, sizeof(xin));
-              
-          hashtype h;
-          hash(key, inputLen, seed, &h);
-          addVCodeInput(key, inputLen);
-          hashes.push_back(h);
-      }
-  }
+    addVCodeInput(yMax);
+    // Since seeding can be expensive, loop over the seed-dependent
+    // variable first.
+    for (uint64_t y = 0; y < yMax; y++) {
+        const seed_t seed = hinfo->Seed(y, true);
+        for (uint64_t x = 0; x < xMax; x++) {
+            // Put x in little-endian order
+            uint64_t xin = COND_BSWAP(x, isBE());
+            memcpy(key, &xin, sizeof(xin));
 
-  bool result = TestHashList(hashes,drawDiagram,testColl,testDist);
-  printf("\n");
+            hashtype h;
+            hash(key, inputLen, seed, &h);
+            addVCodeInput(key, inputLen);
+            hashes.push_back(h);
+        }
+    }
 
-  recordTestResult(result, "PerlinNoise", inputLen);
+    bool result = TestHashList(hashes, drawDiagram, testColl, testDist);
+    printf("\n");
 
-  addVCodeResult(result);
+    recordTestResult(result, "PerlinNoise", inputLen);
 
-  return result;
+    addVCodeResult(result);
+
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 
-template< typename hashtype >
-bool PerlinNoiseTest (const HashInfo * hinfo, const bool verbose, const bool extra) {
-    bool result = true;
-    bool testCollision = true;
+template <typename hashtype>
+bool PerlinNoiseTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+    bool result           = true;
+    bool testCollision    = true;
     bool testDistribution = extra;
 
     printf("[[[ Keyset 'PerlinNoise' Tests ]]]\n\n");

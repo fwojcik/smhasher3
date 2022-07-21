@@ -35,59 +35,63 @@
 // https://arxiv.org/pdf/1504.06804.pdf
 
 // A randomly-generated table of 128-bit multiplicative constants
-const static int MULTIPLY_SHIFT_RANDOM_WORDS = 1<<8;
-static uint64_t multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS * 2];
+const static int MULTIPLY_SHIFT_RANDOM_WORDS = 1 << 8;
+static uint64_t  multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS * 2];
 
 // This is just the Xorshift RNG, which was arbitrarily chosen.  This
 // hash is labeled as system-dependent, since this would really be
 // replaced by *some* kind of srand()/rand() in practice.
-static inline void mix(uint32_t & w, uint32_t & x, uint32_t & y, uint32_t & z) {
+static inline void mix( uint32_t & w, uint32_t & x, uint32_t & y, uint32_t & z ) {
     uint32_t t = x ^ (x << 11);
+
     x = y; y = z; z = w;
     w = w ^ (w >> 19) ^ t ^ (t >> 8);
 }
 
-static uintptr_t multiply_shift_seed_init_slow(const seed_t seed) {
+static uintptr_t multiply_shift_seed_init_slow( const seed_t seed ) {
     uint32_t w, x, y, z;
-    x = 0x498b3bc5 ^ (uint32_t)(seed);
+
+    x = 0x498b3bc5 ^ (uint32_t)(seed      );
     y = 0x5a05089a ^ (uint32_t)(seed >> 32);
     w = z = 0;
-    for(int i = 0; i < 10; i++) mix(w, x, y, z);
+    for (int i = 0; i < 10; i++) { mix(w, x, y, z); }
 
     for (int i = 0; i < MULTIPLY_SHIFT_RANDOM_WORDS; i++) {
         mix(w, x, y, z);
         multiply_shift_random[2 * i + 1] = ((uint64_t)(x) << 32) | y;
         mix(w, x, y, z);
         multiply_shift_random[2 * i + 0] = ((uint64_t)(x) << 32) | y;
-        if (!multiply_shift_random[2 * i + 0])
+        if (!multiply_shift_random[2 * i + 0]) {
             multiply_shift_random[2 * i + 0]++;
+        }
     }
     return 0;
 }
 
-static bool multiply_shift_init(void) {
+static bool multiply_shift_init( void ) {
     multiply_shift_seed_init_slow(0);
     return true;
 }
 
 // Vector multiply-shift (3.4) from Thorup's notes.
-template < bool bswap >
-static void multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+template <bool bswap>
+static void multiply_shift32( const void * in, const size_t len_bytes, const seed_t seed, void * out ) {
     const uint8_t * buf = (const uint8_t *)in;
-    const size_t len = len_bytes/4;
+    const size_t    len = len_bytes / 4;
 
     // We mix in len_bytes in the basis, since smhasher considers two keys
     // of different length to be different, even if all the extra bits are 0.
     // This is needed for the AppendZero test.
     uint64_t h, t;
-    h = ((uint32_t)(seed))          * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
-        ((uint32_t)(seed>>32))      * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
-        ((uint32_t)(len_bytes))     * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
-        ((uint32_t)(len_bytes>>32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
+
+    h =     ((uint32_t)(seed           )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
+            ((uint32_t)(seed      >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
+            ((uint32_t)(len_bytes      )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
+            ((uint32_t)(len_bytes >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
 
     for (size_t i = 0; i < len; i++, buf += 4) {
-        t = GET_U32<bswap>(buf, 0) *
-            multiply_shift_random[i % MULTIPLY_SHIFT_RANDOM_WORDS];
+        t  = GET_U32<bswap>(buf, 0) *
+                multiply_shift_random[i % MULTIPLY_SHIFT_RANDOM_WORDS];
         h += t;
     }
 
@@ -96,9 +100,9 @@ static void multiply_shift32(const void * in, const size_t len_bytes, const seed
     if (remaining_bytes) {
         uint64_t last = 0;
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
-        if (remaining_bytes & 1) { last = (last << 8)  | (*buf); }
-        t = last *
-            multiply_shift_random[len % MULTIPLY_SHIFT_RANDOM_WORDS];
+        if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
+        t  = last *
+                multiply_shift_random[len % MULTIPLY_SHIFT_RANDOM_WORDS];
         h += t;
     }
 
@@ -106,31 +110,32 @@ static void multiply_shift32(const void * in, const size_t len_bytes, const seed
 }
 
 // Pair multiply-shift (3.5) from Thorup's notes.
-template < bool bswap >
-static void pair_multiply_shift32(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+template <bool bswap>
+static void pair_multiply_shift32( const void * in, const size_t len_bytes, const seed_t seed, void * out ) {
     const uint8_t * buf = (const uint8_t *)in;
-    const size_t len = len_bytes/4;
+    const size_t    len = len_bytes / 4;
 
     // We mix in len_bytes in the basis, since smhasher considers two keys
     // of different length to be different, even if all the extra bits are 0.
     // This is needed for the AppendZero test.
     uint64_t h, t;
-    h = ((uint32_t)(seed))          * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
-        ((uint32_t)(seed>>32))      * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
-        ((uint32_t)(len_bytes))     * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
-        ((uint32_t)(len_bytes>>32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
 
-    for (size_t i = 0; i < len/2; i++, buf += 8) {
-        t = GET_U64<bswap>(buf, 0);
-        h += (((uint32_t)(t)) + multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 1]) *
-            (((uint32_t)(t>>32)) + multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 0]);
+    h =     ((uint32_t)(seed           )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
+            ((uint32_t)(seed      >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
+            ((uint32_t)(len_bytes      )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
+            ((uint32_t)(len_bytes >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
+
+    for (size_t i = 0; i < len / 2; i++, buf += 8) {
+        t  = GET_U64<bswap>(buf, 0);
+        h +=    (((uint32_t)(t      )) + multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 1]) *
+                (((uint32_t)(t >> 32)) + multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) + 0]);
     }
 
     // Make sure we have the last word, if the number of words is odd
     if (len & 1) {
-        t = GET_U32<bswap>(buf, 0) *
-            multiply_shift_random[(len - 1) % MULTIPLY_SHIFT_RANDOM_WORDS];
-        h += t;
+        t    = GET_U32<bswap>(buf, 0) *
+                multiply_shift_random[(len - 1) % MULTIPLY_SHIFT_RANDOM_WORDS];
+        h   += t;
         buf += 4;
     }
 
@@ -139,9 +144,9 @@ static void pair_multiply_shift32(const void * in, const size_t len_bytes, const
     if (remaining_bytes) {
         uint64_t last = 0;
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
-        if (remaining_bytes & 1) { last = (last << 8)  | (*buf); }
-        t = last *
-            multiply_shift_random[len % MULTIPLY_SHIFT_RANDOM_WORDS];
+        if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
+        t  = last *
+                multiply_shift_random[len % MULTIPLY_SHIFT_RANDOM_WORDS];
         h += t;
     }
 
@@ -156,20 +161,19 @@ static void pair_multiply_shift32(const void * in, const size_t len_bytes, const
 // for the moment.
 //
 // XXX Need to implement fma128_128()
-template < bool bswap >
-static void multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+template <bool bswap>
+static void multiply_shift64( const void * in, const size_t len_bytes, const seed_t seed, void * out ) {
     const uint8_t * buf = (const uint8_t *)in;
-    const size_t len = len_bytes/8;
+    const size_t    len = len_bytes / 8;
 
     // We mix in len_bytes in the basis, since smhasher considers two keys
     // of different length to be different, even if all the extra bits are 0.
     // This is needed for the AppendZero test.
     uint64_t h, t, ignored;
-    mult128_128(ignored, h, (uint64_t)seed, 0,
-            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
+
+    mult128_128(ignored, h, (uint64_t)seed     , 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2]);
-    mult128_128(ignored, t, (uint64_t)len_bytes, 0,
-            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
+    mult128_128(ignored, t, (uint64_t)len_bytes, 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4]);
     h += t;
 
@@ -186,9 +190,8 @@ static void multiply_shift64(const void * in, const size_t len_bytes, const seed
         uint64_t last = 0;
         if (remaining_bytes & 4) { last = GET_U32<bswap>(buf, 0); buf += 4; }
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
-        if (remaining_bytes & 1) { last = (last << 8)  | (*buf); }
-        mult128_128(ignored, t, last, 0,
-                multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
+        if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
+        mult128_128(ignored, t, last, 0, multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
                 multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1]);
         h += t;
     }
@@ -197,23 +200,22 @@ static void multiply_shift64(const void * in, const size_t len_bytes, const seed
 }
 
 // Pair multiply-shift (3.5) from Thorup's notes.
-template < bool bswap >
-static void pair_multiply_shift64(const void * in, const size_t len_bytes, const seed_t seed, void * out) {
+template <bool bswap>
+static void pair_multiply_shift64( const void * in, const size_t len_bytes, const seed_t seed, void * out ) {
     const uint8_t * buf = (const uint8_t *)in;
-    const size_t len = len_bytes/8;
+    const size_t    len = len_bytes / 8;
 
     // We mix in len_bytes in the basis, since smhasher considers two keys
     // of different length to be different, even if all the extra bits are 0.
     // This is needed for the AppendZero test.
     uint64_t h, t, ignored;
-    mult128_128(ignored, h, (uint64_t)seed, 0,
-            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
+
+    mult128_128(ignored, h, (uint64_t)seed     , 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2]);
-    mult128_128(ignored, t, (uint64_t)len_bytes, 0,
-            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
+    mult128_128(ignored, t, (uint64_t)len_bytes, 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4]);
     h += t;
-    for (size_t i = 0; i < len/2; i++, buf += 16) {
+    for (size_t i = 0; i < len / 2; i++, buf += 16) {
         uint64_t blk1lo, blk1hi, blk2lo, blk2hi;
         blk1lo = multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 2];
         blk1hi = multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 3];
@@ -230,7 +232,7 @@ static void pair_multiply_shift64(const void * in, const size_t len_bytes, const
         mult128_128(ignored, t, GET_U64<bswap>(buf, 0), 0,
                 multiply_shift_random[((len - 1) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
                 multiply_shift_random[((len - 1) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1]);
-        h += t;
+        h   += t;
         buf += 8;
     }
 
@@ -240,9 +242,8 @@ static void pair_multiply_shift64(const void * in, const size_t len_bytes, const
         uint64_t last = 0;
         if (remaining_bytes & 4) { last = GET_U32<bswap>(buf, 0); buf += 4; }
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
-        if (remaining_bytes & 1) { last = (last << 8)  | (*buf); }
-        mult128_128(ignored, t, last, 0,
-                multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
+        if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
+        mult128_128(ignored, t, last, 0, multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
                 multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1]);
         h += t;
     }
@@ -251,74 +252,74 @@ static void pair_multiply_shift64(const void * in, const size_t len_bytes, const
 }
 
 REGISTER_FAMILY(multiply_shift,
-  $.src_url = "https://github.com/rurban/smhasher/blob/2b5992fe015282c87c9069e3c664771b47555ff3/Hashes.cpp",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://github.com/rurban/smhasher/blob/2b5992fe015282c87c9069e3c664771b47555ff3/Hashes.cpp",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(multiply_shift_32,
-  $.desc = "Dietzfelbinger Multiply-shift on strings, 32-bit blocks",
-  $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE      |
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_MULTIPLY_64_64    |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0x34BAD85C,
-  $.verification_BE = 0x133CC3AC,
-  $.hashfn_native = multiply_shift32<false>,
-  $.hashfn_bswap = multiply_shift32<true>,
-//$.seedfn = multiply_shift_seed_init_slow
-  $.initfn = multiply_shift_init
-);
+   $.desc       = "Dietzfelbinger Multiply-shift on strings, 32-bit blocks",
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE      |
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64    |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0x34BAD85C,
+   $.verification_BE = 0x133CC3AC,
+   $.hashfn_native   = multiply_shift32<false>,
+   $.hashfn_bswap    = multiply_shift32<true>,
+// $.seedfn = multiply_shift_seed_init_slow
+   $.initfn = multiply_shift_init
+ );
 
 REGISTER_HASH(pair_multiply_shift_32,
-  $.desc = "Dietzfelbinger Pair-multiply-shift strings, 32-bit blocks",
-  $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE      |
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_MULTIPLY_64_64    |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0xFC284F0F,
-  $.verification_BE = 0x6E93B706,
-  $.hashfn_native = pair_multiply_shift32<false>,
-  $.hashfn_bswap = pair_multiply_shift32<true>,
-//$.seedfn = multiply_shift_seed_init_slow
-  $.initfn = multiply_shift_init
-);
+   $.desc       = "Dietzfelbinger Pair-multiply-shift strings, 32-bit blocks",
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE      |
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64    |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0xFC284F0F,
+   $.verification_BE = 0x6E93B706,
+   $.hashfn_native   = pair_multiply_shift32<false>,
+   $.hashfn_bswap    = pair_multiply_shift32<true>,
+// $.seedfn = multiply_shift_seed_init_slow
+   $.initfn = multiply_shift_init
+ );
 
 REGISTER_HASH(multiply_shift,
-  $.desc = "Dietzfelbinger Multiply-shift on strings, 64-bit blocks",
-  $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE      |
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_MULTIPLY_128_128  |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0xB7A5E66D,
-  $.verification_BE = 0x6E3902A6,
-  $.hashfn_native = multiply_shift64<false>,
-  $.hashfn_bswap = multiply_shift64<true>,
-//$.seedfn = multiply_shift_seed_init_slow
-  $.initfn = multiply_shift_init
-);
+   $.desc       = "Dietzfelbinger Multiply-shift on strings, 64-bit blocks",
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE      |
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_128_128  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0xB7A5E66D,
+   $.verification_BE = 0x6E3902A6,
+   $.hashfn_native   = multiply_shift64<false>,
+   $.hashfn_bswap    = multiply_shift64<true>,
+// $.seedfn = multiply_shift_seed_init_slow
+   $.initfn = multiply_shift_init
+ );
 
 REGISTER_HASH(pair_multiply_shift,
-  $.desc = "Dietzfelbinger Pair-multiply-shift strings, 64-bit blocks",
-  $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE      |
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_MULTIPLY_128_128  |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0x4FBA804D,
-  $.verification_BE = 0x2B7F643B,
-  $.hashfn_native = pair_multiply_shift64<false>,
-  $.hashfn_bswap = pair_multiply_shift64<true>,
-//$.seedfn = multiply_shift_seed_init_slow
-  $.initfn = multiply_shift_init
-);
+   $.desc       = "Dietzfelbinger Pair-multiply-shift strings, 64-bit blocks",
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE      |
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_128_128  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0x4FBA804D,
+   $.verification_BE = 0x2B7F643B,
+   $.hashfn_native   = pair_multiply_shift64<false>,
+   $.hashfn_bswap    = pair_multiply_shift64<true>,
+// $.seedfn = multiply_shift_seed_init_slow
+   $.initfn = multiply_shift_init
+ );

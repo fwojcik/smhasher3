@@ -4,7 +4,7 @@
  * Copyright (c) 2020-2021 Reini Urban
  * Copyright (c) 2020      Thomas Dybdahl Ahle
  * Copyright (c) 1990, 1993
- *	The Regents of the University of California.  All rights reserved.
+ *      The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -48,11 +48,11 @@
 // test it with the RNG you plan on using to seed it.
 static uint64_t BSD_nextrand;
 
-static void BSD_srand(uint64_t seed) {
+static void BSD_srand( uint64_t seed ) {
     BSD_nextrand = seed;
 }
 
-static uint32_t BSD_rand(void) {
+static uint32_t BSD_rand( void ) {
     /*
      * Compute x = (7^5 * x) mod (2^31 - 1)
      * without overflowing 31 bits:
@@ -61,41 +61,43 @@ static uint32_t BSD_rand(void) {
      * Park and Miller, Communications of the ACM, vol. 31, no. 10,
      * October 1988, p. 1195.
      */
-	uint64_t hi, lo, x;
+    uint64_t hi, lo, x;
 
-    x = (BSD_nextrand % 0x7ffffffe) + 1;
-	hi = x / 127773;
-	lo = x % 127773;
-	x = 16807 * lo - 2836 * hi;
-	if (x < 0)
-		x += 0x7fffffff;
+    x  = (BSD_nextrand % 0x7ffffffe)      + 1;
+    hi = x / 127773;
+    lo = x % 127773;
+    x  = 16807         * lo        - 2836 * hi;
+    if (x < 0) {
+        x += 0x7fffffff;
+    }
     BSD_nextrand = --x;
-	return x;
+    return x;
 }
 
-const static uint64_t MERSENNE_61 = (1ull << 61) - 1;
+const static uint64_t MERSENNE_61         = (1ull << 61) - 1;
 const static uint32_t POLY_MERSENNE_MAX_K = 4;
-static uint64_t poly_mersenne_random[POLY_MERSENNE_MAX_K+1];
-static uint64_t poly_mersenne_a;
-static uint64_t poly_mersenne_b;
+static uint64_t       poly_mersenne_random[POLY_MERSENNE_MAX_K + 1];
+static uint64_t       poly_mersenne_a;
+static uint64_t       poly_mersenne_b;
 
-static uint128_t rand_u128(void) {
+static uint128_t rand_u128( void ) {
     // We don't know how many bits we get from rand(),
     // but it is at least 16, so we concattenate a couple.
     uint128_t r = BSD_rand();
+
     for (int i = 0; i < 7; i++) {
         r <<= 16;
-        r ^= BSD_rand();
+        r  ^= BSD_rand();
     }
     return r;
 }
 
-static uintptr_t poly_mersenne_seed_init(const seed_t seed) {
+static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
     BSD_srand(seed);
     // a has be at most 2^60, or the lazy modular reduction won't work.
-    poly_mersenne_a = rand_u128() % (MERSENNE_61/2);
+    poly_mersenne_a = rand_u128() % (MERSENNE_61 / 2);
     poly_mersenne_b = rand_u128() % MERSENNE_61;
-    for (int i = 0; i < POLY_MERSENNE_MAX_K+1; i++) {
+    for (int i = 0; i < POLY_MERSENNE_MAX_K + 1; i++) {
         // The random values should be at most 2^61-2, or the lazy
         // modular reduction won't work.
         poly_mersenne_random[i] = rand_u128() % MERSENNE_61;
@@ -103,20 +105,21 @@ static uintptr_t poly_mersenne_seed_init(const seed_t seed) {
     return 0;
 }
 
-static uint64_t mult_combine61(uint64_t h, uint64_t x, uint64_t a) {
+static uint64_t mult_combine61( uint64_t h, uint64_t x, uint64_t a ) {
     uint64_t rhi = 0, rlo = a;
+
     fma64_128(rlo, rhi, h, x);
 
-    rhi <<= (64 - 61);
-    rhi |= (rlo >> 61);
-    rlo &= MERSENNE_61;
+    rhi <<= (64   - 61);
+    rhi  |= (rlo >> 61);
+    rlo  &= MERSENNE_61;
 
     return rlo + rhi;
 }
 
 // This function ignores the seed, because it uses a separate seeding function.
-template < uint32_t K, bool bswap >
-static void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, void * out) {
+template <uint32_t K, bool bswap>
+static void Poly_Mersenne( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint8_t * buf = (const uint8_t *)in;
 
     // We first combine hashes using a polynomial in `a`:
@@ -128,7 +131,7 @@ static void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, 
     // We use the length as the first character.
     uint64_t h = len;
 
-    for (size_t i = 0; i < len/4; i++, buf += 4) {
+    for (size_t i = 0; i < len / 4; i++, buf += 4) {
         // Partial modular reduction. Since each round adds 32 bits, and this
         // subtracts (up to) 61 bits, we make sure to never overflow.
         h = mult_combine61(h, a, GET_U32<bswap>(buf, 0));
@@ -138,8 +141,8 @@ static void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, 
     int remaining_bytes = len % 4;
     if (remaining_bytes) {
         uint32_t last = 0;
-        if (remaining_bytes & 2) {last = GET_U16<bswap>(buf, 0); buf += 2;}
-        if (remaining_bytes & 1) {last = (last << 8) | (*buf);}
+        if (remaining_bytes & 2) { last = GET_U16<bswap>(buf, 0); buf += 2; }
+        if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
         h = mult_combine61(h, a, last);
     }
 
@@ -161,81 +164,81 @@ static void Poly_Mersenne(const void * in, const size_t len, const seed_t seed, 
 }
 
 REGISTER_FAMILY(poly_mersenne,
-  $.src_url = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://github.com/rurban/smhasher/blob/master/Hashes.cpp",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(poly_mersenne__deg1,
-  $.desc = "Degree 1 Hashing mod 2^61-1",
-  $.hash_flags =
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
-        FLAG_IMPL_128BIT               |
-        FLAG_IMPL_MULTIPLY_64_128      |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 32,
-  $.verification_LE = 0x50526DA4,
-  $.verification_BE = 0xBB8CF709,
-  $.seedfn = poly_mersenne_seed_init,
-  $.hashfn_native = Poly_Mersenne<1, false>,
-  $.hashfn_bswap = Poly_Mersenne<1, true>
-);
+   $.desc       = "Degree 1 Hashing mod 2^61-1",
+   $.hash_flags =
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
+         FLAG_IMPL_128BIT               |
+         FLAG_IMPL_MULTIPLY_64_128      |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 32,
+   $.verification_LE = 0x50526DA4,
+   $.verification_BE = 0xBB8CF709,
+   $.seedfn = poly_mersenne_seed_init,
+   $.hashfn_native   = Poly_Mersenne<1, false>,
+   $.hashfn_bswap    = Poly_Mersenne<1, true>
+ );
 
 REGISTER_HASH(poly_mersenne__deg2,
-  $.desc = "Degree 2 Hashing mod 2^61-1",
-  $.hash_flags =
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
-        FLAG_IMPL_128BIT               |
-        FLAG_IMPL_MULTIPLY_64_128      |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 32,
-  $.verification_LE = 0xCDDDA91B,
-  $.verification_BE = 0x9507D811,
-  $.seedfn = poly_mersenne_seed_init,
-  $.hashfn_native = Poly_Mersenne<2, false>,
-  $.hashfn_bswap = Poly_Mersenne<2, true>,
-  $.badseeds = {0x60e8512c},
-  $.seedfixfn = excludeBadseeds
-);
+   $.desc       = "Degree 2 Hashing mod 2^61-1",
+   $.hash_flags =
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
+         FLAG_IMPL_128BIT               |
+         FLAG_IMPL_MULTIPLY_64_128      |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 32,
+   $.verification_LE = 0xCDDDA91B,
+   $.verification_BE = 0x9507D811,
+   $.seedfn = poly_mersenne_seed_init,
+   $.hashfn_native   = Poly_Mersenne<2, false>,
+   $.hashfn_bswap    = Poly_Mersenne<2, true>,
+   $.badseeds        = { 0x60e8512c },
+   $.seedfixfn       = excludeBadseeds
+ );
 
 REGISTER_HASH(poly_mersenne__deg3,
-  $.desc = "Degree 3 Hashing mod 2^61-1",
-  $.hash_flags =
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
-        FLAG_IMPL_128BIT               |
-        FLAG_IMPL_MULTIPLY_64_128      |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 32,
-  $.verification_LE = 0x7D822707,
-  $.verification_BE = 0x7273EB0A,
-  $.seedfn = poly_mersenne_seed_init,
-  $.hashfn_native = Poly_Mersenne<3, false>,
-  $.hashfn_bswap = Poly_Mersenne<3, true>,
-  $.badseeds = {0x3d25f745},
-  $.seedfixfn = excludeBadseeds
-);
+   $.desc       = "Degree 3 Hashing mod 2^61-1",
+   $.hash_flags =
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
+         FLAG_IMPL_128BIT               |
+         FLAG_IMPL_MULTIPLY_64_128      |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 32,
+   $.verification_LE = 0x7D822707,
+   $.verification_BE = 0x7273EB0A,
+   $.seedfn = poly_mersenne_seed_init,
+   $.hashfn_native   = Poly_Mersenne<3, false>,
+   $.hashfn_bswap    = Poly_Mersenne<3, true>,
+   $.badseeds        = { 0x3d25f745 },
+   $.seedfixfn       = excludeBadseeds
+ );
 
 REGISTER_HASH(poly_mersenne__deg4,
-  $.desc = "Degree 4 Hashing mod 2^61-1",
-  $.hash_flags =
-        FLAG_HASH_SYSTEM_SPECIFIC,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS         | // Implementation not yet thread-safe
-        FLAG_IMPL_128BIT               |
-        FLAG_IMPL_MULTIPLY_64_128      |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 32,
-  $.verification_LE = 0xBF0273E6,
-  $.verification_BE = 0xAA526413,
-  $.seedfn = poly_mersenne_seed_init,
-  $.hashfn_native = Poly_Mersenne<4, false>,
-  $.hashfn_bswap = Poly_Mersenne<4, true>
-);
+   $.desc       = "Degree 4 Hashing mod 2^61-1",
+   $.hash_flags =
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
+         FLAG_IMPL_128BIT               |
+         FLAG_IMPL_MULTIPLY_64_128      |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 32,
+   $.verification_LE = 0xBF0273E6,
+   $.verification_BE = 0xAA526413,
+   $.seedfn = poly_mersenne_seed_init,
+   $.hashfn_native   = Poly_Mersenne<4, false>,
+   $.hashfn_bswap    = Poly_Mersenne<4, true>
+ );
 
 #else
 REGISTER_FAMILY(poly_mersenne);

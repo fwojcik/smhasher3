@@ -28,7 +28,7 @@
 #include "Hashlib.h"
 
 //------------------------------------------------------------
-static uint32_t MurmurOAAT_impl(const uint8_t * data, size_t len, uint32_t seed) {
+static uint32_t MurmurOAAT_impl( const uint8_t * data, size_t len, uint32_t seed ) {
     uint32_t h = seed;
 
     for (size_t i = 0; i < len; i++) {
@@ -40,30 +40,31 @@ static uint32_t MurmurOAAT_impl(const uint8_t * data, size_t len, uint32_t seed)
 }
 
 //------------------------------------------------------------
-template < bool bswap >
-static void MurmurOAAT(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void MurmurOAAT( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint32_t h = MurmurOAAT_impl((const uint8_t *)in, len, (uint32_t)seed);
+
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 //------------------------------------------------------------
 REGISTER_FAMILY(MurmurOAAT,
-  $.src_url = "https://github.com/aappleby/smhasher/blob/master/src/Hashes.cpp",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://github.com/aappleby/smhasher/blob/master/src/Hashes.cpp",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(MurmurOAAT,
-  $.desc = "OAAT hash based on Murmur's mix",
-  $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS  |
-        FLAG_IMPL_MULTIPLY      |
-        FLAG_IMPL_SLOW          |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0x5363BD98,
-  $.verification_BE = 0x29CCE130,
-  $.hashfn_native = MurmurOAAT<false>,
-  $.hashfn_bswap = MurmurOAAT<true>
-);
+   $.desc       = "OAAT hash based on Murmur's mix",
+   $.hash_flags =
+         FLAG_HASH_SMALL_SEED,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS  |
+         FLAG_IMPL_MULTIPLY      |
+         FLAG_IMPL_SLOW          |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0x5363BD98,
+   $.verification_BE = 0x29CCE130,
+   $.hashfn_native   = MurmurOAAT<false>,
+   $.hashfn_bswap    = MurmurOAAT<true>
+ );

@@ -40,25 +40,31 @@
  * inconsistent intrinsics, spotty coverage, and multiple endiannesses.
  */
 
-typedef __vector unsigned long long xxh_u64x2;
-typedef __vector unsigned char xxh_u8x16;
-typedef __vector unsigned int xxh_u32x4;
+typedef __vector unsigned long long  xxh_u64x2;
+typedef __vector unsigned char       xxh_u8x16;
+typedef __vector unsigned int        xxh_u32x4;
 
 #if defined(__POWER9_VECTOR__) || (defined(__clang__) && defined(__s390x__))
-#  define XXH_vec_revb vec_revb
+  #define XXH_vec_revb vec_revb
 #else
+
 // A polyfill for POWER9's vec_revb().
-static FORCE_INLINE xxh_u64x2 XXH_vec_revb(xxh_u64x2 val) {
-    xxh_u8x16 const vByteSwap = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
-                                  0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
+static FORCE_INLINE xxh_u64x2 XXH_vec_revb( xxh_u64x2 val ) {
+    xxh_u8x16 const vByteSwap = {
+        0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
+        0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08
+    };
+
     return vec_perm(val, val, vByteSwap);
 }
+
 #endif
 
 // Performs an unaligned vector load and byte swaps it on big endian.
-template < bool bswap >
-static FORCE_INLINE xxh_u64x2 XXH_vec_loadu(const void *ptr) {
+template <bool bswap>
+static FORCE_INLINE xxh_u64x2 XXH_vec_loadu( const void * ptr ) {
     xxh_u64x2 ret;
+
     memcpy(&ret, ptr, sizeof(xxh_u64x2));
     if (bswap) {
         ret = XXH_vec_revb(ret);
@@ -71,51 +77,58 @@ static FORCE_INLINE xxh_u64x2 XXH_vec_loadu(const void *ptr) {
  *
  * These intrinsics weren't added until GCC 8, despite existing for a while,
  * and they are endian dependent. Also, their meaning swap depending on version.
- * */
+ *
+ */
 #if defined(__s390x__)
 /* s390x is always big endian, no issue on this platform */
-#  define XXH_vec_mulo vec_mulo
-#  define XXH_vec_mule vec_mule
+  #define XXH_vec_mulo vec_mulo
+  #define XXH_vec_mule vec_mule
 #elif defined(__clang__) && XXH_HAS_BUILTIN(__builtin_altivec_vmuleuw)
 /* Clang has a better way to control this, we can just use the builtin which doesn't swap. */
-#  define XXH_vec_mulo __builtin_altivec_vmulouw
-#  define XXH_vec_mule __builtin_altivec_vmuleuw
+  #define XXH_vec_mulo __builtin_altivec_vmulouw
+  #define XXH_vec_mule __builtin_altivec_vmuleuw
 #else
+
 /* gcc needs inline assembly */
+
 /* Adapted from https://github.com/google/highwayhash/blob/master/highwayhash/hh_vsx.h. */
-static FORCE_INLINE xxh_u64x2 XXH_vec_mulo(xxh_u32x4 a, xxh_u32x4 b) {
+static FORCE_INLINE xxh_u64x2 XXH_vec_mulo( xxh_u32x4 a, xxh_u32x4 b ) {
     xxh_u64x2 result;
-    __asm__("vmulouw %0, %1, %2" : "=v" (result) : "v" (a), "v" (b));
+
+    __asm__ ("vmulouw %0, %1, %2" : "=v" (result) : "v" (a), "v" (b));
     return result;
 }
-static FORCE_INLINE xxh_u64x2 XXH_vec_mule(xxh_u32x4 a, xxh_u32x4 b) {
+
+static FORCE_INLINE xxh_u64x2 XXH_vec_mule( xxh_u32x4 a, xxh_u32x4 b ) {
     xxh_u64x2 result;
-    __asm__("vmuleuw %0, %1, %2" : "=v" (result) : "v" (a), "v" (b));
+
+    __asm__ ("vmuleuw %0, %1, %2" : "=v" (result) : "v" (a), "v" (b));
     return result;
 }
+
 #endif /* XXH_vec_mulo, XXH_vec_mule */
 
-template < bool bswap >
-static FORCE_INLINE void XXH3_accumulate_512_vsx(void * RESTRICT acc,
-        const void * RESTRICT input, const void * RESTRICT secret) {
+template <bool bswap>
+static FORCE_INLINE void XXH3_accumulate_512_vsx( void * RESTRICT acc, const void * RESTRICT input,
+        const void * RESTRICT secret ) {
     /* presumed aligned */
-    uint32_t * const xacc = (uint32_t *) acc;
-    xxh_u64x2 const* const xinput   = (xxh_u64x2 const*) input;   /* no alignment restriction */
-    xxh_u64x2 const* const xsecret  = (xxh_u64x2 const*) secret;    /* no alignment restriction */
-    xxh_u64x2 const v32 = { 32, 32 };
+    uint32_t        * const xacc    = (uint32_t *       )acc;
+    xxh_u64x2 const * const xinput  = (xxh_u64x2 const *)input;   /* no alignment restriction */
+    xxh_u64x2 const * const xsecret = (xxh_u64x2 const *)secret;  /* no alignment restriction */
+    xxh_u64x2 const         v32     = { 32, 32 };
 
     for (size_t i = 0; i < XXH_STRIPE_LEN / sizeof(xxh_u64x2); i++) {
         /* data_vec = xinput[i]; */
-        xxh_u64x2 const data_vec = XXH_vec_loadu<bswap>(xinput + i);
+        xxh_u64x2 const data_vec = XXH_vec_loadu<bswap>(xinput  + i);
         /* key_vec = xsecret[i]; */
         xxh_u64x2 const key_vec  = XXH_vec_loadu<bswap>(xsecret + i);
         xxh_u64x2 const data_key = data_vec ^ key_vec;
         /* shuffled = (data_key << 32) | (data_key >> 32); */
-        xxh_u32x4 const shuffled = (xxh_u32x4)vec_rl(data_key, v32);
+        xxh_u32x4 const shuffled = (xxh_u32x4   )vec_rl(data_key   , v32);
         /* product = ((xxh_u64x2)data_key & 0xFFFFFFFF) * ((xxh_u64x2)shuffled & 0xFFFFFFFF); */
         xxh_u64x2 const product  = XXH_vec_mulo((xxh_u32x4)data_key, shuffled);
         /* acc_vec = xacc[i]; */
-        xxh_u64x2 acc_vec        = (xxh_u64x2)vec_xl(0, xacc + 4 * i);
+        xxh_u64x2 acc_vec        = (xxh_u64x2   )vec_xl(0          , xacc + 4 * i);
         acc_vec += product;
 
         /* swap high and low halves */
@@ -129,14 +142,13 @@ static FORCE_INLINE void XXH3_accumulate_512_vsx(void * RESTRICT acc,
     }
 }
 
-template < bool bswap >
-static FORCE_INLINE void XXH3_scrambleAcc_vsx(void * RESTRICT acc,
-        const void * RESTRICT secret) {
-          xxh_u64x2* const xacc    =       (xxh_u64x2*) acc;
-    const xxh_u64x2* const xsecret = (const xxh_u64x2*) secret;
+template <bool bswap>
+static FORCE_INLINE void XXH3_scrambleAcc_vsx( void * RESTRICT acc, const void * RESTRICT secret ) {
+    xxh_u64x2       * const xacc    = (xxh_u64x2 *      )acc;
+    const xxh_u64x2 * const xsecret = (const xxh_u64x2 *)secret;
     /* constants */
-    xxh_u64x2 const v32  = { 32, 32 };
-    xxh_u64x2 const v47 = { 47, 47 };
+    xxh_u64x2 const v32   = { 32, 32 };
+    xxh_u64x2 const v47   = { 47, 47 };
     xxh_u32x4 const prime = { XXH_PRIME32_1, XXH_PRIME32_1, XXH_PRIME32_1, XXH_PRIME32_1 };
 
     for (size_t i = 0; i < XXH_STRIPE_LEN / sizeof(xxh_u64x2); i++) {
@@ -150,7 +162,7 @@ static FORCE_INLINE void XXH3_scrambleAcc_vsx(void * RESTRICT acc,
 
         /* xacc[i] *= XXH_PRIME32_1 */
         /* prod_lo = ((xxh_u64x2)data_key & 0xFFFFFFFF) * ((xxh_u64x2)prime & 0xFFFFFFFF);  */
-        xxh_u64x2 const prod_even  = XXH_vec_mule((xxh_u32x4)data_key, prime);
+        xxh_u64x2 const prod_even = XXH_vec_mule((xxh_u32x4)data_key, prime);
         /* prod_hi = ((xxh_u64x2)data_key >> 32) * ((xxh_u64x2)prime >> 32);  */
         xxh_u64x2 const prod_odd  = XXH_vec_mulo((xxh_u32x4)data_key, prime);
         xacc[i] = prod_odd + (prod_even << v32);

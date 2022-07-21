@@ -47,42 +47,42 @@ extern HashInfo::endianness g_hashEndian;
 // Recording test results for final summary printout
 
 #define COUNT_MAX_PVALUE 18
-extern uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE+2];
+extern uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE + 2];
 
-static inline void recordLog2PValue(uint32_t log_pvalue) {
-  if (log_pvalue <= COUNT_MAX_PVALUE) {
-    g_log2pValueCounts[log_pvalue]++;
-  } else {
-    g_log2pValueCounts[COUNT_MAX_PVALUE+1]++;
-  }
+static inline void recordLog2PValue( uint32_t log_pvalue ) {
+    if (log_pvalue <= COUNT_MAX_PVALUE) {
+        g_log2pValueCounts[log_pvalue]++;
+    } else {
+        g_log2pValueCounts[COUNT_MAX_PVALUE + 1]++;
+    }
 }
 
 extern uint32_t g_testPass, g_testFail;
-extern std::vector< std::pair<const char *, char *> > g_testFailures;
+extern std::vector<std::pair<const char *, char *>> g_testFailures;
 
-static inline void recordTestResult(bool pass, const char * suitename, const char * testname) {
-  if (pass) {
-    g_testPass++;
-    return;
-  }
-  g_testFail++;
-
-  char * ntestname = NULL;
-  if (testname != NULL) {
-    testname += strspn(testname, " ");
-    ntestname = strdup(testname);
-    if (!ntestname) {
-        printf("OOM\n");
-        exit(1);
+static inline void recordTestResult( bool pass, const char * suitename, const char * testname ) {
+    if (pass) {
+        g_testPass++;
+        return;
     }
-  }
-  g_testFailures.push_back(std::pair<const char *, char *>(suitename, ntestname));
+    g_testFail++;
+
+    char * ntestname = NULL;
+    if (testname != NULL) {
+        testname += strspn(testname, " ");
+        ntestname = strdup(testname);
+        if (!ntestname) {
+            printf("OOM\n");
+            exit(1);
+        }
+    }
+    g_testFailures.push_back(std::pair<const char *, char *>(suitename, ntestname));
 }
 
-static inline void recordTestResult(bool pass, const char * suitename, uint64_t testnum) {
-  const uint64_t maxlen = sizeof("18446744073709551615"); // UINT64_MAX
-  char testname[maxlen];
-  snprintf(testname, maxlen, "%" PRIu64, testnum);
-  recordTestResult(pass, suitename, testname);
-}
+static inline void recordTestResult( bool pass, const char * suitename, uint64_t testnum ) {
+    const uint64_t maxlen = sizeof("18446744073709551615"); // UINT64_MAX
+    char           testname[maxlen];
 
+    snprintf(testname, maxlen, "%" PRIu64, testnum);
+    recordTestResult(pass, suitename, testname);
+}

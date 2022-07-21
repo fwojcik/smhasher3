@@ -47,5 +47,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-template < typename hashtype >
-bool BadSeedsTest(const HashInfo * info, const bool find_new_seeds);
+template <typename hashtype>
+bool BadSeedsTest( const HashInfo * info, const bool find_new_seeds );

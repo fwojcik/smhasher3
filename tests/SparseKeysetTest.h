@@ -47,5 +47,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-template < typename hashtype >
-bool SparseKeyTest(const HashInfo * info, const bool verbose, const bool extra);
+template <typename hashtype>
+bool SparseKeyTest( const HashInfo * info, const bool verbose, const bool extra );

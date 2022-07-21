@@ -28,37 +28,38 @@
 #include "Hashlib.h"
 
 //------------------------------------------------------------
-static uint32_t x17_impl(const uint8_t * data, size_t len, uint32_t h) {
-    for(size_t i = 0; i < len; ++i) {
+static uint32_t x17_impl( const uint8_t * data, size_t len, uint32_t h ) {
+    for (size_t i = 0; i < len; ++i) {
         h = 17 * h + (data[i] - ' ');
     }
     return h ^ (h >> 16);
 }
 
 //------------------------------------------------------------
-template < bool bswap >
-static void x17(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void x17( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint32_t h = x17_impl((const uint8_t *)in, len, (uint32_t)seed);
+
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 //------------------------------------------------------------
 REGISTER_FAMILY(x17,
-  $.src_url = "https://github.com/aappleby/smhasher/blob/master/src/Hashes.cpp",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://github.com/aappleby/smhasher/blob/master/src/Hashes.cpp",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(x17,
-  $.desc = "x17",
-  $.hash_flags =
-        FLAG_HASH_SMALL_SEED,
-  $.impl_flags =
-        FLAG_IMPL_SLOW         |
-        FLAG_IMPL_MULTIPLY     |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 32,
-  $.verification_LE = 0x8128E14C,
-  $.verification_BE = 0x9AD0FE22,
-  $.hashfn_native = x17<false>,
-  $.hashfn_bswap = x17<true>
-);
+   $.desc       = "x17",
+   $.hash_flags =
+         FLAG_HASH_SMALL_SEED,
+   $.impl_flags =
+         FLAG_IMPL_SLOW         |
+         FLAG_IMPL_MULTIPLY     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0x8128E14C,
+   $.verification_BE = 0x9AD0FE22,
+   $.hashfn_native   = x17<false>,
+   $.hashfn_bswap    = x17<true>
+ );

@@ -47,5 +47,5 @@
 // Differential collision tests - generate a bunch of random keys,
 // see what happens to the hash value when we flip a few bits of the key.
 
-template < typename hashtype >
-bool DiffTest(const HashInfo * info, const bool verbose, const bool extra);
+template <typename hashtype>
+bool DiffTest( const HashInfo * info, const bool verbose, const bool extra );

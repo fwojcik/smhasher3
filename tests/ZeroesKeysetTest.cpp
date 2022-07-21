@@ -59,44 +59,44 @@
 // Keyset 'Zeroes' - keys consisting of all zeroes, differing only in length
 // We reuse one block of empty bytes, otherwise the RAM cost is enormous.
 
-template < typename hashtype >
-static bool ZeroKeyImpl(HashFn hash, const seed_t seed, bool drawDiagram) {
-  int keycount = 200*1024;
+template <typename hashtype>
+static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool drawDiagram ) {
+    int keycount = 200 * 1024;
 
-  printf("Keyset 'Zeroes' - %d keys\n",keycount);
+    printf("Keyset 'Zeroes' - %d keys\n", keycount);
 
-  uint8_t * nullblock = new uint8_t[keycount];
-  memset(nullblock,0,keycount);
+    uint8_t * nullblock = new uint8_t[keycount];
+    memset(nullblock, 0, keycount);
 
-  addVCodeInput(nullblock, keycount);
+    addVCodeInput(nullblock, keycount);
 
-  //----------
-  std::vector<hashtype> hashes;
+    //----------
+    std::vector<hashtype> hashes;
 
-  hashes.resize(keycount);
+    hashes.resize(keycount);
 
-  for(int i = 0; i < keycount; i++) {
-      hash(nullblock, i, seed, &hashes[i]);
-  }
+    for (int i = 0; i < keycount; i++) {
+        hash(nullblock, i, seed, &hashes[i]);
+    }
 
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
+    bool result = TestHashList(hashes, drawDiagram);
+    printf("\n");
 
-  delete [] nullblock;
+    delete [] nullblock;
 
-  recordTestResult(result, "Zeroes", (const char *)NULL);
+    recordTestResult(result, "Zeroes", (const char *)NULL);
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 
-template < typename hashtype >
-bool ZeroKeyTest(const HashInfo * hinfo, const bool verbose) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    bool result = true;
+template <typename hashtype>
+bool ZeroKeyTest( const HashInfo * hinfo, const bool verbose ) {
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    bool         result = true;
 
     printf("[[[ Keyset 'Zeroes' Tests ]]]\n\n");
 

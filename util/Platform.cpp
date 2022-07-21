@@ -19,12 +19,12 @@
 #include "Platform.h"
 
 #if defined(HAVE_THREADS)
-unsigned g_NCPU        = 4;
+unsigned g_NCPU       = 4;
 #else
-const unsigned g_NCPU  = 1;
+const unsigned g_NCPU = 1;
 #endif
 
-void DisableThreads(void) {
+void DisableThreads( void ) {
 #if defined(HAVE_THREADS)
     printf("WARNING: disabling threaded mode\n");
     g_NCPU = 1;

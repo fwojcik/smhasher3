@@ -47,5 +47,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-template < typename hashtype >
-bool CyclicKeyTest(const HashInfo * info, const bool verbose);
+template <typename hashtype>
+bool CyclicKeyTest( const HashInfo * info, const bool verbose );

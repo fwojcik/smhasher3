@@ -36,19 +36,19 @@
  * @param MsgEnd Message's end pointer.
  * @param fb Final byte used for padding.
  */
-template < bool bswap >
-static inline uint64_t prvhash_lpu64ec( const uint8_t * const Msg,
-        const uint8_t * const MsgEnd, uint64_t fb ) {
-const int l = (int)(MsgEnd - Msg);
-    fb <<= ( l << 3 );
+template <bool bswap>
+static inline uint64_t prvhash_lpu64ec( const uint8_t * const Msg, const uint8_t * const MsgEnd, uint64_t fb ) {
+    const int l = (int)(MsgEnd - Msg);
 
-    if( l > 3 ) {
+    fb <<= (l << 3);
+
+    if (l > 3) {
         fb |= (uint64_t)GET_U32<bswap>(Msg, 0);
-        if( l > 4 ) {
+        if (l > 4) {
             fb |= (uint64_t)Msg[4] << 32;
-            if( l > 5 ) {
+            if (l > 5) {
                 fb |= (uint64_t)Msg[5] << 40;
-                if( l > 6 ) {
+                if (l > 6) {
                     fb |= (uint64_t)Msg[6] << 48;
                 }
             }
@@ -56,11 +56,11 @@ const int l = (int)(MsgEnd - Msg);
         return fb;
     }
 
-    if( l != 0 ) {
+    if (l != 0) {
         fb |= Msg[0];
-        if( l > 1 ) {
+        if (l > 1) {
             fb |= (uint64_t)Msg[1] << 8;
-            if( l > 2 ) {
+            if (l > 2) {
                 fb |= (uint64_t)Msg[2] << 16;
             }
         }
@@ -69,11 +69,11 @@ const int l = (int)(MsgEnd - Msg);
     return fb;
 }
 
-static inline uint64_t prvhash_core64(uint64_t & Seed, uint64_t & lcg, uint64_t & Hash) {
+static inline uint64_t prvhash_core64( uint64_t & Seed, uint64_t & lcg, uint64_t & Hash ) {
     Seed *= lcg * 2 + 1;
     const uint64_t rs = Seed >> 32 | Seed << 32;
-    Hash += rs + UINT64_C(0xAAAAAAAAAAAAAAAA);
-    lcg += Seed + UINT64_C(0x5555555555555555);
+    Hash += rs   + UINT64_C(0xAAAAAAAAAAAAAAAA);
+    lcg  += Seed + UINT64_C(0x5555555555555555);
     Seed ^= Hash;
     const uint64_t out = lcg ^ rs;
 
@@ -98,17 +98,17 @@ static inline uint64_t prvhash_core64(uint64_t & Seed, uint64_t & lcg, uint64_t 
  * @param Hash2p Location to write the second 8-byte hash result to,
  * if width128 == true.
  */
-template < bool bswap, bool width128 >
-static inline uint64_t prvhash64_64m(const void * const Msg0,
-        const size_t MsgLen, const uint64_t UseSeed, uint64_t * Hash2p = NULL) {
-    const uint8_t * Msg = (const uint8_t *)Msg0;
-    const uint8_t* const MsgEnd = Msg + MsgLen;
+template <bool bswap, bool width128>
+static inline uint64_t prvhash64_64m( const void * const Msg0, const size_t MsgLen,
+        const uint64_t UseSeed, uint64_t * Hash2p = NULL ) {
+    const uint8_t *       Msg    = (const uint8_t *)Msg0;
+    const uint8_t * const MsgEnd = Msg + MsgLen;
 
-    uint64_t Seed = UINT64_C(0x217992B44669F46A); // The state after 5 PRVHASH rounds
-    uint64_t lcg  = UINT64_C(0xB5E2CC2FE9F0B35B); // from the "zero-state".
-    uint64_t Hash = UINT64_C(0x949B5E0A608D76D5);
+    uint64_t Seed  = UINT64_C(0x217992B44669F46A); // The state after 5 PRVHASH rounds
+    uint64_t lcg   = UINT64_C(0xB5E2CC2FE9F0B35B); // from the "zero-state".
+    uint64_t Hash  = UINT64_C(0x949B5E0A608D76D5);
     uint64_t Hash2 = 0;
-    bool hc = true;
+    bool     hc    = true;
 
     Hash ^= UseSeed;
 
@@ -120,15 +120,15 @@ static inline uint64_t prvhash64_64m(const void * const Msg0,
 
     while (1) {
         if (Msg < (MsgEnd - (sizeof(uint64_t) - 1))) {
-            const uint64_t msgw = GET_U64<bswap>(Msg, 0);
+            const uint64_t msgw = GET_U64        <bswap>(Msg, 0);
 
             Seed ^= msgw;
-            lcg ^= msgw;
+            lcg  ^= msgw;
         } else if (Msg <= MsgEnd) {
             const uint64_t msgw = prvhash_lpu64ec<bswap>(Msg, MsgEnd, fb);
 
             Seed ^= msgw;
-            lcg ^= msgw;
+            lcg  ^= msgw;
         } else {
             break;
         }
@@ -156,11 +156,11 @@ static inline uint64_t prvhash64_64m(const void * const Msg0,
 
     uint64_t h;
     if (hc) {
-        h = prvhash_core64(Seed, lcg, Hash);
+        h       = prvhash_core64(Seed, lcg, Hash );
         *Hash2p = prvhash_core64(Seed, lcg, Hash2);
     } else {
         *Hash2p = prvhash_core64(Seed, lcg, Hash2);
-        h = prvhash_core64(Seed, lcg, Hash);
+        h       = prvhash_core64(Seed, lcg, Hash );
     }
     return h;
 }
@@ -173,21 +173,22 @@ static inline uint64_t prvhash64_64m(const void * const Msg0,
  * (with a Seed0 of 0) to the official "prvhash64s_oneshot" function
  * with HashLen == 8 or 16, but returns an immediate result.
  */
-#define PRVHASH_INIT_COUNT 5 // Common number of initialization rounds.
-#define PRH64S_PAR 4         // PRVHASH parallelism
+#define PRVHASH_INIT_COUNT 5                       // Common number of initialization rounds.
+#define PRH64S_PAR 4                               // PRVHASH parallelism
 #define PRH64S_LEN (sizeof(uint64_t) * PRH64S_PAR) // Intermediate block's length.
-template < bool bswap, bool width128 >
-static inline void prvhash64s_oneshot(const void * const Msg0,
-        size_t MsgLen0, uint64_t Seed0, uint8_t * const HashOut) {
+
+template <bool bswap, bool width128>
+static inline void prvhash64s_oneshot( const void * const Msg0, size_t MsgLen0,
+        uint64_t Seed0, uint8_t * const HashOut ) {
     uint64_t Seed[PRH64S_PAR];
     uint64_t lcg[PRH64S_PAR];
     uint64_t Hash[2];
-    bool hc = true;
+    bool     hc = true;
 
     memset(Hash, 0, sizeof(Hash));
     for (int i = 0; i < PRH64S_PAR; i++) {
         Seed[i] = Seed0;
-        lcg[i] = 0;
+        lcg[i]  = 0;
     }
     for (int i = 0; i < PRVHASH_INIT_COUNT; i++) {
         for (int j = 0; j <  PRH64S_PAR; j++) {
@@ -195,8 +196,8 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
         }
     }
 
-    const uint8_t * Msg = (const uint8_t *)Msg0;
-    size_t MsgLen = MsgLen0;
+    const uint8_t * Msg    = (const uint8_t *)Msg0;
+    size_t          MsgLen = MsgLen0;
 
     while (MsgLen >= PRH64S_LEN) {
         for (int j = 0; j <  PRH64S_PAR; j++) {
@@ -204,7 +205,7 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
             Seed[j] ^= m;
             lcg[j]  ^= m;
             prvhash_core64(Seed[j], lcg[j], hc ? Hash[0] : Hash[1]);
-            Msg += sizeof(uint64_t);
+            Msg     += sizeof(uint64_t);
         }
         if (width128) {
             hc = !hc;
@@ -212,12 +213,11 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
         MsgLen -= PRH64S_LEN;
     }
 
-    uint8_t fb = (MsgLen0 == 0) ? 1 :
-        (uint8_t)(1 << (*(Msg + MsgLen - 1) >> 7));
+    uint8_t fb = (MsgLen0 == 0) ? 1 : (uint8_t)(1 << (*(Msg + MsgLen - 1) >> 7));
 
-    uint8_t fbytes[PRH64S_LEN * 2 + 24];
-    uint8_t * ptr = fbytes;
-    size_t MsgExtra = 0;
+    uint8_t   fbytes[PRH64S_LEN * 2 + 24];
+    uint8_t * ptr      = fbytes;
+    size_t    MsgExtra = 0;
 
     memcpy(ptr, Msg, MsgLen);
     ptr += MsgLen;
@@ -225,18 +225,17 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
     memset(ptr, 0, sizeof(fbytes) - MsgLen);
 
     ptr[sizeof(uint64_t) - 1] = fb;
-    ptr += sizeof(uint64_t);
+    ptr      += sizeof(uint64_t);
     MsgExtra += sizeof(uint64_t);
 
     PUT_U64<bswap>(MsgLen0 + sizeof(uint64_t), ptr, 0);
-    ptr += sizeof(uint64_t);
+    ptr      += sizeof(uint64_t);
     MsgExtra += sizeof(uint64_t);
 
-    fb = (MsgLen0 == 0) ? 1 :
-        (uint8_t)(1 << (*(ptr - 1) >> 7));
+    fb        = (MsgLen0 == 0) ? 1 : (uint8_t)(1 << (*(ptr - 1) >> 7));
 
     ptr[sizeof(uint64_t) - 1] = fb;
-    ptr += sizeof(uint64_t);
+    ptr      += sizeof(uint64_t);
     MsgExtra += sizeof(uint64_t);
 
     if (((ptr - fbytes) % PRH64S_LEN) != 0) {
@@ -244,12 +243,12 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
     }
 
     MsgLen += MsgExtra;
-    ptr = fbytes;
+    ptr     = fbytes;
 
     while (MsgLen >= PRH64S_LEN) {
         for (int j = 0; j <  PRH64S_PAR; j++) {
             const uint64_t m = GET_U64<bswap>(ptr, 0);
-            ptr += sizeof(uint64_t);
+            ptr     += sizeof(uint64_t);
             Seed[j] ^= m;
             lcg[j]  ^= m;
             prvhash_core64(Seed[j], lcg[j], hc ? Hash[0] : Hash[1]);
@@ -260,8 +259,8 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
         MsgLen -= PRH64S_LEN;
     }
 
-    const size_t fc = 8 + (!width128 ? 0 :
-            (16 + (((((MsgLen0 + MsgExtra) < (16 * PRH64S_PAR)) && !hc)) ? 8 : 0)));
+    const size_t fc = 8 + (!width128 ?
+                0 : (16 + (((((MsgLen0 + MsgExtra) < (16 * PRH64S_PAR)) && !hc)) ? 8 : 0)));
     for (size_t k = 0; k <= fc; k += sizeof(uint64_t)) {
         for (int j = 0; j <  PRH64S_PAR; j++) {
             prvhash_core64(Seed[j], lcg[j], hc ? Hash[0] : Hash[1]);
@@ -287,97 +286,99 @@ static inline void prvhash64s_oneshot(const void * const Msg0,
     }
 }
 
-template < bool bswap >
-static void prvhash64(const void * in, const size_t len, const seed_t seed, void * out) {
-    uint64_t h = prvhash64_64m<bswap,false>(in, len, (uint64_t)seed);
+template <bool bswap>
+static void prvhash64( const void * in, const size_t len, const seed_t seed, void * out ) {
+    uint64_t h = prvhash64_64m<bswap, false>(in, len, (uint64_t)seed);
+
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
-template < bool bswap >
-static void prvhash128(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void prvhash128( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h1, h2;
-    h1 = prvhash64_64m<bswap,true>(in, len, (uint64_t)seed, &h2);
+
+    h1 = prvhash64_64m<bswap, true>(in, len, (uint64_t)seed, &h2);
     PUT_U64<bswap>(h1, (uint8_t *)out, 0);
     PUT_U64<bswap>(h2, (uint8_t *)out, 8);
 }
 
-template < bool bswap >
-static void prvhash64s(const void * in, const size_t len, const seed_t seed, void * out) {
-    prvhash64s_oneshot<bswap,false>(in, len, (uint64_t)seed, (uint8_t *)out);
+template <bool bswap>
+static void prvhash64s( const void * in, const size_t len, const seed_t seed, void * out ) {
+    prvhash64s_oneshot<bswap, false>(in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
-template < bool bswap >
-static void prvhash128s(const void * in, const size_t len, const seed_t seed, void * out) {
-    prvhash64s_oneshot<bswap,true>(in, len, (uint64_t)seed, (uint8_t *)out);
+template <bool bswap>
+static void prvhash128s( const void * in, const size_t len, const seed_t seed, void * out ) {
+    prvhash64s_oneshot<bswap, true>(in, len, (uint64_t)seed, (uint8_t *)out);
 }
 
 REGISTER_FAMILY(prvhash,
-  $.src_url = "https://github.com/avaneev/prvhash",
-  $.src_status = HashFamilyInfo::SRC_ACTIVE
-);
+   $.src_url    = "https://github.com/avaneev/prvhash",
+   $.src_status = HashFamilyInfo::SRC_ACTIVE
+ );
 
 REGISTER_HASH(prvhash_64,
-  $.desc = "prvhash64 v4.3 64-bit output",
-  $.hash_flags =
-        0,
-  $.impl_flags =
-        FLAG_IMPL_MULTIPLY_64_64  |
-        FLAG_IMPL_ROTATE          |
-        FLAG_IMPL_SHIFT_VARIABLE  |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0xD37C7E74,
-  $.verification_BE = 0xBAD02709,
-  $.hashfn_native = prvhash64<false>,
-  $.hashfn_bswap = prvhash64<true>
-);
+   $.desc       = "prvhash64 v4.3 64-bit output",
+   $.hash_flags =
+         0,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_ROTATE          |
+         FLAG_IMPL_SHIFT_VARIABLE  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0xD37C7E74,
+   $.verification_BE = 0xBAD02709,
+   $.hashfn_native   = prvhash64<false>,
+   $.hashfn_bswap    = prvhash64<true>
+ );
 
 REGISTER_HASH(prvhash_128,
-  $.desc = "prvhash64 v4.3 128-bit output",
-  $.hash_flags =
-        0,
-  $.impl_flags =
-        FLAG_IMPL_MULTIPLY_64_64  |
-        FLAG_IMPL_ROTATE          |
-        FLAG_IMPL_SHIFT_VARIABLE  |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 128,
-  $.verification_LE = 0xB447480F,
-  $.verification_BE = 0xF93A26FC,
-  $.hashfn_native = prvhash128<false>,
-  $.hashfn_bswap = prvhash128<true>
-);
+   $.desc       = "prvhash64 v4.3 128-bit output",
+   $.hash_flags =
+         0,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_ROTATE          |
+         FLAG_IMPL_SHIFT_VARIABLE  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 128,
+   $.verification_LE = 0xB447480F,
+   $.verification_BE = 0xF93A26FC,
+   $.hashfn_native   = prvhash128<false>,
+   $.hashfn_bswap    = prvhash128<true>
+ );
 
 REGISTER_HASH(prvhash_64__incr,
-  $.desc = "prvhash64 v4.3 streaming mode 64-bit output",
-  $.hash_flags =
-        0,
-  $.impl_flags =
-        FLAG_IMPL_SLOW            |
-        FLAG_IMPL_MULTIPLY_64_64  |
-        FLAG_IMPL_ROTATE          |
-        FLAG_IMPL_SHIFT_VARIABLE  |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0x891521D6,
-  $.verification_BE = 0xD41B8DB5,
-  $.hashfn_native = prvhash64s<false>,
-  $.hashfn_bswap = prvhash64s<true>
-);
+   $.desc       = "prvhash64 v4.3 streaming mode 64-bit output",
+   $.hash_flags =
+         0,
+   $.impl_flags =
+         FLAG_IMPL_SLOW            |
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_ROTATE          |
+         FLAG_IMPL_SHIFT_VARIABLE  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0x891521D6,
+   $.verification_BE = 0xD41B8DB5,
+   $.hashfn_native   = prvhash64s<false>,
+   $.hashfn_bswap    = prvhash64s<true>
+ );
 
 REGISTER_HASH(prvhash_128__incr,
-  $.desc = "prvhash64 v4.3 streaming mode 128-bit output",
-  $.hash_flags =
-        0,
-  $.impl_flags =
-        FLAG_IMPL_SLOW            |
-        FLAG_IMPL_MULTIPLY_64_64  |
-        FLAG_IMPL_ROTATE          |
-        FLAG_IMPL_SHIFT_VARIABLE  |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 128,
-  $.verification_LE = 0x0199728A,
-  $.verification_BE = 0xD2B2DE25,
-  $.hashfn_native = prvhash128s<false>,
-  $.hashfn_bswap = prvhash128s<true>
-);
+   $.desc       = "prvhash64 v4.3 streaming mode 128-bit output",
+   $.hash_flags =
+         0,
+   $.impl_flags =
+         FLAG_IMPL_SLOW            |
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_ROTATE          |
+         FLAG_IMPL_SHIFT_VARIABLE  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 128,
+   $.verification_LE = 0x0199728A,
+   $.verification_BE = 0xD2B2DE25,
+   $.hashfn_native   = prvhash128s<false>,
+   $.hashfn_bswap    = prvhash128s<true>
+ );

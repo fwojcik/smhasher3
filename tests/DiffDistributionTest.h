@@ -48,5 +48,5 @@
 // Differential distribution tests - generate a bunch of random keys,
 // see what happens to the hash value when we flip a bit of the key.
 
-template < typename hashtype >
-bool DiffDistTest(const HashInfo * info, const bool verbose);
+template <typename hashtype>
+bool DiffDistTest( const HashInfo * info, const bool verbose );

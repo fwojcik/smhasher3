@@ -39,28 +39,29 @@
 #include "Hashlib.h"
 
 /*
-  This is a quick and dirty hash function designed for O(1) speed.
-  It makes your hash table application fly in most cases.
-  It samples first, middle and last 4 bytes to produce the hash.
-  Do not use it in very serious applications as it's not secure.
-*/
+ * This is a quick and dirty hash function designed for O(1) speed.
+ * It makes your hash table application fly in most cases.
+ * It samples first, middle and last 4 bytes to produce the hash.
+ * Do not use it in very serious applications as it's not secure.
+ */
 
 //------------------------------------------------------------
 // Includes homegrown seeding for SMHasher3
-template < bool bswap >
-static void o1hash(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void o1hash( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint8_t * p = (const uint8_t *)in;
-    uint64_t h;
+    uint64_t        h;
+
     if (len >= 4) {
-        uint64_t first  = GET_U32<bswap>(p, 0);
-        uint64_t middle = GET_U32<bswap>(p, ((len >> 1) - 2));
+        uint64_t first  = GET_U32<bswap>(p,   0    );
+        uint64_t middle = GET_U32<bswap>(p,   ((len >> 1) - 2));
         uint64_t last   = GET_U32<bswap>(p, len - 4);
         h = (middle + (uint64_t)seed) * (first + last);
     } else if (len > 0) {
         uint64_t tail = seed + (
-            (((uint64_t)p[       0]) << 16) |
+            (((uint64_t)p[0       ]) << 16) |
             (((uint64_t)p[len >> 1]) <<  8) |
-            (((uint64_t)p[ len - 1])))      ;
+            (((uint64_t)p[len - 1])));
         h = tail * UINT64_C(0xa0761d6478bd642f);
     } else {
         h = 0;
@@ -70,23 +71,23 @@ static void o1hash(const void * in, const size_t len, const seed_t seed, void * 
 
 //------------------------------------------------------------
 REGISTER_FAMILY(o1hash,
-  $.src_url = "https://github.com/wangyi-fudan/wyhash/blob/master/old_versions/o1hash.h",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://github.com/wangyi-fudan/wyhash/blob/master/old_versions/o1hash.h",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(o1hash,
-  $.desc = "o(1) hash, from wyhash",
-  $.sort_order = 45,
-  $.hash_flags =
-        FLAG_HASH_MOCK                  |
-        FLAG_HASH_NO_SEED               ,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS          |
-        FLAG_IMPL_MULTIPLY              |
-        FLAG_IMPL_LICENSE_PUBLIC_DOMAIN ,
-  $.bits = 64,
-  $.verification_LE = 0xAE049F09,
-  $.verification_BE = 0x299BD16A,
-  $.hashfn_native = o1hash<false>,
-  $.hashfn_bswap = o1hash<true>
-);
+   $.desc       = "o(1) hash, from wyhash",
+   $.sort_order = 45,
+   $.hash_flags =
+         FLAG_HASH_MOCK                  |
+         FLAG_HASH_NO_SEED,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS          |
+         FLAG_IMPL_MULTIPLY              |
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+   $.bits = 64,
+   $.verification_LE = 0xAE049F09,
+   $.verification_BE = 0x299BD16A,
+   $.hashfn_native   = o1hash<false>,
+   $.hashfn_bswap    = o1hash<true>
+ );

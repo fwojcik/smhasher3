@@ -46,105 +46,96 @@
 // Xorshift RNG based on code by George Marsaglia
 // http://en.wikipedia.org/wiki/Xorshift
 
-class Rand
-{
- private:
-  uint32_t x;
-  uint32_t y;
-  uint32_t z;
-  uint32_t w;
+class Rand {
+  private:
+    uint32_t  x;
+    uint32_t  y;
+    uint32_t  z;
+    uint32_t  w;
 
- public:
-  Rand()
-  {
-    reseed(uint32_t(0));
-  }
+  public:
+    Rand() {
+        reseed(uint32_t(0));
+    }
 
-  Rand( uint32_t seed )
-  {
-    reseed(seed);
-  }
+    Rand( uint32_t seed ) {
+        reseed(seed);
+    }
 
-  void reseed ( uint32_t seed )
-  {
-    x = 0x498b3bc5 ^ seed;
-    y = 0;
-    z = 0;
-    w = 0;
+    void reseed( uint32_t seed ) {
+        x = 0x498b3bc5 ^ seed;
+        y = 0;
+        z = 0;
+        w = 0;
 
-    for(int i = 0; i < 10; i++) mix();
-  }
+        for (int i = 0; i < 10; i++) { mix(); }
+    }
 
-  void reseed ( uint64_t seed )
-  {
-    x = 0x498b3bc5 ^ (uint32_t)(seed >>  0);
-    y = 0x5a05089a ^ (uint32_t)(seed >> 32);
-    z = 0;
-    w = 0;
+    void reseed( uint64_t seed ) {
+        x = 0x498b3bc5 ^ (uint32_t)(seed >>  0);
+        y = 0x5a05089a ^ (uint32_t)(seed >> 32);
+        z = 0;
+        w = 0;
 
-    for(int i = 0; i < 10; i++) mix();
-  }
+        for (int i = 0; i < 10; i++) { mix(); }
+    }
 
-  //-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
 
-  void mix ( void )
-  {
-    uint32_t t = x ^ (x << 11);
-    x = y; y = z; z = w;
-    w = w ^ (w >> 19) ^ t ^ (t >> 8); 
-  }
+    void mix( void ) {
+        uint32_t t = x ^ (x << 11);
 
-  uint32_t rand_u32 ( void )
-  {
-    mix();
+        x = y; y = z; z = w;
+        w = w ^ (w >> 19) ^ t ^ (t >> 8);
+    }
 
-    return x;
-  }
+    uint32_t rand_u32( void ) {
+        mix();
 
-  uint64_t rand_u64 ( void ) 
-  {
-    mix();
+        return x;
+    }
 
-    uint64_t a = x;
-    uint64_t b = y;
+    uint64_t rand_u64( void ) {
+        mix();
 
-    return (a << 32) | b;
-  }
+        uint64_t a = x;
+        uint64_t b = y;
+
+        return (a << 32) | b;
+    }
 
 #if defined(HAVE_INT128)
-  uint128_t rand_u128 ( void )
-  {
-    uint128_t a = rand_u64();
-    return (a << 64) | rand_u64();
-  }
+
+    uint128_t rand_u128( void ) {
+        uint128_t a = rand_u64();
+
+        return (a << 64) | rand_u64();
+    }
+
 #endif
 
-  // Returns a value in the range [0, max)
-  uint32_t rand_range ( uint32_t max )
-  {
-      uint64_t r = rand_u32();
-      return (r * max) >> 32;
+    // Returns a value in the range [0, max)
+    uint32_t rand_range( uint32_t max ) {
+        uint64_t r = rand_u32();
 
-  }
-
-  void rand_p ( void * blob, int bytes )
-  {
-    uint8_t * blocks = reinterpret_cast<uint8_t*>(blob);
-    int i;
-
-    while(bytes >= 4)
-    {
-      uint32_t r = COND_BSWAP(rand_u32(), isBE());
-      memcpy(blocks, &r, 4);
-      blocks += 4;
-      bytes -= 4;
+        return (r * max) >> 32;
     }
 
-    for (i = 0; i < bytes; i++)
-    {
-      blocks[i] = (uint8_t)rand_u32();
+    void rand_p( void * blob, int bytes ) {
+        uint8_t * blocks = reinterpret_cast<uint8_t *>(blob);
+        int       i;
+
+        while (bytes >= 4) {
+            uint32_t r = COND_BSWAP(rand_u32(), isBE());
+            memcpy(blocks, &r, 4);
+            blocks += 4;
+            bytes  -= 4;
+        }
+
+        for (i = 0; i < bytes; i++) {
+            blocks[i] = (uint8_t)rand_u32();
+        }
     }
-  }
-};
+}; // class Rand
 
 //-----------------------------------------------------------------------------

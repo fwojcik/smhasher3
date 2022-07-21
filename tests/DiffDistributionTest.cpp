@@ -59,61 +59,59 @@
 // generate random key pairs and run full distribution/collision tests on the
 // hash differentials
 
-template < typename keytype, typename hashtype >
-static bool DiffDistTest2(HashFn hash, const seed_t seed, bool drawDiagram) {
-  Rand r(857374);
+template <typename keytype, typename hashtype>
+static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
+    Rand r( 857374 );
 
-  int keybits = sizeof(keytype) * 8;
-  const int keycount = 256*256*32;
-  keytype k;
+    int       keybits  = sizeof(keytype) *      8;
+    const int keycount = 256           * 256 * 32;
+    keytype   k;
 
-  std::vector<hashtype> hashes(keycount);
-  hashtype h1,h2;
+    std::vector<hashtype> hashes( keycount );
+    hashtype h1, h2;
 
-  bool result = true;
+    bool result = true;
 
-  for(int keybit = 0; keybit < keybits; keybit++)
-  {
-    printf("Testing bit %d - %d keys\n",keybit, keycount);
+    for (int keybit = 0; keybit < keybits; keybit++) {
+        printf("Testing bit %d - %d keys\n", keybit, keycount);
 
-    for(int i = 0; i < keycount; i++)
-    {
-      r.rand_p(&k, sizeof(keytype));
-      hash(&k, sizeof(keytype), seed, &h1);
-      addVCodeInput(&k, sizeof(keytype));
+        for (int i = 0; i < keycount; i++) {
+            r.rand_p(&k, sizeof(keytype));
+            hash(&k, sizeof(keytype), seed, &h1);
+            addVCodeInput(&k, sizeof(keytype));
 
-      k.flipbit(keybit);
-      hash(&k, sizeof(keytype), seed, &h2);
-      addVCodeInput(&k, sizeof(keytype));
+            k.flipbit(keybit);
+            hash(&k, sizeof(keytype), seed, &h2);
+            addVCodeInput(&k, sizeof(keytype));
 
-      hashes[i] = h1 ^ h2;
+            hashes[i] = h1 ^ h2;
+        }
+
+        bool thisresult = TestHashList<hashtype>(hashes, drawDiagram, true, true);
+        printf("\n");
+
+        addVCodeResult(thisresult);
+
+        recordTestResult(thisresult, "DiffDist", keybit);
+
+        result &= thisresult;
     }
 
-    bool thisresult = TestHashList<hashtype>(hashes,drawDiagram,true,true);
-    printf("\n");
-
-    addVCodeResult(thisresult);
-
-    recordTestResult(thisresult, "DiffDist", keybit);
-
-    result &= thisresult;
-  }
-
-  return result;
+    return result;
 }
 
 //----------------------------------------------------------------------------
 
-template < typename hashtype >
-bool DiffDistTest(const HashInfo * hinfo, const bool verbose) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    bool result = true;
+template <typename hashtype>
+bool DiffDistTest( const HashInfo * hinfo, const bool verbose ) {
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    bool         result = true;
 
     printf("[[[ DiffDist 'Differential Distribution' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffDistTest2<Blob<64>,hashtype>(hash, seed, verbose);
+    result &= DiffDistTest2<Blob<64>, hashtype>(hash, seed, verbose);
 
     printf("%s\n", result ? "" : g_failstr);
 
@@ -126,7 +124,7 @@ INSTANTIATE(DiffDistTest, HASHTYPELIST);
 // An old implementation; currently unused.
 
 #if 0
-#include "SparseKeysetTest.h" // for SparseKeygenRecurse
+  #include "SparseKeysetTest.h" // for SparseKeygenRecurse
 //-----------------------------------------------------------------------------
 // Differential distribution test - for each N-bit input differential, generate
 // a large set of differential key pairs, hash them, and test the output
@@ -143,56 +141,53 @@ INSTANTIATE(DiffDistTest, HASHTYPELIST);
 
 // #TODO - put diagram drawing back on
 
-template < typename keytype, typename hashtype >
-void DiffDistTest ( HashFn hash, const int diffbits, int trials, double & worst, double & avg )
-{
-  std::vector<keytype>  keys(trials);
-  std::vector<hashtype> A(trials),B(trials);
+template <typename keytype, typename hashtype>
+void DiffDistTest( HashFn hash, const int diffbits, int trials, double & worst, double & avg ) {
+    std::vector<keytype>  keys( trials );
+    std::vector<hashtype> A( trials ), B(trials);
 
-  //FIXME seedHash(hash, g_seed);
-  for(int i = 0; i < trials; i++)
-  {
-    rand_p(&keys[i],sizeof(keytype));
+    // FIXME seedHash(hash, g_seed);
+    for (int i = 0; i < trials; i++) {
+        rand_p(&keys[i], sizeof(keytype));
 
-    hash(&keys[i],sizeof(keytype),g_seed,(uint32_t*)&A[i]);
-  }
-
-  //----------
-
-  std::vector<keytype> diffs;
-
-  keytype temp(0);
-
-  SparseKeygenRecurse<keytype>(0,diffbits,true,temp,diffs);
-
-  //----------
-
-  worst = 0;
-  avg = 0;
-
-  hashtype h2;
-
-  for(size_t j = 0; j < diffs.size(); j++)
-  {
-    keytype & d = diffs[j];
-
-    for(int i = 0; i < trials; i++)
-    {
-      keytype k2 = keys[i] ^ d;
-
-      hash(&k2,sizeof(k2),g_seed,&h2);
-
-      B[i] = A[i] ^ h2;
+        hash(&keys[i], sizeof(keytype), g_seed, (uint32_t *)&A[i]);
     }
 
-    double dworst,davg;
+    //----------
 
-    TestDistributionFast(B,dworst,davg);
+    std::vector<keytype> diffs;
 
-    avg += davg;
-    worst = (dworst > worst) ? dworst : worst;
-  }
+    keytype temp( 0 );
 
-  avg /= double(diffs.size());
+    SparseKeygenRecurse<keytype>(0, diffbits, true, temp, diffs);
+
+    //----------
+
+    worst = 0;
+    avg   = 0;
+
+    hashtype h2;
+
+    for (size_t j = 0; j < diffs.size(); j++) {
+        keytype & d = diffs[j];
+
+        for (int i = 0; i < trials; i++) {
+            keytype k2 = keys[i] ^ d;
+
+            hash(&k2, sizeof(k2), g_seed, &h2);
+
+            B[i] = A[i] ^ h2;
+        }
+
+        double dworst, davg;
+
+        TestDistributionFast(B, dworst, davg);
+
+        avg  += davg;
+        worst = (dworst > worst) ? dworst : worst;
+    }
+
+    avg /= double(diffs.size());
 }
+
 #endif /* 0 */

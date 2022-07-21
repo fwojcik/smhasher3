@@ -61,5 +61,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-template < typename hashtype >
-bool PopcountTest(const HashInfo * info, const bool extra);
+template <typename hashtype>
+bool PopcountTest( const HashInfo * info, const bool extra );

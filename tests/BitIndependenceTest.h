@@ -45,5 +45,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-template < typename hashtype >
-bool BicTest(const HashInfo * info, const bool verbose);
+template <typename hashtype>
+bool BicTest( const HashInfo * info, const bool verbose );

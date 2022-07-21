@@ -54,19 +54,19 @@
  */
 
 // 32x32->64 multiplication [rhi:rlo = a * b]
-static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uint32_t b) {
+static FORCE_INLINE void mult32_64( uint32_t & rlo, uint32_t & rhi, uint32_t a, uint32_t b ) {
     // XXX Are either of these asm blocks better than just the plain code?
 #if 0 && defined(HAVE_ARM_ASM)
-    __asm__("UMULL w%0, w%1, w%2, w%3\n"
-            : "+r" (rlo), "+r" (rhi)
-            : "r" (a), "r" (b)
-            : "cc", "memory"
-            );
+    __asm__ ("UMULL w%0, w%1, w%2, w%3\n"
+             : "+r" (rlo), "+r" (rhi)
+             : "r" (a), "r" (b)
+             : "cc", "memory"
+    );
 #elif 0 && defined(HAVE_X86_64_ASM)
-    __asm__("mull  %[b]\n"
-            : "=d" (rhi), "=a" (rlo)
-            : "1" (a), [b] "rm" (b)
-            );
+    __asm__ ("mull  %[b]\n"
+             : "=d" (rhi), "=a" (rlo)
+             : "1" (a), [b] "rm" (b)
+    );
 #else
     uint64_t r = (uint64_t)a * (uint64_t)b;
     rhi = (uint32_t)(r >> 32);
@@ -75,7 +75,7 @@ static FORCE_INLINE void mult32_64(uint32_t& rlo, uint32_t& rhi, uint32_t a, uin
 }
 
 // 32x32->64 multiplication [r64 = a32 * b32]
-static FORCE_INLINE void mult32_64(uint64_t & r64, uint32_t a32, uint32_t b32) {
+static FORCE_INLINE void mult32_64( uint64_t & r64, uint32_t a32, uint32_t b32 ) {
 #if defined(_MSC_VER) && defined(_M_IX86)
     r64 = __emulu(a32, b32);
 #else
@@ -84,56 +84,56 @@ static FORCE_INLINE void mult32_64(uint64_t & r64, uint32_t a32, uint32_t b32) {
 }
 
 // 96-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
-static FORCE_INLINE void add96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, const uint32_t& addlo, const uint32_t& addmi, const uint32_t& addhi) {
+static FORCE_INLINE void add96( uint32_t & rlo, uint32_t & rmi, uint32_t & rhi, const uint32_t & addlo,
+        const uint32_t & addmi, const uint32_t & addhi ) {
 #if defined(HAVE_ARM_ASM)
-    __asm__("ADDS %w0, %w3, %w0\n"
-            "ADCS %w1, %w4, %w1\n"
-            "ADC  %w2, %w5, %w2\n"
-            : "+r" (rlo), "+r" (rmi), "+r" (rhi)
-            : "r" (addlo), "r" (addmi), "r" (addhi)
-            : "cc"
-            );
+    __asm__ ("ADDS %w0, %w3, %w0\n"
+             "ADCS %w1, %w4, %w1\n"
+             "ADC  %w2, %w5, %w2\n"
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi)
+             : "r" (addlo), "r" (addmi), "r" (addhi)
+             : "cc"
+    );
 #elif defined(HAVE_X86_64_ASM)
-    __asm__("addl %3, %0\n"
-            "adcl %4, %1\n"
-            "adcl %5, %2\n"
-            : "+g" (rlo), "+g" (rmi), "+g" (rhi)
-            : "g" (addlo), "g" (addmi), "g" (addhi)
-            : "cc"
-            );
+    __asm__ ("addl %3, %0\n"
+             "adcl %4, %1\n"
+             "adcl %5, %2\n"
+             : "+g" (rlo), "+g" (rmi), "+g" (rhi)
+             : "g" (addlo), "g" (addmi), "g" (addhi)
+             : "cc"
+    );
 #else
-    uint64_t w = (((uint64_t)rmi) << 32)   + ((uint64_t)rlo);
+    uint64_t w = (((uint64_t)rmi  ) << 32) + ((uint64_t)rlo  );
     uint64_t r = (((uint64_t)addmi) << 32) + ((uint64_t)addlo) + w;
-    rhi += (r < w);
-    rhi += addhi;
-    rmi = (uint32_t)(r >> 32);
-    rlo = (uint32_t)(r);
+    rhi += addhi + (r < w);
+    rmi  = (uint32_t)(r >> 32);
+    rlo  = (uint32_t)(r      );
 #endif
 }
 
 // 96-bit fused multiply addition [rhi:rmi:rlo += a * b]
-static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, uint32_t a, uint32_t b) {
+static FORCE_INLINE void fma32_96( uint32_t & rlo, uint32_t & rmi, uint32_t & rhi, uint32_t a, uint32_t b ) {
 // These #defines are not correct; some arm seems to not support this
 #if 0 && defined(HAVE_ARM_ASM)
     uint32_t tmphi, tmplo;
-    __asm__("UMULL %w3, %w4, %w5, %w6\n"
-            "ADDS  %w0, %w3, %w0\n"
-            "ADCS  %w1, %w4, %w1\n"
-            "ADC   %w2, %w2, #0x0\n"
-            : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=r" (tmplo), "=r" (tmphi)
-            : "r" (a), "r" (b)
-            : "cc"
-            );
+    __asm__ ("UMULL %w3, %w4, %w5, %w6\n"
+             "ADDS  %w0, %w3, %w0\n"
+             "ADCS  %w1, %w4, %w1\n"
+             "ADC   %w2, %w2, #0x0\n"
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=r" (tmplo), "=r" (tmphi)
+             : "r" (a), "r" (b)
+             : "cc"
+    );
 #elif defined(HAVE_X86_64_ASM)
     uint32_t tmphi;
-    __asm__("mull %5\n"
-            "addl %%eax, %0\n"
-            "adcl %%edx, %1\n"
-            "adcl $0, %2\n"
-            : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (tmphi)
-            : "a" (a), "g" (b)
-            : "edx", "cc"
-            );
+    __asm__ ("mull %5\n"
+             "addl %%eax, %0\n"
+             "adcl %%edx, %1\n"
+             "adcl $0, %2\n"
+             : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (tmphi)
+             : "a" (a), "g" (b)
+             : "edx", "cc"
+    );
 #else
     uint32_t tmplo, tmpmi, tmphi = 0;
     mult32_64(tmplo, tmpmi, a, b);
@@ -142,7 +142,7 @@ static FORCE_INLINE void fma32_96(uint32_t& rlo, uint32_t& rmi, uint32_t& rhi, u
 }
 
 // 64x64->128 multiplication [rhi:rlo = a * b]
-static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
+static FORCE_INLINE void mult64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
 #if defined(HAVE_ARM64_ASM)
     /*
      * AARCH64 needs 2 insns to calculate 128-bit result of the
@@ -151,16 +151,16 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
      * is very slow.
      */
     rlo = a * b;
-    __asm__("umulh %0, %1, %2\n"
-            : "=r" (rhi)
-            : "r" (a), "r" (b)
-            );
+    __asm__ ("umulh %0, %1, %2\n"
+             : "=r" (rhi)
+             : "r" (a), "r" (b)
+    );
 #elif defined(HAVE_PPC_ASM)
     rlo = a * b;
-    __asm__("mulhdu %0, %1, %2\n"
-            : "=r" (rhi)
-            : "r" (a), "r" (b)
-            );
+    __asm__ ("mulhdu %0, %1, %2\n"
+             : "=r" (rhi)
+             : "r" (a), "r" (b)
+    );
 #elif defined(HAVE_UMUL128)
     rlo = _umul128(a, b, &rhi);
 #elif defined(HAVE_UMULH)
@@ -173,16 +173,16 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
      * takes 3-cycles vs. 4 for MULX, MULX permits more freedom in
      * insn scheduling as it uses less fixed registers.
      */
-    __asm__("mulxq %3,%1,%0\n"
-            : "=r" (rhi), "=r" (rlo)
-            : "d" (a), "r" (b)
-            );
+    __asm__ ("mulxq %3,%1,%0\n"
+             : "=r" (rhi), "=r" (rlo)
+             : "d" (a), "r" (b)
+    );
 #elif defined(HAVE_X86_64_ASM)
-    __asm__("mulq %[b]\n"
-            : "=d" (rhi), "=a" (rlo)
-            : "1" (a), [b] "rm" (b)
-            : "cc"
-            );
+    __asm__ ("mulq %[b]\n"
+             : "=d" (rhi), "=a" (rlo)
+             : "1" (a), [b] "rm" (b)
+             : "cc"
+    );
 #elif defined(HAVE_INT128)
     // Maybe move this before the other x64 ASM methods?
     // Seems like it's more compiler-friendly, but it produces slower code.
@@ -202,16 +202,16 @@ static FORCE_INLINE void mult64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, ui
     uint64_t tmplo   = alo * blo;
     uint64_t t, carry = 0;
 
-    t = tmplo + (tmpmi_0 << 32);
-    carry += (t < tmplo);
-    rlo = t + (tmpmi_1 << 32);
-    carry += (rlo < t);
-    rhi = tmphi + (tmpmi_0 >> 32) + (tmpmi_1 >> 32) + carry;
+    t      = (tmpmi_0 << 32   ) + tmplo;
+    carry += (t        < tmplo);
+    rlo    = (tmpmi_1 << 32   ) + t;
+    carry += (rlo      < t    );
+    rhi    = (tmpmi_0 >> 32   ) + (tmpmi_1 >> 32) + tmphi + carry;
 #endif
 }
 
 // 64x64->128 multiplication with no cross-lane carry [rhi:rlo ~= a * b]
-static FORCE_INLINE void mult64_128_nocarry(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
+static FORCE_INLINE void mult64_128_nocarry( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
     /*
      * Implementation of 64x64->128-bit multiplication by four
      * 32x32->64 bit multiplication, excluding the carry bits.  This
@@ -230,27 +230,27 @@ static FORCE_INLINE void mult64_128_nocarry(uint64_t& rlo, uint64_t& rhi, uint64
 }
 
 // 128-bit addition special case [rhi:rlo += 0:addlo]
-static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo) {
+static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo ) {
 #if defined(HAVE_X86_64_ASM)
-    __asm__("addq %2, %0\n"
-            "adcq $0, %1\n"
-#if defined(DEBUG)
-            : "+r" (rlo), "+r" (rhi)
-            : "r" (addlo)
-#elif defined(__clang__)
-            // clang cannot work properly with "g" and silently
-            // produces hardly-workging code, if "g" is specified;
-            // see, for instance, here:
-            // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-            // To avoid 3x performance hit we have to specify sources/destinations
-            : "+r" (rlo), "+r" (rhi)
-            : "m" (addlo)
-#else
-            : "+g" (rlo), "+g" (rhi)
-            : "g" (addlo)
-#endif
-            : "cc"
-            );
+    __asm__ ("addq %2, %0\n"
+             "adcq $0, %1\n"
+  #if defined(DEBUG)
+             : "+r" (rlo), "+r" (rhi)
+             : "r" (addlo)
+  #elif defined(__clang__)
+             // clang cannot work properly with "g" and silently
+             // produces hardly-workging code, if "g" is specified;
+             // see, for instance, here:
+             // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
+             // To avoid 3x performance hit we have to specify sources/destinations
+             : "+r" (rlo), "+r" (rhi)
+             : "m" (addlo)
+  #else
+             : "+g" (rlo), "+g" (rhi)
+             : "g" (addlo)
+  #endif
+             : "cc"
+    );
 #else
     rlo += addlo;
     rhi += (rlo < addlo);
@@ -258,33 +258,33 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo) {
 }
 
 // 128-bit addition [rhi:rlo += addhi:addlo]
-static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo, uint64_t addhi) {
+static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo, uint64_t addhi ) {
 #if defined(HAVE_X86_64_ASM)
-    __asm__("addq %2, %0\n"
-            "adcq %3, %1\n"
-#if defined(DEBUG)
-            : "+r" (rlo), "+r" (rhi)
-            : "r" (addlo), "r" (addhi)
-#elif defined(__clang__)
-            // clang cannot work properly with "g" and silently
-            // produces hardly-workging code, if "g" is specified;
-            // see, for instance, here:
-            // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-            // To avoid 3x performance hit we have to specify sources/destinations
-            : "+r" (rlo), "+r" (rhi)
-            : "m" (addlo), "m" (addhi)
-#else
-            : "+r" (rlo), "+g" (rhi)
-            : "g" (addlo), "g" (addhi)
-#endif
-            : "cc"
-            );
+    __asm__ ("addq %2, %0\n"
+             "adcq %3, %1\n"
+  #if defined(DEBUG)
+             : "+r" (rlo), "+r" (rhi)
+             : "r" (addlo), "r" (addhi)
+  #elif defined(__clang__)
+             // clang cannot work properly with "g" and silently
+             // produces hardly-workging code, if "g" is specified;
+             // see, for instance, here:
+             // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
+             // To avoid 3x performance hit we have to specify sources/destinations
+             : "+r" (rlo), "+r" (rhi)
+             : "m" (addlo), "m" (addhi)
+  #else
+             : "+r" (rlo), "+g" (rhi)
+             : "g" (addlo), "g" (addhi)
+  #endif
+             : "cc"
+    );
 #elif defined(HAVE_PPC_ASM)
-    __asm__("addc %1, %1, %3\n"
-            "adde %0, %0, %2\n"
-            : "+r" (rhi), "+r" (rlo)
-            : "r" (addhi), "r" (addlo)
-            );
+    __asm__ ("addc %1, %1, %3\n"
+             "adde %0, %0, %2\n"
+             : "+r" (rhi), "+r" (rlo)
+             : "r" (addhi), "r" (addlo)
+    );
 #else
     rlo += addlo;
     rhi += (rlo < addlo);
@@ -293,28 +293,29 @@ static FORCE_INLINE void add128(uint64_t& rlo, uint64_t& rhi, uint64_t addlo, ui
 }
 
 // 192-bit addition [rhi:rmi:rlo += addhi:addmi:addlo]
-static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, const uint64_t& addlo, const uint64_t& addmi, const uint64_t& addhi) {
+static FORCE_INLINE void add192( uint64_t & rlo, uint64_t & rmi, uint64_t & rhi, const uint64_t & addlo,
+        const uint64_t & addmi, const uint64_t & addhi ) {
 #if defined(HAVE_X86_64_ASM)
-    __asm__("addq %3, %0\n"
-            "adcq %4, %1\n"
-            "adcq %5, %2\n"
-#if defined(DEBUG)
-            : "+r" (rlo), "+r" (rmi), "+r" (rhi)
-            : "r" (addlo), "r" (addmi), "r" (addhi)
-#elif defined(__clang__)
-            // clang cannot work properly with "g" and silently
-            // produces hardly-workging code, if "g" is specified;
-            // see, for instance, here:
-            // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-            // To avoid 3x performance hit we have to specify sources/destinations
-            : "+r" (rlo), "+r" (rmi), "+r" (rhi)
-            : "m" (addlo), "m" (addmi), "m" (addhi)
-#else
-            : "+g" (rlo), "+g" (rmi), "+g" (rhi)
-            : "rm" (addlo), "rm" (addmi), "rm" (addhi)
-#endif
-            : "cc"
-            );
+    __asm__ ("addq %3, %0\n"
+             "adcq %4, %1\n"
+             "adcq %5, %2\n"
+  #if defined(DEBUG)
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi)
+             : "r" (addlo), "r" (addmi), "r" (addhi)
+  #elif defined(__clang__)
+             // clang cannot work properly with "g" and silently
+             // produces hardly-workging code, if "g" is specified;
+             // see, for instance, here:
+             // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
+             // To avoid 3x performance hit we have to specify sources/destinations
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi)
+             : "m" (addlo), "m" (addmi), "m" (addhi)
+  #else
+             : "+g" (rlo), "+g" (rmi), "+g" (rhi)
+             : "rm" (addlo), "rm" (addmi), "rm" (addhi)
+  #endif
+             : "cc"
+    );
 #else
     rlo += addlo;
     rmi += (rlo < addlo);
@@ -325,7 +326,7 @@ static FORCE_INLINE void add192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, con
 }
 
 // 128-bit fused multiply addition [rhi:rlo += a * b]
-static FORCE_INLINE void fma64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uint64_t b) {
+static FORCE_INLINE void fma64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
 #if defined(HAVE_X86_64_ASM)
     /*
      * Dummy variable to tell the compiler that the register rax is
@@ -333,25 +334,25 @@ static FORCE_INLINE void fma64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uin
      * below. Better syntactic expression is very welcome.
      */
     uint64_t dummy;
-    __asm__("mulq %4\n"
-            "addq %%rax, %0\n"
-            "adcq %%rdx, %1\n"
-#if defined(DEBUG)
-            : "+r" (rlo), "+r" (rhi), "=a" (dummy)
-            : "a" (a), "r" (b)
-#elif defined(__clang__)
-            // clang cannot work properly with "g" and silently
-            // produces hardly-workging code, if "g" is specified;
-            // see, for instance, here:
-            // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-            // To avoid 3x performance hit we have to specify sources/destinations
-            : "+r" (rlo), "+r" (rhi), "=a" (dummy)
-            : "a" (a), "m" (b)
-#else
-            : "+g" (rlo), "+g" (rhi), "=a" (dummy)
-            : "a" (a), "g" (b)
-#endif
-            : "rdx", "cc");
+    __asm__ ("mulq %4\n"
+             "addq %%rax, %0\n"
+             "adcq %%rdx, %1\n"
+  #if defined(DEBUG)
+             : "+r" (rlo), "+r" (rhi), "=a" (dummy)
+             : "a" (a), "r" (b)
+  #elif defined(__clang__)
+             // clang cannot work properly with "g" and silently
+             // produces hardly-workging code, if "g" is specified;
+             // see, for instance, here:
+             // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
+             // To avoid 3x performance hit we have to specify sources/destinations
+             : "+r" (rlo), "+r" (rhi), "=a" (dummy)
+             : "a" (a), "m" (b)
+  #else
+             : "+g" (rlo), "+g" (rhi), "=a" (dummy)
+             : "a" (a), "g" (b)
+  #endif
+             : "rdx", "cc");
 #else
     uint64_t tmplo, tmphi;
     mult64_128(tmplo, tmphi, a, b);
@@ -360,7 +361,7 @@ static FORCE_INLINE void fma64_128(uint64_t& rlo, uint64_t& rhi, uint64_t a, uin
 }
 
 // 192-bit fused multiply addition [rhi:rmi:rlo += a * b]
-static FORCE_INLINE void fma64_192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, uint64_t a, uint64_t b) {
+static FORCE_INLINE void fma64_192( uint64_t & rlo, uint64_t & rmi, uint64_t & rhi, uint64_t a, uint64_t b ) {
 #if defined(HAVE_X86_64_ASM)
     /*
      * Dummy variable to tell the compiler that the register rax is
@@ -368,26 +369,26 @@ static FORCE_INLINE void fma64_192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, 
      * below. Better syntactic expression is very welcome.
      */
     uint64_t dummy;
-    __asm__("mulq %5\n"
-            "addq %%rax, %0\n"
-            "adcq %%rdx, %1\n"
-            "adcq $0, %2\n"
-#if defined(DEBUG)
-            : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
-            : "a" (a), "r" (b)
-#elif defined(__clang__)
-            // clang cannot work properly with "g" and silently
-            // produces hardly-workging code, if "g" is specified;
-            // see, for instance, here:
-            // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
-            // To avoid 3x performance hit we have to specify sources/destinations
-            : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
-            : "a" (a), "m" (b)
-#else
-            : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (dummy)
-            : "a" (a), "g" (b)
-#endif
-            : "rdx", "cc" );
+    __asm__ ("mulq %5\n"
+             "addq %%rax, %0\n"
+             "adcq %%rdx, %1\n"
+             "adcq $0, %2\n"
+  #if defined(DEBUG)
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
+             : "a" (a), "r" (b)
+  #elif defined(__clang__)
+             // clang cannot work properly with "g" and silently
+             // produces hardly-workging code, if "g" is specified;
+             // see, for instance, here:
+             // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
+             // To avoid 3x performance hit we have to specify sources/destinations
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
+             : "a" (a), "m" (b)
+  #else
+             : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (dummy)
+             : "a" (a), "g" (b)
+  #endif
+             : "rdx", "cc");
 #else
     uint64_t tmplo, tmpmi, tmphi = 0;
     mult64_128(tmplo, tmpmi, a, b);
@@ -396,11 +397,12 @@ static FORCE_INLINE void fma64_192(uint64_t& rlo, uint64_t& rmi, uint64_t& rhi, 
 }
 
 // 128x128->128 multiplication [rhi:rlo = a * bhi:blo]
-static FORCE_INLINE void mult128_128(uint64_t& rlo, uint64_t& rhi, uint64_t alo, uint64_t ahi, uint64_t blo, uint64_t bhi) {
+static FORCE_INLINE void mult128_128( uint64_t & rlo, uint64_t & rhi, uint64_t alo,
+        uint64_t ahi, uint64_t blo, uint64_t bhi ) {
 #if defined(HAVE_INT128)
     uint128_t r = (((uint128_t)ahi) << 64) + (uint128_t)alo;
     uint128_t c = (((uint128_t)bhi) << 64) + (uint128_t)blo;
-    r = r * c;
+    r   = r * c;
     rhi = (uint64_t)(r >> 64);
     rlo = (uint64_t)r;
 #else

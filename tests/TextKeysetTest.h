@@ -47,5 +47,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-template < typename hashtype >
-bool TextKeyTest(const HashInfo * info, const bool verbose);
+template <typename hashtype>
+bool TextKeyTest( const HashInfo * info, const bool verbose );

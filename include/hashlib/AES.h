@@ -35,31 +35,31 @@
 #include "Intrinsics.h"
 
 #if defined(HAVE_X86_64_AES)
-#  include "AES-aesni.h"
+  #include "AES-aesni.h"
 #elif defined(HAVE_ARM_AES)
-#  include "AES-arm.h"
-#  include "AES-portable.h" // ARM doesn't have any AES keygen intrinsics
+  #include "AES-arm.h"
+  #include "AES-portable.h" // ARM doesn't have any AES keygen intrinsics
 #elif defined(HAVE_PPC_AES)
-#  include "AES-ppc.h"
-#  include "AES-portable.h" // PPC doesn't really have any AES keygen intrinsics
+  #include "AES-ppc.h"
+  #include "AES-portable.h" // PPC doesn't really have any AES keygen intrinsics
 #else
-#  include "AES-portable.h"
+  #include "AES-portable.h"
 #endif
 
-static inline void _bswap_subkeys(uint32_t rk[], int subkeys) {
+static inline void _bswap_subkeys( uint32_t rk[], int subkeys ) {
     for (int i = 0; i < subkeys; i++) {
         rk[i] = COND_BSWAP(rk[i], true);
     }
 }
 
-static int AES_KeySetup_Enc(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey[], int keyBits) {
+static int AES_KeySetup_Enc( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
     // STATIC_ASSERT(keyBits == 128);
 #if defined(HAVE_X86_64_AES)
     return AES_KeySetup_Enc_AESNI(rk, cipherKey, keyBits);
 #elif defined(HAVE_ARM_AES)
     int Nr = AES_KeySetup_Enc_portable(rk, cipherKey, keyBits);
     if (isLE()) {
-        _bswap_subkeys(rk, 4*(Nr+1));
+        _bswap_subkeys(rk, 4 * (Nr + 1));
     }
     return Nr;
 #else
@@ -67,14 +67,14 @@ static int AES_KeySetup_Enc(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey
 #endif
 }
 
-static int AES_KeySetup_Dec(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey[], int keyBits) {
+static int AES_KeySetup_Dec( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
     // STATIC_ASSERT(keyBits == 128);
 #if defined(HAVE_X86_64_AES)
     return AES_KeySetup_Dec_AESNI(rk, cipherKey, keyBits);
 #elif defined(HAVE_ARM_AES)
     int Nr = AES_KeySetup_Dec_portable(rk, cipherKey, keyBits);
     if (isLE()) {
-        _bswap_subkeys(rk, 4*(Nr+1));
+        _bswap_subkeys(rk, 4 * (Nr + 1));
     }
     return Nr;
 #else
@@ -82,8 +82,8 @@ static int AES_KeySetup_Dec(uint32_t rk[/*4*(Nr + 1)*/], const uint8_t cipherKey
 #endif
 }
 
-template < int Nr >
-static void AES_Encrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t pt[16], uint8_t ct[16]) {
+template <int Nr>
+static void AES_Encrypt( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
 #if defined(HAVE_X86_64_AES)
     AES_Encrypt_AESNI<Nr>(rk, pt, ct);
 #elif defined(HAVE_ARM_AES)
@@ -95,8 +95,8 @@ static void AES_Encrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t pt[16],
 #endif
 }
 
-template < int Nr >
-static void AES_Decrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t ct[16], uint8_t pt[16]) {
+template <int Nr>
+static void AES_Decrypt( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
 #if defined(HAVE_X86_64_AES)
     AES_Decrypt_AESNI<Nr>(rk, pt, ct);
 #elif defined(HAVE_ARM_AES)
@@ -108,7 +108,7 @@ static void AES_Decrypt(const uint32_t rk[/*4*(Nr + 1)*/], const uint8_t ct[16],
 #endif
 }
 
-static void AES_EncryptRound(const uint32_t rk[4], uint8_t block[16]) {
+static void AES_EncryptRound( const uint32_t rk[4], uint8_t block[16] ) {
 #if defined(HAVE_X86_64_AES)
     AES_EncryptRound_AESNI(rk, block);
 #elif defined(HAVE_ARM_AES)
@@ -120,7 +120,7 @@ static void AES_EncryptRound(const uint32_t rk[4], uint8_t block[16]) {
 #endif
 }
 
-static void AES_DecryptRound(const uint32_t rk[4], uint8_t block[16]) {
+static void AES_DecryptRound( const uint32_t rk[4], uint8_t block[16] ) {
 #if defined(HAVE_X86_64_AES)
     AES_DecryptRound_AESNI(rk, block);
 #elif defined(HAVE_ARM_AES)

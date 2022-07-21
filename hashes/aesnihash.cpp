@@ -36,29 +36,29 @@
 #include "Hashlib.h"
 
 #if defined(HAVE_X86_64_AES)
-#include "Intrinsics.h"
+  #include "Intrinsics.h"
 
-template < bool bswap >
-static void aesnihash(const void * inv, const size_t len, const seed_t seed, void * out) {
-    const uint8_t * in = (uint8_t *)inv;
-    uint64_t src_sz = len;
+template <bool bswap>
+static void aesnihash( const void * inv, const size_t len, const seed_t seed, void * out ) {
+    const uint8_t * in     = (uint8_t *)inv;
+    uint64_t        src_sz = len;
 
-    uint8_t tmp_buf[16] = {0};
-    __m128i rk0 = {UINT64_C(0x736f6d6570736575), UINT64_C(0x646f72616e646f6d)};
-    __m128i rk1 = {UINT64_C(0x1231236570743245), UINT64_C(0x126f12321321456d)};
+    uint8_t tmp_buf[16]    = { 0 };
+    __m128i rk0     =        { UINT64_C(0x736f6d6570736575), UINT64_C(0x646f72616e646f6d) };
+    __m128i rk1     =        { UINT64_C(0x1231236570743245), UINT64_C(0x126f12321321456d) };
     // Homegrown seeding for SMHasher3
-    __m128i seed128 = {(int64_t)seed, 0};
-    __m128i hash = _mm_xor_si128(rk0, seed128);
+    __m128i seed128 = { (int64_t)seed, 0 };
+    __m128i hash    = _mm_xor_si128(rk0, seed128);
 
     while (src_sz >= 16) {
-    onemoretry:
+  onemoretry:
         __m128i piece = _mm_loadu_si128((__m128i *)in);
         // Arbitrarily chose 64-bit wordlen
         if (bswap) { piece = mm_bswap64(piece); }
-        in += 16;
+        in     += 16;
         src_sz -= 16;
-        hash = _mm_aesenc_si128(_mm_xor_si128(hash, piece), rk0);
-        hash = _mm_aesenc_si128(hash, rk1);
+        hash    = _mm_aesenc_si128(_mm_xor_si128(hash, piece), rk0);
+        hash    = _mm_aesenc_si128(hash, rk1);
     }
 
     if (src_sz > 0) {
@@ -67,7 +67,7 @@ static void aesnihash(const void * inv, const size_t len, const seed_t seed, voi
             tmp_buf[i] = in[i];
         }
         src_sz = 16;
-        in = &tmp_buf[0];
+        in     = &tmp_buf[0];
         goto onemoretry;
     }
 
@@ -80,25 +80,25 @@ static void aesnihash(const void * inv, const size_t len, const seed_t seed, voi
 }
 
 REGISTER_FAMILY(aesnihash,
-  $.src_url = "https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a",
-  $.src_status = HashFamilyInfo::SRC_FROZEN
-);
+   $.src_url    = "https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a",
+   $.src_status = HashFamilyInfo::SRC_FROZEN
+ );
 
 REGISTER_HASH(aesnihash,
-  $.desc = "majek's aesnihash",
-  $.hash_flags =
-        FLAG_HASH_NO_SEED        |
-        FLAG_HASH_AES_BASED,
-  $.impl_flags =
-        FLAG_IMPL_SANITY_FAILS   |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 64,
-  $.verification_LE = 0xA68E0D42,
-  $.verification_BE = 0xEBC48EDA,
-  $.hashfn_native = aesnihash<false>,
-  $.hashfn_bswap = aesnihash<true>,
-  $.badseeds = {0x70736575}
-);
+   $.desc       = "majek's aesnihash",
+   $.hash_flags =
+         FLAG_HASH_NO_SEED        |
+         FLAG_HASH_AES_BASED,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS   |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 64,
+   $.verification_LE = 0xA68E0D42,
+   $.verification_BE = 0xEBC48EDA,
+   $.hashfn_native   = aesnihash<false>,
+   $.hashfn_bswap    = aesnihash<true>,
+   $.badseeds        = { 0x70736575 }
+ );
 
 #else
 REGISTER_FAMILY(aesnihash);

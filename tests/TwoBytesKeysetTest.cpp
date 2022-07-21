@@ -49,7 +49,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
-#include "Stats.h"       // for chooseK
+#include "Stats.h" // for chooseK
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -59,18 +59,18 @@
 //-----------------------------------------------------------------------------
 // Keyset 'TwoBytes' - generate all keys up to length N with two non-zero bytes
 
-template< typename hashtype >
-static void TwoBytesKeygen(HashFn hash, const seed_t seed,
-        int maxlen, std::vector<hashtype> & hashes) {
+template <typename hashtype>
+static void TwoBytesKeygen( HashFn hash, const seed_t seed, int maxlen, std::vector<hashtype> & hashes ) {
     //----------
     // Compute # of keys
     int keycount = 0;
+
     for (int i = 2; i <= maxlen; i++) {
-        keycount += (int)chooseK(i,2);
+        keycount += (int)chooseK(i, 2);
     }
-    keycount *= 255*255;
+    keycount *= 255 * 255;
     for (int i = 2; i <= maxlen; i++) {
-        keycount += i*255;
+        keycount += i * 255;
     }
 
     printf("Keyset 'TwoBytes' - up-to-%d-byte keys - %d keys\n", maxlen, keycount);
@@ -81,7 +81,7 @@ static void TwoBytesKeygen(HashFn hash, const seed_t seed,
     memset(key, 0, 256);
 
     for (int keylen = 2; keylen <= maxlen; keylen++) {
-        for (int byteA = 0; byteA < keylen; byteA++){
+        for (int byteA = 0; byteA < keylen; byteA++) {
             for (int valA = 1; valA <= 255; valA++) {
                 hashtype h;
                 key[byteA] = (uint8_t)valA;
@@ -96,8 +96,8 @@ static void TwoBytesKeygen(HashFn hash, const seed_t seed,
     //----------
     // Add all keys with two non-zero bytes
     for (int keylen = 2; keylen <= maxlen; keylen++) {
-        for (int byteA = 0; byteA < keylen-1; byteA++) {
-            for (int byteB = byteA+1; byteB < keylen; byteB++) {
+        for (int byteA = 0; byteA < keylen - 1; byteA++) {
+            for (int byteB = byteA + 1; byteB < keylen; byteB++) {
                 for (int valA = 1; valA <= 255; valA++) {
                     key[byteA] = (uint8_t)valA;
                     for (int valB = 1; valB <= 255; valB++) {
@@ -115,28 +115,29 @@ static void TwoBytesKeygen(HashFn hash, const seed_t seed,
     }
 }
 
-template < typename hashtype >
-static bool TwoBytesTest2(HashFn hash, const seed_t seed, int maxlen, bool drawDiagram) {
-  std::vector<hashtype> hashes;
+template <typename hashtype>
+static bool TwoBytesTest2( HashFn hash, const seed_t seed, int maxlen, bool drawDiagram ) {
+    std::vector<hashtype> hashes;
 
-  TwoBytesKeygen(hash, seed, maxlen, hashes);
+    TwoBytesKeygen(hash, seed, maxlen, hashes);
 
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
+    bool result = TestHashList(hashes, drawDiagram);
+    printf("\n");
 
-  recordTestResult(result, "TwoBytes", maxlen);
+    recordTestResult(result, "TwoBytes", maxlen);
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
 //-----------------------------------------------------------------------------
-template < typename hashtype >
-bool TwoBytesKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    bool result = true;
-    int maxlen;
+template <typename hashtype>
+bool TwoBytesKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    bool         result = true;
+    int          maxlen;
+
     if (extra) {
         maxlen = 24;
     } else if (hinfo->isVerySlow()) {

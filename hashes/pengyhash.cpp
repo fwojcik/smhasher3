@@ -33,13 +33,13 @@
 #include "Hashlib.h"
 
 //------------------------------------------------------------
-template < bool bswap >
-static uint64_t pengyhash(const uint8_t * p, size_t size, uint64_t seed) {
+template <bool bswap>
+static uint64_t pengyhash( const uint8_t * p, size_t size, uint64_t seed ) {
     uint64_t b[4] = { 0 };
     uint64_t s[4] = { 0, 0, 0, size };
-    int i;
+    int      i;
 
-    for(; size >= 32; size -= 32, p += 32) {
+    for (; size >= 32; size -= 32, p += 32) {
         memcpy(b, p, 32);
 
         s[1] = (s[0] += s[1] + GET_U64<bswap>((uint8_t *)&b[3], 0)) + (s[1] << 14 | s[1] >> 50);
@@ -50,7 +50,7 @@ static uint64_t pengyhash(const uint8_t * p, size_t size, uint64_t seed) {
 
     memcpy(b, p, size);
 
-    for(i = 0; i < 6; i++) {
+    for (i = 0; i < 6; i++) {
         s[1] = (s[0] += s[1] + GET_U64<bswap>((uint8_t *)&b[3], 0)) + (s[1] << 14 | s[1] >> 50) + seed;
         s[3] = (s[2] += s[3] + GET_U64<bswap>((uint8_t *)&b[2], 0)) + (s[3] << 23 | s[3] >> 41);
         s[3] = (s[0] += s[3] + GET_U64<bswap>((uint8_t *)&b[1], 0)) ^ (s[3] << 16 | s[3] >> 48);
@@ -61,28 +61,29 @@ static uint64_t pengyhash(const uint8_t * p, size_t size, uint64_t seed) {
 }
 
 //------------------------------------------------------------
-template < bool bswap >
-static void pengy(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void pengy( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = pengyhash<bswap>((const uint8_t *)in, len, (uint64_t)seed);
+
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 //------------------------------------------------------------
 REGISTER_FAMILY(pengyhash,
-  $.src_url = "https://github.com/tinypeng/pengyhash",
-  $.src_status = HashFamilyInfo::SRC_STABLEISH
-);
+   $.src_url    = "https://github.com/tinypeng/pengyhash",
+   $.src_status = HashFamilyInfo::SRC_STABLEISH
+ );
 
 REGISTER_HASH(pengyhash,
-  $.desc = "pengyhash v0.2",
-  $.hash_flags =
-        0,
-  $.impl_flags =
-        FLAG_IMPL_ROTATE       |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 64,
-  $.verification_LE = 0x1FC2217B,
-  $.verification_BE = 0x774D23AB,
-  $.hashfn_native = pengy<false>,
-  $.hashfn_bswap = pengy<true>
-);
+   $.desc       = "pengyhash v0.2",
+   $.hash_flags =
+         0,
+   $.impl_flags =
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 64,
+   $.verification_LE = 0x1FC2217B,
+   $.verification_BE = 0x774D23AB,
+   $.hashfn_native   = pengy<false>,
+   $.hashfn_bswap    = pengy<true>
+ );

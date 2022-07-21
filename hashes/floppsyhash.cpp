@@ -35,32 +35,32 @@ static_assert(std::numeric_limits<double>::is_iec559, "IEEE 754 floating point r
 
 //------------------------------------------------------------
 // Q function : Continued Egyptian Fraction update function
-template < bool old>
-static FORCE_INLINE void q(double * state, double key_val,
-        double numerator, double denominator) {
+template <bool old>
+static FORCE_INLINE void q( double * state, double key_val, double numerator, double denominator ) {
     double frac = numerator / denominator;
+
     state[0] += frac;
-    state[0] = 1.0 / state[0];
+    state[0]  = 1.0       / state[0];
 
     if (!old) { key_val += M_PI; }
     state[1] += key_val;
-    state[1] = numerator / state[1];
+    state[1]  = numerator / state[1];
 }
 
 // round function : process the message
-template < bool old>
-static FORCE_INLINE void round(const uint8_t * msg, size_t len, double * state) {
+template <bool old>
+static FORCE_INLINE void round( const uint8_t * msg, size_t len, double * state ) {
     double numerator = 1.0;
 
     // Loop
-    for (size_t i = 0; i < len; i++ ) {
+    for (size_t i = 0; i < len; i++) {
         double val = (double)msg[i];
         double tmp;
         if (old) {
-            tmp = (double)(msg[i] + i + 1);
+            tmp =  (double)(msg[i] + i + 1);
         } else {
-            tmp = val * M_E;
-            tmp += (double)(i + 1);
+            tmp  = val * M_E;
+            tmp += (double)(i          + 1);
         }
         double denominator = tmp / state[1];
 
@@ -71,33 +71,33 @@ static FORCE_INLINE void round(const uint8_t * msg, size_t len, double * state) 
 
     if (old) {
         double tmp;
-        tmp = M_PI + state[1];
+        tmp       = M_PI + state[1];
         state[0] *= tmp;
-        tmp = M_E + state[0];
+        tmp       = M_E  + state[0];
         state[1] *= tmp;
     }
 }
 
 // setup function : setup the state
-static FORCE_INLINE void setup(double * state, double init = 0) {
+static FORCE_INLINE void setup( double * state, double init = 0 ) {
     if (init == 0) {
         state[0] = (double)3.0;
-        state[1] = (double)1.0/7.0;
+        state[1] = (double)1.0 / 7.0;
     } else {
         double tmp = 1.0 / init;
-        tmp += init;
-        state[0] = pow(tmp, 1.0/3.0);
-        state[1] = pow(tmp, 1.0/7.0);
+        tmp     += init;
+        state[0] = pow(tmp, 1.0 / 3.0);
+        state[1] = pow(tmp, 1.0 / 7.0);
     }
 }
 
 //------------------------------------------------------------
-//static_assert(sizeof(double) == 8);
-template < bool old, bool bswap >
-static void floppsyhash(const void * in, const size_t len, const seed_t seed, void * out) {
+// static_assert(sizeof(double) == 8);
+template <bool old, bool bswap>
+static void floppsyhash( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint8_t * data = (const uint8_t *)in;
-    double state[2];
-    uint8_t seedbuf[4];
+    double          state[2];
+    uint8_t         seedbuf[4];
 
     PUT_U32<bswap>((uint32_t)seed, seedbuf, 0);
 
@@ -126,40 +126,40 @@ static void floppsyhash(const void * in, const size_t len, const seed_t seed, vo
 
 //------------------------------------------------------------
 REGISTER_FAMILY(floppsy,
-  $.src_url = "https://github.com/dosyago/floppsy",
-  $.src_status = HashFamilyInfo::SRC_STABLEISH
-);
+   $.src_url    = "https://github.com/dosyago/floppsy",
+   $.src_status = HashFamilyInfo::SRC_STABLEISH
+ );
 
 REGISTER_HASH(floppsyhash,
-  $.desc = "Floppsyhash v1.1.10 (floating-point hash using continued Egyptian fractions)",
-  $.hash_flags =
-        FLAG_HASH_SMALL_SEED      |
-        FLAG_HASH_FLOATING_POINT  ,
-  $.impl_flags =
-        FLAG_IMPL_VERY_SLOW    |
-        FLAG_IMPL_MULTIPLY     |
-        FLAG_IMPL_DIVIDE       |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0x5F9F6226,
-  $.verification_BE = 0x4D4F96F0,
-  $.hashfn_native = floppsyhash<false,false>,
-  $.hashfn_bswap = floppsyhash<false,true>
-);
+   $.desc       = "Floppsyhash v1.1.10 (floating-point hash using continued Egyptian fractions)",
+   $.hash_flags =
+         FLAG_HASH_SMALL_SEED      |
+         FLAG_HASH_FLOATING_POINT,
+   $.impl_flags =
+         FLAG_IMPL_VERY_SLOW    |
+         FLAG_IMPL_MULTIPLY     |
+         FLAG_IMPL_DIVIDE       |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0x5F9F6226,
+   $.verification_BE = 0x4D4F96F0,
+   $.hashfn_native   = floppsyhash<false, false>,
+   $.hashfn_bswap    = floppsyhash<false, true>
+ );
 
 REGISTER_HASH(floppsyhash__old,
-  $.desc = "Floppsyhash (old version, fka \"tifuhash\")",
-  $.hash_flags =
-        FLAG_HASH_SMALL_SEED      |
-        FLAG_HASH_FLOATING_POINT  ,
-  $.impl_flags =
-        FLAG_IMPL_VERY_SLOW    |
-        FLAG_IMPL_MULTIPLY     |
-        FLAG_IMPL_DIVIDE       |
-        FLAG_IMPL_LICENSE_MIT,
-  $.bits = 64,
-  $.verification_LE = 0x644236D4,
-  $.verification_BE = 0x7A3D2F7E,
-  $.hashfn_native = floppsyhash<true,false>,
-  $.hashfn_bswap = floppsyhash<true,true>
-);
+   $.desc       = "Floppsyhash (old version, fka \"tifuhash\")",
+   $.hash_flags =
+         FLAG_HASH_SMALL_SEED      |
+         FLAG_HASH_FLOATING_POINT,
+   $.impl_flags =
+         FLAG_IMPL_VERY_SLOW    |
+         FLAG_IMPL_MULTIPLY     |
+         FLAG_IMPL_DIVIDE       |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0x644236D4,
+   $.verification_BE = 0x7A3D2F7E,
+   $.hashfn_native   = floppsyhash<true, false>,
+   $.hashfn_bswap    = floppsyhash<true, true>
+ );

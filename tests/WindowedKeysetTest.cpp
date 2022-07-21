@@ -49,7 +49,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
-#include "Stats.h"       // For EstimateNbCollisions
+#include "Stats.h" // For EstimateNbCollisions
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -62,84 +62,84 @@
 // Keyset 'Window' - for all possible N-bit windows of a K-bit key, generate
 // all possible keys with bits set in that window
 
-template < typename keytype, typename hashtype >
-static bool WindowedKeyImpl(HashFn hash, const seed_t seed, int windowbits,
-        bool testCollision, bool testDistribution, bool drawDiagram) {
-  const int keybits = sizeof(keytype) * 8;
-  const int hashbits = sizeof(hashtype) * 8;
-  // calc keycount to expect min. 0.5 collisions: EstimateNbCollisions, except for 64++bit.
-  // there limit to 2^25 = 33554432 keys
-  int keycount = 1 << windowbits;
-  while (EstimateNbCollisions(keycount, hashbits) < 0.5 && windowbits < 25) {
-    if ((int)log2(2.0 * keycount) < 0) // overflow
-      break;
-    keycount *= 2;
-    windowbits = (int)log2(1.0 * keycount);
-    //printf (" enlarge windowbits to %d (%d keys)\n", windowbits, keycount);
-    //fflush (NULL);
-  }
+template <typename keytype, typename hashtype>
+static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits,
+        bool testCollision, bool testDistribution, bool drawDiagram ) {
+    const int keybits  = sizeof(keytype ) * 8;
+    const int hashbits = sizeof(hashtype) * 8;
+    // calc keycount to expect min. 0.5 collisions: EstimateNbCollisions, except for 64++bit.
+    // there limit to 2^25 = 33554432 keys
+    int keycount = 1 << windowbits;
 
-  std::vector<hashtype> hashes;
-  hashes.resize(keycount);
-
-  bool result = true;
-  int testcount = keybits;
-
-  printf("Keyset 'Window' - %3d-bit key, %3d-bit window - %d tests - %d keys\n",
-         keybits,windowbits,testcount,keycount);
-
-  for(int j = 0; j < testcount; j++)
-  {
-    int minbit = j;
-    keytype key;
-
-    for(int i = 0; i < keycount; i++)
-    {
-      key = i;
-      key.lrot(minbit);
-      hash(&key, sizeof(keytype), seed, &hashes[i]);
-      addVCodeInput(&key, sizeof(keytype));
+    while (EstimateNbCollisions(keycount, hashbits) < 0.5 && windowbits < 25) {
+        if ((int)log2(2.0 * keycount) < 0) { // overflow
+            break;
+        }
+        keycount  *= 2;
+        windowbits = (int)log2(1.0 * keycount);
+        // printf (" enlarge windowbits to %d (%d keys)\n", windowbits, keycount);
+        // fflush (NULL);
     }
 
-    printf("Window at bit %3d\n",j);
+    std::vector<hashtype> hashes;
+    hashes.resize(keycount);
 
-    bool thisresult = TestHashList(hashes, drawDiagram, testCollision, testDistribution,
-                           /* do not test high/low bits (to not clobber the screen) */
-                           false, false, true);
+    bool result    = true;
+    int  testcount = keybits;
 
-    recordTestResult(thisresult, "Windowed", j);
+    printf("Keyset 'Window' - %3d-bit key, %3d-bit window - %d tests - %d keys\n",
+            keybits, windowbits, testcount, keycount);
 
-    addVCodeResult(thisresult);
+    for (int j = 0; j < testcount; j++) {
+        int     minbit = j;
+        keytype key;
 
-    result &= thisresult;
-  }
+        for (int i = 0; i < keycount; i++) {
+            key = i;
+            key.lrot(minbit);
+            hash(&key, sizeof(keytype), seed, &hashes[i]);
+            addVCodeInput(&key, sizeof(keytype));
+        }
 
-  return result;
+        printf("Window at bit %3d\n", j);
+
+        bool thisresult = TestHashList(hashes, drawDiagram, testCollision, testDistribution,
+                /* do not test high/low bits (to not clobber the screen) */
+                false, false, true);
+
+        recordTestResult(thisresult, "Windowed", j);
+
+        addVCodeResult(thisresult);
+
+        result &= thisresult;
+    }
+
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 
-template < typename hashtype >
-bool WindowedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    bool result = true;
-    bool testCollision = true;
+template <typename hashtype>
+bool WindowedKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+    const HashFn hash          = hinfo->hashFn(g_hashEndian);
+    bool         result        = true;
+    bool         testCollision = true;
     // Skip distribution test for these - they're too easy to
     // distribute well, and it generates a _lot_ of testing.
     bool testDistribution = extra;
     // This value is now adjusted to generate at least 0.5 collisions per window,
     // except for 64++bit where it unrealistic. There use smaller but more keys,
     // to get a higher collision percentage.
-    int windowbits = 20;
+    int windowbits         = 20;
     constexpr int hashbits = sizeof(hashtype) * 8;
-    constexpr int keybits = (hashbits >= 64) ? 32 : 72;
+    constexpr int keybits  = (hashbits >= 64) ? 32 : 72;
 
     printf("[[[ Keyset 'Window' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= WindowedKeyImpl< Blob<keybits>, hashtype >(hash, seed,
-            windowbits, testCollision, testDistribution, verbose);
+    result &=
+            WindowedKeyImpl<Blob<keybits>, hashtype>(hash, seed, windowbits, testCollision, testDistribution, verbose);
 
     printf("\n%s\n", result ? "" : g_failstr);
 

@@ -25,54 +25,56 @@
 #include <algorithm>
 
 //-----------------------------------------------------------------------------
-typedef std::unordered_map<std::string, const HashInfo *> HashMap;
-typedef std::vector<const HashInfo *> HashMapOrder;
+typedef std::unordered_map<std::string, const HashInfo *>  HashMap;
+typedef std::vector<const HashInfo *>                      HashMapOrder;
 
-static HashMap& hashMap() {
-  static HashMap * map = new HashMap;
-  return *map;
+static HashMap & hashMap() {
+    static HashMap * map = new HashMap;
+
+    return *map;
 }
 
 //-----------------------------------------------------------------------------
 // Add a hash to the hashMap list of all hashes.
 //
 // FIXME Verify hinfo is all filled out.
-unsigned register_hash(const HashInfo * hinfo) {
-  static std::unordered_map<uint32_t, const HashInfo *> hashcodes;
-  std::string name = hinfo->name;
-  // Allow users to lookup hashes by any case
-  std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+unsigned register_hash( const HashInfo * hinfo ) {
+    static std::unordered_map<uint32_t, const HashInfo *> hashcodes;
+    std::string name = hinfo->name;
 
-  if (hashMap().find(name) != hashMap().end()) {
-    printf("Hash names must be unique.\n");
-    printf("\"%s\" (\"%s\") was added multiple times.\n", hinfo->name, name.c_str());
-    printf("Note that hash names are using a case-insensitive comparison.\n");
-    exit(1);
-  }
+    // Allow users to lookup hashes by any case
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-  if (hinfo->verification_LE != 0) {
-      const auto it_LE = hashcodes.find(hinfo->verification_LE);
-      if (it_LE == hashcodes.end()) {
-          hashcodes[hinfo->verification_LE] = hinfo;
-      } else {
-          printf("WARNING: Hash with verification code %08x was already registered: %s\n",
-                  hinfo->verification_LE, it_LE->second->name);
-          printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
-      }
-  }
-  if ((hinfo->verification_BE != 0) && (hinfo->verification_BE != hinfo->verification_LE)) {
-      const auto it_BE = hashcodes.find(hinfo->verification_BE);
-      if (it_BE == hashcodes.end()) {
-          hashcodes[hinfo->verification_BE] = hinfo;
-      } else {
-          printf("WARNING: Hash with verification code %08x was already registered: %s\n",
-                  hinfo->verification_BE, it_BE->second->name);
-          printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
-      }
-  }
+    if (hashMap().find(name) != hashMap().end()) {
+        printf("Hash names must be unique.\n");
+        printf("\"%s\" (\"%s\") was added multiple times.\n", hinfo->name, name.c_str());
+        printf("Note that hash names are using a case-insensitive comparison.\n");
+        exit(1);
+    }
 
-  hashMap()[name] = hinfo;
-  return hashMap().size();
+    if (hinfo->verification_LE != 0) {
+        const auto it_LE = hashcodes.find(hinfo->verification_LE);
+        if (it_LE == hashcodes.end()) {
+            hashcodes[hinfo->verification_LE] = hinfo;
+        } else {
+            printf("WARNING: Hash with verification code %08x was already registered: %s\n",
+                    hinfo->verification_LE, it_LE->second->name);
+            printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
+        }
+    }
+    if ((hinfo->verification_BE != 0) && (hinfo->verification_BE != hinfo->verification_LE)) {
+        const auto it_BE = hashcodes.find(hinfo->verification_BE);
+        if (it_BE == hashcodes.end()) {
+            hashcodes[hinfo->verification_BE] = hinfo;
+        } else {
+            printf("WARNING: Hash with verification code %08x was already registered: %s\n",
+                    hinfo->verification_BE, it_BE->second->name);
+            printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
+        }
+    }
+
+    hashMap()[name] = hinfo;
+    return hashMap().size();
 }
 
 //-----------------------------------------------------------------------------
@@ -84,75 +86,80 @@ unsigned register_hash(const HashInfo * hinfo) {
 //
 // This is overloaded for mock hashes to also override the sorting for
 // _family name_, which is not something general users should do.
-static HashMapOrder defaultSort(HashMap & map) {
+static HashMapOrder defaultSort( HashMap & map ) {
     HashMapOrder hashes;
+
     hashes.reserve(map.size());
-    for (auto kv : map) {
+    for (auto kv: map) {
         hashes.push_back(kv.second);
     }
-    std::sort(hashes.begin(), hashes.end(),
-            [](const HashInfo * a, const HashInfo * b) {
-                int r;
-                // Mock hashes go before others
-                if (a->isMock() != b->isMock())
-                    return a->isMock();
-                // Mock hashes use sort_order over all other criteria
-                if (a->isMock() && (a->sort_order != b->sort_order))
-                    return (a->sort_order < b->sort_order);
-                // Cryptographic hashes go before non-crypto
-                if (a->isCrypto() != b->isCrypto())
-                    return a->isCrypto();
-                // Then sort by family (case-insensitive)
-                if ((r = strcasecmp(a->family, b->family)) != 0)
-                    return (r < 0);
-                // Then by hash output size (smaller first)
-                if (a->bits != b->bits)
-                    return (a->bits < b->bits);
-                // Then by explicit sort_order
-                if (a->sort_order != b->sort_order)
-                    return (a->sort_order < b->sort_order);
-                // And finally by hash name (case-insensitive)
-                if ((r = strcasecmp(a->name, b->name)) != 0)
-                    return (r < 0);
-                return false;
-            });
+    std::sort(hashes.begin(), hashes.end(), []( const HashInfo * a, const HashInfo * b ) {
+            int r;
+            // Mock hashes go before others
+            if (a->isMock() != b->isMock()) {
+                return a->isMock();
+            }
+            // Mock hashes use sort_order over all other criteria
+            if (a->isMock() && (a->sort_order != b->sort_order)) {
+                return a->sort_order < b->sort_order;
+            }
+            // Cryptographic hashes go before non-crypto
+            if (a->isCrypto() != b->isCrypto()) {
+                return a->isCrypto();
+            }
+            // Then sort by family (case-insensitive)
+            if ((r = strcasecmp(a->family, b->family)) != 0) {
+                return r < 0;
+            }
+            // Then by hash output size (smaller first)
+            if (a->bits != b->bits) {
+                return a->bits < b->bits;
+            }
+            // Then by explicit sort_order
+            if (a->sort_order != b->sort_order) {
+                return a->sort_order < b->sort_order;
+            }
+            // And finally by hash name (case-insensitive)
+            if ((r = strcasecmp(a->name, b->name)) != 0) {
+                return r < 0;
+            }
+            return false;
+        });
     return hashes;
 }
 
-std::vector<const HashInfo *> findAllHashes(void) {
+std::vector<const HashInfo *> findAllHashes( void ) {
     HashMapOrder hashes;
+
     hashes = defaultSort(hashMap());
     return hashes;
 }
 
-const HashInfo * findHash(const char * name) {
-  std::string n = name;
-  // Search without regards to case
-  std::transform(n.begin(), n.end(), n.begin(), ::tolower);
-  // Since underscores can't be in names, the user must have meant a dash
-  std::replace(n.begin(), n.end(), '_', '-');
+const HashInfo * findHash( const char * name ) {
+    std::string n = name;
 
-  const auto it = hashMap().find(n);
-  if (it == hashMap().end()) {
-    return NULL;
-  }
-  return it->second;
+    // Search without regards to case
+    std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+    // Since underscores can't be in names, the user must have meant a dash
+    std::replace(n.begin(), n.end(), '_', '-');
+
+    const auto it = hashMap().find(n);
+    if (it == hashMap().end()) {
+        return NULL;
+    }
+    return it->second;
 }
 
-void listHashes(bool nameonly) {
+void listHashes( bool nameonly ) {
     if (!nameonly) {
         printf("Hashnames can be supplied using any case letters.\n\n");
-        printf("%-25s %4s  %6s  %-60s\n",
-            "Name", "Bits", "Type", "Description");
-        printf("%-25s %4s  %6s  %-60s\n",
-            "----", "----", "----", "-----------");
+        printf("%-25s %4s  %6s  %-60s\n", "Name", "Bits", "Type", "Description");
+        printf("%-25s %4s  %6s  %-60s\n", "----", "----", "----", "-----------");
     }
-    for (const HashInfo * h : defaultSort(hashMap())) {
+    for (const HashInfo * h: defaultSort(hashMap())) {
         if (!nameonly) {
-            printf("%-25s %4d  %6s  %-60s\n",
-                    h->name, h->bits,
-                    h->isMock() ? "MOCK" : (h->isCrypto() ? "CRYPTO" : ""),
-                    h->desc);
+            printf("%-25s %4d  %6s  %-60s\n", h->name, h->bits,
+                    h->isMock() ? "MOCK" : (h->isCrypto() ? "CRYPTO" : ""), h->desc);
         } else {
             printf("%s\n", h->name);
         }
@@ -162,16 +169,14 @@ void listHashes(bool nameonly) {
 //-----------------------------------------------------------------------------
 // Hash verification routines
 
-static void reportInitFailure(const HashInfo * hinfo) {
-    printf("%25s - Hash initialization failed!      ...... FAIL!\n",
-            hinfo->name);
+static void reportInitFailure( const HashInfo * hinfo ) {
+    printf("%25s - Hash initialization failed!      ...... FAIL!\n", hinfo->name);
 }
 
-static bool compareVerification(uint32_t expected, uint32_t actual,
-        const char * endstr, const char * name,
-        bool verbose, bool prefix) {
+static bool compareVerification( uint32_t expected, uint32_t actual, const char * endstr,
+        const char * name, bool verbose, bool prefix ) {
     const char * result_str;
-    bool result = true;
+    bool         result = true;
 
     if (expected == actual) {
         result_str = (actual != 0) ? "PASS\n" : "INSECURE (should not be 0)\n";
@@ -179,7 +184,7 @@ static bool compareVerification(uint32_t expected, uint32_t actual,
         result_str = "SKIP (unverifiable)\n";
     } else {
         result_str = "FAIL! (Expected 0x%08x)\n";
-        result = false;
+        result     = false;
     }
 
     if (verbose) {
@@ -193,8 +198,8 @@ static bool compareVerification(uint32_t expected, uint32_t actual,
     return result;
 }
 
-static const char * endianstr(enum HashInfo::endianness e) {
-    switch(e) {
+static const char * endianstr( enum HashInfo::endianness e ) {
+    switch (e) {
     case HashInfo::ENDIAN_LITTLE     : return "LE"; // "Little endian"
     case HashInfo::ENDIAN_BIG        : return "BE"; // "Big endian"
     case HashInfo::ENDIAN_NATIVE     : return isLE() ? "LE" : "BE";
@@ -205,21 +210,20 @@ static const char * endianstr(enum HashInfo::endianness e) {
     return NULL; /* unreachable */
 }
 
-bool verifyHash(const HashInfo * hinfo, enum HashInfo::endianness endian,
-        bool verbose, bool prefix = true) {
+bool verifyHash( const HashInfo * hinfo, enum HashInfo::endianness endian, bool verbose, bool prefix = true ) {
     bool result = true;
     const uint32_t actual = hinfo->ComputedVerify(endian);
     const uint32_t expect = hinfo->ExpectedVerify(endian);
 
-    result &= compareVerification(expect, actual, endianstr(endian),
-          hinfo->name, verbose, prefix);
+    result &= compareVerification(expect, actual, endianstr(endian), hinfo->name, verbose, prefix);
 
     return result;
 }
 
-bool verifyAllHashes(bool verbose) {
+bool verifyAllHashes( bool verbose ) {
     bool result = true;
-    for (const HashInfo * h : defaultSort(hashMap())) {
+
+    for (const HashInfo * h: defaultSort(hashMap())) {
         if (!h->Init()) {
             if (verbose) {
                 reportInitFailure(h);
@@ -228,13 +232,13 @@ bool verifyAllHashes(bool verbose) {
         } else if (h->isEndianDefined()) {
             // Verify the hash the canonical way first, and then the
             // other way.
-            result &= verifyHash(h, HashInfo::ENDIAN_DEFAULT, verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_DEFAULT   , verbose);
             result &= verifyHash(h, HashInfo::ENDIAN_NONDEFAULT, verbose);
         } else {
             // Always verify little-endian first, just for consistency
             // for humans looking at the results.
             result &= verifyHash(h, HashInfo::ENDIAN_LITTLE, verbose);
-            result &= verifyHash(h, HashInfo::ENDIAN_BIG, verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_BIG   , verbose);
         }
     }
     printf("\n");
@@ -243,10 +247,12 @@ bool verifyAllHashes(bool verbose) {
 
 //-----------------------------------------------------------------------------
 // Run Mathmult unit tests via global constructor
-int Mathmult_selftest(void);
+int Mathmult_selftest( void );
+
 static int selftest_result = Mathmult_selftest();
 
 //-----------------------------------------------------------------------------
 // See Hashrefs.cpp.in for why these exist. You can very likely just ignore them.
 unsigned refs();
+
 static unsigned dummy = refs();

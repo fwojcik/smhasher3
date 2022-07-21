@@ -66,173 +66,171 @@
 // where "core" consists of all possible combinations of the given character
 // set of length N.
 
-template < typename hashtype >
-static bool TextKeyImpl(HashFn hash, const seed_t seed, const char * prefix, const char * coreset, const int corelen, const char * suffix, bool drawDiagram )
-{
-  const int prefixlen = (int)strlen(prefix);
-  const int suffixlen = (int)strlen(suffix);
-  const int corecount = (int)strlen(coreset);
+template <typename hashtype>
+static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, const char * coreset,
+        const int corelen, const char * suffix, bool drawDiagram ) {
+    const int prefixlen = (int)strlen(prefix);
+    const int suffixlen = (int)strlen(suffix);
+    const int corecount = (int)strlen(coreset);
 
-  const int keybytes = prefixlen + corelen + suffixlen;
-  long keycount = (long)pow(double(corecount),double(corelen));
-  if (keycount > INT32_MAX / 8)
-    keycount = INT32_MAX / 8;
+    const int keybytes  = prefixlen + corelen + suffixlen;
+    long      keycount  = (long)pow(double(corecount), double(corelen));
 
-  uint8_t * key = new uint8_t[std::min(keybytes+1, 64)];
-  memcpy(key,prefix,prefixlen);
-  memset(key+prefixlen, 'X', corelen);
-  memcpy(key+prefixlen+corelen,suffix,suffixlen);
-  key[keybytes] = 0;
-
-  printf("Keyset 'Text' - keys of form \"%s\" - %ld keys\n", key, keycount);
-
-  //----------
-
-  std::vector<hashtype> hashes;
-  hashes.resize(keycount);
-
-  for(int i = 0; i < (int)keycount; i++)
-  {
-    int t = i;
-
-    for(int j = 0; j < corelen; j++)
-    {
-      key[prefixlen+j] = coreset[t % corecount]; t /= corecount;
+    if (keycount > INT32_MAX / 8) {
+        keycount = INT32_MAX / 8;
     }
 
-    hash(key,keybytes,seed,&hashes[i]);
-    addVCodeInput(key, keybytes);
-  }
+    uint8_t * key = new uint8_t[std::min(keybytes + 1, 64)];
+    memcpy(key, prefix, prefixlen);
+    memset(key + prefixlen, 'X', corelen);
+    memcpy(key + prefixlen + corelen, suffix, suffixlen);
+    key[keybytes] = 0;
 
-  //----------
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
+    printf("Keyset 'Text' - keys of form \"%s\" - %ld keys\n", key, keycount);
 
-  memset(key+prefixlen, 'X', corelen);
-  recordTestResult(result, "Text", (const char *)key);
+    //----------
 
-  addVCodeResult(result);
+    std::vector<hashtype> hashes;
+    hashes.resize(keycount);
 
-  delete [] key;
+    for (int i = 0; i < (int)keycount; i++) {
+        int t = i;
 
-  return result;
+        for (int j = 0; j < corelen; j++) {
+            key[prefixlen + j] = coreset[t % corecount]; t /= corecount;
+        }
+
+        hash(key, keybytes, seed, &hashes[i]);
+        addVCodeInput(key, keybytes);
+    }
+
+    //----------
+    bool result = TestHashList(hashes, drawDiagram);
+    printf("\n");
+
+    memset(key + prefixlen, 'X', corelen);
+    recordTestResult(result, "Text", (const char *)key);
+
+    addVCodeResult(result);
+
+    delete [] key;
+
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 // Keyset 'Words' - pick random chars from coreset (alnum or password chars)
 
-template < typename hashtype >
-static bool WordsKeyImpl(HashFn hash, const seed_t seed,
-        const long keycount, const int minlen, const int maxlen,
-        const char * coreset, const char* name, bool drawDiagram) {
-  const int corecount = (int)strlen(coreset);
-  printf("Keyset 'Words' - %d-%d random chars from %s charset - %ld keys\n", minlen, maxlen, name, keycount);
-  assert (minlen >= 0);
-  assert (maxlen > minlen);
+template <typename hashtype>
+static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, const int minlen,
+        const int maxlen, const char * coreset, const char * name, bool drawDiagram ) {
+    const int corecount = (int)strlen(coreset);
 
-  std::unordered_set<std::string> words; // need to be unique, otherwise we report collisions
-  std::vector<hashtype> hashes;
-  hashes.resize(keycount);
-  Rand r(483723);
+    printf("Keyset 'Words' - %d-%d random chars from %s charset - %ld keys\n", minlen, maxlen, name, keycount);
+    assert(minlen >= 0    );
+    assert(maxlen > minlen);
 
-  char* key = new char[std::min(maxlen+1, 64)];
-  std::string key_str;
+    std::unordered_set<std::string> words; // need to be unique, otherwise we report collisions
+    std::vector<hashtype>           hashes;
+    hashes.resize(keycount);
+    Rand r( 483723 );
 
-  for(long i = 0; i < keycount; i++)
-  {
-    const int len = minlen + (r.rand_u32() % (maxlen - minlen));
-    key[len] = 0;
-    for(int j = 0; j < len; j++)
-    {
-      key[j] = coreset[r.rand_u32() % corecount];
-    }
-    key_str = key;
-    if (words.count(key_str) > 0) { // not unique
-      i--;
-      continue;
-    }
-    words.insert(key_str);
+    char *      key = new char[std::min(maxlen + 1, 64)];
+    std::string key_str;
 
-    hash(key, len, seed, &hashes[i]);
-    addVCodeInput(key, len);
+    for (long i = 0; i < keycount; i++) {
+        const int len = minlen + (r.rand_u32() % (maxlen - minlen));
+        key[len] = 0;
+        for (int j = 0; j < len; j++) {
+            key[j] = coreset[r.rand_u32() % corecount];
+        }
+        key_str = key;
+        if (words.count(key_str) > 0) { // not unique
+            i--;
+            continue;
+        }
+        words.insert(key_str);
+
+        hash(key, len, seed, &hashes[i]);
+        addVCodeInput(key, len);
 
 #if 0 && defined DEBUG
-    uint64_t h;
-    memcpy(&h, &hashes[i], std::max(sizeof(hashtype),8));
-    printf("%d %s %lx\n", i, (char*)key, h);
+        uint64_t h;
+        memcpy(&h, &hashes[i], std::max(sizeof(hashtype), 8));
+        printf("%d %s %lx\n", i, (char *)key, h);
 #endif
-  }
-  delete [] key;
+    }
+    delete [] key;
 
-  //----------
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
+    //----------
+    bool result = TestHashList(hashes, drawDiagram);
+    printf("\n");
 
-  recordTestResult(result, "Text", name);
+    recordTestResult(result, "Text", name);
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
-template < typename hashtype >
-static bool WordsStringImpl(HashFn hash, const seed_t seed,
-        std::vector<std::string> & words, bool drawDiagram) {
-  long wordscount = words.size();
-  printf("Keyset 'Words' - dictionary words - %ld keys\n", wordscount);
+template <typename hashtype>
+static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::string> & words, bool drawDiagram ) {
+    long wordscount = words.size();
 
-  std::unordered_set<std::string> wordset; // need to be unique, otherwise we report collisions
-  std::vector<hashtype> hashes;
-  hashes.resize(wordscount);
-  Rand r(483723);
+    printf("Keyset 'Words' - dictionary words - %ld keys\n", wordscount);
 
-  for(int i = 0; i < (int)wordscount; i++) {
-    if (wordset.count(words[i]) > 0) { // not unique
-      i--;
-      continue;
+    std::unordered_set<std::string> wordset; // need to be unique, otherwise we report collisions
+    std::vector<hashtype>           hashes;
+    hashes.resize(wordscount);
+    Rand r( 483723 );
+
+    for (int i = 0; i < (int)wordscount; i++) {
+        if (wordset.count(words[i]) > 0) { // not unique
+            i--;
+            continue;
+        }
+        wordset.insert(words[i]);
+        const int    len = words[i].length();
+        const char * key = words[i].c_str();
+        hash(key, len, seed, &hashes[i]);
+        addVCodeInput(key, len);
     }
-    wordset.insert(words[i]);
-    const int len = words[i].length();
-    const char *key = words[i].c_str();
-    hash(key, len, seed, &hashes[i]);
-    addVCodeInput(key, len);
-  }
 
-  //----------
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
+    //----------
+    bool result = TestHashList(hashes, drawDiagram);
+    printf("\n");
 
-  recordTestResult(result, "Text", "dictionary");
+    recordTestResult(result, "Text", "dictionary");
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 
-template < typename hashtype >
-bool TextKeyTest(const HashInfo * hinfo, const bool verbose) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    const char * alnum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+template <typename hashtype>
+bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
+    const HashFn hash          = hinfo->hashFn(g_hashEndian);
+    const char * alnum         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-                                 ".,!?:;-+=()<>/|\"'@#$%&*_^";
+            ".,!?:;-+=()<>/|\"'@#$%&*_^";
     bool result = true;
 
     printf("[[[ Keyset 'Text' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foo",    alnum, 4, "Bar",    verbose );
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alnum, 4, "",       verbose );
-    result &= TextKeyImpl<hashtype>(hash, seed, "",       alnum, 4, "FooBar", verbose );
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foo"   , alnum, 4, "Bar"   , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alnum, 4, ""      , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""      , alnum, 4, "FooBar", verbose);
 
     // maybe use random-len vector of strings here, from len 6-16
-    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 6, 16, alnum, "alnum", verbose );
-    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 6, 16, passwordchars, "password", verbose );
+    result &= WordsKeyImpl   <hashtype>(hash, seed, 4000000, 6, 16, alnum        , "alnum", verbose);
+    result &= WordsKeyImpl   <hashtype>(hash, seed, 4000000, 6, 16, passwordchars, "password", verbose);
 
     std::vector<std::string> words = HashMapInit(verbose);
-    result &= WordsStringImpl<hashtype>(hash, seed, words, verbose );
+    result &= WordsStringImpl<hashtype>(hash, seed, words, verbose);
 
     printf("%s\n", result ? "" : g_failstr);
 

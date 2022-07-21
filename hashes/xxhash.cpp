@@ -34,13 +34,13 @@
 
 #include "Mathmult.h"
 
-//#define FORCE_SCALAR
+// #define FORCE_SCALAR
 
 //------------------------------------------------------------
 #define XXH_VERSION_MAJOR    0
 #define XXH_VERSION_MINOR    8
 #define XXH_VERSION_RELEASE  1
-#define XXH_VERSION_NUMBER  (XXH_VERSION_MAJOR *100*100 + XXH_VERSION_MINOR *100 + XXH_VERSION_RELEASE)
+#define XXH_VERSION_NUMBER  (XXH_VERSION_MAJOR * 100 * 100 + XXH_VERSION_MINOR * 100 + XXH_VERSION_RELEASE)
 
 // Used to prevent unwanted optimizations for var.
 //
@@ -56,26 +56,26 @@
 // XXH3_initCustomSecret_scalar().
 #if defined(HAVE_X86_64_ASM) || defined(HAVE_ARM_ASM) || \
     defined(HAVE_ARM64_ASM) || defined(HAVE_PPC_ASM)
-#define XXH_COMPILER_GUARD(var) __asm__ __volatile__("" : "+r" (var))
+  #define XXH_COMPILER_GUARD(var) __asm__ __volatile__ ("" : "+r" (var))
 #else
-#define XXH_COMPILER_GUARD(var) ((void)var)
+  #define XXH_COMPILER_GUARD(var) ((void)var)
 #endif
 
 //------------------------------------------------------------
 // XXH32 family -- functions used in the classic 32-bit xxHash algorithm
 
 // #define instead of static const, to be used as initializers
-#define XXH_PRIME32_1  0x9E3779B1  // 0b10011110001101110111100110110001
-#define XXH_PRIME32_2  0x85EBCA77  // 0b10000101111010111100101001110111
-#define XXH_PRIME32_3  0xC2B2AE3D  // 0b11000010101100101010111000111101
-#define XXH_PRIME32_4  0x27D4EB2F  // 0b00100111110101001110101100101111
-#define XXH_PRIME32_5  0x165667B1  // 0b00010110010101100110011110110001
+#define XXH_PRIME32_1  0x9E3779B1 // 0b10011110001101110111100110110001
+#define XXH_PRIME32_2  0x85EBCA77 // 0b10000101111010111100101001110111
+#define XXH_PRIME32_3  0xC2B2AE3D // 0b11000010101100101010111000111101
+#define XXH_PRIME32_4  0x27D4EB2F // 0b00100111110101001110101100101111
+#define XXH_PRIME32_5  0x165667B1 // 0b00010110010101100110011110110001
 
 // Mixes all bits to finalize the hash.
 // The final mix ensures that all input bits have a chance to impact
 // any bit in the output digest, resulting in an unbiased
 // distribution.
-static uint32_t XXH32_avalanche(uint32_t hash) {
+static uint32_t XXH32_avalanche( uint32_t hash ) {
     hash ^= hash >> 15;
     hash *= XXH_PRIME32_2;
     hash ^= hash >> 13;
@@ -88,17 +88,17 @@ static uint32_t XXH32_avalanche(uint32_t hash) {
 // There may be up to 15 bytes remaining to consume from the input.
 // This final stage will digest them to ensure that all input bytes
 // are present in the final mix.
-template < bool bswap >
-static uint32_t XXH32_finalize(uint32_t hash, const uint8_t * ptr, size_t len) {
+template <bool bswap>
+static uint32_t XXH32_finalize( uint32_t hash, const uint8_t * ptr, size_t len ) {
     while (len >= 4) {
         hash += GET_U32<bswap>(ptr, 0) * XXH_PRIME32_3;
-        ptr += 4;
-        hash  = ROTL32(hash, 17) * XXH_PRIME32_4;
-        len -= 4;
+        ptr  += 4;
+        hash  = ROTL32(hash, 17)       * XXH_PRIME32_4;
+        len  -= 4;
     }
     while (len > 0) {
         hash += (*ptr++) * XXH_PRIME32_5;
-        hash = ROTL32(hash, 11) * XXH_PRIME32_1;
+        hash  = ROTL32(hash, 11) * XXH_PRIME32_1;
         --len;
     }
     return XXH32_avalanche(hash);
@@ -138,7 +138,7 @@ static uint32_t XXH32_finalize(uint32_t hash, const uint8_t * ptr, size_t len) {
 // This is also enabled on AArch64, as Clang autovectorizes it incorrectly
 // and it is pointless writing a NEON implementation that is basically the
 // same speed as scalar for XXH32.
-static uint32_t XXH32_round(uint32_t acc, uint32_t input) {
+static uint32_t XXH32_round( uint32_t acc, uint32_t input ) {
     acc += input * XXH_PRIME32_2;
     acc  = ROTL32(acc, 13);
     acc *= XXH_PRIME32_1;
@@ -148,12 +148,12 @@ static uint32_t XXH32_round(uint32_t acc, uint32_t input) {
     return acc;
 }
 
-template < bool bswap >
-static uint32_t XXH32_impl(const uint8_t * input, size_t len, uint32_t seed) {
+template <bool bswap>
+static uint32_t XXH32_impl( const uint8_t * input, size_t len, uint32_t seed ) {
     uint32_t h32;
 
-    if (len>=16) {
-        const uint8_t * const bEnd = input + len;
+    if (len >= 16) {
+        const uint8_t * const bEnd  = input + len;
         const uint8_t * const limit = bEnd - 15;
         uint32_t v1 = seed + XXH_PRIME32_1 + XXH_PRIME32_2;
         uint32_t v2 = seed + XXH_PRIME32_2;
@@ -161,21 +161,21 @@ static uint32_t XXH32_impl(const uint8_t * input, size_t len, uint32_t seed) {
         uint32_t v4 = seed - XXH_PRIME32_1;
 
         do {
-            v1 = XXH32_round(v1, GET_U32<bswap>(input,  0));
-            v2 = XXH32_round(v2, GET_U32<bswap>(input,  4));
-            v3 = XXH32_round(v3, GET_U32<bswap>(input,  8));
-            v4 = XXH32_round(v4, GET_U32<bswap>(input, 12));
+            v1     = XXH32_round(v1, GET_U32<bswap>(input,  0));
+            v2     = XXH32_round(v2, GET_U32<bswap>(input,  4));
+            v3     = XXH32_round(v3, GET_U32<bswap>(input,  8));
+            v4     = XXH32_round(v4, GET_U32<bswap>(input, 12));
             input += 16;
         } while (input < limit);
 
         h32 = ROTL32(v1, 1) + ROTL32(v2, 7) + ROTL32(v3, 12) + ROTL32(v4, 18);
     } else {
-        h32  = seed + XXH_PRIME32_5;
+        h32 = seed + XXH_PRIME32_5;
     }
 
     h32 += (uint32_t)len;
 
-    return XXH32_finalize<bswap>(h32, input, len&15);
+    return XXH32_finalize<bswap>(h32, input, len & 15);
 }
 
 //------------------------------------------------------------
@@ -193,21 +193,21 @@ static uint32_t XXH32_impl(const uint8_t * input, size_t len, uint32_t seed) {
 // 0b0010011111010100111010110010111100010110010101100110011111000101
 #define XXH_PRIME64_5  UINT64_C(0x27D4EB2F165667C5)
 
-static uint64_t XXH64_round(uint64_t acc, uint64_t input) {
+static uint64_t XXH64_round( uint64_t acc, uint64_t input ) {
     acc += input * XXH_PRIME64_2;
     acc  = ROTL64(acc, 31);
     acc *= XXH_PRIME64_1;
     return acc;
 }
 
-static uint64_t XXH64_mergeRound(uint64_t acc, uint64_t val) {
+static uint64_t XXH64_mergeRound( uint64_t acc, uint64_t val ) {
     val  = XXH64_round(0, val);
     acc ^= val;
     acc  = acc * XXH_PRIME64_1 + XXH_PRIME64_4;
     return acc;
 }
 
-static uint64_t XXH64_avalanche(uint64_t hash) {
+static uint64_t XXH64_avalanche( uint64_t hash ) {
     hash ^= hash >> 33;
     hash *= XXH_PRIME64_2;
     hash ^= hash >> 29;
@@ -220,35 +220,35 @@ static uint64_t XXH64_avalanche(uint64_t hash) {
 // There may be up to 31 bytes remaining to consume from the input.
 // This final stage will digest them to ensure that all input bytes
 // are present in the final mix.
-template < bool bswap >
-static uint64_t XXH64_finalize(uint64_t hash, const uint8_t * ptr, size_t len) {
+template <bool bswap>
+static uint64_t XXH64_finalize( uint64_t hash, const uint8_t * ptr, size_t len ) {
     while (len >= 8) {
         uint64_t const k1 = XXH64_round(0, GET_U64<bswap>(ptr, 0));
-        ptr += 8;
+        ptr  += 8;
         hash ^= k1;
-        hash  = ROTL64(hash,27) * XXH_PRIME64_1 + XXH_PRIME64_4;
-        len -= 8;
+        hash  = ROTL64(hash, 27) * XXH_PRIME64_1 + XXH_PRIME64_4;
+        len  -= 8;
     }
     if (len >= 4) {
         hash ^= (uint64_t)(GET_U32<bswap>(ptr, 0)) * XXH_PRIME64_1;
-        ptr += 4;
-        hash = ROTL64(hash, 23) * XXH_PRIME64_2 + XXH_PRIME64_3;
-        len -= 4;
+        ptr  += 4;
+        hash  = ROTL64(hash, 23) * XXH_PRIME64_2 + XXH_PRIME64_3;
+        len  -= 4;
     }
     while (len > 0) {
         hash ^= (*ptr++) * XXH_PRIME64_5;
-        hash = ROTL64(hash, 11) * XXH_PRIME64_1;
+        hash  = ROTL64(hash, 11) * XXH_PRIME64_1;
         --len;
     }
-    return  XXH64_avalanche(hash);
+    return XXH64_avalanche(hash);
 }
 
-template < bool bswap >
-static uint64_t XXH64_impl(const uint8_t * input, size_t len, uint64_t seed) {
+template <bool bswap>
+static uint64_t XXH64_impl( const uint8_t * input, size_t len, uint64_t seed ) {
     uint64_t h64;
 
-    if (len>=32) {
-        const uint8_t * const bEnd = input + len;
+    if (len >= 32) {
+        const uint8_t * const bEnd  = input + len;
         const uint8_t * const limit = bEnd - 31;
         uint64_t v1 = seed + XXH_PRIME64_1 + XXH_PRIME64_2;
         uint64_t v2 = seed + XXH_PRIME64_2;
@@ -256,12 +256,12 @@ static uint64_t XXH64_impl(const uint8_t * input, size_t len, uint64_t seed) {
         uint64_t v4 = seed - XXH_PRIME64_1;
 
         do {
-            v1 = XXH64_round(v1, GET_U64<bswap>(input,  0));
-            v2 = XXH64_round(v2, GET_U64<bswap>(input,  8));
-            v3 = XXH64_round(v3, GET_U64<bswap>(input, 16));
-            v4 = XXH64_round(v4, GET_U64<bswap>(input, 24));
+            v1     = XXH64_round(v1, GET_U64<bswap>(input,  0));
+            v2     = XXH64_round(v2, GET_U64<bswap>(input,  8));
+            v3     = XXH64_round(v3, GET_U64<bswap>(input, 16));
+            v4     = XXH64_round(v4, GET_U64<bswap>(input, 24));
             input += 32;
-        } while (input<limit);
+        } while (input < limit);
 
         h64 = ROTL64(v1, 1) + ROTL64(v2, 7) + ROTL64(v3, 12) + ROTL64(v4, 18);
         h64 = XXH64_mergeRound(h64, v1);
@@ -269,12 +269,12 @@ static uint64_t XXH64_impl(const uint8_t * input, size_t len, uint64_t seed) {
         h64 = XXH64_mergeRound(h64, v3);
         h64 = XXH64_mergeRound(h64, v4);
     } else {
-        h64  = seed + XXH_PRIME64_5;
+        h64 = seed + XXH_PRIME64_5;
     }
 
-    h64 += (uint64_t) len;
+    h64 += (uint64_t)len;
 
-    return XXH64_finalize<bswap>(h64, input, len&31);
+    return XXH64_finalize<bswap>(h64, input, len & 31);
 }
 
 //------------------------------------------------------------
@@ -412,59 +412,62 @@ alignas(64) static const uint8_t XXH3_kSecret[XXH3_SECRET_DEFAULT_SIZE] = {
  * -O2, but the other one we can't control without "failed to inline always
  * inline function due to target mismatch" warnings.
  */
-#  if defined(__GNUC__) && !defined(__clang__) && /* GCC, not Clang */ \
+  #if defined(__GNUC__) && !defined(__clang__) && /* GCC, not Clang */ \
       defined(__OPTIMIZE__)
-#    define XXH3_POP_PRAGMA
-#    pragma GCC push_options
-#    pragma GCC optimize("-O2")
-#  endif
+    #define XXH3_POP_PRAGMA
+    #pragma GCC push_options
+    #pragma GCC optimize("-O2")
+  #endif
 #endif
 
 //------------------------------------------------------------
 typedef struct {
-    uint64_t low64;   // value & 0xFFFFFFFFFFFFFFFF
-    uint64_t high64;  // value >> 64
+    uint64_t  low64;  // value & 0xFFFFFFFFFFFFFFFF
+    uint64_t  high64; // value >> 64
 } XXH128_hash_t;
 
-static inline uint64_t XXH_mult32to64(uint32_t lhs, uint32_t rhs) {
+static inline uint64_t XXH_mult32to64( uint32_t lhs, uint32_t rhs ) {
     uint64_t r64;
+
     mult32_64(r64, lhs, rhs);
     return r64;
 }
 
-static inline XXH128_hash_t XXH_mult64to128(uint64_t lhs, uint64_t rhs) {
+static inline XXH128_hash_t XXH_mult64to128( uint64_t lhs, uint64_t rhs ) {
     XXH128_hash_t r128;
+
     mult64_128(r128.low64, r128.high64, lhs, rhs);
     return r128;
 }
 
-static uint64_t XXH3_mul128_fold64(uint64_t lhs, uint64_t rhs) {
+static uint64_t XXH3_mul128_fold64( uint64_t lhs, uint64_t rhs ) {
     XXH128_hash_t product = XXH_mult64to128(lhs, rhs);
+
     return product.low64 ^ product.high64;
 }
 
 // Seems to produce slightly better code on GCC for some reason.
-static FORCE_INLINE uint64_t XXH_xorshift64(uint64_t v64, const int shift) {
-    //static_assert(0 <= shift && shift < 64, "valid shift value");
+static FORCE_INLINE uint64_t XXH_xorshift64( uint64_t v64, const int shift ) {
+    // static_assert(0 <= shift && shift < 64, "valid shift value");
     return v64 ^ (v64 >> shift);
 }
 
 // This is a fast avalanche stage, suitable when input bits are
 // already partially mixed.
-static uint64_t XXH3_avalanche(uint64_t h64) {
-    h64 = XXH_xorshift64(h64, 37);
+static uint64_t XXH3_avalanche( uint64_t h64 ) {
+    h64  = XXH_xorshift64(h64, 37);
     h64 *= UINT64_C(0x165667919E3779F9);
-    h64 = XXH_xorshift64(h64, 32);
+    h64  = XXH_xorshift64(h64, 32);
     return h64;
 }
 
 // This is a stronger avalanche, inspired by Pelle Evensen's rrmxmx.
 // preferable when input has not been previously mixed.
-static uint64_t XXH3_rrmxmx(uint64_t h64, uint64_t len) {
+static uint64_t XXH3_rrmxmx( uint64_t h64, uint64_t len ) {
     /* this mix is inspired by Pelle Evensen's rrmxmx */
     h64 ^= ROTL64(h64, 49) ^ ROTL64(h64, 24);
     h64 *= UINT64_C(0x9FB21C651E98DF25);
-    h64 ^= (h64 >> 35) + len ;
+    h64 ^= (h64 >> 35) + len;
     h64 *= UINT64_C(0x9FB21C651E98DF25);
     return XXH_xorshift64(h64, 28);
 }
@@ -502,50 +505,56 @@ static uint64_t XXH3_rrmxmx(uint64_t h64, uint64_t len) {
 //
 // This adds an extra layer of strength for custom secrets.
 
-template < bool bswap >
-static FORCE_INLINE uint64_t XXH3_len_1to3_64b(const uint8_t * input, size_t len, const uint8_t * secret, uint64_t seed) {
+template <bool bswap>
+static FORCE_INLINE uint64_t XXH3_len_1to3_64b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
     // len = 1: combined = { input[0], 0x01, input[0], input[0] }
     // len = 2: combined = { input[1], 0x02, input[0], input[1] }
     // len = 3: combined = { input[2], 0x03, input[0], input[1] }
-    uint8_t  const c1 = input[0];
-    uint8_t  const c2 = input[len >> 1];
-    uint8_t  const c3 = input[len - 1];
-    uint32_t const combined = ((uint32_t)c1 << 16) | ((uint32_t)c2  << 24) |
-        ((uint32_t)c3 <<  0) | ((uint32_t)len << 8);
-    uint64_t const bitflip = (GET_U32<bswap>(secret,0) ^ GET_U32<bswap>(secret,4)) + seed;
-    uint64_t const keyed = (uint64_t)combined ^ bitflip;
+    uint8_t const  c1       = input[0];
+    uint8_t const  c2       = input[len >> 1];
+    uint8_t const  c3       = input[len  - 1];
+    uint32_t const combined = ((uint32_t)c1 << 16) | ((uint32_t)c2 << 24) |
+            ((uint32_t)c3 << 0) | ((uint32_t)len << 8);
+    uint64_t const bitflip  = (GET_U32<bswap>(secret, 0) ^ GET_U32<bswap>(secret, 4)) + seed;
+    uint64_t const keyed    = (uint64_t)combined ^ bitflip;
+
     return XXH64_avalanche(keyed);
 }
 
-template < bool bswap >
-static FORCE_INLINE uint64_t XXH3_len_4to8_64b(const uint8_t * input, size_t len, const uint8_t * secret, uint64_t seed) {
+template <bool bswap>
+static FORCE_INLINE uint64_t XXH3_len_4to8_64b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
     seed ^= (uint64_t)BSWAP((uint32_t)seed) << 32;
-    uint32_t const input1 = GET_U32<bswap>(input, 0);
-    uint32_t const input2 = GET_U32<bswap>(input, len - 4);
+    uint32_t const input1  = GET_U32<bswap>(input,   0    );
+    uint32_t const input2  = GET_U32<bswap>(input, len - 4);
     uint64_t const input64 = input2 + (((uint64_t)input1) << 32);
-    uint64_t const bitflip = (GET_U64<bswap>(secret, 8) ^ GET_U64<bswap>(secret,16)) - seed;
-    uint64_t const keyed = input64 ^ bitflip;
+    uint64_t const bitflip = (GET_U64<bswap>(secret, 8) ^ GET_U64<bswap>(secret, 16)) - seed;
+    uint64_t const keyed   = input64 ^ bitflip;
     return XXH3_rrmxmx(keyed, len);
 }
 
-template < bool bswap >
-static FORCE_INLINE uint64_t XXH3_len_9to16_64b(const uint8_t * input, size_t len, const uint8_t * secret, uint64_t seed) {
-    uint64_t const bitflip1 = (GET_U64<bswap>(secret,24) ^ GET_U64<bswap>(secret,32)) + seed;
-    uint64_t const bitflip2 = (GET_U64<bswap>(secret,40) ^ GET_U64<bswap>(secret,48)) - seed;
-    uint64_t const input_lo = GET_U64<bswap>(input, 0)       ^ bitflip1;
+template <bool bswap>
+static FORCE_INLINE uint64_t XXH3_len_9to16_64b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
+    uint64_t const bitflip1 = (GET_U64<bswap>(secret, 24) ^ GET_U64<bswap>(secret, 32)) + seed;
+    uint64_t const bitflip2 = (GET_U64<bswap>(secret, 40) ^ GET_U64<bswap>(secret, 48)) - seed;
+    uint64_t const input_lo = GET_U64<bswap>(input,   0    ) ^ bitflip1;
     uint64_t const input_hi = GET_U64<bswap>(input, len - 8) ^ bitflip2;
-    uint64_t const acc = len + input_hi + BSWAP(input_lo) +
-        XXH3_mul128_fold64(input_lo, input_hi);
+    uint64_t const acc      = len + input_hi + BSWAP(input_lo) +
+            XXH3_mul128_fold64(input_lo, input_hi);
+
     return XXH3_avalanche(acc);
 }
 
-template < bool bswap >
-static FORCE_INLINE uint64_t XXH3_len_0to16_64b(const uint8_t * input, size_t len, const uint8_t * secret, uint64_t seed) {
-    if (likely(len >  8)) return XXH3_len_9to16_64b<bswap>(input, len, secret, seed);
-    if (likely(len >= 4)) return XXH3_len_4to8_64b<bswap>(input, len, secret, seed);
-    if (len)              return XXH3_len_1to3_64b<bswap>(input, len, secret, seed);
-    return XXH64_avalanche(seed ^ GET_U64<bswap>(secret,56) ^
-            GET_U64<bswap>(secret,64));
+template <bool bswap>
+static FORCE_INLINE uint64_t XXH3_len_0to16_64b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
+    if (likely(len >  8)) { return XXH3_len_9to16_64b<bswap>(input, len, secret, seed); }
+    if (likely(len >= 4)) { return XXH3_len_4to8_64b<bswap>(input, len, secret, seed); }
+    if (len) { return XXH3_len_1to3_64b<bswap>(input, len, secret, seed); }
+    return XXH64_avalanche(seed ^ GET_U64<bswap>(secret, 56) ^
+            GET_U64<bswap>(secret, 64));
 }
 
 //------------------------------------------------------------
@@ -592,41 +601,38 @@ static FORCE_INLINE uint64_t XXH3_len_0to16_64b(const uint8_t * input, size_t le
 
 #define XXH3_MIDSIZE_MAX 240
 
-template < bool bswap >
-static FORCE_INLINE uint64_t XXH3_mix16B(const uint8_t * RESTRICT input,
-        const uint8_t * RESTRICT secret, uint64_t seed64) {
-#if defined(__GNUC__) && !defined(__clang__) /* GCC, not Clang */ \
-  && defined(__i386__) && defined(__SSE2__)  /* x86 + SSE2 */
+template <bool bswap>
+static FORCE_INLINE uint64_t XXH3_mix16B( const uint8_t * RESTRICT input,
+        const uint8_t * RESTRICT secret, uint64_t seed64 ) {
+#if defined(__GNUC__) && !defined(__clang__)  /* GCC, not Clang */ \
+    && defined(__i386__) && defined(__SSE2__) /* x86 + SSE2 */
     XXH_COMPILER_GUARD(seed64);
 #endif
     uint64_t const input_lo = GET_U64<bswap>(input, 0);
     uint64_t const input_hi = GET_U64<bswap>(input, 8);
-    return XXH3_mul128_fold64(
-            input_lo ^ (GET_U64<bswap>(secret, 0) + seed64),
+    return XXH3_mul128_fold64(input_lo ^ (GET_U64<bswap>(secret, 0) + seed64),
             input_hi ^ (GET_U64<bswap>(secret, 8) - seed64));
 }
 
-template < bool bswap >
-static FORCE_INLINE uint64_t XXH3_len_17to128_64b(
-        const uint8_t * RESTRICT input, size_t len,
-        const uint8_t * RESTRICT secret, size_t secretSize,
-        uint64_t seed) {
+template <bool bswap>
+static FORCE_INLINE uint64_t XXH3_len_17to128_64b( const uint8_t * RESTRICT input, size_t len,
+        const uint8_t * RESTRICT secret, size_t secretSize, uint64_t seed ) {
     uint64_t acc = len * XXH_PRIME64_1;
 
     if (len > 32) {
         if (len > 64) {
             if (len > 96) {
-                acc += XXH3_mix16B<bswap>(input+48, secret+96, seed);
-                acc += XXH3_mix16B<bswap>(input+len-64, secret+112, seed);
+                acc += XXH3_mix16B<bswap>(input + 48      , secret +  96, seed);
+                acc += XXH3_mix16B<bswap>(input + len - 64, secret + 112, seed);
             }
-            acc += XXH3_mix16B<bswap>(input+32, secret+64, seed);
-            acc += XXH3_mix16B<bswap>(input+len-48, secret+80, seed);
+            acc += XXH3_mix16B<bswap>(input + 32      , secret + 64, seed);
+            acc += XXH3_mix16B<bswap>(input + len - 48, secret + 80, seed);
         }
-        acc += XXH3_mix16B<bswap>(input+16, secret+32, seed);
-        acc += XXH3_mix16B<bswap>(input+len-32, secret+48, seed);
+        acc += XXH3_mix16B<bswap>(input + 16      , secret + 32, seed);
+        acc += XXH3_mix16B<bswap>(input + len - 32, secret + 48, seed);
     }
-    acc += XXH3_mix16B<bswap>(input+0, secret+0, seed);
-    acc += XXH3_mix16B<bswap>(input+len-16, secret+16, seed);
+    acc += XXH3_mix16B<bswap>(input + 0       , secret +  0, seed);
+    acc += XXH3_mix16B<bswap>(input + len - 16, secret + 16, seed);
 
     return XXH3_avalanche(acc);
 }
@@ -649,27 +655,25 @@ static FORCE_INLINE uint64_t XXH3_len_17to128_64b(
 // This loop is the easiest to fix, as unlike XXH32, this pragma
 // _actually works_ because it is a loop vectorization instead of an
 // SLP vectorization.
-template < bool bswap >
-static NEVER_INLINE uint64_t XXH3_len_129to240_64b(
-        const uint8_t * RESTRICT input, size_t len,
-        const uint8_t * RESTRICT secret, size_t secretSize,
-        uint64_t seed) {
-    #define XXH3_MIDSIZE_STARTOFFSET 3
-    #define XXH3_MIDSIZE_LASTOFFSET  17
+template <bool bswap>
+static NEVER_INLINE uint64_t XXH3_len_129to240_64b( const uint8_t * RESTRICT input, size_t len,
+        const uint8_t * RESTRICT secret, size_t secretSize, uint64_t seed ) {
+#define XXH3_MIDSIZE_STARTOFFSET 3
+#define XXH3_MIDSIZE_LASTOFFSET  17
 
-    uint64_t acc = len * XXH_PRIME64_1;
+    uint64_t  acc      = len * XXH_PRIME64_1;
     int const nbRounds = (int)len / 16;
     for (int i = 0; i < 8; i++) {
-        acc += XXH3_mix16B<bswap>(input+(16*i), secret+(16*i), seed);
+        acc += XXH3_mix16B<bswap>(input + (16 * i), secret + (16 * i), seed);
     }
     acc = XXH3_avalanche(acc);
 
 #if defined(__clang__) && (defined(__ARM_NEON) || defined(__ARM_NEON__))
-#  pragma clang loop vectorize(disable)
+  #pragma clang loop vectorize(disable)
 #endif
 
-    for (int i = 8 ; i < nbRounds; i++) {
-        acc += XXH3_mix16B<bswap>(input+(16*i), secret+(16*(i-8)) + XXH3_MIDSIZE_STARTOFFSET, seed);
+    for (int i = 8; i < nbRounds; i++) {
+        acc += XXH3_mix16B<bswap>(input + (16 * i), secret + (16 * (i - 8)) + XXH3_MIDSIZE_STARTOFFSET, seed);
     }
     /* last bytes */
     acc += XXH3_mix16B<bswap>(input + len - 16, secret + XXH3_SECRET_SIZE_MIN - XXH3_MIDSIZE_LASTOFFSET, seed);
@@ -695,42 +699,43 @@ static NEVER_INLINE uint64_t XXH3_len_129to240_64b(
 // XXH64).
 
 // A doubled version of 1to3_64b with different constants.
-template < bool bswap >
-static FORCE_INLINE XXH128_hash_t XXH3_len_1to3_128b(const uint8_t* input,
-        size_t len, const uint8_t* secret, uint64_t seed) {
+template <bool bswap>
+static FORCE_INLINE XXH128_hash_t XXH3_len_1to3_128b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
     /*
      * len = 1: combinedl = { input[0], 0x01, input[0], input[0] }
      * len = 2: combinedl = { input[1], 0x02, input[0], input[1] }
      * len = 3: combinedl = { input[2], 0x03, input[0], input[1] }
      */
-    uint8_t const c1 = input[0];
-    uint8_t const c2 = input[len >> 1];
-    uint8_t const c3 = input[len - 1];
-    uint32_t const combinedl = ((uint32_t)c1 <<16) | ((uint32_t)c2 << 24)
-        | ((uint32_t)c3 << 0) | ((uint32_t)len << 8);
+    uint8_t const  c1        = input[0];
+    uint8_t const  c2        = input[len >> 1];
+    uint8_t const  c3        = input[len  - 1];
+    uint32_t const combinedl = ((uint32_t)c1 << 16) | ((uint32_t)c2 << 24) |
+            ((uint32_t)c3 << 0) | ((uint32_t)len << 8);
     uint32_t const combinedh = ROTL32(BSWAP(combinedl), 13);
-    uint64_t const bitflipl = (GET_U32<bswap>(secret,0) ^ GET_U32<bswap>(secret, 4)) + seed;
-    uint64_t const bitfliph = (GET_U32<bswap>(secret,8) ^ GET_U32<bswap>(secret,12)) - seed;
-    uint64_t const keyed_lo = (uint64_t)combinedl ^ bitflipl;
-    uint64_t const keyed_hi = (uint64_t)combinedh ^ bitfliph;
-    XXH128_hash_t h128 = { XXH64_avalanche(keyed_lo), XXH64_avalanche(keyed_hi) };
+    uint64_t const bitflipl  = (GET_U32<bswap>(secret, 0) ^ GET_U32<bswap>(secret,  4)) + seed;
+    uint64_t const bitfliph  = (GET_U32<bswap>(secret, 8) ^ GET_U32<bswap>(secret, 12)) - seed;
+    uint64_t const keyed_lo  = (uint64_t)combinedl ^ bitflipl;
+    uint64_t const keyed_hi  = (uint64_t)combinedh ^ bitfliph;
+    XXH128_hash_t  h128      = { XXH64_avalanche(keyed_lo), XXH64_avalanche(keyed_hi) };
+
     return h128;
 }
 
-template < bool bswap >
-static FORCE_INLINE XXH128_hash_t XXH3_len_4to8_128b(const uint8_t* input,
-        size_t len, const uint8_t* secret, uint64_t seed) {
+template <bool bswap>
+static FORCE_INLINE XXH128_hash_t XXH3_len_4to8_128b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
     seed ^= (uint64_t)BSWAP((uint32_t)seed) << 32;
-    uint32_t const input_lo = GET_U32<bswap>(input, 0);
+    uint32_t const input_lo = GET_U32<bswap>(input,   0    );
     uint32_t const input_hi = GET_U32<bswap>(input, len - 4);
     uint64_t const input_64 = input_lo + ((uint64_t)input_hi << 32);
-    uint64_t const bitflip = (GET_U64<bswap>(secret,16) ^ GET_U64<bswap>(secret,24)) + seed;
-    uint64_t const keyed = input_64 ^ bitflip;
+    uint64_t const bitflip  = (GET_U64<bswap>(secret, 16) ^ GET_U64<bswap>(secret, 24)) + seed;
+    uint64_t const keyed    = input_64 ^ bitflip;
 
     /* Shift len to the left to ensure it is even, this avoids even multiplies. */
     XXH128_hash_t m128 = XXH_mult64to128(keyed, XXH_PRIME64_1 + (len << 2));
 
-    m128.high64 += (m128.low64 << 1);
+    m128.high64 += (m128.low64  << 1);
     m128.low64  ^= (m128.high64 >> 3);
 
     m128.low64   = XXH_xorshift64(m128.low64, 35);
@@ -740,14 +745,15 @@ static FORCE_INLINE XXH128_hash_t XXH3_len_4to8_128b(const uint8_t* input,
     return m128;
 }
 
-template < bool bswap >
-static FORCE_INLINE XXH128_hash_t XXH3_len_9to16_128b(const uint8_t* input,
-        size_t len, const uint8_t* secret, uint64_t seed) {
-    uint64_t const bitflipl = (GET_U64<bswap>(secret,32) ^ GET_U64<bswap>(secret,40)) - seed;
-    uint64_t const bitfliph = (GET_U64<bswap>(secret,48) ^ GET_U64<bswap>(secret,56)) + seed;
-    uint64_t const input_lo = GET_U64<bswap>(input, 0);
+template <bool bswap>
+static FORCE_INLINE XXH128_hash_t XXH3_len_9to16_128b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
+    uint64_t const bitflipl = (GET_U64<bswap>(secret, 32) ^ GET_U64<bswap>(secret, 40)) - seed;
+    uint64_t const bitfliph = (GET_U64<bswap>(secret, 48) ^ GET_U64<bswap>(secret, 56)) + seed;
+    uint64_t const input_lo = GET_U64<bswap>(input,   0    );
     uint64_t       input_hi = GET_U64<bswap>(input, len - 8);
-    XXH128_hash_t m128      = XXH_mult64to128(input_lo ^ input_hi ^ bitflipl, XXH_PRIME64_1);
+    XXH128_hash_t  m128     = XXH_mult64to128(input_lo ^ input_hi ^ bitflipl, XXH_PRIME64_1);
+
     /*
      * Put len in the middle of m128 to ensure that the length gets mixed to
      * both the low and high bits in the 128x64 multiply below.
@@ -798,28 +804,28 @@ static FORCE_INLINE XXH128_hash_t XXH3_len_9to16_128b(const uint8_t* input,
     m128.high64 += input_hi + XXH_mult32to64((uint32_t)input_hi, XXH_PRIME32_2 - 1);
 #endif
     /* m128 ^= XXH_swap64(m128 >> 64); */
-    m128.low64  ^= BSWAP(m128.high64);
+    m128.low64 ^= BSWAP(m128.high64);
 
     /* 128x64 multiply: h128 = m128 * XXH_PRIME64_2; */
     XXH128_hash_t h128 = XXH_mult64to128(m128.low64, XXH_PRIME64_2);
     h128.high64 += m128.high64 * XXH_PRIME64_2;
 
-    h128.low64   = XXH3_avalanche(h128.low64);
+    h128.low64   = XXH3_avalanche(h128.low64 );
     h128.high64  = XXH3_avalanche(h128.high64);
     return h128;
 }
 
 // Assumption: `secret` size is >= XXH3_SECRET_SIZE_MIN
-template < bool bswap >
-static FORCE_INLINE XXH128_hash_t XXH3_len_0to16_128b(const uint8_t* input,
-        size_t len, const uint8_t* secret, uint64_t seed) {
-    if (len >  8) return XXH3_len_9to16_128b<bswap>(input, len, secret, seed);
-    if (len >= 4) return XXH3_len_4to8_128b<bswap>(input, len, secret, seed);
-    if (len)      return XXH3_len_1to3_128b<bswap>(input, len, secret, seed);
+template <bool bswap>
+static FORCE_INLINE XXH128_hash_t XXH3_len_0to16_128b( const uint8_t * input,
+        size_t len, const uint8_t * secret, uint64_t seed ) {
+    if (len >  8) { return XXH3_len_9to16_128b<bswap>(input, len, secret, seed); }
+    if (len >= 4) { return XXH3_len_4to8_128b<bswap>(input, len, secret, seed); }
+    if (len) { return XXH3_len_1to3_128b<bswap>(input, len, secret, seed); }
 
-    uint64_t const bitflipl = GET_U64<bswap>(secret,64) ^ GET_U64<bswap>(secret,72);
-    uint64_t const bitfliph = GET_U64<bswap>(secret,80) ^ GET_U64<bswap>(secret,88);
-    XXH128_hash_t h128 = { XXH64_avalanche(seed ^ bitflipl), XXH64_avalanche( seed ^ bitfliph) };
+    uint64_t const bitflipl = GET_U64<bswap>(secret, 64) ^ GET_U64<bswap>(secret, 72);
+    uint64_t const bitfliph = GET_U64<bswap>(secret, 80) ^ GET_U64<bswap>(secret, 88);
+    XXH128_hash_t  h128     = { XXH64_avalanche(seed ^ bitflipl), XXH64_avalanche(seed ^ bitfliph) };
     return h128;
 }
 
@@ -827,83 +833,70 @@ static FORCE_INLINE XXH128_hash_t XXH3_len_0to16_128b(const uint8_t* input,
 // XXH3-128 mid-range keys
 
 // A bit slower than XXH3_mix16B, but handles multiply by zero better.
-template < bool bswap >
-static FORCE_INLINE XXH128_hash_t XXH128_mix32B(XXH128_hash_t acc,
-        const uint8_t* input_1, const uint8_t* input_2,
-        const uint8_t* secret, uint64_t seed) {
-    acc.low64  += XXH3_mix16B<bswap>(input_1, secret+0, seed);
+template <bool bswap>
+static FORCE_INLINE XXH128_hash_t XXH128_mix32B( XXH128_hash_t acc, const uint8_t * input_1,
+        const uint8_t * input_2, const uint8_t * secret, uint64_t seed ) {
+    acc.low64  += XXH3_mix16B<bswap>(input_1, secret +  0, seed);
     acc.low64  ^= GET_U64<bswap>(input_2, 0) + GET_U64<bswap>(input_2, 8);
-    acc.high64 += XXH3_mix16B<bswap>(input_2, secret+16, seed);
+    acc.high64 += XXH3_mix16B<bswap>(input_2, secret + 16, seed);
     acc.high64 ^= GET_U64<bswap>(input_1, 0) + GET_U64<bswap>(input_1, 8);
     return acc;
 }
 
-template < bool bswap >
-static FORCE_INLINE XXH128_hash_t XXH3_len_17to128_128b(
-        const uint8_t* RESTRICT input, size_t len,
-        const uint8_t* RESTRICT secret, size_t secretSize, uint64_t seed) {
+template <bool bswap>
+static FORCE_INLINE XXH128_hash_t XXH3_len_17to128_128b( const uint8_t * RESTRICT input, size_t len,
+        const uint8_t * RESTRICT secret, size_t secretSize, uint64_t seed ) {
     XXH128_hash_t acc = { len * XXH_PRIME64_1, acc.high64 = 0 };
 
     if (len > 32) {
         if (len > 64) {
             if (len > 96) {
-                acc = XXH128_mix32B<bswap>(acc, input+48, input+len-64, secret+96, seed);
+                acc = XXH128_mix32B<bswap>(acc, input + 48, input + len - 64, secret + 96, seed);
             }
-            acc = XXH128_mix32B<bswap>(acc, input+32, input+len-48, secret+64, seed);
+            acc = XXH128_mix32B<bswap>(acc, input + 32, input + len - 48, secret + 64, seed);
         }
-        acc = XXH128_mix32B<bswap>(acc, input+16, input+len-32, secret+32, seed);
+        acc = XXH128_mix32B<bswap>(acc, input + 16, input + len - 32, secret + 32, seed);
     }
-    acc = XXH128_mix32B<bswap>(acc, input, input+len-16, secret, seed);
+    acc = XXH128_mix32B<bswap>(acc, input, input + len - 16, secret, seed);
 
     XXH128_hash_t h128;
     h128.low64  = acc.low64 + acc.high64;
-    h128.high64 = (acc.low64    * XXH_PRIME64_1) +
-                  (acc.high64   * XXH_PRIME64_4) +
-                  ((len - seed) * XXH_PRIME64_2) ;
+    h128.high64 = (acc.low64  * XXH_PRIME64_1) +
+                  (acc.high64 * XXH_PRIME64_4) +
+            (     (len        - seed         ) * XXH_PRIME64_2);
     h128.low64  = XXH3_avalanche(h128.low64);
     h128.high64 = (uint64_t)0 - XXH3_avalanche(h128.high64);
     return h128;
 }
 
-template < bool bswap >
-static NEVER_INLINE XXH128_hash_t XXH3_len_129to240_128b(
-        const uint8_t* RESTRICT input, size_t len,
-        const uint8_t* RESTRICT secret, size_t secretSize, uint64_t seed) {
+template <bool bswap>
+static NEVER_INLINE XXH128_hash_t XXH3_len_129to240_128b( const uint8_t * RESTRICT input, size_t len,
+        const uint8_t * RESTRICT secret, size_t secretSize, uint64_t seed ) {
     XXH128_hash_t acc;
-    int const nbRounds = (int)len / 32;
+    int const     nbRounds = (int)len / 32;
 
-    acc.low64 = len * XXH_PRIME64_1;
+    acc.low64  = len * XXH_PRIME64_1;
     acc.high64 = 0;
     for (int i = 0; i < 4; i++) {
-        acc = XXH128_mix32B<bswap>(acc,
-                input  + (32 * i),
-                input  + (32 * i) + 16,
-                secret + (32 * i),
-                seed);
+        acc = XXH128_mix32B<bswap>(acc, input + (32 * i), input + (32 * i) + 16, secret + (32 * i), seed);
     }
-    acc.low64 = XXH3_avalanche(acc.low64);
+    acc.low64  = XXH3_avalanche(acc.low64 );
     acc.high64 = XXH3_avalanche(acc.high64);
 
     for (int i = 4; i < nbRounds; i++) {
-        acc = XXH128_mix32B<bswap>(acc,
-                input + (32 * i),
-                input + (32 * i) + 16,
-                secret + XXH3_MIDSIZE_STARTOFFSET + (32 * (i - 4)),
-                seed);
+        acc = XXH128_mix32B<bswap>(acc, input + (32 * i), input + (32 * i) + 16,
+                secret + XXH3_MIDSIZE_STARTOFFSET + (32 * (i - 4)), seed);
     }
 
     /* last bytes */
-    acc = XXH128_mix32B<bswap>(acc,
-            input + len - 16,
-            input + len - 32,
-            secret + XXH3_SECRET_SIZE_MIN - XXH3_MIDSIZE_LASTOFFSET - 16,
-            UINT64_C(0) - seed);
+    acc = XXH128_mix32B<bswap>(acc, input + len - 16, input + len - 32,
+            secret + XXH3_SECRET_SIZE_MIN - XXH3_MIDSIZE_LASTOFFSET - 16, UINT64_C(0) - seed);
 
     XXH128_hash_t h128;
     h128.low64  = acc.low64 + acc.high64;
-    h128.high64 = (acc.low64    * XXH_PRIME64_1) +
-                  (acc.high64   * XXH_PRIME64_4) +
-                  ((len - seed) * XXH_PRIME64_2) ;
+    h128.high64 = (acc.low64  * XXH_PRIME64_1) +
+                  (acc.high64 * XXH_PRIME64_4) +
+            (     (len        - seed         ) * XXH_PRIME64_2);
     h128.low64  = XXH3_avalanche(h128.low64);
     h128.high64 = (uint64_t)0 - XXH3_avalanche(h128.high64);
     return h128;
@@ -933,26 +926,27 @@ static NEVER_INLINE XXH128_hash_t XXH3_len_129to240_128b(
 //
 // This doesn't matter on 64-bit hashes since they all get merged
 // together in the end, so we skip the extra step.
-template < bool bswap >
-static FORCE_INLINE void XXH3_scalarRound(void * RESTRICT acc,
-        void const * RESTRICT input, void const * RESTRICT secret, size_t lane) {
-    uint64_t * xacc = (uint64_t*) acc;
-    uint8_t const * xinput  = (uint8_t const*) input;
-    uint8_t const * xsecret = (uint8_t const*) secret;
-    uint64_t const data_val = GET_U64<bswap>(xinput, lane * 8);
-    uint64_t const data_key = data_val ^ GET_U64<bswap>(xsecret, lane * 8);
+template <bool bswap>
+static FORCE_INLINE void XXH3_scalarRound( void * RESTRICT acc, void const * RESTRICT input,
+        void const * RESTRICT secret, size_t lane ) {
+    uint64_t *      xacc     = (uint64_t *     )acc;
+    uint8_t const * xinput   = (uint8_t const *)input;
+    uint8_t const * xsecret  = (uint8_t const *)secret;
+    uint64_t const  data_val = GET_U64           <bswap>(xinput, lane *  8);
+    uint64_t const  data_key = data_val ^ GET_U64<bswap>(xsecret, lane * 8);
+
     xacc[lane ^ 1] += data_val; /* swap adjacent lanes */
-    xacc[lane] += XXH_mult32to64(data_key & 0xFFFFFFFF, data_key >> 32);
+    xacc[lane]     += XXH_mult32to64(data_key & 0xFFFFFFFF, data_key >> 32);
 }
 
-template < bool bswap >
-static FORCE_INLINE void XXH3_accumulate_512_scalar(void * RESTRICT acc,
-        const void * RESTRICT input, const void * RESTRICT secret) {
+template <bool bswap>
+static FORCE_INLINE void XXH3_accumulate_512_scalar( void * RESTRICT acc,
+        const void * RESTRICT input, const void * RESTRICT secret ) {
     /* ARM GCC refuses to unroll this loop, resulting in a 24% slowdown on ARMv6. */
-#if defined(__GNUC__) && !defined(__clang__) \
-  && (defined(__arm__) || defined(__thumb2__)) \
+#if defined(__GNUC__) && !defined(__clang__)     \
+    && (defined(__arm__) || defined(__thumb2__)) \
     && defined(__ARM_FEATURE_UNALIGNED) /* no unaligned access just wastes bytes */
-#  pragma GCC unroll 8
+  #pragma GCC unroll 8
 #endif
     for (size_t i = 0; i < XXH_ACC_NB; i++) {
         XXH3_scalarRound<bswap>(acc, input, secret, i);
@@ -973,22 +967,21 @@ static FORCE_INLINE void XXH3_accumulate_512_scalar(void * RESTRICT acc,
 // Since our algorithm uses a pseudorandom secret to add some variance
 // into the mix, we don't need to (or want to) mix as often or as much
 // as HighwayHash does.
-template < bool bswap >
-static FORCE_INLINE void XXH3_scalarScrambleRound(void * RESTRICT acc,
-        void const* RESTRICT secret, size_t lane) {
-    uint64_t* const xacc = (uint64_t*) acc;   /* presumed aligned */
-    const uint8_t* const xsecret = (const uint8_t*) secret;   /* no alignment restriction */
-    uint64_t const key64 = GET_U64<bswap>(xsecret, lane * 8);
+template <bool bswap>
+static FORCE_INLINE void XXH3_scalarScrambleRound( void * RESTRICT acc, void const * RESTRICT secret, size_t lane ) {
+    uint64_t      * const xacc    = (uint64_t *     )acc;    /* presumed aligned */
+    const uint8_t * const xsecret = (const uint8_t *)secret; /* no alignment restriction */
+    uint64_t const        key64   = GET_U64<bswap>(xsecret, lane * 8);
     uint64_t acc64 = xacc[lane];
-    acc64 = XXH_xorshift64(acc64, 47);
-    acc64 ^= key64;
-    acc64 *= XXH_PRIME32_1;
+
+    acc64      = XXH_xorshift64(acc64, 47);
+    acc64     ^= key64;
+    acc64     *= XXH_PRIME32_1;
     xacc[lane] = acc64;
 }
 
-template < bool bswap >
-static FORCE_INLINE void XXH3_scrambleAcc_scalar(void * RESTRICT acc,
-        const void * RESTRICT secret) {
+template <bool bswap>
+static FORCE_INLINE void XXH3_scrambleAcc_scalar( void * RESTRICT acc, const void * RESTRICT secret ) {
     for (size_t i = 0; i < XXH_ACC_NB; i++) {
         XXH3_scalarScrambleRound<bswap>(acc, secret, i);
     }
@@ -1024,15 +1017,15 @@ static FORCE_INLINE void XXH3_scrambleAcc_scalar(void * RESTRICT acc,
 // XXH3_64bits_withSeed, len == 256, Snapdragon 835
 //   without hack: 2654.4 MB/s
 //   with hack:    3202.9 MB/s
-template < bool bswap >
-static FORCE_INLINE void XXH3_initCustomSecret_scalar(void * RESTRICT customSecret,
-        uint64_t seed64) {
+template <bool bswap>
+static FORCE_INLINE void XXH3_initCustomSecret_scalar( void * RESTRICT customSecret, uint64_t seed64 ) {
     /*
      * We need a separate pointer for the GUARD hack below,
      * which requires a non-const pointer.
      * Any decent compiler will optimize this out otherwise.
      */
-    const uint8_t* kSecretPtr = XXH3_kSecret;
+    const uint8_t * kSecretPtr = XXH3_kSecret;
+
 #if defined(__clang__) && defined(__aarch64__)
     XXH_COMPILER_GUARD(kSecretPtr);
 #endif
@@ -1045,10 +1038,10 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar(void * RESTRICT customSecr
          * loads together for free. Putting the loads together before the stores
          * properly generates LDP.
          */
-        uint64_t lo = GET_U64<bswap>(kSecretPtr, 16*i)     + seed64;
-        uint64_t hi = GET_U64<bswap>(kSecretPtr, 16*i + 8) - seed64;
-        PUT_U64<bswap>(lo, (uint8_t*)customSecret, 16*i    );
-        PUT_U64<bswap>(hi, (uint8_t*)customSecret, 16*i + 8);
+        uint64_t lo = GET_U64<bswap>(kSecretPtr, 16 * i    ) + seed64;
+        uint64_t hi = GET_U64<bswap>(kSecretPtr, 16 * i + 8) - seed64;
+        PUT_U64<bswap>(lo, (uint8_t *)customSecret, 16 * i    );
+        PUT_U64<bswap>(hi, (uint8_t *)customSecret, 16 * i + 8);
     }
 }
 
@@ -1064,65 +1057,64 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar(void * RESTRICT customSecr
 #define XXH_VSX    5
 
 #if defined(__has_builtin)
-#  define XXH_HAS_BUILTIN(x) __has_builtin(x)
+  #define XXH_HAS_BUILTIN(x) __has_builtin(x)
 #else
-#  define XXH_HAS_BUILTIN(x) 0
+  #define XXH_HAS_BUILTIN(x) 0
 #endif
 
-#if !defined(FORCE_SCALAR) && defined(HAVE_PPC_VSX) &&              \
-    !defined(HAVE_PPC_ASM) && !defined(__s390x__) &&                \
+#if !defined(FORCE_SCALAR) && defined(HAVE_PPC_VSX) && \
+    !defined(HAVE_PPC_ASM) && !defined(__s390x__) &&   \
     !(defined(__clang__) && XXH_HAS_BUILTIN(__builtin_altivec_vmuleuw))
-#warning "PPC mulo/mule compiler support not found; falling back to scalar code"
-#define FORCE_SCALAR
+  #warning "PPC mulo/mule compiler support not found; falling back to scalar code"
+  #define FORCE_SCALAR
 #endif
 
 #if defined(FORCE_SCALAR)
-#define XXH_VECTOR    XXH_SCALAR
-#define XXH_ACC_ALIGN 8
-#define XXH_SEC_ALIGN 8
+  #define XXH_VECTOR    XXH_SCALAR
+  #define XXH_ACC_ALIGN 8
+  #define XXH_SEC_ALIGN 8
 #elif defined(HAVE_ARM_NEON)
-#define XXH_VECTOR    XXH_NEON
-#define XXH_ACC_ALIGN 16
-#define XXH_SEC_ALIGN 8
-#include "Intrinsics.h"
-#include "xxhash/xxh3-arm.h"
+  #define XXH_VECTOR    XXH_NEON
+  #define XXH_ACC_ALIGN 16
+  #define XXH_SEC_ALIGN 8
+  #include "Intrinsics.h"
+  #include "xxhash/xxh3-arm.h"
 #elif defined(HAVE_PPC_VSX)
-#define XXH_VECTOR    XXH_VSX
-#define XXH_ACC_ALIGN 16
-#define XXH_SEC_ALIGN 8
-#include "Intrinsics.h"
-#include "xxhash/xxh3-ppc.h"
+  #define XXH_VECTOR    XXH_VSX
+  #define XXH_ACC_ALIGN 16
+  #define XXH_SEC_ALIGN 8
+  #include "Intrinsics.h"
+  #include "xxhash/xxh3-ppc.h"
 #elif defined(HAVE_AVX512_F)
-#define XXH_VECTOR    XXH_AVX512
-#define XXH_ACC_ALIGN 64
-#define XXH_SEC_ALIGN 64
-#include "Intrinsics.h"
-#include "xxhash/xxh3-avx512.h"
+  #define XXH_VECTOR    XXH_AVX512
+  #define XXH_ACC_ALIGN 64
+  #define XXH_SEC_ALIGN 64
+  #include "Intrinsics.h"
+  #include "xxhash/xxh3-avx512.h"
 #elif defined(HAVE_AVX2)
-#define XXH_VECTOR    XXH_AVX2
-#define XXH_ACC_ALIGN 32
-#define XXH_SEC_ALIGN 32
-#include "Intrinsics.h"
-#include "xxhash/xxh3-avx2.h"
+  #define XXH_VECTOR    XXH_AVX2
+  #define XXH_ACC_ALIGN 32
+  #define XXH_SEC_ALIGN 32
+  #include "Intrinsics.h"
+  #include "xxhash/xxh3-avx2.h"
 #elif defined(HAVE_SSE_2)
-#define XXH_VECTOR    XXH_SSE2
-#define XXH_ACC_ALIGN 16
-#define XXH_SEC_ALIGN 16
-#include "Intrinsics.h"
-#include "xxhash/xxh3-sse2.h"
+  #define XXH_VECTOR    XXH_SSE2
+  #define XXH_ACC_ALIGN 16
+  #define XXH_SEC_ALIGN 16
+  #include "Intrinsics.h"
+  #include "xxhash/xxh3-sse2.h"
 #else
-#define XXH_VECTOR    XXH_SCALAR
-#define XXH_ACC_ALIGN 8
-#define XXH_SEC_ALIGN 8
+  #define XXH_VECTOR    XXH_SCALAR
+  #define XXH_ACC_ALIGN 8
+  #define XXH_SEC_ALIGN 8
 #endif
 
 //------------------------------------------------------------
 // XXH3 and XXH3-128 long keys
 // "Dispatcher" code
 
-template < bool bswap >
-static void XXH3_accumulate_512(void * RESTRICT acc, const void * RESTRICT input,
-        const void * RESTRICT secret) {
+template <bool bswap>
+static void XXH3_accumulate_512( void * RESTRICT acc, const void * RESTRICT input, const void * RESTRICT secret ) {
 #if (XXH_VECTOR == XXH_AVX512)
     XXH3_accumulate_512_avx512<bswap>(acc, input, secret);
 #elif (XXH_VECTOR == XXH_AVX2)
@@ -1138,8 +1130,8 @@ static void XXH3_accumulate_512(void * RESTRICT acc, const void * RESTRICT input
 #endif
 }
 
-template < bool bswap >
-static void XXH3_scrambleAcc(void * RESTRICT acc, const void * RESTRICT secret) {
+template <bool bswap>
+static void XXH3_scrambleAcc( void * RESTRICT acc, const void * RESTRICT secret ) {
 #if (XXH_VECTOR == XXH_AVX512)
     XXH3_scrambleAcc_avx512<bswap>(acc, secret);
 #elif (XXH_VECTOR == XXH_AVX2)
@@ -1155,8 +1147,8 @@ static void XXH3_scrambleAcc(void * RESTRICT acc, const void * RESTRICT secret) 
 #endif
 }
 
-template < bool bswap >
-static void XXH3_initCustomSecret(void * RESTRICT customSecret, uint64_t seed64) {
+template <bool bswap>
+static void XXH3_initCustomSecret( void * RESTRICT customSecret, uint64_t seed64 ) {
 #if (XXH_VECTOR == XXH_AVX512)
     XXH3_initCustomSecret_avx512<bswap>(customSecret, seed64);
 #elif (XXH_VECTOR == XXH_AVX2)
@@ -1176,53 +1168,48 @@ static void XXH3_initCustomSecret(void * RESTRICT customSecret, uint64_t seed64)
 // XXH3 and XXH3-128 long keys
 
 #if defined(__clang__)
-#  define XXH_PREFETCH_DIST 320
+  #define XXH_PREFETCH_DIST 320
 #elif (XXH_VECTOR == XXH_AVX512)
-#  define XXH_PREFETCH_DIST 512
+  #define XXH_PREFETCH_DIST 512
 #else
-#  define XXH_PREFETCH_DIST 384
+  #define XXH_PREFETCH_DIST 384
 #endif  /* __clang__ */
 
-template < bool bswap >
-static FORCE_INLINE void XXH3_accumulate(uint64_t * RESTRICT acc,
-        const uint8_t* RESTRICT input,
-        const uint8_t* RESTRICT secret,
-        size_t nbStripes) {
-    for (size_t n = 0; n < nbStripes; n++ ) {
-        const uint8_t* const in = input + n*XXH_STRIPE_LEN;
+template <bool bswap>
+static FORCE_INLINE void XXH3_accumulate( uint64_t * RESTRICT acc, const uint8_t * RESTRICT input,
+        const uint8_t * RESTRICT secret, size_t nbStripes ) {
+    for (size_t n = 0; n < nbStripes; n++) {
+        const uint8_t * const in = input + n * XXH_STRIPE_LEN;
         prefetch(in + XXH_PREFETCH_DIST);
-        XXH3_accumulate_512<bswap>(acc, in, secret + n*XXH_SECRET_CONSUME_RATE);
+        XXH3_accumulate_512<bswap>(acc, in, secret + n * XXH_SECRET_CONSUME_RATE);
     }
 }
 
-template < bool bswap >
-static FORCE_INLINE void XXH3_hashLong_internal_loop(uint64_t* RESTRICT acc,
-        const uint8_t* RESTRICT input, size_t len,
-        const uint8_t* RESTRICT secret, size_t secretSize) {
+template <bool bswap>
+static FORCE_INLINE void XXH3_hashLong_internal_loop( uint64_t * RESTRICT acc, const uint8_t * RESTRICT input,
+        size_t len, const uint8_t * RESTRICT secret, size_t secretSize ) {
     size_t const nbStripesPerBlock = (secretSize - XXH_STRIPE_LEN) / XXH_SECRET_CONSUME_RATE;
-    size_t const block_len = XXH_STRIPE_LEN * nbStripesPerBlock;
-    size_t const nb_blocks = (len - 1) / block_len;
+    size_t const block_len         = XXH_STRIPE_LEN * nbStripesPerBlock;
+    size_t const nb_blocks         = (len        - 1             ) / block_len;
 
     for (size_t n = 0; n < nb_blocks; n++) {
-        XXH3_accumulate<bswap>(acc, input + n*block_len, secret, nbStripesPerBlock);
+        XXH3_accumulate<bswap>(acc, input + n * block_len, secret, nbStripesPerBlock);
         XXH3_scrambleAcc<bswap>(acc, secret + secretSize - XXH_STRIPE_LEN);
     }
 
     /* last partial block */
     size_t const nbStripes = ((len - 1) - (block_len * nb_blocks)) / XXH_STRIPE_LEN;
-    XXH3_accumulate<bswap>(acc, input + nb_blocks*block_len, secret, nbStripes);
+    XXH3_accumulate<bswap>(acc, input + nb_blocks * block_len, secret, nbStripes);
 
     /* last stripe */
-    const uint8_t* const p = input + len - XXH_STRIPE_LEN;
-#define XXH_SECRET_LASTACC_START 7  /* not aligned on 8, last secret is different from acc & scrambler */
+    const uint8_t * const p = input + len - XXH_STRIPE_LEN;
+#define XXH_SECRET_LASTACC_START 7 /* not aligned on 8, last secret is different from acc & scrambler */
     XXH3_accumulate_512<bswap>(acc, p, secret + secretSize - XXH_STRIPE_LEN - XXH_SECRET_LASTACC_START);
 }
 
-template < bool bswap >
-static FORCE_INLINE uint64_t XXH3_mix2Accs(const uint64_t* RESTRICT acc, const uint8_t* RESTRICT secret) {
-    return XXH3_mul128_fold64(
-               acc[0] ^ GET_U64<bswap>(secret, 0),
-               acc[1] ^ GET_U64<bswap>(secret, 8));
+template <bool bswap>
+static FORCE_INLINE uint64_t XXH3_mix2Accs( const uint64_t * RESTRICT acc, const uint8_t * RESTRICT secret ) {
+    return XXH3_mul128_fold64(acc[0] ^ GET_U64<bswap>(secret, 0), acc[1] ^ GET_U64<bswap>(secret, 8));
 }
 
 // UGLY HACK:
@@ -1231,12 +1218,12 @@ static FORCE_INLINE uint64_t XXH3_mix2Accs(const uint64_t* RESTRICT acc, const u
 // XXH3_64bits, len == 256, Snapdragon 835:
 //   without hack: 2063.7 MB/s
 //   with hack:    2560.7 MB/s
-template < bool bswap >
-static uint64_t XXH3_mergeAccs(const uint64_t* RESTRICT acc,
-        const uint8_t* RESTRICT secret, uint64_t start) {
+template <bool bswap>
+static uint64_t XXH3_mergeAccs( const uint64_t * RESTRICT acc, const uint8_t * RESTRICT secret, uint64_t start ) {
     uint64_t result64 = start;
+
     for (size_t i = 0; i < 4; i++) {
-        result64 += XXH3_mix2Accs<bswap>(acc+2*i, secret + 16*i);
+        result64 += XXH3_mix2Accs<bswap>(acc + 2 * i, secret + 16 * i);
 #if defined(__clang__)                                /* Clang */ \
     && (defined(__arm__) || defined(__thumb__))       /* ARMv7 */ \
     && (defined(__ARM_NEON) || defined(__ARM_NEON__)) /* NEON */
@@ -1250,43 +1237,36 @@ static uint64_t XXH3_mergeAccs(const uint64_t* RESTRICT acc,
 
 // It's important for performance that XXH3_hashLong is not inlined. Not sure
 // why (uop cache maybe?), but the difference is large and easily measurable.
-template < bool bswap >
-static NEVER_INLINE uint64_t XXH3_hashLong_64b_internal(
-        const void* RESTRICT input, size_t len,
-        const void* RESTRICT secret, size_t secretSize) {
+template <bool bswap>
+static NEVER_INLINE uint64_t XXH3_hashLong_64b_internal( const void * RESTRICT input,
+        size_t len, const void * RESTRICT secret, size_t secretSize ) {
     alignas(XXH_ACC_ALIGN) uint64_t acc[XXH_ACC_NB] = {
         XXH_PRIME32_3, XXH_PRIME64_1, XXH_PRIME64_2, XXH_PRIME64_3,
         XXH_PRIME64_4, XXH_PRIME32_2, XXH_PRIME64_5, XXH_PRIME32_1,
     };
 
-    XXH3_hashLong_internal_loop<bswap>(acc, (const uint8_t*)input, len,
-            (const uint8_t*)secret, secretSize);
+    XXH3_hashLong_internal_loop<bswap>(acc, (const uint8_t *)input, len, (const uint8_t *)secret, secretSize);
 
     return XXH3_mergeAccs<bswap>(acc, (const uint8_t *)secret + XXH_SECRET_MERGEACCS_START,
             (uint64_t)len * XXH_PRIME64_1);
 }
 
-template < bool bswap >
-static NEVER_INLINE XXH128_hash_t XXH3_hashLong_128b_internal(
-        const void* RESTRICT input, size_t len,
-        const void* RESTRICT secret, size_t secretSize) {
+template <bool bswap>
+static NEVER_INLINE XXH128_hash_t XXH3_hashLong_128b_internal( const void * RESTRICT input,
+        size_t len, const void * RESTRICT secret, size_t secretSize ) {
     alignas(XXH_ACC_ALIGN) uint64_t acc[XXH_ACC_NB] = {
         XXH_PRIME32_3, XXH_PRIME64_1, XXH_PRIME64_2, XXH_PRIME64_3,
         XXH_PRIME64_4, XXH_PRIME32_2, XXH_PRIME64_5, XXH_PRIME32_1,
     };
 
-    XXH3_hashLong_internal_loop<bswap>(acc, (const uint8_t*)input, len,
-            (const uint8_t*)secret, secretSize);
+    XXH3_hashLong_internal_loop<bswap>(acc, (const uint8_t *)input, len, (const uint8_t *)secret, secretSize);
 
     // converge into final hash
     const XXH128_hash_t h128 = {
-        /* .low64 = */  XXH3_mergeAccs<bswap>(acc,
-                (const uint8_t *)secret + XXH_SECRET_MERGEACCS_START,
+        /* .low64 = */ XXH3_mergeAccs <bswap>(acc, (const uint8_t *)secret + XXH_SECRET_MERGEACCS_START,
                 (uint64_t)len * XXH_PRIME64_1),
-        /* .high64 = */ XXH3_mergeAccs<bswap>(acc,
-                (const uint8_t *)secret + secretSize -
-                    sizeof(acc) - XXH_SECRET_MERGEACCS_START,
-                ~((uint64_t)len * XXH_PRIME64_2)),
+        /* .high64 = */ XXH3_mergeAccs<bswap>(acc, (const uint8_t *)secret + secretSize                -
+                sizeof(acc) - XXH_SECRET_MERGEACCS_START, ~((uint64_t)len * XXH_PRIME64_2)),
     };
     return h128;
 }
@@ -1294,46 +1274,48 @@ static NEVER_INLINE XXH128_hash_t XXH3_hashLong_128b_internal(
 //------------------------------------------------------------
 // XXH3 and XXH3-128 top-level functions
 
-template < bool bswap >
-static uint64_t XXH3_64bits_withSeed(const void * input, size_t len, uint64_t seed) {
+template <bool bswap>
+static uint64_t XXH3_64bits_withSeed( const void * input, size_t len, uint64_t seed ) {
     const uint8_t * RESTRICT secret = (const uint8_t *)XXH3_kSecret;
     size_t secretLen = sizeof(XXH3_kSecret);
 
-    if (len <= 16)
-        return XXH3_len_0to16_64b<bswap>((const uint8_t*)input, len,
-                secret, seed);
-    if (len <= 128)
-        return XXH3_len_17to128_64b<bswap>((const uint8_t*)input, len,
-                secret, secretLen, seed);
-    if (len <= XXH3_MIDSIZE_MAX)
-        return XXH3_len_129to240_64b<bswap>((const uint8_t*)input, len,
-                secret, secretLen, seed);
+    if (len <= 16) {
+        return XXH3_len_0to16_64b<bswap>((const uint8_t *)input, len, secret, seed);
+    }
+    if (len <= 128) {
+        return XXH3_len_17to128_64b<bswap>((const uint8_t *)input, len, secret, secretLen, seed);
+    }
+    if (len <= XXH3_MIDSIZE_MAX) {
+        return XXH3_len_129to240_64b<bswap>((const uint8_t *)input, len, secret, secretLen, seed);
+    }
 
-    if (seed == 0)
+    if (seed == 0) {
         return XXH3_hashLong_64b_internal<bswap>(input, len, secret, secretLen);
+    }
 
     alignas(XXH_SEC_ALIGN) uint8_t secretbuf[XXH3_SECRET_DEFAULT_SIZE];
     XXH3_initCustomSecret<bswap>(secretbuf, seed);
     return XXH3_hashLong_64b_internal<bswap>(input, len, secretbuf, sizeof(secretbuf));
 }
 
-template < bool bswap >
-static XXH128_hash_t XXH3_128bits_withSeed(const void * input, size_t len, uint64_t seed) {
+template <bool bswap>
+static XXH128_hash_t XXH3_128bits_withSeed( const void * input, size_t len, uint64_t seed ) {
     const uint8_t * RESTRICT secret = (const uint8_t *)XXH3_kSecret;
     size_t secretLen = sizeof(XXH3_kSecret);
 
-    if (len <= 16)
-        return XXH3_len_0to16_128b<bswap>((const uint8_t*)input, len,
-                secret, seed);
-    if (len <= 128)
-        return XXH3_len_17to128_128b<bswap>((const uint8_t*)input, len,
-                secret, secretLen, seed);
-    if (len <= XXH3_MIDSIZE_MAX)
-        return XXH3_len_129to240_128b<bswap>((const uint8_t*)input, len,
-                secret, secretLen, seed);
+    if (len <= 16) {
+        return XXH3_len_0to16_128b<bswap>((const uint8_t *)input, len, secret, seed);
+    }
+    if (len <= 128) {
+        return XXH3_len_17to128_128b<bswap>((const uint8_t *)input, len, secret, secretLen, seed);
+    }
+    if (len <= XXH3_MIDSIZE_MAX) {
+        return XXH3_len_129to240_128b<bswap>((const uint8_t *)input, len, secret, secretLen, seed);
+    }
 
-    if (seed == 0)
+    if (seed == 0) {
         return XXH3_hashLong_128b_internal<bswap>(input, len, secret, secretLen);
+    }
 
     alignas(XXH_SEC_ALIGN) uint8_t secretbuf[XXH3_SECRET_DEFAULT_SIZE];
     XXH3_initCustomSecret<bswap>(secretbuf, seed);
@@ -1341,13 +1323,14 @@ static XXH128_hash_t XXH3_128bits_withSeed(const void * input, size_t len, uint6
 }
 
 #if defined(XXH3_POP_PRAGMA)
-#  pragma GCC pop_options
+  #pragma GCC pop_options
 #endif
 
 //------------------------------------------------------------
-template < bool bswap >
-static void XXH32(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void XXH32( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint32_t h = XXH32_impl<bswap>((const uint8_t *)in, len, (uint32_t)seed);
+
 #if 0
     // Output in "canonical" format
     if (isLE()) {
@@ -1360,9 +1343,10 @@ static void XXH32(const void * in, const size_t len, const seed_t seed, void * o
 #endif
 }
 
-template < bool bswap >
-static void XXH64(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void XXH64( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = XXH64_impl<bswap>((const uint8_t *)in, len, (uint64_t)seed);
+
 #if 0
     // Output in "canonical" format
     if (isLE()) {
@@ -1376,9 +1360,10 @@ static void XXH64(const void * in, const size_t len, const seed_t seed, void * o
 }
 
 //------------------------------------------------------------
-template < bool bswap >
-static void XXH3_64(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void XXH3_64( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = XXH3_64bits_withSeed<bswap>(in, len, seed);
+
     // Output in "canonical" BE format
     if (isLE()) {
         PUT_U64<true>(h, (uint8_t *)out, 0);
@@ -1387,88 +1372,89 @@ static void XXH3_64(const void * in, const size_t len, const seed_t seed, void *
     }
 }
 
-template <  bool bswap >
-static void XXH3_128(const void * in, const size_t len, const seed_t seed, void * out) {
+template <bool bswap>
+static void XXH3_128( const void * in, const size_t len, const seed_t seed, void * out ) {
     XXH128_hash_t h = XXH3_128bits_withSeed<bswap>(in, len, seed);
+
     // Output in "canonical" BE format
     if (isLE()) {
         PUT_U64<true>(h.high64, (uint8_t *)out, 0);
-        PUT_U64<true>(h.low64,  (uint8_t *)out, 8);
+        PUT_U64<true>(h.low64 , (uint8_t *)out, 8);
     } else {
         PUT_U64<false>(h.high64, (uint8_t *)out, 0);
-        PUT_U64<false>(h.low64,  (uint8_t *)out, 8);
+        PUT_U64<false>(h.low64 , (uint8_t *)out, 8);
     }
 }
 
 //------------------------------------------------------------
 REGISTER_FAMILY(xxhash,
-  $.src_url = "https://github.com/Cyan4973/xxHash",
-  $.src_status = HashFamilyInfo::SRC_ACTIVE
-);
+   $.src_url    = "https://github.com/Cyan4973/xxHash",
+   $.src_status = HashFamilyInfo::SRC_ACTIVE
+ );
 
 REGISTER_HASH(XXH_32,
-  $.desc = "xxHash, 32-bit version",
-  $.hash_flags =
-        FLAG_HASH_SMALL_SEED          |
-        FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags =
-        FLAG_IMPL_CANONICAL_LE        |
-        FLAG_IMPL_MULTIPLY            |
-        FLAG_IMPL_ROTATE              |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 32,
-  $.verification_LE = 0xBA88B743,
-  $.verification_BE = 0x2BC79298,
-  $.hashfn_native = XXH32<false>,
-  $.hashfn_bswap = XXH32<true>
-);
+   $.desc       = "xxHash, 32-bit version",
+   $.hash_flags =
+         FLAG_HASH_SMALL_SEED          |
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY            |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 32,
+   $.verification_LE = 0xBA88B743,
+   $.verification_BE = 0x2BC79298,
+   $.hashfn_native   = XXH32<false>,
+   $.hashfn_bswap    = XXH32<true>
+ );
 
 REGISTER_HASH(XXH_64,
-  $.desc = "xxHash, 64-bit version",
-  $.hash_flags =
-        FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags =
-        FLAG_IMPL_CANONICAL_LE        |
-        FLAG_IMPL_MULTIPLY_64_64      |
-        FLAG_IMPL_ROTATE              |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 64,
-  $.verification_LE = 0x024B7CF4,
-  $.verification_BE = 0xB96ABE81,
-  $.hashfn_native = XXH64<false>,
-  $.hashfn_bswap = XXH64<true>
-);
+   $.desc       = "xxHash, 64-bit version",
+   $.hash_flags =
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY_64_64      |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 64,
+   $.verification_LE = 0x024B7CF4,
+   $.verification_BE = 0xB96ABE81,
+   $.hashfn_native   = XXH64<false>,
+   $.hashfn_bswap    = XXH64<true>
+ );
 
 REGISTER_HASH(XXH3_64,
-  $.desc = "xxh3, 64-bit version",
-  $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE        |
-        FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags =
-        FLAG_IMPL_CANONICAL_LE        |
-        FLAG_IMPL_MULTIPLY            |
-        FLAG_IMPL_ROTATE              |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 64,
-  $.verification_LE = 0x1AAEE62C,
-  $.verification_BE = 0xF8DBB4DD,
-  $.hashfn_native = XXH3_64<false>,
-  $.hashfn_bswap = XXH3_64<true>
-);
+   $.desc       = "xxh3, 64-bit version",
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE        |
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY            |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 64,
+   $.verification_LE = 0x1AAEE62C,
+   $.verification_BE = 0xF8DBB4DD,
+   $.hashfn_native   = XXH3_64<false>,
+   $.hashfn_bswap    = XXH3_64<true>
+ );
 
 REGISTER_HASH(XXH3_128,
-  $.desc = "xxh3, 128-bit version",
-  $.hash_flags =
-        FLAG_HASH_LOOKUP_TABLE        |
-        FLAG_HASH_ENDIAN_INDEPENDENT,
-  $.impl_flags =
-        FLAG_IMPL_CANONICAL_LE        |
-        FLAG_IMPL_MULTIPLY            |
-        FLAG_IMPL_ROTATE              |
-        FLAG_IMPL_LICENSE_BSD,
-  $.bits = 128,
-  $.verification_LE = 0x288DAA94,
-  $.verification_BE = 0x6C82FA25,
-  $.hashfn_native = XXH3_128<false>,
-  $.hashfn_bswap = XXH3_128<true>
-);
+   $.desc       = "xxh3, 128-bit version",
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE        |
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY            |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 128,
+   $.verification_LE = 0x288DAA94,
+   $.verification_BE = 0x6C82FA25,
+   $.hashfn_native   = XXH3_128<false>,
+   $.hashfn_bswap    = XXH3_128<true>
+ );

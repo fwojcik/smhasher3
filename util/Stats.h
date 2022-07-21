@@ -50,27 +50,27 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-double CalcMean ( std::vector<double> & v );
-double CalcMean ( std::vector<double> & v, int a, int b );
-double CalcStdv ( std::vector<double> & v );
-double CalcStdv ( std::vector<double> & v, int a, int b );
-bool ContainsOutlier ( std::vector<double> & v, size_t len );
-void FilterOutliers ( std::vector<double> & v );
+double CalcMean( std::vector<double> & v );
+double CalcMean( std::vector<double> & v, int a, int b );
+double CalcStdv( std::vector<double> & v );
+double CalcStdv( std::vector<double> & v, int a, int b );
+bool ContainsOutlier( std::vector<double> & v, size_t len );
+void FilterOutliers( std::vector<double> & v );
 
-double chooseK ( int b, int k );
-double chooseUpToK ( int n, int k );
+double chooseK( int b, int k );
+double chooseUpToK( int n, int k );
 
-double EstimateNbCollisions(const unsigned long nbH, const int nbBits);
+double EstimateNbCollisions( const unsigned long nbH, const int nbBits );
 void ReportCollisionEstimates( void );
 
-int GetNLogNBound ( unsigned nbH );
-double ScalePValue ( double p_value, unsigned testcount );
-double ScalePValue2N ( double p_value, unsigned testbits );
-int GetLog2PValue ( double p_value );
-double GetNormalPValue(const double mu, const double sd, const double variable);
-double EstimatedBinomialPValue(const unsigned long nbH, const int nbBits, const int maxColl);
-double EstimateMaxCollisions(const unsigned long nbH, const int nbBits);
-double BoundedPoissonPValue(const double expected, const uint64_t collisions);
+int GetNLogNBound( unsigned nbH );
+double ScalePValue( double p_value, unsigned testcount );
+double ScalePValue2N( double p_value, unsigned testbits );
+int GetLog2PValue( double p_value );
+double GetNormalPValue( const double mu, const double sd, const double variable );
+double EstimatedBinomialPValue( const unsigned long nbH, const int nbBits, const int maxColl );
+double EstimateMaxCollisions( const unsigned long nbH, const int nbBits );
+double BoundedPoissonPValue( const double expected, const uint64_t collisions );
 
-double calcScore ( const unsigned * bins, const int bincount, const int ballcount );
-double normalizeScore ( double score, int scorewidth, int tests );
+double calcScore( const unsigned * bins, const int bincount, const int ballcount );
+double normalizeScore( double score, int scorewidth, int tests );

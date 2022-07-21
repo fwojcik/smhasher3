@@ -28,33 +28,33 @@
 #pragma once
 
 #if defined(HAVE_X86INTRIN)
-#  include <x86intrin.h>
+  #include <x86intrin.h>
 #elif defined(HAVE_AMMINTRIN)
-#  include <ammintrin.h>
+  #include <ammintrin.h>
 #elif defined(HAVE_IMMINTRIN)
-#  include <immintrin.h>
+  #include <immintrin.h>
 #endif
 
 #if defined(HAVE_ARM_NEON)
-    /* circumvent a clang bug */
-#  if defined(__GNUC__) || defined(__clang__)
-#    if defined(__ARM_NEON__) || defined(__ARM_NEON) || \
+/* circumvent a clang bug */
+  #if defined(__GNUC__) || defined(__clang__)
+    #if defined(__ARM_NEON__) || defined(__ARM_NEON) || \
         defined(__aarch64__)  || defined(_M_ARM)     || \
         defined(_M_ARM64)     || defined(_M_ARM64EC)
-#           define inline __inline__
-#    endif
-#  endif
-#  include <arm_neon.h>
-#  if defined(__GNUC__) || defined(__clang__)
-#    if defined(__ARM_NEON__) || defined(__ARM_NEON) || \
+      #define inline __inline__
+    #endif
+  #endif
+  #include <arm_neon.h>
+  #if defined(__GNUC__) || defined(__clang__)
+    #if defined(__ARM_NEON__) || defined(__ARM_NEON) || \
         defined(__aarch64__)  || defined(_M_ARM)     || \
         defined(_M_ARM64)     || defined(_M_ARM64EC)
-#           undef inline
-#    endif
-#  endif
-#  if defined(HAVE_ARM_ACLE)
-#    include <arm_acle.h>
-#  endif
+      #undef inline
+    #endif
+  #endif
+  #if defined(HAVE_ARM_ACLE)
+    #include <arm_acle.h>
+  #endif
 #endif
 
 
@@ -69,46 +69,46 @@
  *
  * We use pragma push_macro/pop_macro to keep the namespace clean.
  */
-#pragma push_macro("bool")
-#pragma push_macro("vector")
-#pragma push_macro("pixel")
+  #pragma push_macro("bool")
+  #pragma push_macro("vector")
+  #pragma push_macro("pixel")
 /* silence potential macro redefined warnings */
-#undef bool
-#undef vector
-#undef pixel
+  #undef bool
+  #undef vector
+  #undef pixel
 
-#if defined(__s390x__)
-#  include <s390intrin.h>
-#else
-#  include <altivec.h>
-#endif
+  #if defined(__s390x__)
+    #include <s390intrin.h>
+  #else
+    #include <altivec.h>
+  #endif
 
 /* Restore the original macro values, if applicable. */
-#pragma pop_macro("pixel")
-#pragma pop_macro("vector")
-#pragma pop_macro("bool")
+  #pragma pop_macro("pixel")
+  #pragma pop_macro("vector")
+  #pragma pop_macro("bool")
 
-#if defined(__ibmxl__) || (defined(_AIX) && defined(__xlC__))
+  #if defined(__ibmxl__) || (defined(_AIX) && defined(__xlC__))
 typedef  __vector unsigned char vec_t;
-#define vec_encrypt(a,b) __vcipher(a,b);
-#define vec_encryptlast(a,b) __vcipherlast(a,b);
-#define vec_decrypt(a,b) __vncipher(a,b);
-#define vec_encryptlast(a,b) __vncipherlast(a,b);
-#elif defined(__clang__)
+    #define vec_encrypt(a, b) __vcipher(a, b);
+    #define vec_encryptlast(a, b) __vcipherlast(a, b);
+    #define vec_decrypt(a, b) __vncipher(a, b);
+    #define vec_encryptlast(a, b) __vncipherlast(a, b);
+  #elif defined(__clang__)
 typedef  __vector unsigned long long vec_t;
-#define vec_encrypt(a,b) __builtin_altivec_crypto_vcipher(a, b);
-#define vec_encryptlast(a,b) __builtin_altivec_crypto_vcipherlast(a, b);
-#define vec_decrypt(a,b) __builtin_altivec_crypto_vncipher(a, b);
-#define vec_decryptlast(a,b) __builtin_altivec_crypto_vncipherlast(a, b);
-#elif defined(__GNUC__)
+    #define vec_encrypt(a, b) __builtin_altivec_crypto_vcipher(a, b);
+    #define vec_encryptlast(a, b) __builtin_altivec_crypto_vcipherlast(a, b);
+    #define vec_decrypt(a, b) __builtin_altivec_crypto_vncipher(a, b);
+    #define vec_decryptlast(a, b) __builtin_altivec_crypto_vncipherlast(a, b);
+  #elif defined(__GNUC__)
 typedef  __vector unsigned long long vec_t;
-#define vec_encrypt(a,b) __builtin_crypto_vcipher(a,b);
-#define vec_encryptlast(a,b) __builtin_crypto_vcipherlast(a,b);
-#define vec_decrypt(a,b) __builtin_crypto_vncipher(a,b);
-#define vec_decryptlast(a,b) __builtin_crypto_vncipherlast(a,b);
-#else
-#error "PPC AES intrinsic mapping unimplemented"
-#endif
+    #define vec_encrypt(a, b) __builtin_crypto_vcipher(a, b);
+    #define vec_encryptlast(a, b) __builtin_crypto_vcipherlast(a, b);
+    #define vec_decrypt(a, b) __builtin_crypto_vncipher(a, b);
+    #define vec_decryptlast(a, b) __builtin_crypto_vncipherlast(a, b);
+  #else
+    #error "PPC AES intrinsic mapping unimplemented"
+  #endif
 #endif
 
 //------------------------------------------------------------
@@ -117,121 +117,127 @@ typedef  __vector unsigned long long vec_t;
 // prefetch() implementation without this.
 
 #if defined(HAVE_SSE_2)
-#undef prefetch
-#define prefetch(x) _mm_prefetch(x, _MM_HINT_T0)
+  #undef prefetch
+  #define prefetch(x) _mm_prefetch(x, _MM_HINT_T0)
 #endif
 
 //------------------------------------------------------------
 // Vectorized byteswapping
 
 #if defined(HAVE_ARM_NEON)
-static FORCE_INLINE uint64x2_t Vbswap64_u64(const uint64x2_t v) {
+
+static FORCE_INLINE uint64x2_t Vbswap64_u64( const uint64x2_t v ) {
     return vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(v)));
 }
-static FORCE_INLINE uint32x4_t Vbswap32_u32(const uint32x4_t v) {
+
+static FORCE_INLINE uint32x4_t Vbswap32_u32( const uint32x4_t v ) {
     return vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(v)));
 }
+
 #endif
 
 #if defined(HAVE_AVX512_BW)
-static FORCE_INLINE __m512i mm512_bswap64(const __m512i v) {
-    const __m512i MASK = _mm512_set_epi64(UINT64_C(0x08090a0b0c0d0e0f),
-                                          UINT64_C(0x0001020304050607),
-                                          UINT64_C(0x08090a0b0c0d0e0f),
-                                          UINT64_C(0x0001020304050607),
-                                          UINT64_C(0x08090a0b0c0d0e0f),
-                                          UINT64_C(0x0001020304050607),
-                                          UINT64_C(0x08090a0b0c0d0e0f),
-                                          UINT64_C(0x0001020304050607));
+
+static FORCE_INLINE __m512i mm512_bswap64( const __m512i v ) {
+    const __m512i MASK = _mm512_set_epi64(UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607),
+            UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607), UINT64_C(0x08090a0b0c0d0e0f),
+            UINT64_C(0x0001020304050607), UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607));
+
     return _mm512_shuffle_epi8(v, MASK);
 }
-static FORCE_INLINE __m512i mm512_bswap32(const __m512i v) {
-    const __m512i MASK = _mm512_set_epi64(UINT64_C(0x0c0d0e0f08090a0b),
-                                          UINT64_C(0x0405060700010203),
-                                          UINT64_C(0x0c0d0e0f08090a0b),
-                                          UINT64_C(0x0405060700010203),
-                                          UINT64_C(0x0c0d0e0f08090a0b),
-                                          UINT64_C(0x0405060700010203),
-                                          UINT64_C(0x0c0d0e0f08090a0b),
-                                          UINT64_C(0x0405060700010203));
+
+static FORCE_INLINE __m512i mm512_bswap32( const __m512i v ) {
+    const __m512i MASK = _mm512_set_epi64(UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203),
+            UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b),
+            UINT64_C(0x0405060700010203), UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203));
+
     return _mm512_shuffle_epi8(v, MASK);
 }
+
 #elif defined(HAVE_AVX512_F)
-static FORCE_INLINE __m512i mm512_bswap64(const __m512i v) {
+
+static FORCE_INLINE __m512i mm512_bswap64( const __m512i v ) {
     // Byteswapping 256 bits at a time, since _mm512_shuffle_epi8()
     // requires AVX512-BW in addition to AVX512-F.
-    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f),
-                                           UINT64_C(0x0001020304050607),
-                                           UINT64_C(0x08090a0b0c0d0e0f),
-                                           UINT64_C(0x0001020304050607));
-    __m256i blk1 = _mm512_extracti64x4_epi64(v, 0);
-    __m256i blk2 = _mm512_extracti64x4_epi64(v, 1);
+    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607),
+            UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607));
+    __m256i blk1       = _mm512_extracti64x4_epi64(v, 0);
+    __m256i blk2       = _mm512_extracti64x4_epi64(v, 1);
+
     blk1 = _mm256_shuffle_epi8(blk1, MASK);
     blk2 = _mm256_shuffle_epi8(blk2, MASK);
-    v = _mm512_inserti64x4(v, blk1, 0);
-    v = _mm512_inserti64x4(v, blk2, 1);
+    v    = _mm512_inserti64x4(v, blk1, 0);
+    v    = _mm512_inserti64x4(v, blk2, 1);
     return v;
 }
-static FORCE_INLINE __m512i mm512_bswap64(const __m512i v) {
+
+static FORCE_INLINE __m512i mm512_bswap64( const __m512i v ) {
     // Byteswapping 256 bits at a time, since _mm512_shuffle_epi8()
     // requires AVX512-BW in addition to AVX512-F.
-    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x0c0d0e0f08090a0b),
-                                           UINT64_C(0x0405060700010203),
-                                           UINT64_C(0x0c0d0e0f08090a0b),
-                                           UINT64_C(0x0405060700010203));
-    __m256i blk1 = _mm512_extracti64x4_epi64(v, 0);
-    __m256i blk2 = _mm512_extracti64x4_epi64(v, 1);
+    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203),
+            UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203));
+    __m256i blk1       = _mm512_extracti64x4_epi64(v, 0);
+    __m256i blk2       = _mm512_extracti64x4_epi64(v, 1);
+
     blk1 = _mm256_shuffle_epi8(blk1, MASK);
     blk2 = _mm256_shuffle_epi8(blk2, MASK);
-    v = _mm512_inserti64x4(v, blk1, 0);
-    v = _mm512_inserti64x4(v, blk2, 1);
+    v    = _mm512_inserti64x4(v, blk1, 0);
+    v    = _mm512_inserti64x4(v, blk2, 1);
     return v;
 }
+
 #endif
 
 #if defined(HAVE_AVX2)
-static FORCE_INLINE __m256i mm256_bswap64(const __m256i v) {
-    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f),
-                                           UINT64_C(0x0001020304050607),
-                                           UINT64_C(0x08090a0b0c0d0e0f),
-                                           UINT64_C(0x0001020304050607));
+
+static FORCE_INLINE __m256i mm256_bswap64( const __m256i v ) {
+    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607),
+            UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607));
+
     return _mm256_shuffle_epi8(v, MASK);
 }
-static FORCE_INLINE __m256i mm256_bswap32(const __m256i v) {
-    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x0c0d0e0f08090a0b),
-                                           UINT64_C(0x0405060700010203),
-                                           UINT64_C(0x0c0d0e0f08090a0b),
-                                           UINT64_C(0x0405060700010203));
+
+static FORCE_INLINE __m256i mm256_bswap32( const __m256i v ) {
+    const __m256i MASK = _mm256_set_epi64x(UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203),
+            UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203));
+
     return _mm256_shuffle_epi8(v, MASK);
 }
+
 #endif
 
 #if defined(HAVE_SSSE_3)
-static FORCE_INLINE __m128i mm_bswap64(const __m128i v) {
-    const __m128i MASK = _mm_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f),
-                                        UINT64_C(0x0001020304050607));
+
+static FORCE_INLINE __m128i mm_bswap64( const __m128i v ) {
+    const __m128i MASK = _mm_set_epi64x(UINT64_C(0x08090a0b0c0d0e0f), UINT64_C(0x0001020304050607));
+
     return _mm_shuffle_epi8(v, MASK);
 }
-static FORCE_INLINE __m128i mm_bswap32(const __m128i v) {
-    const __m128i MASK = _mm_set_epi64x(UINT64_C(0x0c0d0e0f08090a0b),
-                                        UINT64_C(0x0405060700010203));
+
+static FORCE_INLINE __m128i mm_bswap32( const __m128i v ) {
+    const __m128i MASK = _mm_set_epi64x(UINT64_C(0x0c0d0e0f08090a0b), UINT64_C(0x0405060700010203));
+
     return _mm_shuffle_epi8(v, MASK);
 }
+
 #elif defined(HAVE_SSE_2)
-static FORCE_INLINE __m128i mm_bswap64(const __m128i v) {
+
+static FORCE_INLINE __m128i mm_bswap64( const __m128i v ) {
     // Swap each pair of bytes
-    __m128i tmp = _mm_or_si128(_mm_slri_epi16(v, 8),
-                               _mm_slli_epi16(v, 8));
+    __m128i tmp = _mm_or_si128(_mm_slri_epi16(v, 8), _mm_slli_epi16(v, 8));
+
     // Swap 16-bit words
     tmp = _mm_shufflelo_epi16(tmp, _MM_SHUFFLE(0, 1, 2, 3));
     tmp = _mm_shufflehi_epi16(tmp, _MM_SHUFFLE(0, 1, 2, 3));
 }
-static FORCE_INLINE __m128i mm_bswap32(const __m128i v) {
+
+static FORCE_INLINE __m128i mm_bswap32( const __m128i v ) {
     // Swap each pair of bytes
-    __m128i tmp = _mm_or_si128(_mm_slri_epi16(v, 8),
-                               _mm_slli_epi16(v, 8));
+    __m128i tmp = _mm_or_si128(_mm_slri_epi16(v, 8), _mm_slli_epi16(v, 8));
+
     // Swap 16-bit words
     tmp = _mm_shufflelo_epi16(tmp, _MM_SHUFFLE(2, 3, 0, 1));
     tmp = _mm_shufflehi_epi16(tmp, _MM_SHUFFLE(2, 3, 0, 1));
 }
+
 #endif

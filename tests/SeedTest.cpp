@@ -49,7 +49,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
-#include "Stats.h"       // For chooseUpToK
+#include "Stats.h" // For chooseUpToK
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -61,122 +61,122 @@
 //-----------------------------------------------------------------------------
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 
-template < typename hashtype, uint32_t seedbits, bool bigseed >
-static bool SeedTestImpl(const HashInfo * hinfo, bool drawDiagram) {
-  assert(seedbits <= 31);
-  const HashFn hash = hinfo->hashFn(g_hashEndian);
-  const int totalkeys = 1 << seedbits;
-  const int hibits = seedbits >> 1;
-  const int lobits = seedbits - hibits;
-  const int shiftbits = bigseed ? (64 - hibits) : (32 - hibits);
+template <typename hashtype, uint32_t seedbits, bool bigseed>
+static bool SeedTestImpl( const HashInfo * hinfo, bool drawDiagram ) {
+    assert(seedbits <= 31);
+    const HashFn hash      = hinfo->hashFn(g_hashEndian);
+    const int    totalkeys = 1 << seedbits;
+    const int    hibits    = seedbits >> 1;
+    const int    lobits    = seedbits - hibits;
+    const int    shiftbits = bigseed ? (64 - hibits) : (32 - hibits);
 
-  printf("Keyset 'Seed' - %d keys\n", totalkeys);
+    printf("Keyset 'Seed' - %d keys\n", totalkeys);
 
-  const char text[64] = "The quick brown fox jumps over the lazy dog";
-  const int len = (int)strlen(text);
+    const char text[64] = "The quick brown fox jumps over the lazy dog";
+    const int  len      = (int)strlen(text);
 
-  addVCodeInput(text, len);
-  addVCodeInput(totalkeys);
+    addVCodeInput(text     , len);
+    addVCodeInput(totalkeys);
 
-  //----------
+    //----------
 
-  std::vector<hashtype> hashes;
+    std::vector<hashtype> hashes;
 
-  hashes.resize(totalkeys);
+    hashes.resize(totalkeys);
 
-  for(seed_t i = 0; i < (1 << hibits); i++) {
-      for(seed_t j = 0; j < (1 << lobits); j++) {
-          const seed_t seed = (i << shiftbits) + j;
-          const seed_t hseed = hinfo->Seed(seed, true);
-          hash(text, len, hseed, &hashes[(i << lobits) + j]);
-      }
-  }
+    for (seed_t i = 0; i < (1 << hibits); i++) {
+        for (seed_t j = 0; j < (1 << lobits); j++) {
+            const seed_t seed  = (i << shiftbits) + j;
+            const seed_t hseed = hinfo->Seed(seed, true);
+            hash(text, len, hseed, &hashes[(i << lobits) + j]);
+        }
+    }
 
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
+    bool result = TestHashList(hashes, drawDiagram);
+    printf("\n");
 
-  recordTestResult(result, "Seed", "Seq");
+    recordTestResult(result, "Seed", "Seq");
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 // Keyset 'SparseSeed' - hash "sphinx of black quartz..." using seeds with few
 // bits set/cleared
 
-template < typename hashtype, bool bigseed >
-static bool SparseSeedTestImpl(const HashInfo * hinfo, uint32_t maxbits, bool drawDiagram) {
-  assert(maxbits < 16);
-  const HashFn hash = hinfo->hashFn(g_hashEndian);
-  uint64_t totalkeys = 2 + 2*chooseUpToK(bigseed ? 64 : 32, maxbits);
-  uint64_t cnt = 0;
+template <typename hashtype, bool bigseed>
+static bool SparseSeedTestImpl( const HashInfo * hinfo, uint32_t maxbits, bool drawDiagram ) {
+    assert(maxbits < 16);
+    const HashFn hash      = hinfo->hashFn(g_hashEndian);
+    uint64_t     totalkeys = 2 + 2 * chooseUpToK(bigseed ? 64 : 32, maxbits);
+    uint64_t     cnt       = 0;
 
-  printf("Keyset 'SparseSeed' - %" PRId64 " keys\n", totalkeys);
+    printf("Keyset 'SparseSeed' - %" PRId64 " keys\n", totalkeys);
 
-  const char text[64] = "Sphinx of black quartz, judge my vow";
-  const int len = (int)strlen(text);
+    const char text[64] = "Sphinx of black quartz, judge my vow";
+    const int  len      = (int)strlen(text);
 
-  addVCodeInput(text, len);
-  addVCodeInput(totalkeys);
+    addVCodeInput(text     , len);
+    addVCodeInput(totalkeys);
 
-  //----------
+    //----------
 
-  std::vector<hashtype> hashes;
-  hashes.resize(totalkeys);
+    std::vector<hashtype> hashes;
+    hashes.resize(totalkeys);
 
-  seed_t seed;
+    seed_t seed;
 
-  seed = hinfo->Seed(0, true);
-  hash(text, len, seed, &hashes[cnt++]);
+    seed = hinfo->Seed(0, true);
+    hash(text, len, seed, &hashes[cnt++]);
 
-  seed = hinfo->Seed(~0, true);
-  hash(text, len, seed, &hashes[cnt++]);
+    seed = hinfo->Seed(~0, true);
+    hash(text, len, seed, &hashes[cnt++]);
 
-  for(seed_t i = 1; i <= maxbits; i++) {
-      uint64_t seed = (UINT64_C(1) << i) - 1;
-      bool done;
+    for (seed_t i = 1; i <= maxbits; i++) {
+        uint64_t seed = (UINT64_C(1) << i) - 1;
+        bool     done;
 
-      do {
-          seed_t hseed;
-          hseed = hinfo->Seed(seed, true);
-          hash(text, len, hseed, &hashes[cnt++]);
+        do {
+            seed_t hseed;
+            hseed = hinfo->Seed(seed, true);
+            hash(text, len, hseed, &hashes[cnt++]);
 
-          hseed = hinfo->Seed(~seed, true);
-          hash(text, len, hseed, &hashes[cnt++]);
+            hseed = hinfo->Seed(~seed, true);
+            hash(text, len, hseed, &hashes[cnt++]);
 
-          /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
-          uint64_t t = (seed | (seed - 1)) + 1;
-          seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
-          done = bigseed ? (seed == ~0) : ((seed >> 32) != 0);
-      } while (!done);
-  }
+            /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
+            uint64_t t = (seed | (seed - 1)) + 1;
+            seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
+            done = bigseed ? (seed == ~0) : ((seed >> 32) != 0);
+        } while (!done);
+    }
 
-  bool result = TestHashList(hashes,drawDiagram);
-  printf("\n");
+    bool result = TestHashList(hashes, drawDiagram);
+    printf("\n");
 
-  recordTestResult(result, "Seed", "Sparse");
+    recordTestResult(result, "Seed", "Sparse");
 
-  addVCodeResult(result);
+    addVCodeResult(result);
 
-  return result;
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 
-template < typename hashtype >
-bool SeedTest(const HashInfo * hinfo, const bool verbose) {
+template <typename hashtype>
+bool SeedTest( const HashInfo * hinfo, const bool verbose ) {
     bool result = true;
 
     printf("[[[ Keyset 'Seed' Tests ]]]\n\n");
 
     if (hinfo->is32BitSeed()) {
-      result &= SeedTestImpl<hashtype,22,false>( hinfo, verbose );
-      result &= SparseSeedTestImpl<hashtype,false>( hinfo, 7, verbose );
+        result &= SeedTestImpl      <hashtype, 22, false>(hinfo   , verbose);
+        result &= SparseSeedTestImpl<hashtype, false    >(hinfo, 7, verbose);
     } else {
-      result &= SeedTestImpl<hashtype,22,true>( hinfo, verbose );
-      result &= SparseSeedTestImpl<hashtype,true>( hinfo, 5, verbose );
+        result &= SeedTestImpl      <hashtype, 22, true>(hinfo   , verbose);
+        result &= SparseSeedTestImpl<hashtype, true    >(hinfo, 5, verbose);
     }
 
     printf("%s\n", result ? "" : g_failstr);

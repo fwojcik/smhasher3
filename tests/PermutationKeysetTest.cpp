@@ -60,182 +60,239 @@
 //-----------------------------------------------------------------------------
 // Keyset 'Combination' - all possible combinations of input blocks
 
-template< typename hashtype >
-static void CombinationKeygenRecurse(uint8_t * key, int len, int maxlen,
-        const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz,
-        HashFn hash, const seed_t seed, std::vector<hashtype> & hashes) {
-  if(len == maxlen) return;  // end recursion
+template <typename hashtype>
+static void CombinationKeygenRecurse( uint8_t * key, int len, int maxlen, const uint8_t * blocks, uint32_t blockcount,
+        uint32_t blocksz, HashFn hash, const seed_t seed, std::vector<hashtype> & hashes ) {
+    if (len == maxlen) { return; } // end recursion
 
-  for(int i = 0; i < blockcount; i++)
-  {
-    memcpy(&key[len * blocksz], &blocks[i * blocksz], blocksz);
+    for (int i = 0; i < blockcount; i++) {
+        memcpy(&key[len * blocksz], &blocks[i * blocksz], blocksz);
 
-    hashtype h;
-    hash(key, (len+1) * blocksz, seed, &h);
-    addVCodeInput(key, (len+1) * blocksz);
-    hashes.push_back(h);
+        hashtype h;
+        hash(key, (len + 1) * blocksz, seed, &h);
+        addVCodeInput(key, (len + 1) * blocksz);
+        hashes.push_back(h);
 
-    CombinationKeygenRecurse(key,len+1,maxlen,blocks,blockcount,blocksz,hash,seed,hashes);
-  }
+        CombinationKeygenRecurse(key, len + 1, maxlen, blocks, blockcount, blocksz, hash, seed, hashes);
+    }
 }
 
-template< typename hashtype >
-static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen,
-        const uint8_t * blocks, uint32_t blockcount, uint32_t blocksz, const char * testdesc,
-        bool testColl, bool testDist, bool drawDiagram) {
-  printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - ",testdesc,maxlen,blockcount);
+template <typename hashtype>
+static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen, const uint8_t * blocks, uint32_t blockcount,
+        uint32_t blocksz, const char * testdesc, bool testColl, bool testDist, bool drawDiagram ) {
+    printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - ", testdesc, maxlen, blockcount);
 
-  //----------
+    //----------
 
-  std::vector<hashtype> hashes;
+    std::vector<hashtype> hashes;
 
-  uint8_t * key = new uint8_t[maxlen*blocksz];
+    uint8_t * key = new uint8_t[maxlen * blocksz];
 
-  CombinationKeygenRecurse(key,0,maxlen,blocks,blockcount,blocksz,hash,seed,hashes);
+    CombinationKeygenRecurse(key, 0, maxlen, blocks, blockcount, blocksz, hash, seed, hashes);
 
-  delete [] key;
+    delete [] key;
 
-  printf("%d keys\n",(int)hashes.size());
+    printf("%d keys\n", (int)hashes.size());
 
-  //----------
+    //----------
 
-  bool result = TestHashList(hashes,drawDiagram,testColl,testDist);
-  printf("\n");
+    bool result = TestHashList(hashes, drawDiagram, testColl, testDist);
+    printf("\n"       );
 
-  return result;
+    return result;
 }
 
 //-----------------------------------------------------------------------------
 
 const struct {
-    const char * desc;
-    const int maxlen;
-    const uint32_t nrBlocks;
-    const uint32_t szBlock; // Verify nrBlocks * szBlock == blocks.size()
-    const std::vector<uint8_t> blocks;
+    const char *                desc;
+    const int                   maxlen;
+    const uint32_t              nrBlocks;
+    const uint32_t              szBlock; // Verify nrBlocks * szBlock == blocks.size()
+    const std::vector<uint8_t>  blocks;
 } keytests[] = {
     // This one breaks lookup3, surprisingly
-    { "4-bytes [3 low bits]", 7, 8, 4,
-      { 0, 0, 0, 0,
-        1, 0, 0, 0,
-        2, 0, 0, 0,
-        3, 0, 0, 0,
-        4, 0, 0, 0,
-        5, 0, 0, 0,
-        6, 0, 0, 0,
-        7, 0, 0, 0 } },
-    { "4-bytes [3 high bits]", 7, 8, 4,
-      { 0, 0, 0,   0,
-        0, 0, 0,  32,
-        0, 0, 0,  64,
-        0, 0, 0,  96,
-        0, 0, 0, 128,
-        0, 0, 0, 160,
-        0, 0, 0, 192,
-        0, 0, 0, 224 } },
-    { "4-bytes [3 high+low bits]", 6, 15, 4,
-      { 0, 0, 0,   0,
-        1, 0, 0,   0,
-        2, 0, 0,   0,
-        3, 0, 0,   0,
-        4, 0, 0,   0,
-        5, 0, 0,   0,
-        6, 0, 0,   0,
-        7, 0, 0,   0,
-        0, 0, 0,  32,
-        0, 0, 0,  64,
-        0, 0, 0,  96,
-        0, 0, 0, 128,
-        0, 0, 0, 160,
-        0, 0, 0, 192,
-        0, 0, 0, 224 } },
-    { "4-bytes [0, low bit]",    0, 2, 4,
-      { 0, 0, 0, 0,
-        1, 0, 0, 0   } },
-    { "4-bytes [0, high bit]", 0, 2, 4,
-      { 0, 0, 0,   0,
-        0, 0, 0, 128 } },
-    { "8-bytes [0, low bit]",    0, 2, 8,
-      { 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 0, 0, 0, 0, 0, 0, 0, } },
-    { "8-bytes [0, high bit]", 0, 2, 8,
-      { 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 128, } },
-    { "16-bytes [0, low bit]",    0, 2, 16,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } },
-    { "16-bytes [0, high bit]", 0, 2, 16,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, } },
-    { "32-bytes [0, low bit]",    0, 2, 32,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } },
-    { "32-bytes [0, high bit]", 0, 2, 32,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, } },
-    { "64-bytes [0, low bit]",    0, 2, 64,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } },
-    { "64-bytes [0, high bit]", 0, 2, 64,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, } },
-    { "128-bytes [0, low bit]",    0, 2, 128,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } },
-    { "128-bytes [0, high bit]", 0, 2, 128,
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, } },
+    {
+        "4-bytes [3 low bits]", 7, 8, 4,
+        {
+            0, 0, 0, 0,
+            1, 0, 0, 0,
+            2, 0, 0, 0,
+            3, 0, 0, 0,
+            4, 0, 0, 0,
+            5, 0, 0, 0,
+            6, 0, 0, 0,
+            7, 0, 0, 0
+        }
+    },
+    {
+        "4-bytes [3 high bits]", 7, 8, 4,
+        {
+            0, 0, 0,   0,
+            0, 0, 0,  32,
+            0, 0, 0,  64,
+            0, 0, 0,  96,
+            0, 0, 0, 128,
+            0, 0, 0, 160,
+            0, 0, 0, 192,
+            0, 0, 0, 224
+        }
+    },
+    {
+        "4-bytes [3 high+low bits]", 6, 15, 4,
+        {
+            0, 0, 0,   0,
+            1, 0, 0,   0,
+            2, 0, 0,   0,
+            3, 0, 0,   0,
+            4, 0, 0,   0,
+            5, 0, 0,   0,
+            6, 0, 0,   0,
+            7, 0, 0,   0,
+            0, 0, 0,  32,
+            0, 0, 0,  64,
+            0, 0, 0,  96,
+            0, 0, 0, 128,
+            0, 0, 0, 160,
+            0, 0, 0, 192,
+            0, 0, 0, 224
+        }
+    },
+    {
+        "4-bytes [0, low bit]", 0, 2, 4,
+        {
+            0, 0, 0, 0,
+            1, 0, 0, 0
+        }
+    },
+    {
+        "4-bytes [0, high bit]", 0, 2, 4,
+        {
+            0, 0, 0,   0,
+            0, 0, 0, 128
+        }
+    },
+    {
+        "8-bytes [0, low bit]", 0, 2, 8,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0,
+        }
+    },
+    {
+        "8-bytes [0, high bit]", 0, 2, 8,
+        {
+            0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 128,
+        }
+    },
+    {
+        "16-bytes [0, low bit]", 0, 2, 16,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        }
+    },
+    {
+        "16-bytes [0, high bit]", 0, 2, 16,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128,
+        }
+    },
+    {
+        "32-bytes [0, low bit]", 0, 2, 32,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        }
+    },
+    {
+        "32-bytes [0, high bit]", 0, 2, 32,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128,
+        }
+    },
+    {
+        "64-bytes [0, low bit]", 0, 2, 64,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        }
+    },
+    {
+        "64-bytes [0, high bit]", 0, 2, 64,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128,
+        }
+    },
+    {
+        "128-bytes [0, low bit]", 0, 2, 128,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        }
+    },
+    {
+        "128-bytes [0, high bit]", 0, 2, 128,
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128,
+        }
+    },
 };
 
-template < typename hashtype >
-bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    const int default_maxlen = extra ? 23 : (hinfo->bits >= 128) ? 17 : 22;
-    bool result = true;
+template <typename hashtype>
+bool PermutedKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+    const HashFn hash           = hinfo->hashFn(g_hashEndian);
+    const int    default_maxlen = extra ? 23 : (hinfo->bits >= 128) ? 17 : 22;
+    bool         result         = true;
 
     printf("[[[ Keyset 'Permutation' Tests ]]]\n\n");
 
@@ -243,12 +300,11 @@ bool PermutedKeyTest(const HashInfo * hinfo, const bool verbose, const bool extr
 
     for (auto test: keytests) {
         bool curresult = true;
-        int maxlen = test.maxlen > 0 ? test.maxlen : default_maxlen;
+        int  maxlen    = test.maxlen > 0 ? test.maxlen : default_maxlen;
 
         assert(test.blocks.size() == test.nrBlocks * test.szBlock);
-        curresult &= CombinationKeyTest<hashtype>(hash, seed, maxlen,
-                &(test.blocks[0]), test.nrBlocks, test.szBlock, test.desc,
-                true, true, verbose);
+        curresult &= CombinationKeyTest<hashtype>(hash, seed, maxlen, &(test.blocks[0]),
+                test.nrBlocks, test.szBlock, test.desc, true, true, verbose);
 
         recordTestResult(curresult, "Permutation", test.desc);
 

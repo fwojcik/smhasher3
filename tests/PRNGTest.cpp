@@ -60,38 +60,38 @@
 //-----------------------------------------------------------------------------
 // Keyset 'Prng'
 
-template< typename hashtype >
-static void Prn_gen(int nbRn, HashFn hash, const seed_t seed, std::vector<hashtype> & hashes) {
-  assert(nbRn > 0);
+template <typename hashtype>
+static void Prn_gen( int nbRn, HashFn hash, const seed_t seed, std::vector<hashtype> & hashes ) {
+    assert(nbRn > 0);
 
-  printf("Generating random numbers by hashing previous output - %d keys\n", nbRn);
+    printf("Generating random numbers by hashing previous output - %d keys\n", nbRn);
 
-  // Since hash() inputs depend upon previous outputs, we can't use
-  // that to verify cross-system consistency across hashes, so just
-  // use the test parameters for the input VCode.
-  addVCodeInput(nbRn);
-  addVCodeInput(sizeof(hashtype));
+    // Since hash() inputs depend upon previous outputs, we can't use
+    // that to verify cross-system consistency across hashes, so just
+    // use the test parameters for the input VCode.
+    addVCodeInput(nbRn);
+    addVCodeInput(sizeof(hashtype));
 
-  hashtype hcopy;
-  memset(&hcopy, 0, sizeof(hcopy));
+    hashtype hcopy;
+    memset(&hcopy, 0, sizeof(hcopy));
 
-  // a generated random number becomes the input for the next one
-  for (int i=0; i< nbRn; i++) {
-      hashtype h;
-      hash(&hcopy, sizeof(hcopy), seed, &h);
-      hashes.push_back(h);
-      memcpy(&hcopy, &h, sizeof(h));
-  }
+    // a generated random number becomes the input for the next one
+    for (int i = 0; i < nbRn; i++) {
+        hashtype h;
+        hash(&hcopy, sizeof(hcopy), seed, &h);
+        hashes.push_back(h);
+        memcpy(&hcopy, &h, sizeof(h));
+    }
 }
 
 //-----------------------------------------------------------------------------
 
-template < typename hashtype >
-bool PRNGTest(const HashInfo * hinfo, const bool verbose, const bool extra) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    bool result = true;
-    bool testCollision = true;
-    bool testDistribution = extra;
+template <typename hashtype>
+bool PRNGTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+    const HashFn hash             = hinfo->hashFn(g_hashEndian);
+    bool         result           = true;
+    bool         testCollision    = true;
+    bool         testDistribution = extra;
     std::vector<hashtype> hashes;
 
     printf("[[[ Prng Tests ]]]\n\n");
