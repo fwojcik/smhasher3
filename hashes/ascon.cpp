@@ -499,7 +499,7 @@ REGISTER_HASH(ascon_XOF_32,
    $.bits = 32,
    $.verification_LE = 0x1124BD16,
    $.verification_BE = 0xED22753E,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<32, false, false>,
    $.hashfn_bswap    = ascon_xof<32, false, true>
  );
@@ -518,7 +518,7 @@ REGISTER_HASH(ascon_XOFa_32,
    $.bits = 32,
    $.verification_LE = 0x8F5BB129,
    $.verification_BE = 0x44EBDFB6,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<32, true, false>,
    $.hashfn_bswap    = ascon_xof<32, true, true>
  );
@@ -537,7 +537,7 @@ REGISTER_HASH(ascon_XOF_64,
    $.bits = 64,
    $.verification_LE = 0xCDAAB40E,
    $.verification_BE = 0xAC65EB36,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<64, false, false>,
    $.hashfn_bswap    = ascon_xof<64, false, true>
  );
@@ -556,7 +556,7 @@ REGISTER_HASH(ascon_XOFa_64,
    $.bits = 64,
    $.verification_LE = 0x43ACD116,
    $.verification_BE = 0xACFB3C9F,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<64, true, false>,
    $.hashfn_bswap    = ascon_xof<64, true, true>
  );
@@ -575,7 +575,7 @@ REGISTER_HASH(ascon_XOF_128,
    $.bits = 128,
    $.verification_LE = 0x9B2F9305,
    $.verification_BE = 0x6C15FBDF,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<128, false, false>,
    $.hashfn_bswap    = ascon_xof<128, false, true>
  );
@@ -594,7 +594,7 @@ REGISTER_HASH(ascon_XOFa_128,
    $.bits = 128,
    $.verification_LE = 0x5701888C,
    $.verification_BE = 0x10B381AE,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<128, true, false>,
    $.hashfn_bswap    = ascon_xof<128, true, true>
  );
@@ -613,7 +613,7 @@ REGISTER_HASH(ascon_XOF_160,
    $.bits = 160,
    $.verification_LE = 0x3B726110,
    $.verification_BE = 0x3215F456,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<160, false, false>,
    $.hashfn_bswap    = ascon_xof<160, false, true>
  );
@@ -632,7 +632,7 @@ REGISTER_HASH(ascon_XOFa_160,
    $.bits = 160,
    $.verification_LE = 0xA4E9A794,
    $.verification_BE = 0x387FC024,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<160, true, false>,
    $.hashfn_bswap    = ascon_xof<160, true, true>
  );
@@ -651,7 +651,7 @@ REGISTER_HASH(ascon_XOF_224,
    $.bits = 224,
    $.verification_LE = 0x83EAEBCC,
    $.verification_BE = 0x9929AC99,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<224, false, false>,
    $.hashfn_bswap    = ascon_xof<224, false, true>
  );
@@ -670,7 +670,7 @@ REGISTER_HASH(ascon_XOFa_224,
    $.bits = 224,
    $.verification_LE = 0x618744B2,
    $.verification_BE = 0x2D9AFDE5,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<224, true, false>,
    $.hashfn_bswap    = ascon_xof<224, true, true>
  );
@@ -689,7 +689,7 @@ REGISTER_HASH(ascon_XOF_256,
    $.bits = 256,
    $.verification_LE = 0xC6629453,
    $.verification_BE = 0x6D8F406F,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<256, false, false>,
    $.hashfn_bswap    = ascon_xof<256, false, true>
  );
@@ -708,7 +708,7 @@ REGISTER_HASH(ascon_XOFa_256,
    $.bits = 256,
    $.verification_LE = 0x2ACF11FE,
    $.verification_BE = 0xE5CD2E9B,
-   $.initfn = ascon_xof_selftest,
+   $.initfn          = ascon_xof_selftest,
    $.hashfn_native   = ascon_xof<256, true, false>,
    $.hashfn_bswap    = ascon_xof<256, true, true>
  );

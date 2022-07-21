@@ -268,8 +268,8 @@ REGISTER_HASH(multiply_shift_32,
    $.verification_BE = 0x133CC3AC,
    $.hashfn_native   = multiply_shift32<false>,
    $.hashfn_bswap    = multiply_shift32<true>,
-// $.seedfn = multiply_shift_seed_init_slow
-   $.initfn = multiply_shift_init
+// $.seedfn          = multiply_shift_seed_init_slow
+   $.initfn          = multiply_shift_init
  );
 
 REGISTER_HASH(pair_multiply_shift_32,
@@ -285,8 +285,8 @@ REGISTER_HASH(pair_multiply_shift_32,
    $.verification_BE = 0x6E93B706,
    $.hashfn_native   = pair_multiply_shift32<false>,
    $.hashfn_bswap    = pair_multiply_shift32<true>,
-// $.seedfn = multiply_shift_seed_init_slow
-   $.initfn = multiply_shift_init
+// $.seedfn          = multiply_shift_seed_init_slow
+   $.initfn          = multiply_shift_init
  );
 
 REGISTER_HASH(multiply_shift,
@@ -302,8 +302,8 @@ REGISTER_HASH(multiply_shift,
    $.verification_BE = 0x6E3902A6,
    $.hashfn_native   = multiply_shift64<false>,
    $.hashfn_bswap    = multiply_shift64<true>,
-// $.seedfn = multiply_shift_seed_init_slow
-   $.initfn = multiply_shift_init
+// $.seedfn          = multiply_shift_seed_init_slow
+   $.initfn          = multiply_shift_init
  );
 
 REGISTER_HASH(pair_multiply_shift,
@@ -319,6 +319,6 @@ REGISTER_HASH(pair_multiply_shift,
    $.verification_BE = 0x2B7F643B,
    $.hashfn_native   = pair_multiply_shift64<false>,
    $.hashfn_bswap    = pair_multiply_shift64<true>,
-// $.seedfn = multiply_shift_seed_init_slow
-   $.initfn = multiply_shift_init
+// $.seedfn          = multiply_shift_seed_init_slow
+   $.initfn          = multiply_shift_init
  );

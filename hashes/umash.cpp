@@ -1205,7 +1205,7 @@ REGISTER_HASH(UMASH_64,
    $.verification_BE = 0x84DA635B,
    $.hashfn_native   = UMASH<false, false>,
    $.hashfn_bswap    = UMASH<false, true>,
-   $.initfn = umash_init
+   $.initfn          = umash_init
  );
 
 REGISTER_HASH(UMASH_64__reseed,
@@ -1222,8 +1222,8 @@ REGISTER_HASH(UMASH_64__reseed,
    $.verification_BE = 0xF18B8420,
    $.hashfn_native   = UMASH<true, false>,
    $.hashfn_bswap    = UMASH<true, true>,
-   $.seedfn = umash_slow_reseed,
-   $.initfn = umash_init
+   $.seedfn          = umash_slow_reseed,
+   $.initfn          = umash_init
  );
 
 REGISTER_HASH(UMASH_128,
@@ -1240,7 +1240,7 @@ REGISTER_HASH(UMASH_128,
    $.verification_BE = 0xE87FFB4B,
    $.hashfn_native   = UMASH_FP<false, false>,
    $.hashfn_bswap    = UMASH_FP<false, true>,
-   $.initfn = umash_init
+   $.initfn          = umash_init
  );
 
 REGISTER_HASH(UMASH_128__reseed,
@@ -1257,8 +1257,8 @@ REGISTER_HASH(UMASH_128__reseed,
    $.verification_BE = 0x9F870C9C,
    $.hashfn_native   = UMASH_FP<true, false>,
    $.hashfn_bswap    = UMASH_FP<true, true>,
-   $.seedfn = umash_slow_reseed,
-   $.initfn = umash_init
+   $.seedfn          = umash_slow_reseed,
+   $.initfn          = umash_init
  );
 
 #endif

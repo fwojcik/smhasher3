@@ -1621,7 +1621,7 @@ REGISTER_HASH(t1ha0,
    $.verification_BE = 0x6B552A17, // To get old 0xDA6A4061 value, see above
    $.hashfn_native   = isLE () ? t1ha0<MODE_LE_NATIVE> : t1ha0<MODE_BE_NATIVE>,
    $.hashfn_bswap    = isLE () ? t1ha0<MODE_LE_BSWAP> : t1ha0<MODE_BE_BSWAP>,
-   $.initfn = t1ha0_selftest
+   $.initfn          = t1ha0_selftest
  );
 
 REGISTER_HASH(t1ha1,
@@ -1638,7 +1638,7 @@ REGISTER_HASH(t1ha1,
    $.verification_BE = 0xB895E54F, // To get old 0x93F864DE value, see above
    $.hashfn_native   = isLE () ? t1ha1<MODE_LE_NATIVE> : t1ha1<MODE_BE_NATIVE>,
    $.hashfn_bswap    = isLE () ? t1ha1<MODE_LE_BSWAP> : t1ha1<MODE_BE_BSWAP>,
-   $.initfn = t1ha1_selftest
+   $.initfn          = t1ha1_selftest
  );
 
 REGISTER_HASH(t1ha2_64,
@@ -1656,7 +1656,7 @@ REGISTER_HASH(t1ha2_64,
    $.verification_BE = 0x061CB08C,
    $.hashfn_native   = isLE () ? t1ha2<MODE_LE_NATIVE, false> : t1ha2<MODE_BE_NATIVE, false>,
    $.hashfn_bswap    = isLE () ? t1ha2<MODE_LE_BSWAP, false> : t1ha2<MODE_BE_BSWAP, false>,
-   $.initfn = t1ha2_selftest
+   $.initfn          = t1ha2_selftest
  );
 
 REGISTER_HASH(t1ha2_128,
@@ -1674,7 +1674,7 @@ REGISTER_HASH(t1ha2_128,
    $.verification_BE = 0x95EB2DA8,
    $.hashfn_native   = isLE () ? t1ha2<MODE_LE_NATIVE, true> : t1ha2<MODE_BE_NATIVE, true>,
    $.hashfn_bswap    = isLE () ? t1ha2<MODE_LE_BSWAP, true> : t1ha2<MODE_BE_BSWAP, true>,
-   $.initfn = t1ha2_selftest
+   $.initfn          = t1ha2_selftest
  );
 
 REGISTER_HASH(t1ha2_64__incr,
@@ -1694,7 +1694,7 @@ REGISTER_HASH(t1ha2_64__incr,
    $.verification_BE = 0xB355A009,
    $.hashfn_native   = isLE () ? t1ha2_incr<MODE_LE_NATIVE, false> : t1ha2_incr<MODE_BE_NATIVE, false>,
    $.hashfn_bswap    = isLE () ? t1ha2_incr<MODE_LE_BSWAP, false> : t1ha2_incr<MODE_BE_BSWAP, false>,
-   $.initfn = t1ha2_incr_selftest
+   $.initfn          = t1ha2_incr_selftest
  );
 
 REGISTER_HASH(t1ha2_128__incr,
@@ -1714,7 +1714,7 @@ REGISTER_HASH(t1ha2_128__incr,
    $.verification_BE = 0x3898932B,
    $.hashfn_native   = isLE () ? t1ha2_incr<MODE_LE_NATIVE, true> : t1ha2_incr<MODE_BE_NATIVE, true>,
    $.hashfn_bswap    = isLE () ? t1ha2_incr<MODE_LE_BSWAP, true> : t1ha2_incr<MODE_BE_BSWAP, true>,
-   $.initfn = t1ha2_incr_selftest
+   $.initfn          = t1ha2_incr_selftest
  );
 
 #if defined(HAVE_X86_64_AES)
@@ -1732,7 +1732,7 @@ REGISTER_HASH(t1ha0__aesA,
    $.verification_BE = 0x6848847F,
    $.hashfn_native   = t1ha0_aesA<false>,
    $.hashfn_bswap    = t1ha0_aesA<true>,
-   $.initfn = t1ha0_aes_selftest
+   $.initfn          = t1ha0_aes_selftest
  );
 
 REGISTER_HASH(t1ha0__aesB,
@@ -1749,6 +1749,6 @@ REGISTER_HASH(t1ha0__aesB,
    $.verification_BE = 0x010611E9,
    $.hashfn_native   = t1ha0_aesB<false>,
    $.hashfn_bswap    = t1ha0_aesB<true>,
-   $.initfn = t1ha0_aes_selftest
+   $.initfn          = t1ha0_aes_selftest
  );
 #endif

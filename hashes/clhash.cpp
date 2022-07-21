@@ -476,7 +476,7 @@ REGISTER_HASH(CLhash__bitmix,
    $.verification_BE = 0x0D2B93FA,
    $.hashfn_native   = CLHash<false>,
    $.hashfn_bswap    = CLHash<true>,
-   $.initfn = clhash_init
+   $.initfn          = clhash_init
  );
 
 REGISTER_HASH(CLhash,
@@ -494,7 +494,7 @@ REGISTER_HASH(CLhash,
    $.verification_BE = 0x25DDBEC2,
    $.hashfn_native   = CLHashNomix<false>,
    $.hashfn_bswap    = CLHashNomix<true>,
-   $.initfn = clhash_init
+   $.initfn          = clhash_init
  );
 
 #endif

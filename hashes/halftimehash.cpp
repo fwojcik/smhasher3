@@ -1410,7 +1410,7 @@ REGISTER_HASH(HalftimeHash_64,
    $.verification_BE = 0x7EE5ED6F,
    $.hashfn_native   = HalftimeHash64<false>,
    $.hashfn_bswap    = HalftimeHash64<true>,
-   $.seedfn = halftime_hash_seed_init
+   $.seedfn          = halftime_hash_seed_init
  );
 
 REGISTER_HASH(HalftimeHash_128,
@@ -1428,7 +1428,7 @@ REGISTER_HASH(HalftimeHash_128,
    $.verification_BE = 0xD79E990B,
    $.hashfn_native   = HalftimeHash128<false>,
    $.hashfn_bswap    = HalftimeHash128<true>,
-   $.seedfn = halftime_hash_seed_init
+   $.seedfn          = halftime_hash_seed_init
  );
 
 REGISTER_HASH(HalftimeHash_256,
@@ -1446,7 +1446,7 @@ REGISTER_HASH(HalftimeHash_256,
    $.verification_BE = 0x23C24991,
    $.hashfn_native   = HalftimeHash256<false>,
    $.hashfn_bswap    = HalftimeHash256<true>,
-   $.seedfn = halftime_hash_seed_init
+   $.seedfn          = halftime_hash_seed_init
  );
 
 REGISTER_HASH(HalftimeHash_512,
@@ -1464,5 +1464,5 @@ REGISTER_HASH(HalftimeHash_512,
    $.verification_BE = 0xA3A0AE42,
    $.hashfn_native   = HalftimeHash512<false>,
    $.hashfn_bswap    = HalftimeHash512<true>,
-   $.seedfn = halftime_hash_seed_init
+   $.seedfn          = halftime_hash_seed_init
  );

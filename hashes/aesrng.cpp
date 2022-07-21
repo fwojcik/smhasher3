@@ -211,7 +211,7 @@ REGISTER_HASH(aesrng_32,
    $.verification_BE = 0xED1590AC,
    $.hashfn_native   = aesrng<32>,
    $.hashfn_bswap    = aesrng<32>,
-   $.initfn = aesrng_init,
+   $.initfn          = aesrng_init,
    $.seedfixfn       = aesrng_seedfix,
    $.sort_order      = 50
  );
@@ -232,7 +232,7 @@ REGISTER_HASH(aesrng_64,
    $.verification_BE = 0xAE36B667,
    $.hashfn_native   = aesrng<64>,
    $.hashfn_bswap    = aesrng<64>,
-   $.initfn = aesrng_init,
+   $.initfn          = aesrng_init,
    $.seedfixfn       = aesrng_seedfix,
    $.sort_order      = 50
  );
@@ -253,7 +253,7 @@ REGISTER_HASH(aesrng_128,
    $.verification_BE = 0x2D1A1DB5,
    $.hashfn_native   = aesrng<128>,
    $.hashfn_bswap    = aesrng<128>,
-   $.initfn = aesrng_init,
+   $.initfn          = aesrng_init,
    $.seedfixfn       = aesrng_seedfix,
    $.sort_order      = 50
  );
@@ -274,7 +274,7 @@ REGISTER_HASH(aesrng_160,
    $.verification_BE = 0x3FC284C3,
    $.hashfn_native   = aesrng<160>,
    $.hashfn_bswap    = aesrng<160>,
-   $.initfn = aesrng_init,
+   $.initfn          = aesrng_init,
    $.seedfixfn       = aesrng_seedfix,
    $.sort_order      = 50
  );
@@ -295,7 +295,7 @@ REGISTER_HASH(aesrng_224,
    $.verification_BE = 0x9288A516,
    $.hashfn_native   = aesrng<224>,
    $.hashfn_bswap    = aesrng<224>,
-   $.initfn = aesrng_init,
+   $.initfn          = aesrng_init,
    $.seedfixfn       = aesrng_seedfix,
    $.sort_order      = 50
  );
@@ -316,7 +316,7 @@ REGISTER_HASH(aesrng_256,
    $.verification_BE = 0x2816EEC1,
    $.hashfn_native   = aesrng<256>,
    $.hashfn_bswap    = aesrng<256>,
-   $.initfn = aesrng_init,
+   $.initfn          = aesrng_init,
    $.seedfixfn       = aesrng_seedfix,
    $.sort_order      = 50
  );

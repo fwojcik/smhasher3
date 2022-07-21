@@ -2765,7 +2765,7 @@ REGISTER_HASH(PMP_Multilinear_32,
    $.bits = 32,
    $.verification_LE = 0xF3199670,
    $.verification_BE = 0xF602E963,
-   $.seedfn = PMPML_32_seed,
+   $.seedfn          = PMPML_32_seed,
    $.hashfn_native   = PMPML_32<false>,
    $.hashfn_bswap    = PMPML_32<true>
  );
@@ -2781,7 +2781,7 @@ REGISTER_HASH(PMP_Multilinear_64,
    $.bits = 64,
    $.verification_LE = 0xB776D2B9,
    $.verification_BE = 0x8E1E0CDF,
-   $.seedfn = PMPML_64_seed,
+   $.seedfn          = PMPML_64_seed,
    $.hashfn_native   = PMPML_64<false>,
    $.hashfn_bswap    = PMPML_64<true>
  );

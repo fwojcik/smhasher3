@@ -508,7 +508,7 @@ REGISTER_HASH(Pearson_64,
    $.verification_BE = 0x12E4C8CD,
    $.hashfn_native   = pearson64,
    $.hashfn_bswap    = pearson64,
-   $.initfn = pearson_hash_init
+   $.initfn          = pearson_hash_init
  );
 
 REGISTER_HASH(Pearson_128,
@@ -524,7 +524,7 @@ REGISTER_HASH(Pearson_128,
    $.verification_BE = 0xDC5048A3,
    $.hashfn_native   = pearson128,
    $.hashfn_bswap    = pearson128,
-   $.initfn = pearson_hash_init
+   $.initfn          = pearson_hash_init
  );
 
 REGISTER_HASH(Pearson_256,
@@ -540,5 +540,5 @@ REGISTER_HASH(Pearson_256,
    $.verification_BE = 0xA9B1DE02,
    $.hashfn_native   = pearson256,
    $.hashfn_bswap    = pearson256,
-   $.initfn = pearson_hash_init
+   $.initfn          = pearson_hash_init
  );

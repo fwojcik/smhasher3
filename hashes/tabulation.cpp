@@ -347,7 +347,7 @@ REGISTER_HASH(tabulation_32,
    $.bits = 32,
    $.verification_LE = 0xF951BEFF,
    $.verification_BE = 0xFEB31CB2,
-   $.seedfn = tabulation32_seed,
+   $.seedfn          = tabulation32_seed,
    $.hashfn_native   = tabulation32<false>,
    $.hashfn_bswap    = tabulation32<true>
  );
@@ -366,7 +366,7 @@ REGISTER_HASH(tabulation_64,
    $.bits = 64,
    $.verification_LE = 0x9CE7C3BC,
    $.verification_BE = 0x4EE5569F,
-   $.seedfn = tabulation64_seed,
+   $.seedfn          = tabulation64_seed,
    $.hashfn_native   = tabulation64<false>,
    $.hashfn_bswap    = tabulation64<true>
  );

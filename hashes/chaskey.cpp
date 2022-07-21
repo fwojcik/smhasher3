@@ -274,10 +274,10 @@ REGISTER_HASH(chaskey_12__32,
    $.bits = 32,
    $.verification_LE = 0x672570CB,
    $.verification_BE = 0x22B350D2,
-   $.initfn        = chaskey_selftest,
-   $.seedfn        = seed_subkeys,
-   $.hashfn_native = chaskey<12, 1, false>,
-   $.hashfn_bswap  = chaskey<12, 1, true>
+   $.initfn          = chaskey_selftest,
+   $.seedfn          = seed_subkeys,
+   $.hashfn_native   = chaskey<12, 1, false>,
+   $.hashfn_bswap    = chaskey<12, 1, true>
  );
 
 REGISTER_HASH(chaskey_12__64,
@@ -295,10 +295,10 @@ REGISTER_HASH(chaskey_12__64,
    $.bits = 64,
    $.verification_LE = 0x919290D6,
    $.verification_BE = 0x5D0E8285,
-   $.initfn        = chaskey_selftest,
-   $.seedfn        = seed_subkeys,
-   $.hashfn_native = chaskey<12, 2, false>,
-   $.hashfn_bswap  = chaskey<12, 2, true>
+   $.initfn          = chaskey_selftest,
+   $.seedfn          = seed_subkeys,
+   $.hashfn_native   = chaskey<12, 2, false>,
+   $.hashfn_bswap    = chaskey<12, 2, true>
  );
 
 REGISTER_HASH(chaskey_12,
@@ -316,10 +316,10 @@ REGISTER_HASH(chaskey_12,
    $.bits = 128,
    $.verification_LE = 0x1E983B23,
    $.verification_BE = 0xB042962B,
-   $.initfn        = chaskey_selftest,
-   $.seedfn        = seed_subkeys,
-   $.hashfn_native = chaskey<12, 4, false>,
-   $.hashfn_bswap  = chaskey<12, 4, true>
+   $.initfn          = chaskey_selftest,
+   $.seedfn          = seed_subkeys,
+   $.hashfn_native   = chaskey<12, 4, false>,
+   $.hashfn_bswap    = chaskey<12, 4, true>
  );
 
 REGISTER_HASH(chaskey_8__32,
@@ -336,10 +336,10 @@ REGISTER_HASH(chaskey_8__32,
    $.bits = 32,
    $.verification_LE = 0xA984B318,
    $.verification_BE = 0x23FE2699,
-   $.initfn        = chaskey_selftest,
-   $.seedfn        = seed_subkeys,
-   $.hashfn_native = chaskey<8, 1, false>,
-   $.hashfn_bswap  = chaskey<8, 1, true>
+   $.initfn          = chaskey_selftest,
+   $.seedfn          = seed_subkeys,
+   $.hashfn_native   = chaskey<8, 1, false>,
+   $.hashfn_bswap    = chaskey<8, 1, true>
  );
 
 REGISTER_HASH(chaskey_8__64,
@@ -356,10 +356,10 @@ REGISTER_HASH(chaskey_8__64,
    $.bits = 64,
    $.verification_LE = 0x4DA0DD3A,
    $.verification_BE = 0x87A85CD2,
-   $.initfn        = chaskey_selftest,
-   $.seedfn        = seed_subkeys,
-   $.hashfn_native = chaskey<8, 2, false>,
-   $.hashfn_bswap  = chaskey<8, 2, true>
+   $.initfn          = chaskey_selftest,
+   $.seedfn          = seed_subkeys,
+   $.hashfn_native   = chaskey<8, 2, false>,
+   $.hashfn_bswap    = chaskey<8, 2, true>
  );
 
 REGISTER_HASH(chaskey_8,
@@ -376,8 +376,8 @@ REGISTER_HASH(chaskey_8,
    $.bits = 128,
    $.verification_LE = 0x48B645E4,
    $.verification_BE = 0xB84D00F9,
-   $.initfn        = chaskey_selftest,
-   $.seedfn        = seed_subkeys,
-   $.hashfn_native = chaskey<8, 4, false>,
-   $.hashfn_bswap  = chaskey<8, 4, true>
+   $.initfn          = chaskey_selftest,
+   $.seedfn          = seed_subkeys,
+   $.hashfn_native   = chaskey<8, 4, false>,
+   $.hashfn_bswap    = chaskey<8, 4, true>
  );

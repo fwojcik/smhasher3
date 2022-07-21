@@ -753,7 +753,7 @@ REGISTER_HASH(SHA_1__32,
    $.bits = 32,
    $.verification_LE = 0xF0E4D9E9,
    $.verification_BE = 0xE00EF4D6,
-   $.initfn = SHA1_test,
+   $.initfn          = SHA1_test,
    $.hashfn_native   = SHA1<32, false>,
    $.hashfn_bswap    = SHA1<32, true>
  );
@@ -774,7 +774,7 @@ REGISTER_HASH(SHA_1__64,
    $.bits = 64,
    $.verification_LE = 0x36801ECB,
    $.verification_BE = 0xFC26F4C7,
-   $.initfn = SHA1_test,
+   $.initfn          = SHA1_test,
    $.hashfn_native   = SHA1<64, false>,
    $.hashfn_bswap    = SHA1<64, true>
  );
@@ -795,7 +795,7 @@ REGISTER_HASH(SHA_1,
    $.bits = 128,
    $.verification_LE = 0xE444A591,
    $.verification_BE = 0x35E00C29,
-   $.initfn = SHA1_test,
+   $.initfn          = SHA1_test,
    $.hashfn_native   = SHA1<128, false>,
    $.hashfn_bswap    = SHA1<128, true>
  );
