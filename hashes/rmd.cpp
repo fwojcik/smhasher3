@@ -579,7 +579,7 @@ static void rmd256( const void * in, const size_t len, const seed_t seed, void *
 }
 
 static bool rmd_test( void ) {
-    static conststruct {
+    static const struct {
         const char *   msg;
         unsigned char  hash128[16];
         unsigned char  hash160[20];

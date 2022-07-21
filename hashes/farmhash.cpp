@@ -265,8 +265,8 @@ static inline uint64_t farmhashna::HashLen0to16( const uint8_t * s, size_t len )
 template <bool bswap>
 static inline uint64_t farmhashna::HashLen17to32( const uint8_t * s, size_t len ) {
     uint64_t mul = k2 + len * 2;
-    uint64_t a   = Fetch64<bswap>(s    )        * k1;
-    uint64_t b   = Fetch64<bswap>(s + 8);
+    uint64_t a   = Fetch64<bswap>(s           ) * k1;
+    uint64_t b   = Fetch64<bswap>(s + 8       );
     uint64_t c   = Fetch64<bswap>(s + len -  8) * mul;
     uint64_t d   = Fetch64<bswap>(s + len - 16) * k2;
 
@@ -277,14 +277,14 @@ static inline uint64_t farmhashna::HashLen17to32( const uint8_t * s, size_t len 
 template <bool bswap>
 static inline uint64_t farmhashna::HashLen33to64( const uint8_t * s, size_t len ) {
     uint64_t mul = k2 + len * 2;
-    uint64_t a   = Fetch64<bswap>(s     )       * k2;
-    uint64_t b   = Fetch64<bswap>(s +  8);
+    uint64_t a   = Fetch64<bswap>(s           ) * k2;
+    uint64_t b   = Fetch64<bswap>(s +  8      );
     uint64_t c   = Fetch64<bswap>(s + len -  8) * mul;
     uint64_t d   = Fetch64<bswap>(s + len - 16) * k2;
     uint64_t y   = ROTR64(a + b, 43) + ROTR64(c, 30) + d;
     uint64_t z   = HashLen16(y, a + ROTR64(b + k2, 18) + c, mul);
-    uint64_t e   = Fetch64<bswap>(s + 16)       * mul;
-    uint64_t f   = Fetch64<bswap>(s + 24);
+    uint64_t e   = Fetch64<bswap>(s + 16      ) * mul;
+    uint64_t f   = Fetch64<bswap>(s + 24      );
     uint64_t g   = (y + Fetch64<bswap>(s + len - 32)) * mul;
     uint64_t h   = (z + Fetch64<bswap>(s + len - 24)) * mul;
 
@@ -320,7 +320,7 @@ static uint64_t farmhashna::Hash64( const uint8_t * s, size_t len ) {
     assert(s + len - 64 == last64);
     do {
         x  = ROTR64(x + y        + v.first + Fetch64<bswap>(s +  8), 37) * k1;
-        y  = ROTR64(y + v.second + Fetch64          <bswap>(s + 48), 42) * k1;
+        y  = ROTR64(y + v.second +           Fetch64<bswap>(s + 48), 42) * k1;
         x ^= w.second;
         y += v.first + Fetch64<bswap>(s + 40);
         z  = ROTR64(z + w.first, 33) * k1;
@@ -336,7 +336,7 @@ static uint64_t farmhashna::Hash64( const uint8_t * s, size_t len ) {
     v.first += w.first;
     w.first += v.first;
     x        = ROTR64(x + y        + v.first + Fetch64<bswap>(s +  8), 37) * mul;
-    y        = ROTR64(y + v.second + Fetch64          <bswap>(s + 48), 42) * mul;
+    y        = ROTR64(y + v.second +           Fetch64<bswap>(s + 48), 42) * mul;
     x       ^= w.second * 9;
     y       += v.first * 9 + Fetch64<bswap>(s + 40);
     z        = ROTR64(z + w.first, 33) * mul;
@@ -503,8 +503,8 @@ namespace farmhashxo {
 
 template <bool bswap>
 static inline uint64_t farmhashxo::H32( const uint8_t * s, size_t len, uint64_t mul, uint64_t seed0, uint64_t seed1 ) {
-    uint64_t a = Fetch64<bswap>(s    )        * k1;
-    uint64_t b = Fetch64<bswap>(s + 8);
+    uint64_t a = Fetch64<bswap>(s           ) * k1;
+    uint64_t b = Fetch64<bswap>(s + 8       );
     uint64_t c = Fetch64<bswap>(s + len -  8) * mul;
     uint64_t d = Fetch64<bswap>(s + len - 16) * k2;
     uint64_t u = ROTR64(a + b, 43) + ROTR64(c, 30) + d + seed0;
@@ -531,8 +531,8 @@ template <bool bswap>
 static inline uint64_t farmhashxo::HashLen65to96( const uint8_t * s, size_t len ) {
     uint64_t mul0 = k2 - 114;
     uint64_t mul1 = k2 - 114 + 2 * len;
-    uint64_t h0   = H32<bswap>(s     , 32, mul0);
-    uint64_t h1   = H32<bswap>(s + 32, 32, mul1);
+    uint64_t h0   = H32<bswap>(s           , 32, mul0);
+    uint64_t h1   = H32<bswap>(s + 32      , 32, mul1);
     uint64_t h2   = H32<bswap>(s + len - 32, 32, mul1, h0, h1);
 
     return (h2 * 9 + (h0 >> 17) + (h1 >> 21)) * mul1;
@@ -588,7 +588,7 @@ namespace farmhashte {
 template <bool bswap>
 static inline uint64_t farmhashte::Hash64Long( const uint8_t * s, size_t n, uint64_t seed0, uint64_t seed1 ) {
     const __m128i kShuf =
-            _mm_set_epi8(   4,   11,   10,    5, 8, 15, 6, 9, 12, 2, 14, 13, 0, 7, 3, 1);
+            _mm_set_epi8( 4, 11, 10, 5, 8, 15, 6, 9, 12, 2, 14, 13, 0, 7, 3, 1);
     const __m128i kMult =
             _mm_set_epi8(0xbd, 0xd6, 0x33, 0x39, 0x45, 0x54, 0xfa,
             0x03, 0x34, 0x3e, 0x33, 0xed, 0xcc, 0x9e, 0x2d, 0x51);
@@ -826,11 +826,11 @@ namespace farmhashmk {
 template <bool bswap>
 static inline uint32_t farmhashmk::Hash32Len13to24( const uint8_t * s, size_t len, uint32_t seed ) {
     uint32_t a = Fetch32<bswap>(s - 4   + (len >> 1));
-    uint32_t b = Fetch32<bswap>(s + 4);
-    uint32_t c = Fetch32<bswap>(s + len - 8);
+    uint32_t b = Fetch32<bswap>(s + 4               );
+    uint32_t c = Fetch32<bswap>(s + len - 8         );
     uint32_t d = Fetch32<bswap>(s +       (len >> 1));
-    uint32_t e = Fetch32<bswap>(s);
-    uint32_t f = Fetch32<bswap>(s + len - 4);
+    uint32_t e = Fetch32<bswap>(s                   );
+    uint32_t f = Fetch32<bswap>(s + len - 4         );
     uint32_t h = d * c1 + len + seed;
 
     a = ROTR32(a, 12) + f;
@@ -1002,7 +1002,7 @@ static uint32_t farmhashsu::Hash32( const uint8_t * s, size_t len ) {
     if (len < 80) {
         __m128i a = Fetch128<bswap>(s     );
         __m128i b = Fetch128<bswap>(s + 16);
-        __m128i c = Fetch128<bswap>(s +     (len - 15) / 2);
+        __m128i c = Fetch128<bswap>(s + (len - 15) / 2);
         __m128i d = Fetch128<bswap>(s + len - 32);
         __m128i e = Fetch128<bswap>(s + len - 16);
         h = Add32(h, a);
@@ -1345,11 +1345,11 @@ namespace farmhashcc {
 template <bool bswap>
 static inline uint32_t farmhashcc::Hash32Len13to24( const uint8_t * s, size_t len ) {
     uint32_t a = Fetch32<bswap>(s - 4   + (len >> 1));
-    uint32_t b = Fetch32<bswap>(s + 4);
-    uint32_t c = Fetch32<bswap>(s + len - 8);
+    uint32_t b = Fetch32<bswap>(s + 4               );
+    uint32_t c = Fetch32<bswap>(s + len - 8         );
     uint32_t d = Fetch32<bswap>(s +       (len >> 1));
-    uint32_t e = Fetch32<bswap>(s);
-    uint32_t f = Fetch32<bswap>(s + len - 4);
+    uint32_t e = Fetch32<bswap>(s                   );
+    uint32_t f = Fetch32<bswap>(s + len - 4         );
     uint32_t h = len;
 
     return fmix(Mur(f, Mur(e, Mur(d, Mur(c, Mur(b, Mur(a, h)))))));
@@ -1538,7 +1538,7 @@ static uint128_t farmhashcc::Hash128WithSeed( const uint8_t * s, size_t len, uin
     // This is the same inner loop as CityHash64(), manually unrolled.
     do {
         x    = ROTR64(x + y        + v.first + Fetch64<bswap>(s +  8), 37) * k1;
-        y    = ROTR64(y + v.second + Fetch64          <bswap>(s + 48), 42) * k1;
+        y    = ROTR64(y + v.second +           Fetch64<bswap>(s + 48), 42) * k1;
         x   ^= w.second;
         y   += v.first + Fetch64<bswap>(s + 40);
         z    = ROTR64(z + w.first, 33) * k1;
@@ -1547,7 +1547,7 @@ static uint128_t farmhashcc::Hash128WithSeed( const uint8_t * s, size_t len, uin
         std::swap(z, x);
         s   += 64;
         x    = ROTR64(x + y        + v.first + Fetch64<bswap>(s +  8), 37) * k1;
-        y    = ROTR64(y + v.second + Fetch64          <bswap>(s + 48), 42) * k1;
+        y    = ROTR64(y + v.second +           Fetch64<bswap>(s + 48), 42) * k1;
         x   ^= w.second;
         y   += v.first + Fetch64<bswap>(s + 40);
         z    = ROTR64(z + w.first, 33) * k1;
@@ -1566,9 +1566,9 @@ static uint128_t farmhashcc::Hash128WithSeed( const uint8_t * s, size_t len, uin
     for (size_t tail_done = 0; tail_done < len;) {
         tail_done += 32;
         y          = ROTR64(x + y, 42) * k0 + v.second;
-        w.first   += Fetch64               <bswap>(s + len - tail_done + 16);
+        w.first   += Fetch64<bswap>(s + len - tail_done + 16);
         x          = x                 * k0 + w.first;
-        z         += w.second + Fetch64    <bswap>(s       + len       - tail_done);
+        z         += w.second +    Fetch64 <bswap>(s + len - tail_done);
         w.second  += v.first;
         v          = WeakHashLen32WithSeeds<bswap>(s + len - tail_done, v.first + z, v.second);
         v.first   *= k0;

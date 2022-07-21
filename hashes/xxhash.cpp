@@ -863,7 +863,7 @@ static FORCE_INLINE XXH128_hash_t XXH3_len_17to128_128b( const uint8_t * RESTRIC
     h128.low64  = acc.low64 + acc.high64;
     h128.high64 = (acc.low64  * XXH_PRIME64_1) +
                   (acc.high64 * XXH_PRIME64_4) +
-            (     (len        - seed         ) * XXH_PRIME64_2);
+                  ((len - seed) * XXH_PRIME64_2);
     h128.low64  = XXH3_avalanche(h128.low64);
     h128.high64 = (uint64_t)0 - XXH3_avalanche(h128.high64);
     return h128;
@@ -896,7 +896,7 @@ static NEVER_INLINE XXH128_hash_t XXH3_len_129to240_128b( const uint8_t * RESTRI
     h128.low64  = acc.low64 + acc.high64;
     h128.high64 = (acc.low64  * XXH_PRIME64_1) +
                   (acc.high64 * XXH_PRIME64_4) +
-            (     (len        - seed         ) * XXH_PRIME64_2);
+                  ((len - seed) * XXH_PRIME64_2);
     h128.low64  = XXH3_avalanche(h128.low64);
     h128.high64 = (uint64_t)0 - XXH3_avalanche(h128.high64);
     return h128;
@@ -932,8 +932,8 @@ static FORCE_INLINE void XXH3_scalarRound( void * RESTRICT acc, void const * RES
     uint64_t *      xacc     = (uint64_t *     )acc;
     uint8_t const * xinput   = (uint8_t const *)input;
     uint8_t const * xsecret  = (uint8_t const *)secret;
-    uint64_t const  data_val = GET_U64           <bswap>(xinput, lane *  8);
-    uint64_t const  data_key = data_val ^ GET_U64<bswap>(xsecret, lane * 8);
+    uint64_t const  data_val = GET_U64<bswap>(xinput,  lane * 8);
+    uint64_t const  data_key = GET_U64<bswap>(xsecret, lane * 8) ^ data_val;
 
     xacc[lane ^ 1] += data_val; /* swap adjacent lanes */
     xacc[lane]     += XXH_mult32to64(data_key & 0xFFFFFFFF, data_key >> 32);
@@ -1190,7 +1190,7 @@ static FORCE_INLINE void XXH3_hashLong_internal_loop( uint64_t * RESTRICT acc, c
         size_t len, const uint8_t * RESTRICT secret, size_t secretSize ) {
     size_t const nbStripesPerBlock = (secretSize - XXH_STRIPE_LEN) / XXH_SECRET_CONSUME_RATE;
     size_t const block_len         = XXH_STRIPE_LEN * nbStripesPerBlock;
-    size_t const nb_blocks         = (len        - 1             ) / block_len;
+    size_t const nb_blocks         = (len - 1) / block_len;
 
     for (size_t n = 0; n < nb_blocks; n++) {
         XXH3_accumulate<bswap>(acc, input + n * block_len, secret, nbStripesPerBlock);

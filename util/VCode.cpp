@@ -66,40 +66,40 @@ static inline void crc32c_sw_update( uint32_t * const crcptr, const void * const
         crc ^= wd1;
         if (isBE()) {
             crc =
-                    crc32c_sw_table[15][crc &         0xff] ^
+                    crc32c_sw_table[15][ crc        & 0xff] ^
                     crc32c_sw_table[14][(crc >>  8) & 0xff] ^
                     crc32c_sw_table[13][(crc >> 16) & 0xff] ^
                     crc32c_sw_table[12][(crc >> 24) & 0xff] ^
                     crc32c_sw_table[11][(crc >> 32) & 0xff] ^
                     crc32c_sw_table[10][(crc >> 40) & 0xff] ^
                     crc32c_sw_table[ 9][(crc >> 48) & 0xff] ^
-                    crc32c_sw_table[ 8][crc        >>   56] ^
-                    crc32c_sw_table[ 0][wd2 &         0xff] ^
+                    crc32c_sw_table[ 8][ crc >> 56        ] ^
+                    crc32c_sw_table[ 0][ wd2        & 0xff] ^
                     crc32c_sw_table[ 1][(wd2 >>  8) & 0xff] ^
                     crc32c_sw_table[ 2][(wd2 >> 16) & 0xff] ^
                     crc32c_sw_table[ 3][(wd2 >> 24) & 0xff] ^
                     crc32c_sw_table[ 4][(wd2 >> 32) & 0xff] ^
                     crc32c_sw_table[ 5][(wd2 >> 40) & 0xff] ^
                     crc32c_sw_table[ 6][(wd2 >> 48) & 0xff] ^
-                    crc32c_sw_table[ 7][wd2        >>   56];
+                    crc32c_sw_table[ 7][ wd2 >> 56        ];
         } else {
             crc =
-                    crc32c_sw_table[15][crc &         0xff] ^
+                    crc32c_sw_table[15][ crc        & 0xff] ^
                     crc32c_sw_table[14][(crc >>  8) & 0xff] ^
                     crc32c_sw_table[13][(crc >> 16) & 0xff] ^
                     crc32c_sw_table[12][(crc >> 24) & 0xff] ^
                     crc32c_sw_table[11][(crc >> 32) & 0xff] ^
                     crc32c_sw_table[10][(crc >> 40) & 0xff] ^
                     crc32c_sw_table[ 9][(crc >> 48) & 0xff] ^
-                    crc32c_sw_table[ 8][crc        >>   56] ^
-                    crc32c_sw_table[ 7][wd2 &         0xff] ^
+                    crc32c_sw_table[ 8][ crc >> 56        ] ^
+                    crc32c_sw_table[ 7][ wd2        & 0xff] ^
                     crc32c_sw_table[ 6][(wd2 >>  8) & 0xff] ^
                     crc32c_sw_table[ 5][(wd2 >> 16) & 0xff] ^
                     crc32c_sw_table[ 4][(wd2 >> 24) & 0xff] ^
                     crc32c_sw_table[ 3][(wd2 >> 32) & 0xff] ^
                     crc32c_sw_table[ 2][(wd2 >> 40) & 0xff] ^
                     crc32c_sw_table[ 1][(wd2 >> 48) & 0xff] ^
-                    crc32c_sw_table[ 0][wd2        >>   56];
+                    crc32c_sw_table[ 0][ wd2 >> 56        ];
         }
         next += 16;
         len  -= 16;
@@ -246,15 +246,15 @@ static uint32_t vcode_crc_selftest_40( uint8_t offset ) {
             crc32c_hw_update(&crc, buf, 40);
         } else
 #endif
-        crc32c_sw_update(&crc, buf, 40);
+            crc32c_sw_update(&crc, buf, 40);
     } else {
 #if defined(HWCRC_U64)
         if (use_hw) {
-            crc32c_hw_update(&crc, &buf[0] ,  1);
-            crc32c_hw_update(&crc, &buf[1] ,  1);
-            crc32c_hw_update(&crc, &buf[2] ,  2);
-            crc32c_hw_update(&crc, &buf[4] ,  4);
-            crc32c_hw_update(&crc, &buf[8] ,  8);
+            crc32c_hw_update(&crc, &buf[ 0],  1);
+            crc32c_hw_update(&crc, &buf[ 1],  1);
+            crc32c_hw_update(&crc, &buf[ 2],  2);
+            crc32c_hw_update(&crc, &buf[ 4],  4);
+            crc32c_hw_update(&crc, &buf[ 8],  8);
             crc32c_hw_update(&crc, &buf[16], 16);
             crc32c_hw_update(&crc, &buf[32],  1);
             crc32c_hw_update(&crc, &buf[33],  1);
@@ -262,18 +262,18 @@ static uint32_t vcode_crc_selftest_40( uint8_t offset ) {
             crc32c_hw_update(&crc, &buf[36],  4);
         } else {
 #endif
-        crc32c_sw_update(&crc, &buf[0] ,  1);
-        crc32c_sw_update(&crc, &buf[1] ,  1);
-        crc32c_sw_update(&crc, &buf[2] ,  2);
-        crc32c_sw_update(&crc, &buf[4] ,  4);
-        crc32c_sw_update(&crc, &buf[8] ,  8);
-        crc32c_sw_update(&crc, &buf[16], 16);
-        crc32c_sw_update(&crc, &buf[32],  1);
-        crc32c_sw_update(&crc, &buf[33],  1);
-        crc32c_sw_update(&crc, &buf[34],  2);
-        crc32c_sw_update(&crc, &buf[36],  4);
+            crc32c_sw_update(&crc, &buf[ 0],  1);
+            crc32c_sw_update(&crc, &buf[ 1],  1);
+            crc32c_sw_update(&crc, &buf[ 2],  2);
+            crc32c_sw_update(&crc, &buf[ 4],  4);
+            crc32c_sw_update(&crc, &buf[ 8],  8);
+            crc32c_sw_update(&crc, &buf[16], 16);
+            crc32c_sw_update(&crc, &buf[32],  1);
+            crc32c_sw_update(&crc, &buf[33],  1);
+            crc32c_sw_update(&crc, &buf[34],  2);
+            crc32c_sw_update(&crc, &buf[36],  4);
 #if defined(HWCRC_U64)
-    }
+        }
 #endif
     }
 

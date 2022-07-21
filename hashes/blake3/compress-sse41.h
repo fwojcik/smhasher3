@@ -258,7 +258,7 @@ static void blake3_compress_xof( const uint32_t cv[8], const uint8_t block[BLAKE
     __m128i rows[4];
 
     compress_pre(rows, cv, block, block_len, counter, flags);
-    storeu(xorv(rows[0], rows[2]), &out[0] );
+    storeu(xorv(rows[0], rows[2]), &out[ 0]);
     storeu(xorv(rows[1], rows[3]), &out[16]);
     storeu(xorv(rows[2], loadu((uint8_t *)&cv[0])), &out[32]);
     storeu(xorv(rows[3], loadu((uint8_t *)&cv[4])), &out[48]);
@@ -421,9 +421,9 @@ static FORCE_INLINE void transpose_msg_vecs( const uint8_t * const * inputs, siz
     for (size_t i = 0; i < 4; ++i) {
         _mm_prefetch((const void *)&inputs[i][block_offset + 256], _MM_HINT_T0);
     }
-    transpose_vecs(&out[0] );
-    transpose_vecs(&out[4] );
-    transpose_vecs(&out[8] );
+    transpose_vecs(&out[ 0]);
+    transpose_vecs(&out[ 4]);
+    transpose_vecs(&out[ 8]);
     transpose_vecs(&out[12]);
 }
 
@@ -434,7 +434,7 @@ static FORCE_INLINE void load_counters( uint64_t counter, bool increment_counter
     __m128i       l     = _mm_add_epi32(_mm_set1_epi32((int32_t)counter), add1);
     __m128i       carry = _mm_cmpgt_epi32(_mm_xor_si128(add1, _mm_set1_epi32(
             0x80000000)), _mm_xor_si128(l, _mm_set1_epi32(0x80000000)));
-    __m128i h = _mm_sub_epi32(_mm_set1_epi32(          (int32_t)(counter >> 32)), carry);
+    __m128i h = _mm_sub_epi32(_mm_set1_epi32((int32_t)(counter >> 32)), carry);
 
     *out_lo = l;
     *out_hi = h;

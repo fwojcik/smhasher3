@@ -173,7 +173,7 @@ static FORCE_INLINE size_t chunk_state_fill_buf( blake3_chunk_state * self, cons
     if (take > input_len) {
         take = input_len;
     }
-    uint8_t * dest = self->buf     + ((size_t)self->buf_len);
+    uint8_t * dest = self->buf + ((size_t)self->buf_len);
     memcpy(dest, input, take);
     self->buf_len += (uint8_t)take;
     return take;
@@ -451,8 +451,7 @@ static FORCE_INLINE void compress_subtree_to_parent_node( const uint8_t * input,
     // warnings here. GCC 8.5 is particularly sensitive, so if you're changing
     // this code, test it against that version.
     while (num_cvs > 2 && num_cvs <= SIMD_DEGREE_OR_2) {
-        num_cvs =
-                compress_parents_parallel(cv_array, num_cvs, key, flags, out_array);
+        num_cvs = compress_parents_parallel(cv_array, num_cvs, key, flags, out_array);
         memcpy(cv_array, out_array, num_cvs * BLAKE3_OUT_LEN);
     }
     memcpy(out, cv_array, 2 * BLAKE3_OUT_LEN);

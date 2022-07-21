@@ -52,13 +52,13 @@ uint32_t HashInfo::_ComputedVerifyImpl( const HashInfo * hinfo, enum HashInfo::e
     const uint32_t hashbits  = hinfo->bits;
     const uint32_t hashbytes = hashbits / 8;
 
-    uint8_t * key    = new uint8_t[256            ];
+    uint8_t * key    = new uint8_t[            256];
     uint8_t * hashes = new uint8_t[hashbytes * 256];
     uint8_t * total  = new uint8_t[hashbytes      ];
 
-    memset(key   , 0,       256);
+    memset(key   , 0,             256);
     memset(hashes, 0, hashbytes * 256);
-    memset(total , 0, hashbytes);
+    memset(total , 0,       hashbytes);
 
     // Hash keys of the form {}, {0}, {0,1}, {0,1,2}... up to N=255, using
     // 256-N as the seed
@@ -74,8 +74,8 @@ uint32_t HashInfo::_ComputedVerifyImpl( const HashInfo * hinfo, enum HashInfo::e
     seed_t seed = 0;
     seed = hinfo->Seed(0, true, 1);
     hash(hashes, hashbytes * 256, seed, total);
-    addVCodeOutput(hashes,       256 * hashbytes);
-    addVCodeOutput(total , hashbytes            );
+    addVCodeOutput(hashes, 256 * hashbytes);
+    addVCodeOutput(total , hashbytes);
 
     // The first four bytes of that hash, interpreted as a little-endian
     // integer, is our verification value

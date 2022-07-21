@@ -255,11 +255,11 @@ class Blob {
         if (start <= (bitlen - 25)) {
             memcpy(&v, &bytes[start >> 3], 4);
             v   = COND_BSWAP(v, isBE());
-            v >>= (start & 7     );
+            v >>= (start & 7);
         } else {
             memcpy(&v, &bytes[len - 4], 4);
             v   = COND_BSWAP(v, isBE());
-            v >>= 32     + start - bitlen;
+            v >>= (32 + start - bitlen);
             if ((start + count) > bitlen) {
                 uint32_t v2;
                 memcpy(&v2, bytes, 4);
@@ -326,15 +326,15 @@ FORCE_INLINE void Blob<32>::reversebits( void ) {
     uint32_t v = GET_U32<false>(bytes, 0);
 
     // swap odd and even bits
-    v = ((v >>  1) & 0x55555555) | ((v & 0x55555555) << 1);
+    v = ((v >>  1) & 0x55555555) | ((v & 0x55555555) <<  1);
     // swap consecutive pairs
-    v = ((v >>  2) & 0x33333333) | ((v & 0x33333333) << 2);
+    v = ((v >>  2) & 0x33333333) | ((v & 0x33333333) <<  2);
     // swap nibbles ...
-    v = ((v >>  4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) << 4);
+    v = ((v >>  4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) <<  4);
     // swap bytes
-    v = ((v >>  8) & 0x00FF00FF) | ((v & 0x00FF00FF) << 8);
+    v = ((v >>  8) & 0x00FF00FF) | ((v & 0x00FF00FF) <<  8);
     // swap 2-byte long pairs
-    v = ((v >> 16)             ) | ((v) << 16);
+    v = ((v >> 16)             ) | ((v             ) << 16);
     PUT_U32<false>(v, bytes, 0);
 }
 
@@ -353,7 +353,7 @@ FORCE_INLINE void Blob<64>::reversebits( void ) {
     // swap 2-byte long pairs
     v = ((v >> 16) & UINT64_C(0x0000FFFF0000FFFF)) | ((v & UINT64_C(0x0000FFFF0000FFFF)) << 16);
     // swap 4-byte long pairs
-    v = ((v >> 32)) | ((v) << 32);
+    v = ((v >> 32)                               ) | ((v                               ) << 32);
     PUT_U64<false>(v, bytes, 0);
 }
 

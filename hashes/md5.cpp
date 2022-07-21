@@ -259,7 +259,7 @@ static void md5_finish( md5_context * ctx, uint8_t output[16] ) {
     PUT_U32<bswap>(low , msglen, 0);
     PUT_U32<bswap>(high, msglen, 4);
 
-    last = ctx->total  [0]        & 0x3F;
+    last = ctx->total[0] & 0x3F;
     padn = (last < 56) ? (56 - last) : (120 - last);
 
     md5_update<bswap>(ctx, (uint8_t *)md5_padding, padn);

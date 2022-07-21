@@ -237,8 +237,8 @@ bool verifyAllHashes( bool verbose ) {
         } else {
             // Always verify little-endian first, just for consistency
             // for humans looking at the results.
-            result &= verifyHash(h, HashInfo::ENDIAN_LITTLE, verbose);
-            result &= verifyHash(h, HashInfo::ENDIAN_BIG   , verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_LITTLE    , verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_BIG       , verbose);
         }
     }
     printf("\n");

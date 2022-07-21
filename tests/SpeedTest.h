@@ -43,6 +43,7 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
+
 bool SpeedTest( const HashInfo * info );
 void ShortSpeedTest( const HashInfo * hinfo );
 void ShortSpeedTestHeader( void );

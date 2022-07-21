@@ -283,40 +283,40 @@ static uint32_t crc32_sw( uint32_t crci, const crc_sw_table crc32_table, const v
         crc ^= wd1;
         if (bswap) {
             crc =
-                    crc32_table[15][crc &         0xff] ^
+                    crc32_table[15][ crc        & 0xff] ^
                     crc32_table[14][(crc >>  8) & 0xff] ^
                     crc32_table[13][(crc >> 16) & 0xff] ^
                     crc32_table[12][(crc >> 24) & 0xff] ^
                     crc32_table[11][(crc >> 32) & 0xff] ^
                     crc32_table[10][(crc >> 40) & 0xff] ^
                     crc32_table[ 9][(crc >> 48) & 0xff] ^
-                    crc32_table[ 8][crc        >>   56] ^
-                    crc32_table[ 0][wd2 &         0xff] ^
+                    crc32_table[ 8][ crc >> 56        ] ^
+                    crc32_table[ 0][ wd2        & 0xff] ^
                     crc32_table[ 1][(wd2 >>  8) & 0xff] ^
                     crc32_table[ 2][(wd2 >> 16) & 0xff] ^
                     crc32_table[ 3][(wd2 >> 24) & 0xff] ^
                     crc32_table[ 4][(wd2 >> 32) & 0xff] ^
                     crc32_table[ 5][(wd2 >> 40) & 0xff] ^
                     crc32_table[ 6][(wd2 >> 48) & 0xff] ^
-                    crc32_table[ 7][wd2        >>   56];
+                    crc32_table[ 7][ wd2 >> 56        ];
         } else {
             crc =
-                    crc32_table[15][crc &         0xff] ^
+                    crc32_table[15][ crc        & 0xff] ^
                     crc32_table[14][(crc >>  8) & 0xff] ^
                     crc32_table[13][(crc >> 16) & 0xff] ^
                     crc32_table[12][(crc >> 24) & 0xff] ^
                     crc32_table[11][(crc >> 32) & 0xff] ^
                     crc32_table[10][(crc >> 40) & 0xff] ^
                     crc32_table[ 9][(crc >> 48) & 0xff] ^
-                    crc32_table[ 8][crc        >>   56] ^
-                    crc32_table[ 7][wd2 &         0xff] ^
+                    crc32_table[ 8][ crc >> 56        ] ^
+                    crc32_table[ 7][ wd2        & 0xff] ^
                     crc32_table[ 6][(wd2 >>  8) & 0xff] ^
                     crc32_table[ 5][(wd2 >> 16) & 0xff] ^
                     crc32_table[ 4][(wd2 >> 24) & 0xff] ^
                     crc32_table[ 3][(wd2 >> 32) & 0xff] ^
                     crc32_table[ 2][(wd2 >> 40) & 0xff] ^
                     crc32_table[ 1][(wd2 >> 48) & 0xff] ^
-                    crc32_table[ 0][wd2        >>   56];
+                    crc32_table[ 0][ wd2 >> 56        ];
         }
         next += 16;
         len  -= 16;
@@ -397,7 +397,7 @@ REGISTER_HASH(CRC_32C,
    $.bits = 32,
    $.verification_LE = 0x6E6071BD,
    $.verification_BE = 0x6E6071BD,
-   $.initfn = CRC32_init<POLY_CRC32C>,
+   $.initfn          = CRC32_init<POLY_CRC32C>,
    $.hashfn_native   = CRC32<POLY_CRC32C>,
    $.hashfn_bswap    = CRC32<POLY_CRC32C>
  );

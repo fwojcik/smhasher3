@@ -64,8 +64,8 @@ template <bool bswap>
 static void blockpearson_hash_256( const void * in, const size_t org_len, const seed_t seed, void * out ) {
     const uint8_t * current = (const uint8_t *)in;
 
-    uint64_t len   =          (uint64_t       )org_len;
-    uint64_t hash1 =          (uint64_t       )seed;
+    uint64_t len   = (uint64_t)org_len;
+    uint64_t hash1 = (uint64_t)seed;
 
     permute64(hash1);
 
@@ -121,8 +121,8 @@ template <bool bswap>
 static void blockpearson_hash_128( const void * in, const size_t org_len, const seed_t seed, void * out ) {
     const uint8_t * current = (const uint8_t *)in;
 
-    uint64_t len   =          (uint64_t       )org_len;
-    uint64_t hash1 =          (uint64_t       )seed;
+    uint64_t len   = (uint64_t)org_len;
+    uint64_t hash1 = (uint64_t)seed;
 
     permute64(hash1);
 
@@ -164,8 +164,8 @@ template <bool bswap>
 static void blockpearson_hash_64( const void * in, const size_t org_len, const seed_t seed, void * out ) {
     const uint8_t * current = (const uint8_t *)in;
 
-    uint64_t len   =          (uint64_t       )org_len;
-    uint64_t hash1 =          (uint64_t       )seed;
+    uint64_t len   = (uint64_t)org_len;
+    uint64_t hash1 = (uint64_t)seed;
 
     permute64(hash1);
 

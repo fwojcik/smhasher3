@@ -311,8 +311,8 @@ static FORCE_INLINE uint64_t beam_ROTR64( uint64_t v, int n ) {
 
 static FORCE_INLINE void mix( uint64_t * state, const uint32_t A ) {
     const uint32_t B  = A + 1;
-    const uint32_t iv = state[A ] & 1023;
-    const uint64_t M  = T    [iv];
+    const uint32_t iv = state[A] & 1023;
+    const uint64_t M  = T[iv];
 
     state[B] += state[A] + M;
 
@@ -416,7 +416,7 @@ static void beamsplitter_64( const void * in, const size_t len, const seed_t see
     h[0]  = state[2];
     h[1]  = state[3];
 
-    h[0] += h    [1];
+    h[0] += h[1];
 
     PUT_U64<bswap>(h[0], (uint8_t *)out, 0);
 }

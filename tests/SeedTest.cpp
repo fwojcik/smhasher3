@@ -75,7 +75,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, bool drawDiagram ) {
     const char text[64] = "The quick brown fox jumps over the lazy dog";
     const int  len      = (int)strlen(text);
 
-    addVCodeInput(text     , len);
+    addVCodeInput(text, len);
     addVCodeInput(totalkeys);
 
     //----------
@@ -118,7 +118,7 @@ static bool SparseSeedTestImpl( const HashInfo * hinfo, uint32_t maxbits, bool d
     const char text[64] = "Sphinx of black quartz, judge my vow";
     const int  len      = (int)strlen(text);
 
-    addVCodeInput(text     , len);
+    addVCodeInput(text, len);
     addVCodeInput(totalkeys);
 
     //----------
@@ -173,10 +173,10 @@ bool SeedTest( const HashInfo * hinfo, const bool verbose ) {
 
     if (hinfo->is32BitSeed()) {
         result &= SeedTestImpl      <hashtype, 22, false>(hinfo   , verbose);
-        result &= SparseSeedTestImpl<hashtype, false    >(hinfo, 7, verbose);
+        result &= SparseSeedTestImpl<hashtype,     false>(hinfo, 7, verbose);
     } else {
         result &= SeedTestImpl      <hashtype, 22, true>(hinfo   , verbose);
-        result &= SparseSeedTestImpl<hashtype, true    >(hinfo, 5, verbose);
+        result &= SparseSeedTestImpl<hashtype,     true>(hinfo, 5, verbose);
     }
 
     printf("%s\n", result ? "" : g_failstr);

@@ -812,19 +812,19 @@ namespace halftime_hash {
                 output[3] = input[0];
 
                 output[1] = input[1];
-                output[3] = Plus(output    [3], input[1        ]      );
+                output[3] = Plus(output[3], input[1]);
 
-                output[1] = Plus(output    [1], LeftShift(input[2], 1));
-                output[2] = Plus(output    [2], input[2        ]      );
+                output[1] = Plus(output[1], LeftShift(input[2], 1));
+                output[2] = Plus(output[2], input[2]);
 
                 output[0] = input[3];
-                output[3] = Plus(output    [3], input[3        ]      );
+                output[3] = Plus(output[3], input[3]);
 
-                output[0] = Plus(output    [0], input[4        ]      );
-                output[2] = Plus(output    [2], LeftShift(input[4], 2));
+                output[0] = Plus(output[0], input[4]);
+                output[2] = Plus(output[2], LeftShift(input[4], 2));
 
-                output[0] = Plus(output    [0], LeftShift(input[5], 2));
-                output[1] = Plus(output    [1], input[5        ]      );
+                output[0] = Plus(output[0], LeftShift(input[5], 2));
+                output[1] = Plus(output[1], input[5]);
 
                 Badger::template Dot4<2, 1, 1, 4>(output, input[6]);
                 Badger::template Dot4<4, 2, 1, 1>(output, input[7]);

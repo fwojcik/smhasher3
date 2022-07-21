@@ -59,8 +59,8 @@
 #include <functional>
 #include <cassert>
 
-constexpr int BULK_TRIALS  = 2999; // Timings per hash for large (>=128b) keys
-constexpr int TINY_TRIALS  = 200;  // Timings per hash for small (<128b) keys
+constexpr int BULK_TRIALS  = 2999;  // Timings per hash for large (>=128b) keys
+constexpr int TINY_TRIALS  = 200;   // Timings per hash for small (<128b) keys
 constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
 
 //-----------------------------------------------------------------------------
@@ -301,9 +301,10 @@ bool SpeedTest( const HashInfo * hinfo ) {
 
 void ShortSpeedTestHeader( void ) {
     printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n\n");
-    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n", "Name", "   Bulk    ",
-            " 1-8 bytes ", "9-16 bytes", "17-24 bytes", "25-32 bytes");
-    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n", "-------------------------", "-----------", "------------------",
+    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n",
+            "Name", "   Bulk    ", " 1-8 bytes ", "9-16 bytes", "17-24 bytes", "25-32 bytes");
+    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n",
+            "-------------------------", "-----------", "------------------",
             "------------------", "------------------", "------------------");
 }
 

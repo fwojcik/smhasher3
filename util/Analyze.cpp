@@ -343,10 +343,10 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t co
         // width corresponding to index i
         int coll = 0;
         for (int i = collbins - 1; i >= maxcollbins; i--) {
-            coll += collcounts     [i];
+            coll += collcounts[i];
         }
         for (int i = maxcollbins - 1; i > hzb - minHBits; i--) {
-            coll      += collcounts[i];
+            coll += collcounts[i];
             // See if this is the new peak for this window width
             maxcoll[i] = std::max(maxcoll[i], coll - prevcoll[i]);
             // Record the total number of collisions seen so far at this

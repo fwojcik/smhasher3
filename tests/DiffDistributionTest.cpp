@@ -63,8 +63,8 @@ template <typename keytype, typename hashtype>
 static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
     Rand r( 857374 );
 
-    int       keybits  = sizeof(keytype) *      8;
-    const int keycount = 256           * 256 * 32;
+    int       keybits  = sizeof(keytype) * 8;
+    const int keycount = 256 * 256 * 32;
     keytype   k;
 
     std::vector<hashtype> hashes( keycount );

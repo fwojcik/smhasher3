@@ -244,9 +244,8 @@ static bool AND( bool in ) {
     return in;
 }
 
-template <typename T, typename ... More>
+template <typename T, typename... More>
 typename std::enable_if<!std::is_integral<T>::value, bool>::type
-
 static AND( bool in ) {
     return test_blobsort_type<T>() && AND<More...>(in);
 }

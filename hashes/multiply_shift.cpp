@@ -145,8 +145,7 @@ static void pair_multiply_shift32( const void * in, const size_t len_bytes, cons
         uint64_t last = 0;
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
         if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
-        t  = last *
-                multiply_shift_random[len % MULTIPLY_SHIFT_RANDOM_WORDS];
+        t  = last * multiply_shift_random[len % MULTIPLY_SHIFT_RANDOM_WORDS];
         h += t;
     }
 

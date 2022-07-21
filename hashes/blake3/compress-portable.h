@@ -17,13 +17,13 @@ static FORCE_INLINE void round_fn( uint32_t state[16], const uint32_t * msg, siz
     const uint8_t * schedule = MSG_SCHEDULE[round];
 
     // Mix the columns.
-    g(state, 0, 4,  8, 12, msg[schedule[0]] , msg[schedule[1]] );
-    g(state, 1, 5,  9, 13, msg[schedule[2]] , msg[schedule[3]] );
-    g(state, 2, 6, 10, 14, msg[schedule[4]] , msg[schedule[5]] );
-    g(state, 3, 7, 11, 15, msg[schedule[6]] , msg[schedule[7]] );
+    g(state, 0, 4,  8, 12, msg[schedule[ 0]], msg[schedule[ 1]]);
+    g(state, 1, 5,  9, 13, msg[schedule[ 2]], msg[schedule[ 3]]);
+    g(state, 2, 6, 10, 14, msg[schedule[ 4]], msg[schedule[ 5]]);
+    g(state, 3, 7, 11, 15, msg[schedule[ 6]], msg[schedule[ 7]]);
 
     // Mix the rows.
-    g(state, 0, 5, 10, 15, msg[schedule[8]] , msg[schedule[9]] );
+    g(state, 0, 5, 10, 15, msg[schedule[ 8]], msg[schedule[ 9]]);
     g(state, 1, 6, 11, 12, msg[schedule[10]], msg[schedule[11]]);
     g(state, 2, 7,  8, 13, msg[schedule[12]], msg[schedule[13]]);
     g(state, 3, 4,  9, 14, msg[schedule[14]], msg[schedule[15]]);
@@ -57,22 +57,22 @@ static FORCE_INLINE void compress_pre( uint32_t state[16], const uint32_t cv[8],
     block_words[14] = load32(block + 4 * 14);
     block_words[15] = load32(block + 4 * 15);
 
-    state[ 0]       = cv[0       ];
-    state[ 1]       = cv[1       ];
-    state[ 2]       = cv[2       ];
-    state[ 3]       = cv[3       ];
-    state[ 4]       = cv[4       ];
-    state[ 5]       = cv[5       ];
-    state[ 6]       = cv[6       ];
-    state[ 7]       = cv[7       ];
-    state[ 8]       = IV[0       ];
-    state[ 9]       = IV[1       ];
-    state[10]       = IV[2       ];
-    state[11]       = IV[3       ];
+    state[ 0]       = cv[0];
+    state[ 1]       = cv[1];
+    state[ 2]       = cv[2];
+    state[ 3]       = cv[3];
+    state[ 4]       = cv[4];
+    state[ 5]       = cv[5];
+    state[ 6]       = cv[6];
+    state[ 7]       = cv[7];
+    state[ 8]       = IV[0];
+    state[ 9]       = IV[1];
+    state[10]       = IV[2];
+    state[11]       = IV[3];
     state[12]       = counter_low(counter);
     state[13]       = counter_high(counter);
-    state[14]       =   (uint32_t)block_len;
-    state[15]       =   (uint32_t)flags;
+    state[14]       = (uint32_t)block_len;
+    state[15]       = (uint32_t)flags;
 
     round_fn(state, &block_words[0], 0);
     round_fn(state, &block_words[0], 1);
@@ -104,22 +104,22 @@ static void blake3_compress_xof( const uint32_t cv[8], const uint8_t block[BLAKE
 
     compress_pre(state, cv, block, block_len, counter, flags);
 
-    store32(&out[0 * 4] , state[0] ^ state[8] );
-    store32(&out[1 * 4] , state[1] ^ state[9] );
-    store32(&out[2 * 4] , state[2] ^ state[10]);
-    store32(&out[3 * 4] , state[3] ^ state[11]);
-    store32(&out[4 * 4] , state[4] ^ state[12]);
-    store32(&out[5 * 4] , state[5] ^ state[13]);
-    store32(&out[6 * 4] , state[6] ^ state[14]);
-    store32(&out[7 * 4] , state[7] ^ state[15]);
-    store32(&out[8 * 4] , state[8] ^ cv[0]    );
-    store32(&out[9 * 4] , state[9] ^ cv[1]    );
-    store32(&out[10 * 4], state[10] ^ cv[2]   );
-    store32(&out[11 * 4], state[11] ^ cv[3]   );
-    store32(&out[12 * 4], state[12] ^ cv[4]   );
-    store32(&out[13 * 4], state[13] ^ cv[5]   );
-    store32(&out[14 * 4], state[14] ^ cv[6]   );
-    store32(&out[15 * 4], state[15] ^ cv[7]   );
+    store32(&out[ 0 * 4], state[ 0] ^ state[ 8]);
+    store32(&out[ 1 * 4], state[ 1] ^ state[ 9]);
+    store32(&out[ 2 * 4], state[ 2] ^ state[10]);
+    store32(&out[ 3 * 4], state[ 3] ^ state[11]);
+    store32(&out[ 4 * 4], state[ 4] ^ state[12]);
+    store32(&out[ 5 * 4], state[ 5] ^ state[13]);
+    store32(&out[ 6 * 4], state[ 6] ^ state[14]);
+    store32(&out[ 7 * 4], state[ 7] ^ state[15]);
+    store32(&out[ 8 * 4], state[ 8] ^ cv[0]    );
+    store32(&out[ 9 * 4], state[ 9] ^ cv[1]    );
+    store32(&out[10 * 4], state[10] ^ cv[2]    );
+    store32(&out[11 * 4], state[11] ^ cv[3]    );
+    store32(&out[12 * 4], state[12] ^ cv[4]    );
+    store32(&out[13 * 4], state[13] ^ cv[5]    );
+    store32(&out[14 * 4], state[14] ^ cv[6]    );
+    store32(&out[15 * 4], state[15] ^ cv[7]    );
 }
 
 static FORCE_INLINE void hash_one( const uint8_t * input, size_t blocks, const uint32_t key[8], uint64_t counter,

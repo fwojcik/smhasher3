@@ -172,9 +172,9 @@ static void BEBB4185( const void * in, const size_t len, const seed_t seed, void
     // variable. The mixing of the state with itself also doesn't need
     // bswap set, because the endianness of the data will naturally
     // always match the endianness of the ds[] values.
-    round<bswap, false, oldver>(ds, key8Arr      ,     (uint32_t)len);
-    round<false, false, oldver>(ds, (uint8_t *)seedbuf, 16          );
-    round<false, true, oldver>( ds, (uint8_t *)ds, STATE            );
+    round<bswap, false, oldver>(ds, key8Arr           , (uint32_t)len);
+    round<false, false, oldver>(ds, (uint8_t *)seedbuf,            16);
+    round<false,  true, oldver>(ds, (uint8_t *)ds     , STATE        );
 
     /*
      *

@@ -75,7 +75,7 @@ static const uint64_t _mum_tail_prime        = UINT64_C(0xaf47d47c99b1461b);
 static const uint64_t _mum_finish_prime1     = UINT64_C(0xa9a7ae7ceff79f3f);
 static const uint64_t _mum_finish_prime2     = UINT64_C(0xaf47d47c99b1461b);
 
-static const uint64_t _mum_primes []         = {
+static const uint64_t _mum_primes[]          = {
     UINT64_C(0x9ebdcae10d981691), UINT64_C(0x32b9b9b97a27ac7d),
     UINT64_C(0x29b5584d83d35bbd), UINT64_C(0x4b04e0e61401255f),
     UINT64_C(0x25e8f7b1f1c9d027), UINT64_C(0x80d4c8c000f3e881),

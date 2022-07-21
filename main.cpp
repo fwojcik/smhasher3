@@ -608,12 +608,12 @@ static bool testHash( const char * name ) {
 
 static void usage( void ) {
     printf("Usage: SMHasher3 [--[no]test=<testname>[,...]] [--extra] [--seed=<globalseed>]\n"
-            "                 [--endian=default|nondefault|native|nonnative|big|little]\n"
-            "                 [--verbose] [--vcode] [--ncpu=N] [<hashname>]\n"
-            "\n"
-            "       SMHasher3 [--list]|[--listnames]|[--tests]|[--version]\n"
-            "\n"
-            "  Hashnames can be supplied using any case letters.\n");
+           "                 [--endian=default|nondefault|native|nonnative|big|little]\n"
+           "                 [--verbose] [--vcode] [--ncpu=N] [<hashname>]\n"
+           "\n"
+           "       SMHasher3 [--list]|[--listnames]|[--tests]|[--version]\n"
+           "\n"
+           "  Hashnames can be supplied using any case letters.\n");
 }
 
 #if defined(DEBUG)

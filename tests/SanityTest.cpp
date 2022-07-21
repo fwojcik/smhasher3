@@ -619,9 +619,10 @@ bool PrependedZeroesTest( const HashInfo * hinfo, const seed_t seed, bool verbos
 }
 
 void SanityTestHeader( void ) {
-    printf("%-25s   %13s     %13s     %13s\n", "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
-    printf("%-25s   %13s     %13s     %13s\n", "-------------------------",
-            "-------------", "-------------", "-------------");
+    printf("%-25s   %13s     %13s     %13s\n",
+            "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
+    printf("%-25s   %13s     %13s     %13s\n",
+            "-------------------------", "-------------", "-------------", "-------------");
 }
 
 bool SanityTest( const HashInfo * hinfo, bool oneline ) {

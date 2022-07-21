@@ -82,24 +82,24 @@ static void combine_and_mix( uint64_t state[4], const uint64_t input[2] ) {
      * Phase 3: Propagate the changes among the four 64-bit words by
      * performing 64-bit subtractions and 32-bit word shuffling.
      */
-    state[0] -= state     [2];
-    state[1] -= state     [3];
+    state[0] -= state[2];
+    state[1] -= state[3];
 
     uint64_t tmp;
 
-    tmp      = state      [2];
+    tmp      = state[2];
     state[2] = ((state[2] >> 32) + (state[3] << 32)) - state[0];
     state[3] = ((state[3] >> 32) + (tmp      << 32)) - state[1];
 
-    tmp      = state      [1];
+    tmp      = state[1];
     state[1] = ((state[0] >> 32) + (state[0] << 32)) - state[3];
     state[0] = tmp - state[2];
 
-    tmp      = state      [2];
+    tmp      = state[2];
     state[2] = ((state[3] >> 32) + (state[2] << 32)) - state[0];
     state[3] = ((tmp      >> 32) + (state[3] << 32)) - state[1];
 
-    tmp      = state      [0];
+    tmp      = state[0];
     state[0] = ((state[1] >> 32) + (state[0] << 32)) - state[2];
     state[1] = ((tmp      >> 32) + (state[1] << 32)) - state[3];
 

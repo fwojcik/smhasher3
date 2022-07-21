@@ -194,10 +194,10 @@ enum t1ha_modes {
 };
 
 #define MODE_NATIVE(m) (((m) == MODE_LE_NATIVE) || ((m) == MODE_BE_NATIVE))
-#define MODE_BSWAP(m)  (((m) == MODE_LE_BSWAP) || ((m) == MODE_BE_BSWAP))
-#define MODE_BE_SYS(m) (((m) == MODE_BE_BSWAP) || ((m) == MODE_BE_NATIVE))
+#define MODE_BSWAP(m)  (((m) == MODE_LE_BSWAP)  || ((m) == MODE_BE_BSWAP))
+#define MODE_BE_SYS(m) (((m) == MODE_BE_BSWAP)  || ((m) == MODE_BE_NATIVE))
 #define MODE_LE_SYS(m) (((m) == MODE_LE_NATIVE) || ((m) == MODE_LE_BSWAP))
-#define MODE_BE_OUT(m) (((m) == MODE_LE_BSWAP) || ((m) == MODE_BE_NATIVE))
+#define MODE_BE_OUT(m) (((m) == MODE_LE_BSWAP)  || ((m) == MODE_BE_NATIVE))
 #define MODE_LE_OUT(m) (((m) == MODE_LE_NATIVE) || ((m) == MODE_BE_BSWAP))
 
 //------------------------------------------------------------
@@ -885,7 +885,7 @@ static void t1ha2_update( t1ha_context_t * RESTRICT ctx, const void * RESTRICT d
                 ((((uintptr_t)data) & (ALIGNMENT_64 - 1)) != 0)) {
             data = T1HA2_LOOP<mode, false>(&ctx->state, data, length);
         } else {
-            data = T1HA2_LOOP<mode, true >(&ctx->state, data, length);
+            data = T1HA2_LOOP<mode,  true>(&ctx->state, data, length);
         }
         length &= 31;
     }
@@ -1104,7 +1104,7 @@ static void t1ha0( const void * in, const size_t len, const seed_t seed, void * 
             ((((uintptr_t)in) & (ALIGNMENT_32 - 1)) != 0)) {
         hash = t1ha0_32_impl<mode, false>(in, len, (uint64_t)seed);
     } else {
-        hash = t1ha0_32_impl<mode, true>(in, len, (uint64_t)seed);
+        hash = t1ha0_32_impl<mode,  true>(in, len, (uint64_t)seed);
     }
     // To get old 0xDA6A4061 verification value for BE mode, replace
     // "MODE_BSWAP(mode)" with "MODE_BE_SYS(mode)", as the old code wrote
@@ -1124,7 +1124,7 @@ static void t1ha1( const void * in, const size_t len, const seed_t seed, void * 
             ((((uintptr_t)in) & (ALIGNMENT_64 - 1)) != 0)) {
         hash = t1ha1_impl<mode, false>(in, len, (uint64_t)seed);
     } else {
-        hash = t1ha1_impl<mode, true>(in, len, (uint64_t)seed);
+        hash = t1ha1_impl<mode,  true>(in, len, (uint64_t)seed);
     }
     // To get the old 0x93F864DE verification value for BE mode,
     // replace "MODE_BSWAP(mode)" with "MODE_BE_SYS(mode)", as the old
@@ -1148,7 +1148,7 @@ static void t1ha2( const void * in, const size_t len, const seed_t seed, void * 
         if (use_unaligned) {
             in = T1HA2_LOOP<mode, false>(&state, in, length);
         } else {
-            in = T1HA2_LOOP<mode, true >(&state, in, length);
+            in = T1HA2_LOOP<mode,  true>(&state, in, length);
         }
         if (!xwidth) {
             squash(&state);
@@ -1159,11 +1159,11 @@ static void t1ha2( const void * in, const size_t len, const seed_t seed, void * 
     }
     if (use_unaligned) {
         hash = xwidth ?
-                    T1HA2_TAIL<mode, false, true >(&state, in, length, &xhash) :
+                    T1HA2_TAIL<mode, false,  true>(&state, in, length, &xhash) :
                     T1HA2_TAIL<mode, false, false>(&state, in, length);
     } else {
         hash = xwidth ?
-                    T1HA2_TAIL<mode, true, true >(&state, in, length, &xhash) :
+                    T1HA2_TAIL<mode, true,  true>(&state, in, length, &xhash) :
                     T1HA2_TAIL<mode, true, false>(&state, in, length);
     }
     PUT_U64<MODE_BSWAP(mode)>(hash, (uint8_t *)out, 0);
@@ -1218,8 +1218,8 @@ static const uint8_t t1ha_test_pattern      [64] = {
     0x1F,  0xF,    8,   16,   32,   64, 0x80, 0xFE , 0xFC, 0xF8, 0xF0,
     0xE0, 0xC0, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF , 0x55, 0xAA,   11,
       17,   19,   23,   29,   37,   42,   43,   'a',  'b',  'c',  'd',
-    'e' ,  'f',  'g',  'h',  'i',  'j',  'k',  'l' ,  'm',  'n',  'o',
-    'p' , 'q' , 'r' , 's' , 't' , 'u' , 'v' , 'w'  , 'x'
+     'e',  'f',  'g',  'h',  'i',  'j',  'k',  'l' ,  'm',  'n',  'o',
+     'p',  'q',  'r',  's',  't',  'u',  'v',  'w' ,  'x'
 };
 
 static const uint64_t t1ha_refval_32le      [81] = {

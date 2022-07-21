@@ -695,7 +695,7 @@ void mul32x32to64addto96( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWor
 
 #define PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST                                                  \
     /*multiply32x32to64(mul.HighPart, mul.LowPart, xLast, coeff[ size ]);                  \
-	add64(constTerm.LowPart, constTerm.HighPart, ctr, mul.LowPart, mul.HighPart);*/    \
+	add64(constTerm.LowPart, constTerm.HighPart, ctr, mul.LowPart, mul.HighPart);*/        \
     mul32x32to64addto96(constTerm.LowPart, constTerm.HighPart, ctr, xLast, coeff[ size ]); \
 
 #define PMPML_CHUNK_LOOP_PRE_REDUCE_L0
@@ -710,81 +710,81 @@ void mul32x32to64addto96( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWor
 
 #define PMPML_CHUNK_REDUCE_96_TO_64
 
-#define PMPML_CHUNK_REDUCE_64_TO_32                   \
-{                                                     \
-	uint32_t lo, hi;                              \
-	multiply32x32to64(hi, lo, constTerm.HighPart, 15);\
-	uint32_t part = ctr * 225 + (hi << 4) - hi + 15;\
-	constTerm.LowPart += part;                    \
-	constTerm.HighPart = 1 + (constTerm.LowPart < part);\
-	constTerm.HighPart -= (constTerm.LowPart < lo);\
-	constTerm.LowPart -= lo;                      \
-	if ( likely( constTerm.LowPart >= 30) ) {     \
-        constTerm.LowPart -= constTerm.HighPart * 15; \
-        constTerm.HighPart = 0;                       \
-    } else {                                          \
-		if ( constTerm.HighPart )  {          \
-			constTerm.LowPart -= constTerm.HighPart * 15;\
-			constTerm.HighPart = 1;       \
-			if ( likely( constTerm.LowPart >= 15)) {\
-                constTerm.LowPart -= 15;              \
-                constTerm.HighPart = 0;               \
-            } else {                                  \
-				constTerm.LowPart -= 15;\
-				constTerm.HighPart = 0;\
-			}                             \
-		}                                     \
-	}                                             \
+#define PMPML_CHUNK_REDUCE_64_TO_32                       \
+{                                                         \
+	uint32_t lo, hi;                                      \
+	multiply32x32to64(hi, lo, constTerm.HighPart, 15);    \
+	uint32_t part = ctr * 225 + (hi << 4) - hi + 15;      \
+	constTerm.LowPart += part;                            \
+	constTerm.HighPart = 1 + (constTerm.LowPart < part);  \
+	constTerm.HighPart -= (constTerm.LowPart < lo);       \
+	constTerm.LowPart -= lo;                              \
+	if ( likely( constTerm.LowPart >= 30) ) {             \
+        constTerm.LowPart -= constTerm.HighPart * 15;     \
+        constTerm.HighPart = 0;                           \
+    } else {                                              \
+		if ( constTerm.HighPart )  {                      \
+			constTerm.LowPart -= constTerm.HighPart * 15; \
+			constTerm.HighPart = 1;                       \
+			if ( likely( constTerm.LowPart >= 15)) {      \
+                constTerm.LowPart -= 15;                  \
+                constTerm.HighPart = 0;                   \
+            } else {                                      \
+				constTerm.LowPart -= 15;                  \
+				constTerm.HighPart = 0;                   \
+			}                                             \
+		}                                                 \
+	}                                                     \
 }
 
 #define PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN \
-	PMPML_CHUNK_REDUCE_96_TO_64                   \
-	PMPML_CHUNK_REDUCE_64_TO_32                   \
+	PMPML_CHUNK_REDUCE_96_TO_64                       \
+	PMPML_CHUNK_REDUCE_64_TO_32                       \
 	return constTerm.QuadPart;
 
-#define PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN_RETURN_32x32_ONLY                           \
-{                                                                                                 \
-	constTerm.QuadPart = constTerm.LowPart + PMPML_MAIN_PRIME - constTerm.HighPart * UINT64_C( 15 );\
-	if ( likely( constTerm.LowPart >= 30) ) {                                                 \
-        constTerm.LowPart -= (constTerm.HighPart << 4) - constTerm.HighPart;                      \
-        return fmix32_short( constTerm.LowPart );                                                 \
-    } else {                                                                                      \
-		constTerm.LowPart -= constTerm.HighPart * 15;                                     \
-		if ( constTerm.LowPart < 30 ) {                                                   \
-            return fmix32_short( constTerm.LowPart );                                             \
-        } else  {                                                                                 \
-			constTerm.LowPart += 15;                                                  \
-			return fmix32_short( constTerm.LowPart );                                 \
-		}                                                                                 \
-	}                                                                                         \
+#define PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN_RETURN_32x32_ONLY                              \
+    {                                                                                                \
+	constTerm.QuadPart = constTerm.LowPart + PMPML_MAIN_PRIME - constTerm.HighPart * UINT64_C( 15 ); \
+	if ( likely( constTerm.LowPart >= 30) ) {                                                        \
+        constTerm.LowPart -= (constTerm.HighPart << 4) - constTerm.HighPart;                         \
+        return fmix32_short( constTerm.LowPart );                                                    \
+    } else {                                                                                         \
+		constTerm.LowPart -= constTerm.HighPart * 15;                                                \
+		if ( constTerm.LowPart < 30 ) {                                                              \
+            return fmix32_short( constTerm.LowPart );                                                \
+        } else  {                                                                                    \
+			constTerm.LowPart += 15;                                                                 \
+			return fmix32_short( constTerm.LowPart );                                                \
+		}                                                                                            \
+	}                                                                                                \
 }
 
 #define PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN_RETURN                                            \
 {                                                                                                       \
-	uint32_t lo, hi;                                                                                \
-	multiply32x32to64(hi, lo, constTerm.HighPart, 15);                                              \
-	uint32_t part = ctr * 225 + (hi << 4) - hi + 15;                                                \
-	constTerm.LowPart += part;                                                                      \
-	constTerm.HighPart = 1 + (constTerm.LowPart < part);                                            \
-	constTerm.HighPart -= (constTerm.LowPart < lo);                                                 \
-	constTerm.LowPart -= lo;                                                                        \
-	if ( likely( constTerm.LowPart >= 30) ) {                                                       \
+	uint32_t lo, hi;                                                                                    \
+	multiply32x32to64(hi, lo, constTerm.HighPart, 15);                                                  \
+	uint32_t part = ctr * 225 + (hi << 4) - hi + 15;                                                    \
+	constTerm.LowPart += part;                                                                          \
+	constTerm.HighPart = 1 + (constTerm.LowPart < part);                                                \
+	constTerm.HighPart -= (constTerm.LowPart < lo);                                                     \
+	constTerm.LowPart -= lo;                                                                            \
+	if ( likely( constTerm.LowPart >= 30) ) {                                                           \
         constTerm.LowPart -= (constTerm.HighPart << 4) - constTerm.HighPart/*constTerm.HighPart * 15*/; \
         return fmix32_short( constTerm.LowPart );                                                       \
-	} else  {                                                                                       \
-		if ( constTerm.HighPart ) {                                                             \
-			constTerm.LowPart -= constTerm.HighPart * 15 - 15;                              \
-			constTerm.HighPart = 1;                                                         \
-			if ( likely( constTerm.LowPart >= 15)) {                                        \
+	} else  {                                                                                           \
+		if ( constTerm.HighPart ) {                                                                     \
+			constTerm.LowPart -= constTerm.HighPart * 15 - 15;                                          \
+			constTerm.HighPart = 1;                                                                     \
+			if ( likely( constTerm.LowPart >= 15)) {                                                    \
                 constTerm.LowPart -= 15;                                                                \
                 return fmix32_short( constTerm.LowPart );                                               \
             } else  {                                                                                   \
-				return constTerm.LowPart;                                               \
-			}                                                                               \
+				return constTerm.LowPart;                                                               \
+			}                                                                                           \
         } else {                                                                                        \
-			return fmix32_short( constTerm.LowPart );                                       \
+			return fmix32_short( constTerm.LowPart );                                                   \
         }                                                                                               \
-	}                                                                                               \
+	}                                                                                                   \
 }
 
 class PMP_Multilinear_Hasher_32 {
@@ -1444,23 +1444,25 @@ class PMP_Multilinear_Hasher_32 {
         break;
         case 2: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset) }
         break;
-        case 3: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(
-                    2 + offset) }
+        case 3: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(2 + offset) }
                     break;
-        case 4: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(
-                    2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset) }
+        case 4: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset) }
                     break;
-        case 5: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(
-                    2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(4 + offset) }
+        case 5: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(4 + offset) }
                     break;
-        case 6: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(
-                    2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(4 +
-                            offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(5 + offset) }
-                            break;
-        case 7: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(
-                    2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(4 +
-                            offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(5 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(6 + offset) }
-                            break;
+        case 6: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(4 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(5 + offset) }
+                    break;
+        case 7: {   PMPML_CHUNK_LOOP_BODY_ULI_T1(0 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(1 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(2 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(3 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(4 + offset) PMPML_CHUNK_LOOP_BODY_ULI_T1(5 + offset)
+                    PMPML_CHUNK_LOOP_BODY_ULI_T1(6 + offset) }
+                    break;
         }
 
         uint32_t xLast;
@@ -1530,8 +1532,8 @@ class PMP_Multilinear_Hasher_32 {
         ULARGE_INTEGER__XX lowProduct;
         lowProduct.QuadPart  = UInt32x32To64(c_ctr.LowPart, prevConstTerm.LowPart );
         ULARGE_INTEGER__XX midProduct;
-        midProduct.QuadPart  = UInt32x32To64(c_ctr.LowPart, prevConstTerm.HighPart) + UInt32x32To64(
-                c_ctr.HighPart, prevConstTerm.LowPart);
+        midProduct.QuadPart  = UInt32x32To64(c_ctr.LowPart, prevConstTerm.HighPart) +
+                UInt32x32To64(c_ctr.HighPart, prevConstTerm.LowPart);
         midProduct.QuadPart += lowProduct.HighPart;
         lowProduct.HighPart  = midProduct.LowPart;
         uint32_t hiProduct = c_ctr.HighPart * prevConstTerm.HighPart + midProduct.HighPart;
@@ -1557,7 +1559,7 @@ class PMP_Multilinear_Hasher_32 {
 
         PMPML_CHUNK_LOOP_PRE_REDUCE_L0
 
-                PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN
+        PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN
     }
 
     template <bool bswap>
@@ -1600,7 +1602,7 @@ class PMP_Multilinear_Hasher_32 {
                 procesNextValue<bswap>(i + 1,
 /*
  *                                                       hash_of_num_chunk( curr_rd[ i ].random_coeff,
- *(ULARGE_INTEGER__XX*)(&(curr_rd[i].const_term)),
+ *                                              (ULARGE_INTEGER__XX*)(&(curr_rd[i].const_term)),
  *                                              allValues + ( i << PMPML_CHUNK_SIZE_LOG2 ) ),
  */
                         hash_of_num_chunk_incomplete(curr_rd[i].random_coeff, *(ULARGE_INTEGER__XX *)(&(curr_rd[i].const_term)),
@@ -1652,26 +1654,31 @@ class PMP_Multilinear_Hasher_32 {
 
     HASH_SIZE_XXX_BEGIN(28)
     PMPML_CHUNK_LOOP_BODY_ULI_T1(0) PMPML_CHUNK_LOOP_BODY_ULI_T1(1) PMPML_CHUNK_LOOP_BODY_ULI_T1(2) PMPML_CHUNK_LOOP_BODY_ULI_T1(3)
-    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)   xLast =
-            0x1;    PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST_FOR_JUST_1;
+    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)
+    xLast = 0x1;
+    PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST_FOR_JUST_1;
     HASH_SIZE_XXX_END
 
-            HASH_SIZE_XXX_BEGIN( 29 )
+    HASH_SIZE_XXX_BEGIN( 29 )
     PMPML_CHUNK_LOOP_BODY_ULI_T1(0) PMPML_CHUNK_LOOP_BODY_ULI_T1(1) PMPML_CHUNK_LOOP_BODY_ULI_T1(2) PMPML_CHUNK_LOOP_BODY_ULI_T1(3)
-    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)   xLast =
-            0x100 + chars[28];  PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST;
+    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)
+    xLast = 0x100 + chars[28];
+    PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST;
     HASH_SIZE_XXX_END
 
-            HASH_SIZE_XXX_BEGIN( 30 )
+    HASH_SIZE_XXX_BEGIN( 30 )
     PMPML_CHUNK_LOOP_BODY_ULI_T1(0) PMPML_CHUNK_LOOP_BODY_ULI_T1(1) PMPML_CHUNK_LOOP_BODY_ULI_T1(2) PMPML_CHUNK_LOOP_BODY_ULI_T1(3)
-    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)   xLast =
-            *((const unsigned short *)(chars + 28)) + 0x10000;  PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST
+    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)
+    xLast =((const unsigned short *)(chars + 28)) + 0x10000;
+    PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST
     HASH_SIZE_XXX_END
 
-            HASH_SIZE_XXX_BEGIN( 31 )
+    HASH_SIZE_XXX_BEGIN( 31 )
     PMPML_CHUNK_LOOP_BODY_ULI_T1(0) PMPML_CHUNK_LOOP_BODY_ULI_T1(1) PMPML_CHUNK_LOOP_BODY_ULI_T1(2) PMPML_CHUNK_LOOP_BODY_ULI_T1(3)
-    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)   xLast = chars[30];
-    xLast = (xLast << 16) + *((const unsigned short *)(chars + 28)) + 0x1000000; PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST;
+    PMPML_CHUNK_LOOP_BODY_ULI_T1(4) PMPML_CHUNK_LOOP_BODY_ULI_T1(5) PMPML_CHUNK_LOOP_BODY_ULI_T1(6)
+    xLast = chars[30];
+    xLast = (xLast << 16) + *((const unsigned short *)(chars + 28)) + 0x1000000;
+    PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST;
     HASH_SIZE_XXX_END
 
 #endif // PMPML_MSC_32_WORKAROUND
@@ -2025,82 +2032,82 @@ static FORCE_INLINE void MultiplyAccumulateWordLoHi( uint64_t & rlo, uint64_t & 
 
 #define PMPML_CHUNK_LOOP_PRE_REDUCE_L0_64
 
-#define PMPML_CHUNK_REDUCE_128_TO_64                 \
-{                                                    \
-	uint64_t hi, lo;                             \
-	MultiplyWordLoHi(lo, hi, ctr1.QuadPart, 13); \
-	uint64_t part = ctr2.QuadPart * 169 + hi * 13 + 13;\
-	ctr0.QuadPart += part;                       \
-	ctr1.QuadPart = 1 + (ctr0.QuadPart < part);  \
-	ctr1.QuadPart -= (ctr0.QuadPart < lo);       \
-	ctr0.QuadPart -= lo;                         \
-	if ( likely( ctr0.QuadPart >= 26) ) {        \
-        ctr0.QuadPart -= ctr1.QuadPart * 13;         \
-        ctr1.QuadPart = 0;                           \
-	} else {                                     \
-		ctr0.QuadPart -= ctr1.QuadPart * 13; \
-		if ( ctr0.QuadPart < 26 ) {          \
-            ctr1.QuadPart = 0;                       \
-		} else {                             \
-			ctr0.QuadPart += 13;         \
-			if ( ctr0.QuadPart < 13 ) {  \
-                ctr1.QuadPart = 1;                   \
-			} else {                     \
-                ctr1.QuadPart = 0;                   \
-            }                                        \
-		}                                    \
-	}                                            \
+#define PMPML_CHUNK_REDUCE_128_TO_64                    \
+    {                                                   \
+	uint64_t hi, lo;                                    \
+	MultiplyWordLoHi(lo, hi, ctr1.QuadPart, 13);        \
+	uint64_t part = ctr2.QuadPart * 169 + hi * 13 + 13; \
+	ctr0.QuadPart += part;                              \
+	ctr1.QuadPart = 1 + (ctr0.QuadPart < part);         \
+	ctr1.QuadPart -= (ctr0.QuadPart < lo);              \
+	ctr0.QuadPart -= lo;                                \
+	if ( likely( ctr0.QuadPart >= 26) ) {               \
+        ctr0.QuadPart -= ctr1.QuadPart * 13;            \
+        ctr1.QuadPart = 0;                              \
+	} else {                                            \
+		ctr0.QuadPart -= ctr1.QuadPart * 13;            \
+		if ( ctr0.QuadPart < 26 ) {                     \
+            ctr1.QuadPart = 0;                          \
+		} else {                                        \
+			ctr0.QuadPart += 13;                        \
+			if ( ctr0.QuadPart < 13 ) {                 \
+                ctr1.QuadPart = 1;                      \
+			} else {                                    \
+                ctr1.QuadPart = 0;                      \
+            }                                           \
+		}                                               \
+	}                                                   \
 }
 
-#define PMPML_CHUNK_REDUCE_128_TO_64____             \
-{                                                    \
-	_compensate_                                 \
-	uint64_t hi, lo;                             \
-	MultiplyWordLoHi(lo, hi, ctr1.QuadPart, 13); \
-	uint64_t part = ctr2.QuadPart * 169 + hi * 13 + 13;\
-	ctr0.QuadPart += part;                       \
-	ctr1.QuadPart = 1 + (ctr0.QuadPart < part);  \
-	ctr1.QuadPart -= (ctr0.QuadPart < lo);       \
-	ctr0.QuadPart -= lo;                         \
-	if ( likely( ctr0.QuadPart >= 26) ) {        \
-        ctr0.QuadPart -= ctr1.QuadPart * 13;         \
-        ctr1.QuadPart = 0;                           \
-	} else {                                     \
-		ctr0.QuadPart -= ctr1.QuadPart * 13; \
-		if ( ctr0.QuadPart < 26 ) {          \
-            ctr1.QuadPart = 0;                       \
-		} else {                             \
-			ctr0.QuadPart += 13;         \
-			if ( ctr0.QuadPart < 13 ) {  \
-                ctr1.QuadPart = 1;                   \
-			} else {                     \
-                ctr1.QuadPart = 0;                   \
-            }                                        \
-		}                                    \
-	}                                            \
+#define PMPML_CHUNK_REDUCE_128_TO_64____                \
+{                                                       \
+	_compensate_                                        \
+    uint64_t hi, lo;                                    \
+	MultiplyWordLoHi(lo, hi, ctr1.QuadPart, 13);        \
+	uint64_t part = ctr2.QuadPart * 169 + hi * 13 + 13; \
+	ctr0.QuadPart += part;                              \
+	ctr1.QuadPart = 1 + (ctr0.QuadPart < part);         \
+	ctr1.QuadPart -= (ctr0.QuadPart < lo);              \
+	ctr0.QuadPart -= lo;                                \
+	if ( likely( ctr0.QuadPart >= 26) ) {               \
+        ctr0.QuadPart -= ctr1.QuadPart * 13;            \
+        ctr1.QuadPart = 0;                              \
+	} else {                                            \
+		ctr0.QuadPart -= ctr1.QuadPart * 13;            \
+		if ( ctr0.QuadPart < 26 ) {                     \
+            ctr1.QuadPart = 0;                          \
+		} else {                                        \
+			ctr0.QuadPart += 13;                        \
+			if ( ctr0.QuadPart < 13 ) {                 \
+                ctr1.QuadPart = 1;                      \
+			} else {                                    \
+                ctr1.QuadPart = 0;                      \
+            }                                           \
+		}                                               \
+	}                                                   \
 }
 
-#define PMPML_CHUNK_REDUCE_128_TO_64_AND_RETURN      \
-{                                                    \
-	uint64_t hi, lo;                             \
-	MultiplyWordLoHi(lo, hi, ctr1.QuadPart, 13); \
-	uint64_t part = ctr2.QuadPart * 169 + hi * 13 + 13;\
-	ctr0.QuadPart += part;                       \
-	ctr1.QuadPart = 1 + (ctr0.QuadPart < part);  \
-	ctr1.QuadPart -= (ctr0.QuadPart < lo);       \
-	ctr0.QuadPart -= lo;                         \
-	if ( likely( ctr0.QuadPart >= 26) ) {        \
-        ctr0.QuadPart -= ctr1.QuadPart * 13;         \
-        return fmix64_short( ctr0.QuadPart );        \
-	} else {                                     \
-		ctr0.QuadPart -= ctr1.QuadPart * 13; \
-		if ( ctr0.QuadPart < 26 ) {          \
-            return fmix64_short( ctr0.QuadPart );    \
-		} else {                             \
-			ctr0.QuadPart += 13;         \
-			return fmix64_short( ctr0.QuadPart );\
-		}                                    \
-	}                                            \
+#define PMPML_CHUNK_REDUCE_128_TO_64_AND_RETURN         \
+{                                                       \
+	uint64_t hi, lo;                                    \
+	MultiplyWordLoHi(lo, hi, ctr1.QuadPart, 13);        \
+	uint64_t part = ctr2.QuadPart * 169 + hi * 13 + 13; \
+	ctr0.QuadPart += part;                              \
+	ctr1.QuadPart = 1 + (ctr0.QuadPart < part);         \
+	ctr1.QuadPart -= (ctr0.QuadPart < lo);              \
+	ctr0.QuadPart -= lo;                                \
+	if ( likely( ctr0.QuadPart >= 26) ) {               \
+        ctr0.QuadPart -= ctr1.QuadPart * 13;            \
+        return fmix64_short( ctr0.QuadPart );           \
+	} else {                                            \
+		ctr0.QuadPart -= ctr1.QuadPart * 13;            \
+		if ( ctr0.QuadPart < 26 ) {                     \
+            return fmix64_short( ctr0.QuadPart );       \
+		} else {                                        \
+			ctr0.QuadPart += 13;                        \
+			return fmix64_short( ctr0.QuadPart );       \
+		}                                               \
+	}                                                   \
 }
 
 template <bool bswap>

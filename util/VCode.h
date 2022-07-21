@@ -135,14 +135,14 @@ static inline uint32_t crc32c_update_sw_u64( uint32_t crc, uint64_t data ) {
     uint64_t crc64 = crc ^ data;
 
     crc64 =
-            crc32c_sw_table[7][crc64 &         0xff] ^
+            crc32c_sw_table[7][ crc64        & 0xff] ^
             crc32c_sw_table[6][(crc64 >>  8) & 0xff] ^
             crc32c_sw_table[5][(crc64 >> 16) & 0xff] ^
             crc32c_sw_table[4][(crc64 >> 24) & 0xff] ^
             crc32c_sw_table[3][(crc64 >> 32) & 0xff] ^
             crc32c_sw_table[2][(crc64 >> 40) & 0xff] ^
             crc32c_sw_table[1][(crc64 >> 48) & 0xff] ^
-            crc32c_sw_table[0][crc64        >>   56];
+            crc32c_sw_table[0][ crc64 >> 56        ];
     return (uint32_t)crc64;
 }
 

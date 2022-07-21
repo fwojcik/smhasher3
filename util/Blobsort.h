@@ -108,7 +108,7 @@ static void flagsort( T * begin, T * end, int idx ) {
     // counts depend on all previous bytes, since each pass operates on
     // a successively smaller subset of the total list to sort.
     size_t freqs[RADIX_SIZE] = {};
-    T *    ptr               = begin;
+    T *    ptr = begin;
     do {
         ++freqs[(*ptr)[idx]];
     } while (++ptr < (end - 1));

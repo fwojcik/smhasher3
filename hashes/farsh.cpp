@@ -215,7 +215,7 @@ static uint32_t farsh_keyed( const void * data, size_t bytes, const void * key, 
     return farsh_final(sum) ^ key_ptr[bytes % STRIPE_ELEMENTS]; /*
                                                                  * ensure that zeroes at the end of data will affect the
                                                                  * hash value 
-                                                                                                                                 */
+                                                                 */
 }
 
 template <bool bswap>

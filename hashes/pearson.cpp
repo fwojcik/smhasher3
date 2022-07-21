@@ -107,31 +107,31 @@ static void pearson_hash_256_portable( uint8_t * out, const uint8_t * in, size_t
         // table lookup
         uint64_t h = 0;
         uint16_t x;
-        x = upper_hash; x      = t16[x]; upper_hash               >>= 16; h  = x; h = ROTR64(h, 16);
-        x = upper_hash; x      = t16[x]; upper_hash               >>= 16; h |= x; h = ROTR64(h, 16);
-        x = upper_hash; x      = t16[x]; upper_hash               >>= 16; h |= x; h = ROTR64(h, 16);
-        x = upper_hash; x      = t16[x];                    h      |= x; h   =        ROTR64(h, 16);
+        x = upper_hash; x = t16[x]; upper_hash >>= 16; h  = x; h = ROTR64(h, 16);
+        x = upper_hash; x = t16[x]; upper_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = upper_hash; x = t16[x]; upper_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = upper_hash; x = t16[x];                    h |= x; h = ROTR64(h, 16);
         upper_hash = h;
 
         h = 0;
-        x = lower_hash; x      = t16[x]; lower_hash               >>= 16; h  = x; h = ROTR64(h, 16);
-        x = lower_hash; x      = t16[x]; lower_hash               >>= 16; h |= x; h = ROTR64(h, 16);
-        x = lower_hash; x      = t16[x]; lower_hash               >>= 16; h |= x; h = ROTR64(h, 16);
-        x = lower_hash; x      = t16[x];                    h      |= x; h   =        ROTR64(h, 16);
+        x = lower_hash; x = t16[x]; lower_hash >>= 16; h  = x; h = ROTR64(h, 16);
+        x = lower_hash; x = t16[x]; lower_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = lower_hash; x = t16[x]; lower_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = lower_hash; x = t16[x];                    h |= x; h = ROTR64(h, 16);
         lower_hash = h;
 
         h = 0;
-        x = high_upper_hash; x = t16[x]; high_upper_hash          >>= 16; h  = x; h = ROTR64(h, 16);
-        x = high_upper_hash; x = t16[x]; high_upper_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = high_upper_hash; x = t16[x]; high_upper_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = high_upper_hash; x = t16[x];                         h |= x; h   =        ROTR64(h, 16);
+        x = high_upper_hash; x = t16[x]; high_upper_hash >>= 16; h  = x; h = ROTR64(h, 16);
+        x = high_upper_hash; x = t16[x]; high_upper_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = high_upper_hash; x = t16[x]; high_upper_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = high_upper_hash; x = t16[x];                         h |= x; h = ROTR64(h, 16);
         high_upper_hash = h;
 
         h = 0;
-        x = high_lower_hash; x = t16[x]; high_lower_hash          >>= 16; h  = x; h = ROTR64(h, 16);
-        x = high_lower_hash; x = t16[x]; high_lower_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = high_lower_hash; x = t16[x]; high_lower_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = high_lower_hash; x = t16[x];                         h |= x; h   =        ROTR64(h, 16);
+        x = high_lower_hash; x = t16[x]; high_lower_hash >>= 16; h  = x; h = ROTR64(h, 16);
+        x = high_lower_hash; x = t16[x]; high_lower_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = high_lower_hash; x = t16[x]; high_lower_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = high_lower_hash; x = t16[x];                         h |= x; h = ROTR64(h, 16);
         high_lower_hash = h;
     }
     // store output
@@ -174,17 +174,17 @@ static void pearson_hash_128_portable( uint8_t * out, const uint8_t * in, size_t
         // table lookup
         uint64_t h = 0;
         uint16_t x;
-        x = upper_hash; x = t16[x]; upper_hash          >>= 16; h  = x; h = ROTR64(h, 16);
-        x = upper_hash; x = t16[x]; upper_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = upper_hash; x = t16[x]; upper_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = upper_hash; x = t16[x];                    h |= x; h   =        ROTR64(h, 16);
+        x = upper_hash; x = t16[x]; upper_hash >>= 16; h  = x; h = ROTR64(h, 16);
+        x = upper_hash; x = t16[x]; upper_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = upper_hash; x = t16[x]; upper_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = upper_hash; x = t16[x];                    h |= x; h = ROTR64(h, 16);
         upper_hash = h;
 
         h = 0;
-        x = lower_hash; x = t16[x]; lower_hash          >>= 16; h  = x; h = ROTR64(h, 16);
-        x = lower_hash; x = t16[x]; lower_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = lower_hash; x = t16[x]; lower_hash          >>= 16; h |= x; h = ROTR64(h, 16);
-        x = lower_hash; x = t16[x];                    h |= x; h   =        ROTR64(h, 16);
+        x = lower_hash; x = t16[x]; lower_hash >>= 16; h  = x; h = ROTR64(h, 16);
+        x = lower_hash; x = t16[x]; lower_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = lower_hash; x = t16[x]; lower_hash >>= 16; h |= x; h = ROTR64(h, 16);
+        x = lower_hash; x = t16[x];                    h |= x; h = ROTR64(h, 16);
         lower_hash = h;
     }
     // store output
@@ -367,7 +367,7 @@ static void pearson_hash_256_ssse3( uint8_t * out, const uint8_t * in, size_t le
             high_selected_entries = _mm_or_si128(high_selected_entries, high_lut_index);
             high_selected_entries = _mm_shuffle_epi8(table_line, high_selected_entries);
             lut_result            = _mm_or_si128(lut_result, selected_entries);
-            lut_index = _mm_sub_epi8(lut_index, p16);
+            lut_index             = _mm_sub_epi8(lut_index, p16);
             high_lut_result       = _mm_or_si128(high_lut_result, high_selected_entries);
             high_lut_index        = _mm_sub_epi8(high_lut_index, p16);
         }

@@ -259,9 +259,9 @@ bool DiffTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffTestImpl<Blob< 64>,  hashtype>(hash, seed, 5, reps, dumpCollisions);
-    result &= DiffTestImpl<Blob<128>, hashtype >(hash, seed, 4, reps, dumpCollisions);
-    result &= DiffTestImpl<Blob<256>, hashtype >(hash, seed, 3, reps, dumpCollisions);
+    result &= DiffTestImpl<Blob< 64>, hashtype>(hash, seed, 5, reps, dumpCollisions);
+    result &= DiffTestImpl<Blob<128>, hashtype>(hash, seed, 4, reps, dumpCollisions);
+    result &= DiffTestImpl<Blob<256>, hashtype>(hash, seed, 3, reps, dumpCollisions);
 
     printf("%s\n", result ? "" : g_failstr);
 

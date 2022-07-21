@@ -178,11 +178,11 @@ static uint32_t Hash32Len5to12( const uint8_t * s, size_t len, uint32_t seed ) {
 template <bool bswap>
 static uint32_t Hash32Len13to24( const uint8_t * s, size_t len, uint32_t seed ) {
     uint32_t a = Fetch32<bswap>(s - 4   + (len >> 1));
-    uint32_t b = Fetch32<bswap>(s + 4);
-    uint32_t c = Fetch32<bswap>(s + len - 8);
+    uint32_t b = Fetch32<bswap>(s + 4               );
+    uint32_t c = Fetch32<bswap>(s + len - 8         );
     uint32_t d = Fetch32<bswap>(s +       (len >> 1));
-    uint32_t e = Fetch32<bswap>(s);
-    uint32_t f = Fetch32<bswap>(s + len - 4);
+    uint32_t e = Fetch32<bswap>(s                   );
+    uint32_t f = Fetch32<bswap>(s + len - 4         );
     uint32_t h = seed + len;
 
     return fmix(Mur(f, Mur(e, Mur(d, Mur(c, Mur(b, Mur(a, h)))))));
@@ -287,8 +287,8 @@ static uint64_t HashLen0to16( const uint8_t * s, size_t len ) {
 // in that case.
 template <bool bswap>
 static uint64_t HashLen17to32( const uint8_t * s, size_t len ) {
-    uint64_t a = Fetch64<bswap>(s    )        * k1;
-    uint64_t b = Fetch64<bswap>(s + 8);
+    uint64_t a = Fetch64<bswap>(s           ) * k1;
+    uint64_t b = Fetch64<bswap>(s + 8       );
     uint64_t c = Fetch64<bswap>(s + len -  8) * k2;
     uint64_t d = Fetch64<bswap>(s + len - 16) * k0;
 
@@ -303,7 +303,7 @@ static uint64_t HashLen33to64( const uint8_t * s, size_t len ) {
     uint64_t b = ROTR64(a + z, 52);
     uint64_t c = ROTR64(a    , 37);
 
-    a += Fetch64<bswap>(s +  8);
+    a += Fetch64<bswap>(s +  8      );
     c += ROTR64(a, 7);
     a += Fetch64<bswap>(s + 16      );
     uint64_t vf = a + z;
@@ -346,7 +346,7 @@ static uint64_t CityHash64( const uint8_t * s, size_t len ) {
     len = (len - 1) & ~static_cast<size_t>(63);
     do {
         x    = ROTR64(x + y        + v.first + Fetch64<bswap>(s +  8), 37) * k1;
-        y    = ROTR64(y + v.second + Fetch64          <bswap>(s + 48), 42) * k1;
+        y    = ROTR64(y + v.second +           Fetch64<bswap>(s + 48), 42) * k1;
         x   ^= w.second;
         y   += v.first + Fetch64<bswap>(s + 40);
         z    = ROTR64(z + w.first, 33) * k1;
@@ -422,7 +422,7 @@ static uint128_t CityHash128WithSeed( const uint8_t * s, size_t len, uint128_t s
     // This is the same inner loop as CityHash64(), manually unrolled.
     do {
         x    = ROTR64(x + y        + v.first + Fetch64<bswap>(s +  8), 37) * k1;
-        y    = ROTR64(y + v.second + Fetch64          <bswap>(s + 48), 42) * k1;
+        y    = ROTR64(y + v.second +           Fetch64<bswap>(s + 48), 42) * k1;
         x   ^= w.second;
         y   += v.first + Fetch64<bswap>(s + 40);
         z    = ROTR64(z + w.first, 33) * k1;
@@ -447,9 +447,9 @@ static uint128_t CityHash128WithSeed( const uint8_t * s, size_t len, uint128_t s
     for (size_t tail_done = 0; tail_done < len;) {
         tail_done += 32;
         y          = ROTR64(x + y, 42) * k0 + v.second;
-        w.first   += Fetch64               <bswap>(s + len - tail_done + 16);
+        w.first   += Fetch64<bswap>(s + len - tail_done + 16);
         x          = x                 * k0 + w.first;
-        z         += w.second + Fetch64    <bswap>(s       + len       - tail_done);
+        z         += w.second +     Fetch64<bswap>(s + len - tail_done);
         w.second  += v.first;
         v          = WeakHashLen32WithSeeds<bswap>(s + len - tail_done, v.first + z, v.second);
     }
@@ -543,11 +543,11 @@ static void CityHashCrc256Long( const uint8_t * s, size_t len, uint64_t seed, ui
     //
     result[0]  = e + f     + g + h;
     a          = ShiftMix((a + g) * k0) * k0 + b;
-    result[1] += a + result[0  ];
+    result[1] += a + result[0];
     a          = ShiftMix(a       * k0) * k0 + c;
-    result[2]  = a + result[1  ];
+    result[2]  = a + result[1];
     a          = ShiftMix((a + e) * k0) * k0;
-    result[3]  = a + result[2  ];
+    result[3]  = a + result[2];
 }
 
 // Requires len < 240.

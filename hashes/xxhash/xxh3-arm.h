@@ -117,7 +117,7 @@
       do {                                                \
       /* Undocumented GCC/Clang operand modifier: */      \
       /*     %e0 = lower D half, %f0 = upper D half */    \
-      __asm__ ("vzip.32  %e0, %f0" : "+w" (in));                                                \
+      __asm__ ("vzip.32  %e0, %f0" : "+w" (in));          \
       (outLo) = vget_low_u32(vreinterpretq_u32_u64(in));  \
       (outHi) = vget_high_u32(vreinterpretq_u32_u64(in)); \
       } while (0)

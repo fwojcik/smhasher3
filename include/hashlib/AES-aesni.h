@@ -50,7 +50,7 @@ static inline __m128i _expand_key_helper( __m128i rkey, __m128i assist ) {
 static int AES_KeySetup_Enc_AESNI( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
     __m128i * round_keys = (__m128i *)rk;
 
-    round_keys[0]  = _mm_loadu_si128((__m128i *)cipherKey);
+    round_keys[ 0] = _mm_loadu_si128((__m128i *)cipherKey);
     round_keys[ 1] = _expand_key_helper(MKASSIST(round_keys[0], 0x01));
     round_keys[ 2] = _expand_key_helper(MKASSIST(round_keys[1], 0x02));
     round_keys[ 3] = _expand_key_helper(MKASSIST(round_keys[2], 0x04));
@@ -68,16 +68,16 @@ static int AES_KeySetup_Dec_AESNI( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t c
     __m128i * round_keys = (__m128i *)rk;
 
     round_keys[10] = _mm_loadu_si128((__m128i *)cipherKey);
-    round_keys[9]  = _expand_key_helper(MKASSIST(round_keys[10], 0x01));
-    round_keys[8]  = _expand_key_helper(MKASSIST(round_keys[ 9], 0x02));
-    round_keys[7]  = _expand_key_helper(MKASSIST(round_keys[ 8], 0x04));
-    round_keys[6]  = _expand_key_helper(MKASSIST(round_keys[ 7], 0x08));
-    round_keys[5]  = _expand_key_helper(MKASSIST(round_keys[ 6], 0x10));
-    round_keys[4]  = _expand_key_helper(MKASSIST(round_keys[ 5], 0x20));
-    round_keys[3]  = _expand_key_helper(MKASSIST(round_keys[ 4], 0x40));
-    round_keys[2]  = _expand_key_helper(MKASSIST(round_keys[ 3], 0x80));
-    round_keys[1]  = _expand_key_helper(MKASSIST(round_keys[ 2], 0x1b));
-    round_keys[0]  = _expand_key_helper(MKASSIST(round_keys[ 1], 0x36));
+    round_keys[ 9] = _expand_key_helper(MKASSIST(round_keys[10], 0x01));
+    round_keys[ 8] = _expand_key_helper(MKASSIST(round_keys[ 9], 0x02));
+    round_keys[ 7] = _expand_key_helper(MKASSIST(round_keys[ 8], 0x04));
+    round_keys[ 6] = _expand_key_helper(MKASSIST(round_keys[ 7], 0x08));
+    round_keys[ 5] = _expand_key_helper(MKASSIST(round_keys[ 6], 0x10));
+    round_keys[ 4] = _expand_key_helper(MKASSIST(round_keys[ 5], 0x20));
+    round_keys[ 3] = _expand_key_helper(MKASSIST(round_keys[ 4], 0x40));
+    round_keys[ 2] = _expand_key_helper(MKASSIST(round_keys[ 3], 0x80));
+    round_keys[ 1] = _expand_key_helper(MKASSIST(round_keys[ 2], 0x1b));
+    round_keys[ 0] = _expand_key_helper(MKASSIST(round_keys[ 1], 0x36));
     for (int i = 1; i < 10; i++) {
         round_keys[i] = _mm_aesimc_si128(round_keys[i]);
     }

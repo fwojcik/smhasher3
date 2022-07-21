@@ -60,22 +60,22 @@
 //-----------------------------------------------------------------------------
 // Keyset 'Perlin Noise' - X,Y coordinates on input & seed
 
+#define INPUT_LEN_MAX 256
+
 template <typename hashtype>
 static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const HashInfo * hinfo,
         bool testColl, bool testDist, bool drawDiagram ) {
-    assert(       0 < Ybits && Ybits < 31);
-    assert(       0 < Xbits && Xbits < 31);
-    assert(   Xbits + Ybits < 31         );
-    assert(inputLen * 8 > Xbits          ); // enough space to run the test
+    assert(0 < Ybits && Ybits < 31  );
+    assert(0 < Xbits && Xbits < 31  );
+    assert(Xbits + Ybits < 31       );
+    assert(inputLen * 8 > Xbits     ); // enough space to run the test
+    assert(inputLen <= INPUT_LEN_MAX);
 
     std::vector<hashtype> hashes;
+    uint8_t      key[INPUT_LEN_MAX] = { 0 };
     int const    xMax = (1 << Xbits);
     int const    yMax = (1 << Ybits);
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-
-#define INPUT_LEN_MAX 256
-    assert(inputLen <= INPUT_LEN_MAX     );
-    uint8_t key[INPUT_LEN_MAX] = { 0 };
 
     printf("Generating coordinates from %3i-byte keys - %d keys\n", inputLen, xMax * yMax);
 
