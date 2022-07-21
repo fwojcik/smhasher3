@@ -44,8 +44,8 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2022-05-26, SMHasher3 is pre-beta. A beta1 release is expected soon.
-There is also planned a beta2 release at the least.
+As of 2022-07-20, SMHasher3 is pre-beta. A beta1 release is expected by the end of
+the month. There is also planned a beta2 release at the least.
 
 This code has compiled and run successfully on Linux x64, arm, and powerpc
 using gcc and clang. Importantly, I do not have the ability to test on Mac
