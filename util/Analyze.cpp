@@ -81,7 +81,7 @@ static const double WARNING_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%, 
 
 bool ReportBias( const int worstbiascnt, const int coinflips, const int trials, const bool drawDiagram ) {
     double ratio      = (double)worstbiascnt / (double)coinflips;
-    double p1value    = 2 * exp(-(double)worstbiascnt * ratio); // two-tailed Chernoff Bound
+    double p1value    = 2.0 * exp(-(double)worstbiascnt * 2.0 * ratio); // two-tailed Chernoff Bound
     double p_value    = ScalePValue(p1value, trials);
     int    logp_value = GetLog2PValue(p_value);
     bool   result     = true;
