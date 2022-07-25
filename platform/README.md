@@ -15,11 +15,11 @@ claiming it is GCC-compatible even though some used __builtin() is not
 actually supported, leading to compilation failure). The "#if" tests
 generally will only have support for compilers that the developer
 specifically added, so new compilers which support those features
-won't have them used. It also means that for every .cpp file compiled
-that a whole chain of preprocessor directives must be re-calculated,
+won't have them used. It also means that for every .cpp file compiled,
+a whole chain of preprocessor directives must be re-calculated,
 leading to longer build times. And finally, it can sometimes be very
-difficult for a developer to know which alternative was chosen by the
-compiler.
+difficult for a developer to know which alternative for a given
+feature was chosen by the compiler.
 
 So instead of doing that, this project does pre-build detection of
 compiler-specific APIs by just trying all the possibilities we know of
@@ -146,3 +146,43 @@ from one of three places:
   - Hedley [https://nemequ.github.io/hedley/]
   - Portable snippets [https://github.com/nemequ/portable-snippets]
   - FFT [https://github.com/NFFT/nfft]
+
+
+# Why and how are the detection results cached?
+
+It can take a non-trivial amount of time for all the detection test compilations to
+complete, long enough that waiting for them often is annoying to a maintainer or to
+someone who is iterating on a hash implementation. This is compounded by the fact
+that many changes require altering the CMake configuration (such as the list of files
+to be compiled), which causes a reconfiguration step to be performed, so even tying
+platform detections to the configure step does not alleviate this problem. While
+CMake does allow the user to specify that changes in any of a list of files will
+trigger a reconfiguration, it seems to have no way of letting its script know *why* a
+reconfiguration step was started, nor does it have a way of marking dependencies of
+variables' contents on input files. So there is no clean, built-in way to know during
+reconfiguration if platform detection needs to be re-performed.
+
+The only solution I've found is to create my own caching system. Yay. That always
+goes smoothly, and is sure to be completely reliable and free of edge cases. :-{
+
+The way it works is that the .cmake files in `platform/` associate a list of files
+with a list of variables, such that if *any* file in the given list changes, then
+*all* of the variables in the given list are cleared and removed from CMake's cache
+as well as current memory. CMake's cache is empty during the initial configuration
+and so the full platform detection takes place, and those results are cached.
+
+During a future reconfiguration, the variable containing the list of files is read
+from CMake's cache. There is also a variable containing the SHA-256 hash of each of
+those files, and they are recomputed and compared against the cached copy. If any
+difference is detected, then the list of variable names (again, from CMake's cache)
+is iterated over and each one is cleared. Otherwise, the only thing that happens is
+re-informing CMake that its configuration depends on those input files.
+
+From the perspective of each group of platform-specific code, this means it will
+first call checkCachedVarsDepend() to clear the cache if needed. Then every call to
+findVariant() will append each filename it touches to a list of files, as well as
+appending the name of each variable it sets to a different list. Then the .cmake file
+itself will be added to the list of files, and both variables will be passed to
+setCachedVarsDepend(), which will record the file hashes and register the
+configuration dependencies with CMake. In this way, if any of the inputs to a group
+of platform detections change, the whole group of detections will be rerun.
