@@ -87,7 +87,7 @@ static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
             hashes[i] = h1 ^ h2;
         }
 
-        bool thisresult = TestHashList<hashtype>(hashes, drawDiagram, true, true);
+        bool thisresult = TestHashList<hashtype>(hashes, drawDiagram, true, false);
         printf("\n");
 
         addVCodeResult(thisresult);
