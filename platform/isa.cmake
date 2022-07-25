@@ -233,7 +233,7 @@ if(MSVC)
 else()
 
   # For the moment, I'm leaving all of these detections enabled on all
-  # platforms. This is to maybe accomadate future inclusions of
+  # platforms. This is to maybe accommodate future inclusions of
   # SIMD-everywhere or similar intrinsic emulation headers. This may
   # change in the future.
 
