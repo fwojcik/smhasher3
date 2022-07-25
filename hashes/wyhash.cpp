@@ -261,7 +261,7 @@ REGISTER_HASH(wyhash,
    $.hashfn_bswap    = Wyhash64<true, false>,
    $.initfn          = wyhash64_selftest,
    $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { 0x14cc886e, 0x1bf4ed84, UINT64_C (0x14cc886e14cc886e) } // all seeds with those lower bits ?
+   $.badseeds        = { 0x14cc886e, 0x1bf4ed84 }
  );
 
 REGISTER_HASH(wyhash__strict,
