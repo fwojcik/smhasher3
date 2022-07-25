@@ -209,11 +209,11 @@ static void md5_update( md5_context * ctx, uint8_t * input, size_t ilen ) {
     if (ilen == 0)                    { return; }
     if (ilen >= UINT32_C(0xffffffff)) { return; }
 
-    left = ctx->total[0] &        0x3F;
+    left = ctx->total[0] & 0x3F;
     fill = 64 - left;
 
-    ctx->total       [0] += ilen;
-    ctx->total       [0] &= 0xFFFFFFFF;
+    ctx->total[0] += ilen;
+    ctx->total[0] &= 0xFFFFFFFF;
 
     if (ctx->total[0] < (uint32_t)ilen) { ctx->total[1]++; }
 

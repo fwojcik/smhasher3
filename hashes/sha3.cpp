@@ -170,7 +170,7 @@ static void sha3_Process( sha3_context * ctx, const uint8_t * in, size_t inlen )
     }
 
     /* now work in full words directly from input */
-    words = inlen / sizeof        (uint64_t);
+    words = inlen         / sizeof(uint64_t);
     tail  = inlen - words * sizeof(uint64_t);
 
     for (i = 0; i < words; i++, in += sizeof(uint64_t)) {

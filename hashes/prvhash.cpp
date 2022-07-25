@@ -120,7 +120,7 @@ static inline uint64_t prvhash64_64m( const void * const Msg0, const size_t MsgL
 
     while (1) {
         if (Msg < (MsgEnd - (sizeof(uint64_t) - 1))) {
-            const uint64_t msgw = GET_U64        <bswap>(Msg, 0);
+            const uint64_t msgw = GET_U64<bswap>(Msg, 0);
 
             Seed ^= msgw;
             lcg  ^= msgw;

@@ -29,6 +29,17 @@
 
 #include <math.h> // For M_E and M_PI
 
+//------------------------------------------------------------
+// Cross-platform bitwise-exact floating point math is not guaranteed to be possible
+// in C++, even with the guarantees of IEEE 754. This code has been altered to get as
+// close as I know how. These settings, along with their build-system counterparts,
+// try to instruct the compiler to avoid some specific math "shortcuts" that can lead
+// to diverging results. Further, this code has been reworked so that every statement
+// contains no more than 1 floating point operation. Some compilers take this as a
+// hint that increased fidelity is wanted, or have a compiler option to do so.
+//
+// Any additional tricks to increase compatibility are welcome!
+
 #pragma fp_contract (off)
 #pragma STDC FP_CONTRACT OFF
 static_assert(std::numeric_limits<double>::is_iec559, "IEEE 754 floating point required");
@@ -60,7 +71,7 @@ static FORCE_INLINE void round( const uint8_t * msg, size_t len, double * state 
             tmp =  (double)(msg[i] + i + 1);
         } else {
             tmp  = val * M_E;
-            tmp += (double)(i          + 1);
+            tmp += (double)(i + 1);
         }
         double denominator = tmp / state[1];
 

@@ -118,8 +118,8 @@ static bool BicTest3( HashFn hash, const seed_t seed, const int reps, bool verbo
             if (verbose) { printf("(%3d,%3d) - ", out1, out2); }
 
             for (int keybit = 0; keybit < keybits; keybit++) {
-                int * page  = &bins[keybit                   * pagesize];
-                int * bins  = &page[(out1 * hashbits + out2) * 4       ];
+                int * page  = &bins[keybit * pagesize];
+                int * bins  = &page[(out1 * hashbits + out2) * 4];
 
                 double bias = 0;
 
@@ -138,7 +138,11 @@ static bool BicTest3( HashFn hash, const seed_t seed, const int reps, bool verbo
                 }
 
                 if (verbose) {
-                    if     (bias < 0.01) { printf("."); } else if (bias < 0.05) { printf("o"); } else if (bias < 0.33) {
+                    if (bias < 0.01) {
+                        printf(".");
+                    } else if (bias < 0.05) {
+                        printf("o");
+                    } else if (bias < 0.33) {
                         printf("O");
                     } else {
                         printf("X");

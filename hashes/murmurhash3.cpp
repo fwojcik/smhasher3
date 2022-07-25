@@ -70,7 +70,7 @@ static void MurmurHash3_32( const void * in, const size_t len, const seed_t seed
     const uint8_t * data    = (const uint8_t *)in;
     const ssize_t   nblocks = len / 4;
 
-    uint32_t h1       =       (uint32_t       )seed;
+    uint32_t h1       = (uint32_t)seed;
 
     const uint32_t c1 = 0xcc9e2d51;
     const uint32_t c2 = 0x1b873593;
@@ -122,10 +122,10 @@ static void MurmurHash3_32_128( const void * in, const size_t len, const seed_t 
     const uint8_t * data    = (const uint8_t *)in;
     const ssize_t   nblocks = len / 16;
 
-    uint32_t h1       =       (uint32_t       )seed;
-    uint32_t h2       =       (uint32_t       )seed;
-    uint32_t h3       =       (uint32_t       )seed;
-    uint32_t h4       =       (uint32_t       )seed;
+    uint32_t h1       = (uint32_t)seed;
+    uint32_t h2       = (uint32_t)seed;
+    uint32_t h3       = (uint32_t)seed;
+    uint32_t h4       = (uint32_t)seed;
 
     const uint32_t c1 = 0x239b961b;
     const uint32_t c2 = 0xab0e9789;
@@ -201,8 +201,8 @@ static void MurmurHash3_32_128( const void * in, const size_t len, const seed_t 
     h1 ^= (uint32_t)len; h2 ^= (uint32_t)len;
     h3 ^= (uint32_t)len; h4 ^= (uint32_t)len;
 
-    h1 += h2; h1            += h3; h1  += h4;
-    h2 += h1; h3            += h1; h4  += h1;
+    h1 += h2; h1 += h3; h1 += h4;
+    h2 += h1; h3 += h1; h4 += h1;
 
     h1  = fmix32(h1);
     h2  = fmix32(h2);
@@ -224,8 +224,8 @@ static void MurmurHash3_128( const void * in, const size_t len, const seed_t see
     const uint8_t * data    = (const uint8_t *)in;
     const size_t    nblocks = len / 16;
 
-    uint64_t h1       =       (uint32_t       )seed;
-    uint64_t h2       =       (uint32_t       )seed;
+    uint64_t h1       = (uint32_t)seed;
+    uint64_t h2       = (uint32_t)seed;
 
     const uint64_t c1 = UINT64_C(0x87c37b91114253d5);
     const uint64_t c2 = UINT64_C(0x4cf5ad432745937f);

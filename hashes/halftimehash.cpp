@@ -339,12 +339,12 @@ namespace halftime_hash {
                 }
 
                 iter = io[1];
-                Distribute3(8, { z }      , { x, z }   , { y }   );
-                Distribute3(8, { x, z }   , { x, y, z }, { y, z });
-                Distribute3(8, { y }      , { y, z }   , { x, z });
-                Distribute3(8, { x, y }   , { z }      , { x }   );
+                Distribute3(8, { z }      , { x, z }   , { y }      );
+                Distribute3(8, { x, z }   , { x, y, z }, { y, z }   );
+                Distribute3(8, { y }      , { y, z }   , { x, z }   );
+                Distribute3(8, { x, y }   , { z }      , { x }      );
                 Distribute3(8, { y, z }   , { x, y }   , { x, y, z });
-                Distribute3(8, { x, y, z }, { x }      , { x, y });
+                Distribute3(8, { x, y, z }, { x }      , { x, y }   );
             }
 
             template <typename Block>
@@ -395,20 +395,20 @@ namespace halftime_hash {
                 }
 
                 iter = io[1];
-                Distribute3(8, { z }      , { x, z }   , { y }   );    // 73
-                Distribute3(8, { x, z }   , { x, y, z }, { y, z });    // 140
-                Distribute3(8, { y }      , { y, z }   , { x, z });    // 167
-                Distribute3(8, { x, y }   , { z }      , { x }   );    // 198
+                Distribute3(8, { z }      , { x, z }   , { y }      );  // 73
+                Distribute3(8, { x, z }   , { x, y, z }, { y, z }   ); // 140
+                Distribute3(8, { y }      , { y, z }   , { x, z }   ); // 167
+                Distribute3(8, { x, y }   , { z }      , { x }      ); // 198
                 Distribute3(8, { y, z }   , { x, y }   , { x, y, z }); // 292
-                Distribute3(8, { x, y, z }, { x }      , { x, y });    // 323
+                Distribute3(8, { x, y, z }, { x }      , { x, y }   ); // 323
 
                 iter = io[1];
-                Distribute3(9, { x, z }   , { x, y, z }, { y, z });    // 140
-                Distribute3(9, { x, y }   , { z }      , { x }   );    // 198
-                Distribute3(9, { z }      , { x, z }   , { y }   );    // 73
+                Distribute3(9, { x, z }   , { x, y, z }, { y, z }   ); // 140
+                Distribute3(9, { x, y }   , { z }      , { x }      ); // 198
+                Distribute3(9, { z }      , { x, z }   , { y }      ); // 73
                 Distribute3(9, { y, z }   , { x, y }   , { x, y, z }); // 292
-                Distribute3(9, { x, y, z }, { x }      , { x, y });    // 323
-                Distribute3(9, { y }      , { y, z }   , { x, z });    // 167
+                Distribute3(9, { x, y, z }, { x }      , { x, y }   ); // 323
+                Distribute3(9, { y }      , { y, z }   , { x, z }   ); // 167
             }
 
 // https://docs.switzernet.com/people/emin-gabrielyan/051103-erasure-9-5-resilient/
@@ -459,14 +459,14 @@ namespace halftime_hash {
                 iter = io[1];
                 Distribute3(7, { x, y, z }, { x }      , { x, y }); // 323
                 Distribute3(7, { x, z }   , { x, y, z }, { y, z }); // 140
-                Distribute3(7, { x }      , { y }, { z });          // 11
+                Distribute3(7, { x }      , { y }      , { z }   ); // 11
                 Distribute3(7, { y }      , { y, z }   , { x, z }); // 167
 
                 iter = io[1];
-                Distribute3(8, { x }      , { y }, { z });             // 11
-                Distribute3(8, { x, y }   , { z }      , { x }   );    // 198
+                Distribute3(8, { x }      , { y }      , { z }      ); // 11
+                Distribute3(8, { x, y }   , { z }      , { x }      ); // 198
                 Distribute3(8, { y, z }   , { x, y }   , { x, y, z }); // 292
-                Distribute3(8, { x, z }   , { x, y, z }, { y, z });    // 140
+                Distribute3(8, { x, z }   , { x, y, z }, { y, z }   ); // 140
             }
 
             template <typename Badger, typename Block>

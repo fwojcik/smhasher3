@@ -73,11 +73,10 @@ static void SHA1_Transform_portable( uint32_t state[5], const uint8_t buffer[64]
 /* blk0() and blk() perform the initial expand. */
 /* I got the idea of expanding during the round function from SSLeay */
 #define blk0(i) (l[i] = GET_U32<bswap>(buffer, 4 * (i)))
-#define blk(i)  (l[i & 15] = ROTL32(                   \
-                                    l[(i + 13) & 15] ^ \
-                                    l[(i + 8) & 15]  ^ \
-                                    l[(i + 2) & 15]  ^ \
-                                    l[i & 15]          \
+#define blk(i)  (l[i & 15] = ROTL32(l[(i + 13) & 15]  ^ \
+                                    l[(i +  8) & 15]  ^ \
+                                    l[(i +  2) & 15]  ^ \
+                                    l[ i       & 15]    \
                                     , 1))
 
 /* (R0+R1), R2, R3, R4 are the different operations used in SHA1 */

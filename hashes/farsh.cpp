@@ -99,11 +99,11 @@ alignas(32) static const uint32_t FARSH_KEYS[STRIPE_ELEMENTS + EXTRA_ELEMENTS] =
 template <bool bswap>
 static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
 #if defined(HAVE_AVX2)
-    __m256i         sum = _mm256_setzero_si256();  __m128i sum128;  int i;
+    __m256i         sum = _mm256_setzero_si256();
     const __m256i * xdata = (const __m256i *)data;
     const __m256i * xkey  = (const __m256i *)key;
 
-    for (i = 0; i < STRIPE / sizeof(__m256i); i++) {
+    for (int i = 0; i < STRIPE / sizeof(__m256i); i++) {
         __m256i d   = _mm256_loadu_si256(xdata + i);
         if (bswap) { d = mm256_bswap32(d); }
         __m256i k   = _mm256_loadu_si256(xkey + i );
@@ -114,14 +114,14 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
     }
     sum    = _mm256_add_epi64(sum, _mm256_shuffle_epi32(sum, 3 * 4 + 2));       // return sum of four 64-bit values in
                                                                                 // the sum
-    sum128 = _mm_add_epi64(_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum, 1));
+    __m128i sum128 = _mm_add_epi64(_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum, 1));
     return _mm_cvtsi128_si64(sum128);
 #elif defined(HAVE_SSE_2)
-    __m128i         sum = _mm_setzero_si128();  int i;
+    __m128i         sum   = _mm_setzero_si128();
     const __m128i * xdata = (const __m128i *)data;
     const __m128i * xkey  = (const __m128i *)key;
 
-    for (i = 0; i < STRIPE / sizeof(__m128i); i++) {
+    for (int i = 0; i < STRIPE / sizeof(__m128i); i++) {
         __m128i d   = _mm_loadu_si128(xdata + i);
         if (bswap) { d = mm_bswap32(d); }
         __m128i k   = _mm_load_si128(xkey + i);
@@ -132,8 +132,8 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
     sum = _mm_add_epi64(sum, _mm_shuffle_epi32(sum, 3 * 4 + 2)); // return sum of two 64-bit values in the sum
     return _mm_cvtsi128_si64(sum);
 #else
-    uint64_t sum = 0;  int i;
-    for (i = 0; i < STRIPE_ELEMENTS; i += 2) {
+    uint64_t sum = 0;
+    for (int i = 0; i < STRIPE_ELEMENTS; i += 2) {
         sum += (GET_U32<bswap>(data, i * 4) + key[i]) *
                 (uint64_t)(GET_U32<bswap>(data, (i + 1) * 4) + key[i + 1]);
     }
@@ -144,7 +144,7 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
 /* Internal: hash less than STRIPE bytes, with careful handling of partial uint32_t pair at the end of buffer */
 template <bool bswap>
 static uint64_t farsh_partial_block( const uint8_t * data, size_t bytes, const uint32_t * key ) {
-    uint64_t sum = 0;  int i;
+    uint64_t sum           = 0;
     size_t   elements      = (bytes / sizeof(uint32_t)) & (~1);
 
     uint32_t extra_data[2] = { 0 };
@@ -152,6 +152,7 @@ static uint64_t farsh_partial_block( const uint8_t * data, size_t bytes, const u
 
     memcpy(extra_data, data + 4 * elements, extra_bytes);
 
+    int i;
     for (i = 0; i < elements; i += 2) {
         sum += (GET_U32<bswap>(data, i * 4) + key[i]) *
                 (uint64_t)(GET_U32<bswap>(data, (i + 1) * 4) + key[i + 1]);
@@ -197,8 +198,8 @@ static uint32_t farsh_final( uint64_t sum ) {
 template <bool bswap>
 static uint32_t farsh_keyed( const void * data, size_t bytes, const void * key, uint64_t seed ) {
     uint64_t         sum     = seed;
-    const uint8_t  *  ptr     = (const uint8_t * )data;
-    const uint32_t * key_ptr =  (const uint32_t *)key;
+    const uint8_t  * ptr     = (const uint8_t * )data;
+    const uint32_t * key_ptr = (const uint32_t *)key;
 
     while (bytes >= STRIPE) {
         size_t   chunk = STRIPE;

@@ -147,7 +147,7 @@ static inline uint32_t combine31( uint32_t h, uint32_t x, uint32_t a ) {
 
 template <bool bswap>
 static void tabulation32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    const uint8_t * buf = (const uint8_t *)in;
+    const uint8_t * buf           = (const uint8_t *)in;
     size_t          len_words_32  = len / 4;
     size_t          len_blocks_32 = len_words_32 / BLOCK_SIZE_32;
 

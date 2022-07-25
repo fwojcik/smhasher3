@@ -150,7 +150,6 @@ enum {
   #define ARRAY_SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
 /*
- *
  * A single UMASH params struct stores the parameters for a pair of
  * independent `UMASH` functions.
  */
@@ -176,7 +175,6 @@ struct umash_params {
 };
 
 /*
- *
  * A fingerprint consists of two independent `UMASH` hash values.
  */
 struct umash_fp {
@@ -184,7 +182,6 @@ struct umash_fp {
 };
 
 /*
- *
  * Returns `then` if `cond` is true, `otherwise` if false.
  *
  * This noise helps compiler emit conditional moves.

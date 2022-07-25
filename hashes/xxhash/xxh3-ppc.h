@@ -124,11 +124,11 @@ static FORCE_INLINE void XXH3_accumulate_512_vsx( void * RESTRICT acc, const voi
         xxh_u64x2 const key_vec  = XXH_vec_loadu<bswap>(xsecret + i);
         xxh_u64x2 const data_key = data_vec ^ key_vec;
         /* shuffled = (data_key << 32) | (data_key >> 32); */
-        xxh_u32x4 const shuffled = (xxh_u32x4   )vec_rl(data_key   , v32);
+        xxh_u32x4 const shuffled = (xxh_u32x4)vec_rl(data_key, v32);
         /* product = ((xxh_u64x2)data_key & 0xFFFFFFFF) * ((xxh_u64x2)shuffled & 0xFFFFFFFF); */
         xxh_u64x2 const product  = XXH_vec_mulo((xxh_u32x4)data_key, shuffled);
         /* acc_vec = xacc[i]; */
-        xxh_u64x2 acc_vec        = (xxh_u64x2   )vec_xl(0          , xacc + 4 * i);
+        xxh_u64x2 acc_vec        = (xxh_u64x2)vec_xl(0, xacc + 4 * i);
         acc_vec += product;
 
         /* swap high and low halves */

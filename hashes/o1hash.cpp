@@ -53,15 +53,15 @@ static void o1hash( const void * in, const size_t len, const seed_t seed, void *
     uint64_t        h;
 
     if (len >= 4) {
-        uint64_t first  = GET_U32<bswap>(p,   0    );
-        uint64_t middle = GET_U32<bswap>(p,   ((len >> 1) - 2));
+        uint64_t first  = GET_U32<bswap>(p, 0);
+        uint64_t middle = GET_U32<bswap>(p, ((len >> 1) - 2));
         uint64_t last   = GET_U32<bswap>(p, len - 4);
         h = (middle + (uint64_t)seed) * (first + last);
     } else if (len > 0) {
         uint64_t tail = seed + (
             (((uint64_t)p[0       ]) << 16) |
             (((uint64_t)p[len >> 1]) <<  8) |
-            (((uint64_t)p[len - 1])));
+            (((uint64_t)p[len -  1])      ) );
         h = tail * UINT64_C(0xa0761d6478bd642f);
     } else {
         h = 0;

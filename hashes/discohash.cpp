@@ -149,15 +149,15 @@ static void BEBB4185( const void * in, const size_t len, const seed_t seed, void
     if (!bswap) {
         seedbuf[0]  = 0xc5550690;
         seedbuf[0] -= seed32;
-        seedbuf[1]  = 1            + seed32;
-        seedbuf[2]  = ~  (1        - seed32);
-        seedbuf[3]  = (1 + seed32) * 0xf00dacca;
+        seedbuf[1]  =   1 + seed32;
+        seedbuf[2]  = ~(1 - seed32);
+        seedbuf[3]  =  (1 + seed32) * 0xf00dacca;
     } else {
         seedbuf[1]  = 0xc5550690;
         seedbuf[1] -= seed32;
-        seedbuf[0]  = 1            + seed32;
-        seedbuf[3]  = ~  (1        - seed32);
-        seedbuf[2]  = (1 + seed32) * 0xf00dacca;
+        seedbuf[0]  =   1 + seed32;
+        seedbuf[3]  = ~(1 - seed32);
+        seedbuf[2]  =  (1 + seed32) * 0xf00dacca;
     }
 
     uint64_t ds[STATE / 8];

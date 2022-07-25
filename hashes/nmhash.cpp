@@ -199,13 +199,13 @@ static inline uint32_t NMHASH32_9to255( const uint8_t * const RESTRICT p, size_t
             for (j = 0; j < 4; ++j) { y[j] ^= GET_U32<bswap>(p, len - 16 + j * 4); }
         } else {
             /* 9 to 32 bytes */
-            x[0] ^= GET_U32<bswap>(p,   0    );
-            x[1] ^= GET_U32<bswap>(p,   (     (len    >> 4) << 3));
-            x[2] ^= GET_U32<bswap>(p, len - 8);
-            x[3] ^= GET_U32<bswap>(p, len - 8 - ((len >> 4) << 3));
-            y[0] ^= GET_U32<bswap>(p,   4    );
-            y[1] ^= GET_U32<bswap>(p,   (        (len >> 4) << 3) + 4);
-            y[2] ^= GET_U32<bswap>(p, len - 8 + 4);
+            x[0] ^= GET_U32<bswap>(p, 0                              );
+            x[1] ^= GET_U32<bswap>(p,           ((len >> 4) << 3)    );
+            x[2] ^= GET_U32<bswap>(p, len - 8                        );
+            x[3] ^= GET_U32<bswap>(p, len - 8 - ((len >> 4) << 3)    );
+            y[0] ^= GET_U32<bswap>(p,                               4);
+            y[1] ^= GET_U32<bswap>(p,           ((len >> 4) << 3) + 4);
+            y[2] ^= GET_U32<bswap>(p, len - 8                     + 4);
             y[3] ^= GET_U32<bswap>(p, len - 8 - ((len >> 4) << 3) + 4);
         }
 
@@ -239,10 +239,10 @@ static inline uint32_t NMHASH32_9to255( const uint8_t * const RESTRICT p, size_t
     {
         __m128i const h0 = _mm_setr_epi32((int)NMH_PRIME32_1, (int)NMH_PRIME32_2,
                 (int)NMH_PRIME32_3, (int)NMH_PRIME32_4);
-        __m128i const sl = _mm_set1_epi32((int)seed         + (int)len);
-        __m128i const m1 = _mm_set1_epi32((int)__NMH_M1               );
-        __m128i const m2 = _mm_set1_epi32((int)__NMH_M2               );
-        __m128i const m3 = _mm_set1_epi32((int)__NMH_M3               );
+        __m128i const sl = _mm_set1_epi32((int)seed + (int)len);
+        __m128i const m1 = _mm_set1_epi32((int)__NMH_M1       );
+        __m128i const m2 = _mm_set1_epi32((int)__NMH_M2       );
+        __m128i const m3 = _mm_set1_epi32((int)__NMH_M3       );
         __m128i       x  = h0;
         __m128i       y  = sl;
         const uint32_t * const px = (const uint32_t *)&x;
@@ -278,8 +278,8 @@ static inline uint32_t NMHASH32_9to255( const uint8_t * const RESTRICT p, size_t
         } else {
             /* 9 to 32 bytes */
             x = _mm_xor_si128(x, _mm_setr_epi32((int)GET_U32<bswap>(p, 0), (int)GET_U32<bswap>(
-                    p, ((len >> 4) << 3))    , (int)GET_U32<bswap>(p, len     - 8), (int)GET_U32<bswap>(
-                    p, len - 8 - ((len >> 4) << 3)))    );
+                    p, ((len >> 4) << 3))    , (int)GET_U32<bswap>(p, len - 8    ), (int)GET_U32<bswap>(
+                    p, len - 8 - ((len >> 4) << 3)    )));
             y = _mm_xor_si128(y, _mm_setr_epi32((int)GET_U32<bswap>(p, 4), (int)GET_U32<bswap>(
                     p, ((len >> 4) << 3) + 4), (int)GET_U32<bswap>(p, len - 8 + 4), (int)GET_U32<bswap>(
                     p, len - 8 - ((len >> 4) << 3) + 4)));
@@ -404,7 +404,7 @@ static inline void NMHASH32_long_round_sse( uint32_t * const RESTRICT accX, uint
     _NMH_MM_T * const xaccX = (_NMH_MM_T *)accX;
     _NMH_MM_T * const xaccY = (_NMH_MM_T *)accY;
     _NMH_MM_T * const xp    = (_NMH_MM_T *)p;
-    size_t            i;
+    size_t i;
 
     for (i = 0; i < NMH_VECTOR_NB_GROUP; ++i) {
         if (bswap) {

@@ -223,11 +223,9 @@ static void FNV_Pippip_Yurii( const void * in, const size_t len, const seed_t se
         }
     } else {
         if (isLE() ^ bswap) {
-            hash64 = (hash64 ^ _PADr_KAZE<true >(GET_U64<bswap>(str, 0), (8 - len) << 3)) *
-                    PRIME;
+            hash64 = (hash64 ^ _PADr_KAZE<true >(GET_U64<bswap>(str, 0), (8 - len) << 3)) * PRIME;
         } else {
-            hash64 = (hash64 ^ _PADr_KAZE<false>(GET_U64<bswap>(str, 0), (8 - len) << 3)) *
-                    PRIME;
+            hash64 = (hash64 ^ _PADr_KAZE<false>(GET_U64<bswap>(str, 0), (8 - len) << 3)) * PRIME;
         }
     }
     hash32 = (uint32_t)(hash64 ^ (hash64 >> 32));

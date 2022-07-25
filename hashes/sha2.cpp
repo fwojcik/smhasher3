@@ -94,9 +94,9 @@ static const uint32_t K256[] = {
 };
 
 #define ROTATE(x, y)  (((x) >> (y)) | ((x) << (32 - (y))))
-#define Sigma0(x)    (ROTATE((x), 2) ^ ROTATE((x), 13) ^ ROTATE((x), 22))
-#define Sigma1(x)    (ROTATE((x), 6) ^ ROTATE((x), 11) ^ ROTATE((x), 25))
-#define sigma0(x)    (ROTATE((x), 7) ^ ROTATE((x), 18) ^ ((x) >> 3))
+#define Sigma0(x)    (ROTATE((x),  2) ^ ROTATE((x), 13) ^ ROTATE((x), 22))
+#define Sigma1(x)    (ROTATE((x),  6) ^ ROTATE((x), 11) ^ ROTATE((x), 25))
+#define sigma0(x)    (ROTATE((x),  7) ^ ROTATE((x), 18) ^ ((x) >> 3))
 #define sigma1(x)    (ROTATE((x), 17) ^ ROTATE((x), 19) ^ ((x) >> 10))
 
 #define Ch(x, y, z)    (((x) & (y)) ^ ((~(x)) & (z)))
