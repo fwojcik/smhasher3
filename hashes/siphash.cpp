@@ -424,6 +424,7 @@ REGISTER_FAMILY(siphash,
 REGISTER_HASH(SipHash_2_4,
    $.desc       = "SipHash 2-4",
    $.hash_flags =
+         FLAG_HASH_XL_SEED      |
          FLAG_HASH_CRYPTOGRAPHIC,
    $.impl_flags =
          FLAG_IMPL_SLOW         |
@@ -436,10 +437,10 @@ REGISTER_HASH(SipHash_2_4,
    $.hashfn_native   = SipHash_2_4<false>,
    $.hashfn_bswap    = SipHash_2_4<true>
  );
-
 REGISTER_HASH(SipHash_1_3,
    $.desc       = "SipHash 1-3",
    $.hash_flags =
+         FLAG_HASH_XL_SEED      |
          FLAG_HASH_CRYPTOGRAPHIC,
    $.impl_flags =
          FLAG_IMPL_SLOW         |
