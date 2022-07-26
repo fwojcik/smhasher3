@@ -138,7 +138,7 @@ class Blob {
     //----------
     // interface
 
-    FORCE_INLINE uint8_t getbit( size_t bit ) const {
+    FORCE_INLINE uint32_t getbit( size_t bit ) const {
         return _getbit(bit, bytes, sizeof(bytes));
     }
 
@@ -174,12 +174,12 @@ class Blob {
     //----------
     // implementations
 
-    static FORCE_INLINE uint8_t _getbit( size_t bit, const uint8_t * bytes, const size_t len ) {
+    static FORCE_INLINE uint32_t _getbit( size_t bit, const uint8_t * bytes, const size_t len ) {
         size_t byte = bit >> 3;
 
         bit &= 7;
         if (byte > len) { return 0; }
-        return (bytes[byte] >> bit) & 1;
+        return (bytes[byte] >> bit) & UINT32_C(1);
     }
 
     static void _printhex( const char * prefix, const uint8_t * bytes, const size_t len ) {
@@ -320,6 +320,36 @@ class Blob {
     uint8_t  bytes[_bytes];
 }; // class Blob
 
+template <>
+FORCE_INLINE void Blob<32>::flipbit( size_t bit ) {
+    uint32_t v;
+    memcpy(&v, bytes, 4);
+    v ^= 1 << bit;
+    memcpy(bytes, &v, 4);
+}
+
+template <>
+FORCE_INLINE void Blob<64>::flipbit( size_t bit ) {
+    uint64_t v;
+    memcpy(&v, bytes, 8);
+    v ^= UINT64_C(1) << bit;
+    memcpy(bytes, &v, 8);
+}
+
+template <>
+FORCE_INLINE uint32_t Blob<32>::getbit( size_t bit ) const {
+    uint32_t v;
+    memcpy(&v, bytes, 4);
+    return (v >> bit) & 1;
+}
+
+template <>
+FORCE_INLINE uint32_t Blob<64>::getbit( size_t bit ) const {
+    uint64_t v;
+    memcpy(&v, bytes, 8);
+    return (v >> bit) & 1;
+}
+
 // from the "Bit Twiddling Hacks" webpage
 template <>
 FORCE_INLINE void Blob<32>::reversebits( void ) {
@@ -394,7 +424,7 @@ class ExtBlob : private Blob<0> {
     //----------
     // interface
 
-    FORCE_INLINE uint8_t getbit( size_t bit ) const {
+    FORCE_INLINE uint32_t getbit( size_t bit ) const {
         return _getbit(bit, ptr, len);
     }
 

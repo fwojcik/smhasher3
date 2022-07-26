@@ -100,12 +100,11 @@ static bool BicTest3( HashFn hash, const seed_t seed, const int reps, bool verbo
             hashtype d = h1 ^ h2;
 
             for (int out1 = 0; out1 < hashbits - 1; out1++) {
+                int * b    = &page[(out1 * hashbits + out1 + 1) * 4];
                 for (int out2 = out1 + 1; out2 < hashbits; out2++) {
-                    int * b    = &page[(out1 * hashbits + out2) * 4];
-
                     uint32_t x = d.getbit(out1) | (d.getbit(out2) << 1);
-
                     b[x]++;
+                    b += 4;
                 }
             }
         }
