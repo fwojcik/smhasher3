@@ -88,7 +88,7 @@ bool ReportBias( const int worstbiascnt, const int coinflips, const int trials, 
 
     recordLog2PValue(logp_value);
     if (drawDiagram) {
-        printf(" worst bias is %f%% (%6d) (p<%8.6e) (^%2d)", ratio * 200.0, worstbiascnt, p_value, logp_value);
+        printf(" worst bias is %f%% (%6d) (p<%8.6f) (^%2d)", ratio * 200.0, worstbiascnt, p_value, logp_value);
     } else {
         printf(" worst bias is %f%% (^%2d)", ratio * 200.0, logp_value);
     }
