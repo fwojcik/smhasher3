@@ -198,14 +198,16 @@ static bool compareVerification( uint32_t expected, uint32_t actual, const char 
     return result;
 }
 
-static const char * endianstr( enum HashInfo::endianness e ) {
+static const char * endianstr( const HashInfo * hinfo, enum HashInfo::endianness e ) {
     switch (e) {
     case HashInfo::ENDIAN_LITTLE     : return "LE"; // "Little endian"
     case HashInfo::ENDIAN_BIG        : return "BE"; // "Big endian"
     case HashInfo::ENDIAN_NATIVE     : return isLE() ? "LE" : "BE";
     case HashInfo::ENDIAN_BYTESWAPPED: return isLE() ? "BE" : "LE";
-    case HashInfo::ENDIAN_DEFAULT    : return "CE"; // "Canonical endianness"
-    case HashInfo::ENDIAN_NONDEFAULT : return "NE"; // "Non-canonical endianness"
+    case HashInfo::ENDIAN_DEFAULT    : return hinfo->isEndianDefined() ? "CE"  // "Canonical endianness"
+                                                                       : isLE() ? "LE" : "BE";
+    case HashInfo::ENDIAN_NONDEFAULT : return hinfo->isEndianDefined() ? "NE" // "Non-canonical endianness"
+                                                                       : isLE() ? "BE" : "LE";
     }
     return NULL; /* unreachable */
 }
@@ -215,7 +217,7 @@ bool verifyHash( const HashInfo * hinfo, enum HashInfo::endianness endian, bool 
     const uint32_t actual = hinfo->ComputedVerify(endian);
     const uint32_t expect = hinfo->ExpectedVerify(endian);
 
-    result &= compareVerification(expect, actual, endianstr(endian), hinfo->name, verbose, prefix);
+    result &= compareVerification(expect, actual, endianstr(hinfo, endian), hinfo->name, verbose, prefix);
 
     return result;
 }
