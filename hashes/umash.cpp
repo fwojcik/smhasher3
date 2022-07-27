@@ -1141,9 +1141,9 @@ static void umash_params_derive( struct umash_params * params, uint64_t bits, co
 // mode. This is because the (now) thread-local global table would
 // never be initialized in the thread, and so would be all zeroes.
 
-static uintptr_t umash_slow_reseed( const seed_t seed ) {
-    static thread_local struct umash_params umash_params_local;
+static thread_local struct umash_params umash_params_local;
 
+static uintptr_t umash_slow_reseed( const seed_t seed ) {
     umash_params_derive(&umash_params_local, seed, NULL);
     return (uintptr_t)(&umash_params_local);
 }
