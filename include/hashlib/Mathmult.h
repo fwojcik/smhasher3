@@ -396,7 +396,7 @@ static FORCE_INLINE void fma64_192( uint64_t & rlo, uint64_t & rmi, uint64_t & r
 #endif
 }
 
-// 128x128->128 multiplication [rhi:rlo = a * bhi:blo]
+// 128x128->128 multiplication [rhi:rlo = ahi:alo * bhi:blo]
 static FORCE_INLINE void mult128_128( uint64_t & rlo, uint64_t & rhi, uint64_t alo,
         uint64_t ahi, uint64_t blo, uint64_t bhi ) {
 #if defined(HAVE_INT128)
