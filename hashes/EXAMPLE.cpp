@@ -19,7 +19,8 @@
 //------------------------------------------------------------
 template <bool bswap>
 static void ###YOURHASHNAMEHash( const void * in, const size_t len, const seed_t seed, void * out ) {
-    PUT_U64<bswap>(h, (uint8_t *)out, 0);
+    uint32_t hash = 0;
+    PUT_U32<bswap>(hash, (uint8_t *)out, 0);
 }
 
 //------------------------------------------------------------
@@ -29,7 +30,7 @@ REGISTER_FAMILY(###YOURHASHFAMILYNAME,
  );
 
 REGISTER_HASH(###YOURHASHNAME,
-   $.desc            = "",
+   $.desc            = "###YOURHASHDESCRIPTION",
    $.hash_flags      =
          0,
    $.impl_flags      =
