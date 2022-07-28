@@ -3,7 +3,9 @@
 ########################################
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  add_definitions(-DHAVE_32BIT_PLATFORM)
+  set(HAVE_32BIT_PLATFORM TRUE)
+else()
+  set(HAVE_32BIT_PLATFORM FALSE)
 endif()
 
 checkCachedVarsDepend(FIXEDINT "fixed-width integer variants")

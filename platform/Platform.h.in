@@ -202,13 +202,18 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
 #endif
 
 //-----------------------------------------------------------------------------
-// Instruction-set architecture availability
+// Instruction-set architecture header detection, for internal use only
 
 #cmakedefine HAVE_ARM_NEON
 #cmakedefine HAVE_ARM_ACLE
 #cmakedefine HAVE_IMMINTRIN
 #cmakedefine HAVE_AMMINTRIN
 #cmakedefine HAVE_X86INTRIN
+
+//-----------------------------------------------------------------------------
+// Instruction-set architecture and platform feature availability
+
+#cmakedefine HAVE_32BIT_PLATFORM
 
 #cmakedefine HAVE_SSE_2
 #cmakedefine HAVE_SSSE_3
