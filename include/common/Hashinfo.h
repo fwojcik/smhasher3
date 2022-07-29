@@ -54,6 +54,7 @@
     FLAG_EXPAND(IMPL_ASM)                   \
     FLAG_EXPAND(IMPL_CANONICAL_LE)          \
     FLAG_EXPAND(IMPL_CANONICAL_BE)          \
+    FLAG_EXPAND(IMPL_CANONICAL_BOTH)        \
     FLAG_EXPAND(IMPL_SEED_WITH_HINT)        \
     FLAG_EXPAND(IMPL_LICENSE_PUBLIC_DOMAIN) \
     FLAG_EXPAND(IMPL_LICENSE_BSD)           \
@@ -121,7 +122,9 @@ class HashInfo {
         case ENDIAN_NONDEFAULT : {
             // Compute is_native for the DEFAULT case
             if (hash_flags & FLAG_HASH_ENDIAN_INDEPENDENT) {
-                if (impl_flags & FLAG_IMPL_CANONICAL_LE) {
+                if (impl_flags & FLAG_IMPL_CANONICAL_BOTH) {
+                    is_native = true;
+                } else if (impl_flags & FLAG_IMPL_CANONICAL_LE) {
                     is_native = isLE();
                 } else if (impl_flags & FLAG_IMPL_CANONICAL_BE) {
                     is_native = isBE();

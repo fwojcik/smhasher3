@@ -204,7 +204,7 @@ REGISTER_HASH(aesrng_32,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_SEED_WITH_HINT      |
-         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_CANONICAL_BOTH      |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
    $.verification_LE = 0xED1590AC,
@@ -225,7 +225,7 @@ REGISTER_HASH(aesrng_64,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_SEED_WITH_HINT      |
-         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_CANONICAL_BOTH      |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
    $.verification_LE = 0xAE36B667,
@@ -246,7 +246,7 @@ REGISTER_HASH(aesrng_128,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_SEED_WITH_HINT      |
-         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_CANONICAL_BOTH      |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
    $.verification_LE = 0x2D1A1DB5,
@@ -267,7 +267,7 @@ REGISTER_HASH(aesrng_160,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_SEED_WITH_HINT      |
-         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_CANONICAL_BOTH      |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 160,
    $.verification_LE = 0x3FC284C3,
@@ -288,7 +288,7 @@ REGISTER_HASH(aesrng_224,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_SEED_WITH_HINT      |
-         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_CANONICAL_BOTH      |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 224,
    $.verification_LE = 0x9288A516,
@@ -309,7 +309,7 @@ REGISTER_HASH(aesrng_256,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_SEED_WITH_HINT      |
-         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_CANONICAL_BOTH      |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 256,
    $.verification_LE = 0x2816EEC1,

@@ -606,7 +606,7 @@ static void blake3_hasher_finalize( const blake3_hasher * self, uint8_t * out, s
     output_root_bytes(&output, out, out_len);
 }
 
-template <uint32_t outbits, bool bswap>
+template <uint32_t outbits>
 static void BLAKE3( const void * in, const size_t len, const seed_t seed, void * out ) {
     blake3_hasher hasher;
 
@@ -631,13 +631,13 @@ REGISTER_HASH(blake3,
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
          FLAG_IMPL_LICENSE_MIT          |
-         FLAG_IMPL_CANONICAL_LE         |
+         FLAG_IMPL_CANONICAL_BOTH       |
          FLAG_IMPL_VERY_SLOW            |
          FLAG_IMPL_ROTATE               |
          FLAG_IMPL_INCREMENTAL,
    $.bits = 256,
    $.verification_LE = 0x50E4CD91,
    $.verification_BE = 0x50E4CD91,
-   $.hashfn_native   = BLAKE3<256, false>,
-   $.hashfn_bswap    = BLAKE3<256, true>
+   $.hashfn_native   = BLAKE3<256>,
+   $.hashfn_bswap    = BLAKE3<256>
  );

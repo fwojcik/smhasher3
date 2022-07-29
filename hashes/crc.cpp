@@ -392,7 +392,7 @@ REGISTER_HASH(CRC_32C,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_INCREMENTAL        |
-         FLAG_IMPL_CANONICAL_LE       |
+         FLAG_IMPL_CANONICAL_BOTH     |
          FLAG_IMPL_LICENSE_BSD,
    $.bits = 32,
    $.verification_LE = 0x6E6071BD,

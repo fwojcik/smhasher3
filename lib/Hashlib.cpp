@@ -62,7 +62,30 @@ unsigned register_hash( const HashInfo * hinfo ) {
             printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
         }
     }
-    if ((hinfo->verification_BE != 0) && (hinfo->verification_BE != hinfo->verification_LE)) {
+    if (hinfo->impl_flags & FLAG_IMPL_CANONICAL_BOTH) {
+        if (!hinfo->isEndianDefined()) {
+            printf("WARNING: Flags marked as IMPL_CANONICAL_BOTH, but HASH_ENDIAN_INDEPENDENT\n");
+            printf("       flag not set for hash %s\n", hinfo->name);
+        }
+        if (hinfo->verification_BE != hinfo->verification_LE) {
+            printf("ERROR: Flags marked as IMPL_CANONICAL_BOTH, but LE verification code %08x\n",
+                    hinfo->verification_LE);
+            printf("       does not match BE code %08x for hash %s\n",
+                    hinfo->verification_LE, hinfo->name);
+            exit(1);
+        }
+        if (hinfo->hashfn_native != hinfo->hashfn_bswap) {
+            printf("ERROR: Flags marked as IMPL_CANONICAL_BOTH, but different native and bswap\n");
+            printf("       implementation function pointers for hash %s\n", hinfo->name);
+            exit(1);
+        }
+    } else if (hinfo->verification_BE == hinfo->verification_LE) {
+        if (hinfo->hashfn_native != hinfo->hashfn_bswap) {
+            printf("WARNING: Hash not marked as IMPL_CANONICAL_BOTH, has differing implementations,\n");
+            printf("         but also has same verification code %08x for both LE and BE.\n", hinfo->verification_LE);
+            printf("         This is highly suspicious for %s\n", hinfo->name);
+        }
+    } else if (hinfo->verification_BE != 0) {
         const auto it_BE = hashcodes.find(hinfo->verification_BE);
         if (it_BE == hashcodes.end()) {
             hashcodes[hinfo->verification_BE] = hinfo;

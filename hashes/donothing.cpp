@@ -31,7 +31,7 @@
 static void DoNothingHash( const void * in, const size_t len, const seed_t seed, void * out ) {
 }
 
-template <uint32_t hashlen, bool bswap>
+template <uint32_t hashlen>
 static void DoNothingOAATHash( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint8_t *       data = (const uint8_t *)in;
     const uint8_t * const end  = &data[len];
@@ -100,8 +100,8 @@ REGISTER_HASH(donothingOAAT_32,
    $.bits = 32,
    $.verification_LE = 0x0,
    $.verification_BE = 0x0,
-   $.hashfn_native   = DoNothingOAATHash<32, false>,
-   $.hashfn_bswap    = DoNothingOAATHash<32, true>,
+   $.hashfn_native   = DoNothingOAATHash<32>,
+   $.hashfn_bswap    = DoNothingOAATHash<32>,
    $.sort_order      = 10
  );
 
@@ -115,8 +115,8 @@ REGISTER_HASH(donothingOAAT_64,
    $.bits = 64,
    $.verification_LE = 0x0,
    $.verification_BE = 0x0,
-   $.hashfn_native   = DoNothingOAATHash<64, false>,
-   $.hashfn_bswap    = DoNothingOAATHash<64, true>,
+   $.hashfn_native   = DoNothingOAATHash<64>,
+   $.hashfn_bswap    = DoNothingOAATHash<64>,
    $.sort_order      = 10
  );
 
@@ -130,7 +130,7 @@ REGISTER_HASH(donothingOAAT_128,
    $.bits = 128,
    $.verification_LE = 0x0,
    $.verification_BE = 0x0,
-   $.hashfn_native   = DoNothingOAATHash<128, false>,
-   $.hashfn_bswap    = DoNothingOAATHash<128, true>,
+   $.hashfn_native   = DoNothingOAATHash<128>,
+   $.hashfn_bswap    = DoNothingOAATHash<128>,
    $.sort_order      = 10
  );
