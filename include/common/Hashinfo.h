@@ -50,7 +50,6 @@
     FLAG_EXPAND(IMPL_ROTATE)                \
     FLAG_EXPAND(IMPL_ROTATE_VARIABLE)       \
     FLAG_EXPAND(IMPL_SHIFT_VARIABLE)        \
-    FLAG_EXPAND(IMPL_DIVIDE)                \
     FLAG_EXPAND(IMPL_MODULUS)               \
     FLAG_EXPAND(IMPL_ASM)                   \
     FLAG_EXPAND(IMPL_CANONICAL_LE)          \

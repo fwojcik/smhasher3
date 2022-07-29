@@ -149,7 +149,6 @@ REGISTER_HASH(floppsyhash,
    $.impl_flags =
          FLAG_IMPL_VERY_SLOW    |
          FLAG_IMPL_MULTIPLY     |
-         FLAG_IMPL_DIVIDE       |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
    $.verification_LE = 0x5F9F6226,
@@ -166,7 +165,6 @@ REGISTER_HASH(floppsyhash__old,
    $.impl_flags =
          FLAG_IMPL_VERY_SLOW    |
          FLAG_IMPL_MULTIPLY     |
-         FLAG_IMPL_DIVIDE       |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
    $.verification_LE = 0x644236D4,
