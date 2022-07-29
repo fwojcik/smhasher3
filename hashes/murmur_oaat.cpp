@@ -60,7 +60,6 @@ REGISTER_HASH(MurmurOAAT,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS  |
          FLAG_IMPL_MULTIPLY      |
-         FLAG_IMPL_SLOW          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
    $.verification_LE = 0x5363BD98,

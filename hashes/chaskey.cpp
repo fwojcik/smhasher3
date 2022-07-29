@@ -267,7 +267,6 @@ REGISTER_HASH(chaskey_12__32,
          FLAG_HASH_NO_SEED                |
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
-         FLAG_IMPL_SLOW                   |
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
@@ -288,7 +287,6 @@ REGISTER_HASH(chaskey_12__64,
          FLAG_HASH_NO_SEED                |
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
-         FLAG_IMPL_SLOW                   |
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
@@ -309,7 +307,6 @@ REGISTER_HASH(chaskey_12,
          FLAG_HASH_NO_SEED                |
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
-         FLAG_IMPL_SLOW                   |
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,

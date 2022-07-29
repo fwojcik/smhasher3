@@ -1401,7 +1401,6 @@ REGISTER_HASH(HalftimeHash_64,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
-         FLAG_IMPL_SLOW         |
          FLAG_IMPL_MULTIPLY     |
          FLAG_IMPL_ROTATE       |
          FLAG_IMPL_LICENSE_MIT,
@@ -1419,7 +1418,6 @@ REGISTER_HASH(HalftimeHash_128,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
-         FLAG_IMPL_SLOW         |
          FLAG_IMPL_MULTIPLY     |
          FLAG_IMPL_ROTATE       |
          FLAG_IMPL_LICENSE_MIT,
@@ -1437,7 +1435,6 @@ REGISTER_HASH(HalftimeHash_256,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
-         FLAG_IMPL_SLOW         |
          FLAG_IMPL_MULTIPLY     |
          FLAG_IMPL_ROTATE       |
          FLAG_IMPL_LICENSE_MIT,
@@ -1455,7 +1452,6 @@ REGISTER_HASH(HalftimeHash_512,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
-         FLAG_IMPL_SLOW         |
          FLAG_IMPL_MULTIPLY     |
          FLAG_IMPL_ROTATE       |
          FLAG_IMPL_LICENSE_MIT,

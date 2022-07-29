@@ -209,7 +209,6 @@ REGISTER_HASH(perl_jenkins_hard,
    $.hash_flags =
          0,
    $.impl_flags =
-         FLAG_IMPL_SLOW           |
          FLAG_IMPL_LICENSE_GPL3,
    $.bits = 32,
    $.verification_LE = 0x1C216B25,
