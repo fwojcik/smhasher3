@@ -754,6 +754,7 @@ REGISTER_FAMILY(nmhash,
 REGISTER_HASH(NMHASH,
    $.desc       = "nmhash32 v2",
    $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE   |
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_TYPE_PUNNING   |
@@ -771,6 +772,7 @@ REGISTER_HASH(NMHASH,
 REGISTER_HASH(NMHASHX,
    $.desc       = "nmhash32x v2",
    $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE   |
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_TYPE_PUNNING   |

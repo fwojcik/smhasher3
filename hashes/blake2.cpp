@@ -225,6 +225,7 @@ REGISTER_HASH(blake2b_256,
    $.desc       = "BLAKE 2b, 256-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -244,6 +245,7 @@ REGISTER_HASH(blake2b_224,
    $.desc       = "BLAKE 2b, 224-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -263,6 +265,7 @@ REGISTER_HASH(blake2b_160,
    $.desc       = "BLAKE 2b, 160-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -282,6 +285,7 @@ REGISTER_HASH(blake2b_128,
    $.desc       = "BLAKE 2b, 128-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -301,6 +305,7 @@ REGISTER_HASH(blake2b_256__64,
    $.desc       = "BLAKE 2b, 256-bit digest, bits 0-63",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -320,6 +325,7 @@ REGISTER_HASH(blake2s_256,
    $.desc       = "BLAKE 2s, 256-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -339,6 +345,7 @@ REGISTER_HASH(blake2s_224,
    $.desc       = "BLAKE 2s, 224-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -358,6 +365,7 @@ REGISTER_HASH(blake2s_160,
    $.desc       = "BLAKE 2s, 160-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -377,6 +385,7 @@ REGISTER_HASH(blake2s_128,
    $.desc       = "BLAKE 2s, 128-bit digest",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -396,6 +405,7 @@ REGISTER_HASH(blake2s_256__64,
    $.desc       = "BLAKE 2s, 256-bit digest, bits 0-63",
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
          FLAG_HASH_NO_SEED,
    $.impl_flags =

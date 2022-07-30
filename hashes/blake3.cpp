@@ -628,6 +628,7 @@ REGISTER_HASH(blake3,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_NO_SEED              |
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
          FLAG_IMPL_LICENSE_MIT          |

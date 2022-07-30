@@ -466,8 +466,7 @@ REGISTER_HASH(CLhash__bitmix,
    $.hash_flags =
          FLAG_HASH_CLMUL_BASED      |
          FLAG_HASH_LOOKUP_TABLE     |
-         FLAG_HASH_NO_SEED          |
-         FLAG_HASH_SYSTEM_SPECIFIC,
+         FLAG_HASH_NO_SEED          ,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64   |
          FLAG_IMPL_LICENSE_GPL3,
@@ -484,8 +483,7 @@ REGISTER_HASH(CLhash,
    $.hash_flags =
          FLAG_HASH_CLMUL_BASED      |
          FLAG_HASH_LOOKUP_TABLE     |
-         FLAG_HASH_NO_SEED          |
-         FLAG_HASH_SYSTEM_SPECIFIC,
+         FLAG_HASH_NO_SEED          ,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64   |
          FLAG_IMPL_LICENSE_GPL3,

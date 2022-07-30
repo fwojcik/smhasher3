@@ -388,6 +388,7 @@ REGISTER_HASH(CRC_32C,
    $.desc       = "CRC32-C (Castagnoli, 0x1EDC6F41 / 0x82F63B78)",
    $.hash_flags =
          FLAG_HASH_CRC_BASED          |
+         FLAG_HASH_LOOKUP_TABLE       |
          FLAG_HASH_ENDIAN_INDEPENDENT |
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =

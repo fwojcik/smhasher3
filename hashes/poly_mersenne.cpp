@@ -171,6 +171,7 @@ REGISTER_FAMILY(poly_mersenne,
 REGISTER_HASH(poly_mersenne__deg1,
    $.desc       = "Degree 1 Hashing mod 2^61-1",
    $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
