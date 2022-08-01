@@ -136,7 +136,7 @@ static FORCE_INLINE bool isLE(void) { return true; }
 static FORCE_INLINE bool isBE(void) { return false; }
 
 // Threading includes and global state
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS)
   #include <thread>
   extern unsigned g_NCPU;
 #else
@@ -190,7 +190,7 @@ static FORCE_INLINE uint16_t GET_U16(const uint8_t * b, const uint32_t i) {
 }
 
 template < bool bswap >
-static FORCE_INLINE void PUT_U16(uint16_t n, uint8_t * b, const uint16_t i) {
+static FORCE_INLINE void PUT_U16(uint16_t n, uint8_t * b, const uint32_t i) {
     n = COND_BSWAP(n, bswap);
     memcpy(&b[i], &n, 2);
 }
@@ -214,7 +214,7 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
 // detection, but I can't find a reliable way of checking if "-DDEBUG"
 // will be passed to the compiler.
 
-#ifdef DEBUG
+#if defined(DEBUG)
   #include <cassert>
 
   #undef assume
@@ -227,20 +227,25 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
 #else
   static void warn_if(bool x, const char * s, const char * fn, uint64_t ln) {
       if (!x) {
-          printf("Statement %s is not true: %s:%ld\n", s, fn, ln);
+          printf("Statement %s is not true: %s:%" PRId64 "\n", s, fn, ln);
       }
   }
   #define verify(x) warn_if(x, #x, __FILE__, __LINE__)
 #endif
 
 //-----------------------------------------------------------------------------
-// Instruction-set architecture availability
+// Instruction-set architecture header detection, for internal use only
 
 /* #undef HAVE_ARM_NEON */
 /* #undef HAVE_ARM_ACLE */
 #define HAVE_IMMINTRIN
 /* #undef HAVE_AMMINTRIN */
 #define HAVE_X86INTRIN
+
+//-----------------------------------------------------------------------------
+// Instruction-set architecture and platform feature availability
+
+/* #undef HAVE_32BIT_PLATFORM */
 
 #define HAVE_SSE_2
 #define HAVE_SSSE_3
