@@ -81,6 +81,7 @@ How to use
   each run test suite using an extended set of tests
 - `./SMHasher3 <hashname> --ncpu=1` will test the given hash with the default set of
   test suites, using only a single thread
+- `./SMHasher3 --help` will show many other usage options
 
 Note that a hashname specified on the command-line is looked up via case-insensitive
 search, so you do not have to precisely match the names given from the list of
@@ -134,13 +135,13 @@ greater than 1, the exponent is always negative), and finally reported as "^ 3".
 
 This means that, in general, a true RNG would have about twice as many ^4 results as
 ^5 results, and twice as many ^3 results as ^4 results, and so on. However, many of
-the statistical formulas used by SMHasher3 only produce *bounds* on the result
+the statistical formulas used by SMHasher3 only produce **bounds** on the result
 probabilities, and sometimes those bounds are not very tight and/or get significantly
 worse for higher-likelihood results. The formulas used were typically chosen for
 greater accuracy in failure / long-tail cases.  Further, some tests are very unlikely
 to get even a single "hit", and so a result of zero hits can't really give a precise
 p-value. For those reasons and more, you should expect to see more lower numbers than
-the power-of-2 relationship would imply, and you will see *many* more ^0 results than
+the power-of-2 relationship would imply, and you will see _many_ more ^0 results than
 you would expect mathematically.
 
 When a test supports reporting on p-values, they are the only numbers used by
@@ -181,9 +182,8 @@ SMHasher code. Here are some runtime comparisons on my system (AMD Ryzen 9 3950X
 or 4 isolated CPUs, all with boost disabled and pinned to 3500 MHz for timing
 consistency, gcc 9.3, Slackware 14.2):
 
-|             | 1 CPU                       ||| 4 CPUs                      |||
 | Test Name   | SMHasher  | SMHasher3 | Delta | SMHasher  | SMHasher3 | Delta |
-|:-----------:|----------:|----------:|:-----:|----------:|----------:|:-----:|
+|:------------|----------:|----------:|:-----:|----------:|----------:|:-----:|
 | BadSeeds    |      996s |      311s |  -69% |     1194s |       78s |  -93% |
 | Window      |      935s |      341s |  -64% ||||
 | Avalanche   |      720s |       92s |  -87% |      810s |       23s |  -97% |
@@ -202,6 +202,10 @@ consistency, gcc 9.3, Slackware 14.2):
 | Seed        |        5s |        7s |  +40% ||||
 | Sanity      |        3s |       <1s |  -90% ||||
 
+Since Gitlab's flavor of markdown only supports one header row, the first 3 columns
+of numbers are for 1 CPU, and the last 3 columns are for 4 CPUs on tests which
+support threading in SMHasher3.
+
 The SMHasher results are somewhat confusing. The BadSeeds test is threaded but takes
 more wall clock time than the unthreaded version. I attribute this to a large amount
 of system CPU time that the threaded version takes that the unthreaded version
@@ -216,7 +220,7 @@ all. There are some significant gains to be had in the BIC test in particular. O
 code could also be made to use threading profitably. I should get to those things
 before beta2.
 
-*By far*, the most important code which I have not yet been able to optimize is the
+**By far**, the most important code which I have not yet been able to optimize is the
 histogram code in `TestDistribution()` in `util/Analyze.cpp`.
 
 Goals and non-goals
@@ -442,7 +446,7 @@ option) any later version.
 I would prefer to have the above information in LICENSE, but Gitlab
 offers no way to manually set an advertised license, and so I need
 to rely on its auto-detection to find "GPL3" (which is at least
-closest to reality), so it lives here instead. :-/
+closest to reality), so it lives here instead. `:-/`
 
 The original SMHasher's README says:
 

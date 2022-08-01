@@ -1,3 +1,5 @@
+[[_TOC_]]
+
 Some notes on hashes
 ====================
 
@@ -6,7 +8,7 @@ Terminology
 
 SMHasher3 makes an important distinction between hashes and their implementations.
 
-What SMHasher3 refers to as a *hash* is a defined mapping of inputs, which are an
+What SMHasher3 refers to as a **hash** is a defined mapping of inputs, which are an
 arbitrary-length series of bytes and (optionally) other "seed" data of either
 variable or fixed length, to outputs, which are a fixed-length series of bytes. A
 hash is therefore a sort of abstract, mathematical specification, unrelated to
@@ -16,13 +18,13 @@ series of closely-related hashes, each with a different fixed-length output.
 A hash may or may not have a formal specification. It may be that a hash is only
 specified by the code that was used to implement it.
 
-A *hash implementation* is a particular set of code that calculates the hash. A hash
-can have many different implementations, as long as they all produce the same results
-for the same inputs. A given hash implementation can also have a variety of code
-paths for different systems, as long as it always produces the same results.
+A **hash implementation** is a particular set of code that calculates the hash. A
+hash can have many different implementations, as long as they all produce the same
+results for the same inputs. A given hash implementation can also have a variety of
+code paths for different systems, as long as it always produces the same results.
 
-A *hash family* is simply a group of similar hashes, whose implementations may or may
-not have been written by the same author(s).
+A **hash family** is simply a group of similar hashes, whose implementations may or
+may not have been written by the same author(s).
 
 Hash naming scheme
 ------------------
@@ -80,66 +82,66 @@ may not be able to or it may make sense to create an exception to them.
 
 Here are some concrete examples of sets of hash names:
 - MD5, MD5.32, MD5.64
--- "MD5" is the official name of the hash, so that is the first part.
--- There is only 1 valid bit-width output, so there is no second part.
--- There are two different variants which only truncate the ouput; for those, they
-   keep the same name as the full-width hash, followed by a dot and then their
-   truncated width in bits.
+   - "MD5" is the official name of the hash, so that is the first part.
+   - There is only 1 valid bit-width output, so there is no second part.
+   - There are two different variants which only truncate the ouput; for those, they
+     keep the same name as the full-width hash, followed by a dot and then their
+     truncated width in bits.
 - RIPEMD-128, RIPEMD-160, RIPEMD-256
--- "RIPEMD" is the official name of the hash, so that is the first part.
--- It has 3 different possible output widths, so the second part is a dash followed
-   by the particular width for that hash
--- There are no variants of these hashes, so no name has a dot.
+   - "RIPEMD" is the official name of the hash, so that is the first part.
+   - It has 3 different possible output widths, so the second part is a dash followed
+     by the particular width for that hash
+   - There are no variants of these hashes, so no name has a dot.
 - CLhash, CLhash.bitmix
--- "CLhash" is the way the author writes the hash name, so that is the first part.
--- It only comes in one output width, so there is no second part.
--- There is a "BITMIX" #define option that can be enabled. It seems that the version
-   without this enabled is the more default/official version, so the implementation
-   with that enabled has a dot followed by the name of variation.
+   - "CLhash" is the way the author writes the hash name, so that is the first part.
+   - It only comes in one output width, so there is no second part.
+   - There is a "BITMIX" #define option that can be enabled. It seems that the version
+     without this enabled is the more default/official version, so the implementation
+     with that enabled has a dot followed by the name of variation.
 - prvhash-64. prvhash-64.incr, prvhash-128, prvhash-128.incr
--- "prvhash" and "PRVHASH" are both how the author writes the hash name; I chose the
-   lower-case version.
--- The specific hash version (v4.3) is not a whole number, and so is not reflected in
-   the first part. It is mentioned in the description string.
--- It has two possible output widths, 64 and 128 bits. These are placed after the
-   first part and are preceeded by a dash.
--- Each of those also has two variations: the one-shot hash function and the
-   streaming/incremental version. Since these produce different hash results, both
-   must be testable. The one-shot versions of hashes are more commonly used, so that
-   has no third part suffix, as it can be considered the "default" version. The
-   incremental version has a suffix of ".incr".
+   - "prvhash" and "PRVHASH" are both how the author writes the hash name; I chose the
+     lower-case version.
+   - The specific hash version (v4.3) is not a whole number, and so is not reflected in
+     the first part. It is mentioned in the description string.
+   - It has two possible output widths, 64 and 128 bits. These are placed after the
+     first part and are preceeded by a dash.
+   - Each of those also has two variations: the one-shot hash function and the
+     streaming/incremental version. Since these produce different hash results, both
+     must be testable. The one-shot versions of hashes are more commonly used, so
+     that has no third part suffix, as it can be considered the "default"
+     version. The incremental version has a suffix of ".incr".
 - mum1.exact.unroll1, mum1.exact.unroll2, mum1.exact.unroll3, mum1.exact.unroll4,
   mum1.inexact.unroll1, mum1.inexact.unroll2, mum1.inexact.unroll3, mum1.inexact.unroll4
--- "mum" and "mum-hash" are both ways the author writes the hash name; I chose the
-   shorter one due to hash name length limits.
--- There are 3 different versions of mum-hash. These version numbers could be part of
-   the hash name, or could be considered variants. As the author refers to them like
-   "MUM_V1", I chose to make it part of the hash name. As above, the "v" is dropped,
-   so the first part just becomes "mum1".
--- The hash only comes in one bit width, so there is no second part.
--- There are two independent variations on the hash. The first is a choice of either
-   exact or inexact 64x64->128 integer multiplication. The code refers to this as
-   "strict" or not. I chose the "exact" terminology because it describes the
-   difference somewhat better, because there didn't seem to be a more correct or
-   default version, and because the author did not use a term to describe the
-   non-"strict" variant. So either ".exact" or ".inexact" is appended to the first
-   part of the name.
--- The second variation is how many times a core loop is unrolled. Changes like that
-   which are done only for performance would not have separately testable
-   variants. In this unusual case, mum-hash actually gives different hash results
-   depending on the choice of unroll factor, so this choice must be given to the
-   user. Since this is totally orthogonal to the choice of exact/inexact, it is
-   further appended to name with a dot.
+   - "mum" and "mum-hash" are both ways the author writes the hash name; I chose the
+     shorter one due to hash name length limits.
+   - There are 3 different versions of mum-hash. These version numbers could be part of
+     the hash name, or could be considered variants. As the author refers to them like
+     "MUM_V1", I chose to make it part of the hash name. As above, the "v" is dropped,
+     so the first part just becomes "mum1".
+   - The hash only comes in one bit width, so there is no second part.
+   - There are two independent variations on the hash. The first is a choice of either
+     exact or inexact 64x64->128 integer multiplication. The code refers to this as
+     "strict" or not. I chose the "exact" terminology because it describes the
+     difference somewhat better, because there didn't seem to be a more correct or
+     default version, and because the author did not use a term to describe the
+     non-"strict" variant. So either ".exact" or ".inexact" is appended to the first
+     part of the name.
+   - The second variation is how many times a core loop is unrolled. Changes like that
+     which are done only for performance would not have separately testable
+     variants. In this unusual case, mum-hash actually gives different hash results
+     depending on the choice of unroll factor, so this choice must be given to the
+     user. Since this is totally orthogonal to the choice of exact/inexact, it is
+     further appended to name with a dot.
 - mx3.v1, mx3.v2
--- "mx3" is how the author refers to this hash.
--- The version numbers are strictly whole numbers. Ordinarily, this would mean they
-   should be included in the first part of the name. However, because the "v" prefix
-   should be dropped, this would make the names look like "mx31" and "mx32", which
-   would be extremely confusing. So the versions were made into variants instead. The
-   "v" prefix makes sense to include here because it fundamentally does describe the
-   nature of the variation, and it must begin with a letter in this case anyway.   
--- This reflects that these naming conventions are not totally strict. Exceptions can
-   be made as human-friendliness requires.
+   - "mx3" is how the author refers to this hash.
+   - The version numbers are strictly whole numbers. Ordinarily, this would mean they
+     should be included in the first part of the name. However, because the "v" prefix
+     should be dropped, this would make the names look like "mx31" and "mx32", which
+     would be extremely confusing. So the versions were made into variants instead. The
+     "v" prefix makes sense to include here because it fundamentally does describe the
+     nature of the variation, and it must begin with a letter in this case anyway.
+   - This reflects that these naming conventions are not totally strict. Exceptions can
+     be made as human-friendliness requires.
 
 Names are registered with SMHasher3 via calls to `REGISTER_HASH(hashname, ....)`. The
 hash names provided to `REGISTER_HASH()` and `REGISTER_FAMILY()` must be valid C++
@@ -175,7 +177,7 @@ that top-level API call as not implementing only one hash, and so it should not 
 directly implemented here. Instead, every individual hash (mapping of inputs to
 outputs) behind that API call should be implemented separately in SMHasher3, even if
 they are never intended for direct consumption. SMHasher3 refers to those hashes as
-*hash components*. Examples of this are in MUM-hash, and some FarmHash and t1ha
+**hash components**. Examples of this are in MUM-hash, and some FarmHash and t1ha
 hashes.
 
 Another example where this matters is in hashes with separate functions for

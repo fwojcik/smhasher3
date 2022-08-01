@@ -1,3 +1,5 @@
+[[_TOC_]]
+
 Adding a hash function to SMHasher3
 ===================================
 
@@ -66,7 +68,7 @@ definition in `include/common/Hashinfo.h`. If you are not sure which one is best
 just choose `HashFamilyInfo::SRC_UNKNOWN`.
 
 Here's what the file might look like after this step:
-```
+```cpp
 /*
  * WackyHash
  * Copyright (C) 2022 Robin Smith
@@ -139,7 +141,7 @@ Running thread-safety test 2 .......... PASS
 ```
 
 Unsurprisingly, it doesn't do well at all. You probably want your hash to be more
-sophisticated than "just return a constant". :)  So how should you do that?
+sophisticated than "just return a constant". `:)`  So how should you do that?
 
 Coding a hash function, the basics (short version)
 ==================================================
@@ -150,27 +152,27 @@ found below or in other README files in `hashes/`.
 
 - All code will be compiled as C++11 only. ASM statements in them are OK.
 - Fixed-width integer types are guaranteed to be available.
--- They _must_ be used to hold input and output data as well as intermediate hash
-   values.
--- They should be used generally.
+   - They **must** be used to hold input and output data as well as intermediate hash
+     values.
+   - They should be used generally.
 - Hash implementations are passed the seed value as a `seed_t`.
--- The most common way of using that is to simply cast it to a `uint64_t` and treat
-   it like any usual integer seed.
--- More complex seeding scenarios are covered in `README.advancedtopics.md`.
+   - The most common way of using that is to simply cast it to a `uint64_t` and treat
+     it like any usual integer seed.
+   - More complex seeding scenarios are covered in `README.advancedtopics.md`.
 - Always use SMHasher3's `GET_U`* and `PUT_U`* functions to convert between data in
   memory and integers.
 - Always use SMHasher3's integer-rotation, popcount, clz, and byteswapping functions.
--- They are documented below. Don't reimplement them for your hash. Do wrap them if
-   you like.
--- Never pass invalid values to these functions.
+   - They are documented below. Don't reimplement them for your hash. Do wrap them if
+     you like.
+   - Never pass invalid values to these functions.
 - If your hash wants intrinsics, just `#include "Instrinsics.h"`. It handles x86-64,
   ARM, and PPC already.
--- Vector byteswapping routines are also made available.
--- If it doesn't meet your needs, please enhance it so it can be used for everyone.
--- For more on intrinsics, including AES intrinsics, see `README.advancedtopics.md`.
+   - Vector byteswapping routines are also made available.
+   - If it doesn't meet your needs, please enhance it so it can be used for everyone.
+   - For more on intrinsics, including AES intrinsics, see `README.advancedtopics.md`.
 - If your hash wants extended-length integer multiplication and/or addition, use
   `#include "Mathmult.h"` and the functions inside it.
--- More details are in `README.advancedtopics.md`.
+   - More details are in `README.advancedtopics.md`.
 - Headers for `std::vector`, `std::set`, `printf()`, and `memcpy()` are already
   `#include`d.
 
@@ -200,8 +202,8 @@ then there are further restrictions described in `CONTRIBUTING.md`. Importantly,
 means a portable, standard C++-only implementation must be available, with other
 implementations being optional.
 
-Use of intrinsic/vector instructions, and routines for extended-length integer
-operations, are covered in `README.advancedtopics.md`.
+Use of intrinsic/vector instructions and routines for extended-length integer
+operations are covered in `README.advancedtopics.md`.
 
 Fixed-width integers
 --------------------
@@ -216,7 +218,7 @@ available to them:
 If the compiler supports 128-bit integers, then `int128_t` and `uint128_t` will also
 exist, and the preprocessor token `HAVE_INT128` will be defined.
 
-These fixed-width types should be used generally, and *must* be used to hold input
+These fixed-width types should be used generally, and **must** be used to hold input
 and output data as well as intermediate hash values. This will avoid having
 different hash results on different platforms, where things like `int` can have
 different sizes and `char` may or may not be signed.
@@ -249,11 +251,11 @@ issues. If those statements are not correct for a hash you are implementing, the
 will need to also read the appropriate non-basic sections in
 `hashes/README.latersteps.md`.
 
-Either way, it's simplest and best to start with *always* using SMHasher3's functions
+Either way, it's simplest and best to start with _always_ using SMHasher3's functions
 to convert between data in memory and integer values, and use them only in
-native-endianness mode (as shown, with the "false" template parameter) and don't
+native-endianness mode (as shown, with the `false` template parameter) and don't
 worry about any endianness issues or further use of C++ templates until later:
-```
+```cpp
 uint64_t GET_U64<false>(const uint8_t * b, const uint32_t i);
 uint32_t GET_U32<false>(const uint8_t * b, const uint32_t i);
 uint16_t GET_U16<false>(const uint8_t * b, const uint32_t i);
@@ -268,7 +270,7 @@ pointer, and `n` is the integer value to write. The offset parameter is there to
 you write clearer code, in case separating a base pointer from its offset helps with
 that. You are perfectly free to move your base pointer and have the offset always be
 0. In other words, the following code snippets are functionally identical:
-```
+```cpp
 uint64_t result_1, result_2;
 uint8_t * ptr;
 

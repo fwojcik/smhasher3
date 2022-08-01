@@ -2,6 +2,8 @@ This document covers things that only become required when you are done developi
 your hash or when you are implementing an existing hash. It starts with a crash
 course on templates, which you can easily skip if you are already familiar with them.
 
+[[_TOC_]]
+
 C++ templates
 =============
 
@@ -27,7 +29,7 @@ feature never seemed especially compelling when presented that way. However,
 templating can also be used on values! And that is generally how SMHasher3 uses it.
 
 In C and C++, you could have a simple function that looks like:
-```
+```cpp
 int adder4(int input) {
     return input + 4;
 }
@@ -36,12 +38,12 @@ int adder4(int input) {
 When that gets compiled into an object file, it typically will contain a machine-code
 version of that function listed under its name "adder4". When you want to use that
 function, you just call it:
-```
+```cpp
 newnumber = adder4(number);
 ```
 
 If we make that function a template instead:
-```
+```cpp
 template <int value>
 int adder(int input) {
     return input + value;
@@ -54,12 +56,11 @@ link against.
 
 The things between the chevrons (`<` and `>` symbols) are called the template
 parameters. A _lot_ of fancy things can be done there, but all that matters right now
-is that it can contain a list of variable declarations. There can also be default
-values given for those variables.
+is that it can contain a list of variable declarations.
 
 The way to create a function from the template is simply to invoke it using some
 values as its template parameter(s):
-```
+```cpp
 newnumber = adder<4>(number);
 ```
 
@@ -74,7 +75,7 @@ be compiled for each different one. `adder<4>` and `adder<6>` would be completel
 different functions.
 
 This can be extended into other things, like byteswapping:
-```
+```cpp
 template <bool bswap>
 static uint64_t wordsum( const uint32_t * in, const size_t count ) {
     const uint32_t * const end = &in[count];
@@ -97,13 +98,13 @@ uint64_t sum2 = wordsum<true>(ptr, 128);
 ```
 
 Now `wordsum` will be compiled twice, once with `bswap == true` and once with `bswap
-== false`. For each of those, the compiler will optimize out the `if()` statement
-since its conditional will be a constant, and so both `wordsum<false>` and
-`wordsum<true>` will be just as fast as if they were coded as two separate
-functions. But this pattern keeps it easy to see that they only differ in one way:
-whether or not the input words are byteswapped. And now if `wordsum` is modified,
-perhaps to become a more sophisticated data mixing function, then both copies will
-automatically change in sync.
+== false`. For each of those, the compiler will almost certainly optimize out the
+`if()` statement since its conditional will be a constant, making both
+`wordsum<false>` and `wordsum<true>` will be just as fast as if they were coded as
+two separate functions. But this pattern keeps it easy to see that they only differ
+in one way: whether or not the input words are byteswapped. And now if `wordsum` is
+modified, perhaps to become a more sophisticated data mixing function, then both
+copies will automatically change in sync.
 
 Use of template parameters isn't limited to `if()` statements either. Imagine a
 function with a template parameter controlling how many times a loop is unrolled, or
@@ -113,12 +114,12 @@ As you may have guessed, though, this means that any values used as template
 parameters must be known at compile-time (the `constexpr` keyword is often used for
 this). There is no C++-compiler being shipped inside your program's binary, so there
 is no way to do something like:
-```
+```cpp
 newnumber = adder<incr>(number);
 ```
 
 The closest you can get is something like:
-```
+```cpp
 int wrapper(int value, int input) {
      if (value == 2) { return adder<2>(input); }
      if (value == 11) { return adder<11>(input); }
@@ -127,9 +128,9 @@ int wrapper(int value, int input) {
 ```
 
 The other limitation of function templates that is good to know about is that every
-part of the function template must compile, even if it ends up not being used. This
-mostly comes up when templating on types. For example:
-```
+part of the function template must compile, even if it can never be used. This mostly
+comes up when templating on types. For example:
+```cpp
 template <typename T>
 static void function() {
     const T C1  = (sizeof(T) == 4) ? UINT32_C(2166136261) :
@@ -139,7 +140,7 @@ static void function() {
 ```
 
 In the case where `T` is `uint32_t`, this will look like:
-```
+```cpp
     const uint32_t C1  = (sizeof(uint32_t) == 4) ? UINT32_C(2166136261) :
                                                    UINT64_C(0xcbf29ce484222325);
 ```
@@ -221,8 +222,8 @@ I may eventually convert these blocks to the [C++ Named Parameter
 Idiom](https://isocpp.org/wiki/faq/ctors#named-parameter-idiom), but I'm not sure
 that will produce an acceptably readable result. We shall see.
 
-Most of those are self-explanatory and/or covered in more detail elsewhere in these
-READMEs. The verification codes and flags are covered next.
+Most of those fields are self-explanatory and/or covered in more detail elsewhere in
+these READMEs. The verification codes and flags are covered next.
 
 Hash verification codes
 -----------------------
@@ -386,9 +387,9 @@ the values around the two largest obvious gaps. I was also not super-strict in
 following the cutoff values when assigning flags.
 
 The particular choices of which mathematical features to call out were made according
-to those which can be more expensive (sometimes *much* more) on CPUs which aren't the
-more popular general-computing platforms. Yes, even some not-that-old embedded
-systems can have expensive rotation or non-constant shifts.
+to those which can be more expensive (sometimes **much** more expensive) on CPUs
+which aren't the more popular general-computing platforms. Yes, even some
+not-that-old embedded systems can have expensive rotation or non-constant shifts.
 
 The licensing flags are not authoritative. This means that the license terms in the
 file override the license flag. If they disagree, the license terms in the file take
@@ -435,7 +436,7 @@ endianness.
 
 To give a concrete example of this, here is some code, and its output on a
 little-endian and big-endian system:
-```
+```cpp
 // An arbitrary function that does some complicated math on an integer
 uint32_t scramble(uint32_t var) {
     var *= 0xc0c2caeb;
@@ -499,15 +500,16 @@ Byteswapped mode
 ```
 
 In both cases, the "byteswapped" mode computed exactly the same results as the
-opposite-endianness system, and all that needed to be done was alter the byteswapping
-parameter of `GET_U32`; no other part of the hash had to change.
+opposite-endianness system, and **all that needed to be done was alter the
+byteswapping parameter of `GET_U32`; no other part of the "hash" had to change**.
 
 Since the SMHasher3 API has hash implementations write out their hashes to a byte
-stream, then in the common case where non-cryptographic hash implementations simply
-want to write out the bytes of their hash in system-native byteorder (since they care
-about speed and don't really care about endianness), that means that it is almost
-always the case that when reading input data from memory requires byteswapping so
-will byteswapping need to happen when writing the output hash to memory.
+stream, then **in the common case** where non-cryptographic hash implementations
+simply want to write out the bytes of their hash in system-native byteorder (since
+they care about speed and don't really care about endianness), that means that it is
+almost always the case that **when reading input data from memory requires
+byteswapping so will byteswapping need to happen when writing the output hash to
+memory**.
 
 Some exceptions to all of this are covered later.
 
@@ -523,7 +525,7 @@ If you've been using following the previous advice and using the `GET_U`* and
 using them in native-endianness mode, then about 90% of this task will be very
 straightforward. Let's say you finished coding `WackyHash64` and your code looks
 something like this:
-```
+```cpp
 static uint64_t wackyhash_full_block( const uint8_t * data, const myhash_seedtable_t * table ) {
 ......
     const __m256i * xdata = (const __m256i *)data;
@@ -568,7 +570,7 @@ The next thing to do is to just find all of the places where you put `false` in 
 `GET_U`* and `PUT_U`* function template parameters and put in the `bswap` template
 parameter from your top-level function. You might have to carry that parameter
 through your other intermediate functions, though. Doing that looks like:
-```
+```cpp
 template <bool bswap>
 static uint64_t wackyhash_full_block( const uint8_t * data, const myhash_seedtable_t * table ) {
 ......
@@ -625,7 +627,7 @@ Some important things to note:
 - Data that was loaded bytewise (the `*ptr++` line in `WackyHash64`) did not need to
   be converted
 - Even though some of the input bytestream data was treated as 32-bit words and some
-  as 64-bit words, that had no impact on how byteswapping happened. This is because
+  as 64-bit words, that had no impact on when byteswapping happened. This is because
   this change-in-reading didn't depend on endianness or the data read, only the
   length of the input data.
 - Since we kept the function declaration from the `EXAMPLE` file and already
@@ -647,21 +649,24 @@ implementations are also available; see `hashes/README.advancedtopics.md`.
 
 There is also a macro called `COND_BSWAP()` which provides a little syntactic sugar
 for the somewhat common pattern of:
-```
+```cpp
 if (some_condition) {
     output = BSWAP(input);
 } else {
     output = input;
 }
 ```
-That code could become: `output = COND_BSWAP(input, some_condition);`
+That code could become:
+```cpp
+output = COND_BSWAP(input, some_condition);
+```
 
 Just in case your code needs to know if it is running on a big-endian or
 little-endian platform, SMHasher3 provides two utility functions for that: `isLE()`
 and `isBE()`, which return `true` for little-endian or big-endian platforms
-respectively. Since run-time endianness detection is explicitly supported, those
-functions' outputs cannot be known at compile-time, and so cannot be used in
-`constexpr` expressions.
+respectively, and `false` otherwise. Since run-time endianness detection is
+explicitly supported, those functions' outputs cannot be known at compile-time, and
+so cannot be used in `constexpr` expressions.
 
 More complex endianness scenarios
 ---------------------------------
@@ -670,7 +675,7 @@ Here are some cases where trickier bytewswapping requirements might sneak in:
 
 - Hashes which use fancy ways to read the tail of the input which can be a less than
   a "block" of data. The original code might look like:
-  ```
+  ```cpp
   // Reads the last 1-7 bytes.
   // This deliberately reads beyond the end of the input buffer.
   lastblk = (*(uint64_t *)inptr) & ((1ULL << (len * 8)) - 1);
@@ -678,7 +683,7 @@ Here are some cases where trickier bytewswapping requirements might sneak in:
   This code stealthily assumes that the first byte of data at `inptr` will appear in
   the low byte of `(*(uint64_t *)inptr)`, which won't be true on big-endian
   systems. This code would then need to become something like:
-  ```
+  ```cpp
   // Reads the last 1-7 bytes.
   // This deliberately reads beyond the end of the input buffer.
   if (isLE() ^ bswap) {
@@ -696,7 +701,7 @@ Here are some cases where trickier bytewswapping requirements might sneak in:
 
 - A hash that specifies that its output must always be given in a specific
   byte-ordering. That would need code which might look like:
-  ```
+  ```cpp
     // Always write in big-endian byte ordering
     if (isLE()) {
         PUT_U64<true>(h, (uint8_t *)out, 0);
@@ -705,12 +710,12 @@ Here are some cases where trickier bytewswapping requirements might sneak in:
     }
   ```
   or possibly
-  ```
+  ```cpp
     h = COND_BSWAP(h, isLE());
     PUT_U64<false>(h, (uint8_t *)out, 0);
   ```
   if you don't mind modifying `h`, or even:
-  ```
+  ```cpp
     PUT_U64<false>(COND_BSWAP(h, isLE()), (uint8_t *)out, 0);
   ```
   You can use whichever you find least confusing. Note that `isLE()` is NOT
@@ -743,7 +748,7 @@ Here are some cases where trickier bytewswapping requirements might sneak in:
 
 - A hash that writes a larger bit-width output composed of smaller bit-width
   chunks. For example, here is a 64-bit hash written from two 32-bit integers:
-  ```
+  ```cpp
   PUT_U32<bswap>(hash_hi, out, isBE() ^ bswap ? 0 : 4);
   PUT_U32<bswap>(hash_lo, out, isBE() ^ bswap ? 4 : 0);
   ```
@@ -761,7 +766,7 @@ Here are some cases where trickier bytewswapping requirements might sneak in:
 
 - Self-test or other data that is stored as integers but should be interpreted as a
   bytestream. The fixed code might look like:
-  ```
+  ```cpp
   uint64_t testresults[] = { UINT64_C(0xc87202ecbb28df5d), ..... };
   uint8_t expected[8];
   .....

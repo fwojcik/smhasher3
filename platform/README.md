@@ -1,4 +1,7 @@
-# Why do pre-build header generation?
+[[_TOC_]]
+
+Why do pre-build header generation?
+===================================
 
 It is a sad fact that a good deal of very valuable functionality in
 C++ is not (yet?) usable in any standard way, but instead is put
@@ -56,7 +59,8 @@ some showstopping problem or incompatibility with it crops up, then I
 won't reject the option of some other approach.
 
 
-# How does pre-build header generation work?
+How does pre-build header generation work?
+==========================================
 
 findVariant() is the CMake function that actually performs this
 logic. It tests a series of possible implementations of some given
@@ -76,6 +80,8 @@ fallback implementation will be non-functional in some regard. For
 example, a fallback could be "#define assume(x)", which just removes
 anything in "assume(...)".
 
+A `findVariant()` example walkthrough
+-------------------------------------
 
 To explain how findVariant() works, the example of "findVariant(FOO)"
 will be used.
@@ -137,8 +143,8 @@ run-time testing, since it may be that in the future we add the
 requirement that the resulting binary return success on the native
 platform iff cross-compilation is not being done.
 
-
-# Where did the variants come from?
+Where did the variants come from?
+=================================
 
 All of the non-trivial code in the platform/*.h files is based on code
 from one of three places:
@@ -147,8 +153,8 @@ from one of three places:
   - Portable snippets [https://github.com/nemequ/portable-snippets]
   - FFT [https://github.com/NFFT/nfft]
 
-
-# Why and how are the detection results cached?
+Why and how are the detection results cached?
+=============================================
 
 It can take a non-trivial amount of time for all the detection test compilations to
 complete, long enough that waiting for them often is annoying to a maintainer or to
@@ -163,7 +169,7 @@ variables' contents on input files. So there is no clean, built-in way to know d
 reconfiguration if platform detection needs to be re-performed.
 
 The only solution I've found is to create my own caching system. Yay. That always
-goes smoothly, and is sure to be completely reliable and free of edge cases. :-{
+goes smoothly, and is sure to be completely reliable and free of edge cases. `:-{`
 
 The way it works is that the .cmake files in `platform/` associate a list of files
 with a list of variables, such that if *any* file in the given list changes, then

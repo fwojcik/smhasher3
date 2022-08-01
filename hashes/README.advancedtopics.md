@@ -151,7 +151,7 @@ calls.
 Note that this function does not return a `seed_t`, but instead a `uintptr_t`. If the
 seeding function returns a value of zero, then the input seed value will be passed to
 the hash function as its `seed_t` parameter, exactly as if there were no seedfn. If a
-non-zero value is returned by the hash's seeding function, then *that* returned value
+non-zero value is returned by the hash's seeding function, then _that_ returned value
 will be supplied as the `seed_t` value when the hash itself is called. This allows
 the seeding function to return an arbitrary pointer to whatever kind of initialized
 data structure is needed for the hash implementation to compute the result based on
@@ -160,7 +160,7 @@ representation of a pointer, so the hash can cast the `seed_t` back to a `uintpt
 and then cast that to whatever kind of pointer that the seeding function used.
 
 For example:
-```
+```cpp
 typedef struct {
     uint64_t s64[16];
     uint32_t s32[128];
@@ -222,8 +222,9 @@ First, when a thread starts up these variables are initialized to their default
 values if they have been specified or zero-initialized if not. They do not get a copy
 of their data from the parent. If the hash has a seeding function then it may not get
 called in each thread, and a hash's initialization function assuredly won't. This
-means that initialize-once-read-many global variables should almost certainly *not*
-be `thread_local`.
+means that initialize-once-read-many global variables should almost certainly **not**
+be `thread_local`, and probably _can_ just be directly referenced in the hash
+implementations.
 
 Second, accessing a `thread_local` variable can be much slower than you might
 expect. When one particular hash was changed to have its global read/write table
@@ -258,7 +259,7 @@ the target platform and automatically use that one.
 This could be done in a wide variety of ways. For example, an implementation might
 use `#if defined()` preprocessor directives to choose the best implementation of one
 or more core functions. This might look like:
-```
+```cpp
 /* Process exactly 512 bytes of data */
 static uint64_t wackyhash_full_block( const uint8_t * data, const myhash_seedtable_t * table) {
 #if defined(HAVE_AVX2)
@@ -304,7 +305,7 @@ With this setup, the rest of the code can just call `wackyhash_full_block()` and
 care about platform specifics.
 
 A similar approach would be to have wrappers for each version of the code:
-```
+```cpp
 #if defined(HAVE_AVX2)
 static uint64_t wackyhash_full_block_avx2( const uint8_t * data, const uint32_t * key ) {
 .....
@@ -336,7 +337,7 @@ If the amount of platform-specific code is extensive, and it starts being bulky,
 annoying, and confusing to have it all in the same .cpp file, then you can also split
 it out into .h files, each containing their own implementations of the same
 function(s), and then choose which one gets included:
-```
+```cpp
 #if defined(HAVE_AVX2)
   #include "Intrinsics.h"
   #include "wacky/fullblock-avx2.h"
@@ -351,9 +352,9 @@ function(s), and then choose which one gets included:
 In this example, each of those .h files implements `static uint64_t
 wackyhash_full_block( const uint8_t * data, const uint32_t * key )` in its own way.
 
-*The critical points in all of the above methods are that all of the implementations
- produce identical results, and that a portable, always-works implementation is
- present and usable.*
+**The critical points in all of the above methods are that all of the implementations
+produce identical results, and that a portable, always-works implementation is
+present and usable.**
 
 Details on using those preprocessor checks as well as asm instructions and intrinsics
 can be found below.
@@ -410,17 +411,17 @@ In addition to whatever intrinsics the platform provides, SMHasher3 provides som
 wrapper functions for byteswapping vector data. These are:
 
 - For ARM NEON (`HAVE_ARM_NEON`)
--- `uint64x2_t Vbswap64_u64( const uint64x2_t v )`
--- `uint32x4_t Vbswap32_u32( const uint32x4_t v )`
+   - `uint64x2_t Vbswap64_u64( const uint64x2_t v )`
+   - `uint32x4_t Vbswap32_u32( const uint32x4_t v )`
 - For AVX512-F or -BW (`HAVE_AVX512_F` or `HAVE_AVX512_BW`)
--- `__m512i mm512_bswap64( const __m512i v )`
--- `__m512i mm512_bswap32( const __m512i v )`
+   - `__m512i mm512_bswap64( const __m512i v )`
+   - `__m512i mm512_bswap32( const __m512i v )`
 - For AVX2 (`HAVE_AVX2`)
--- `__m256i mm256_bswap64( const __m256i v )`
--- `__m256i mm256_bswap32( const __m256i v )`
+   - `__m256i mm256_bswap64( const __m256i v )`
+   - `__m256i mm256_bswap32( const __m256i v )`
 - For SSE2 or SSSE3 (`HAVE_SSE_2` or `HAVE_SSSE_3`)
--- `__m128i mm_bswap64( const __m128i v )`
--- `__m128i mm_bswap32( const __m128i v )`
+   - `__m128i mm_bswap64( const __m128i v )`
+   - `__m128i mm_bswap32( const __m128i v )`
 
 AES intrinsics
 --------------
@@ -439,12 +440,12 @@ Importantly, only 128-bit AES is currently supported!!!
 
 As things stand, a hash that wants to use AES components can just `#include "AES.h"`,
 which provides access to the following APIs:
-- int AES_KeySetup_Enc( uint32_t rk[], const uint8_t cipherKey[], int keyBits )
-- int AES_KeySetup_Dec( uint32_t rk[], const uint8_t cipherKey[], int keyBits )
-- void AES_EncryptRound( const uint32_t rk[4], uint8_t block[16] )
-- void AES_DecryptRound( const uint32_t rk[4], uint8_t block[16] )
-- template <int Nr> void AES_Encrypt( const uint32_t rk[], const uint8_t pt[16], uint8_t ct[16] )
-- template <int Nr> void AES_Decrypt( const uint32_t rk[], const uint8_t ct[16], uint8_t pt[16] )
+- `int AES_KeySetup_Enc( uint32_t rk[], const uint8_t cipherKey[], int keyBits )`
+- `int AES_KeySetup_Dec( uint32_t rk[], const uint8_t cipherKey[], int keyBits )`
+- `void AES_EncryptRound( const uint32_t rk[4], uint8_t block[16] )`
+- `void AES_DecryptRound( const uint32_t rk[4], uint8_t block[16] )`
+- `template <int Nr> void AES_Encrypt( const uint32_t rk[], const uint8_t pt[16], uint8_t ct[16] )`
+- `template <int Nr> void AES_Decrypt( const uint32_t rk[], const uint8_t ct[16], uint8_t pt[16] )`
 
 The `KeySetup` functions expand the given `cipherkey[]` bytes into the AES encryption
 key schedule, and return the number of rounds for that size key. They write the keys

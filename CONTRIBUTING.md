@@ -1,3 +1,5 @@
+[[_TOC_]]
+
 Submitting bugs or feature requests
 ===================================
 
@@ -52,7 +54,7 @@ Organizing patches for submission
 ---------------------------------
 
 The Most Important Rule when submitting any kind of patch or pull-request to
-SMHasher3 is that they absolutely *must not* alter both the Hashlib side of the
+SMHasher3 is that they absolutely **must not** alter both the Hashlib side of the
 codebase _and_ the Testlib side at the same time. Every kind of code submission may
 only alter one or the other (or neither). For more clarity on which files comprise
 which side, see the "Code organization" section in `README.md`.
@@ -71,7 +73,7 @@ You can use the same branch to submit multiple bug fixes and features as long as
   followed by small features, and then by larger features)
 - ensure that each commit clearly describes what it does
 - ensure that each commit will still compile correctly
-This will also make rebasing onto a later `dev` branch head easier for everyone. 
+This will also make rebasing onto a later `dev` branch head easier for everyone.
 
 The Most Important Rule must still be followed, though. If your feature submission
 adds something to Hashlib which is then acted upon in Testlib, then you must submit
@@ -92,7 +94,7 @@ to that project), so you will get errors about them which should be ignorable.
 Since that would be something of a large ask, it is definitely not a requirement for
 submitting code. However, please follow the following basic code style tenets:
 
-- Use the One True Brace Style (1TBS)[https://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS_(OTBS)]
+- Use the One True Brace Style (1TBS)[https://en.wikipedia.org/wiki/Indent_style#Variant:\_1TBS\_\(OTBS\)]
 - Use spaces for indentation, not tabs, and use 4 spaces per indent level
 - Continued lines should use a double-indent of 8 characters
 - Code should not exceed 120 characters per line, and should use utf-8 and UNIX line-endings (`\n`)
@@ -102,7 +104,8 @@ submitting code. However, please follow the following basic code style tenets:
 - Continued lines should end with an open paren, comma, or binary operator
 - Do not use extra parens for `return` statements
 - All constants going in to 64-bit variables should be enclosed in `UINT64_C()`
-  macros. `ULL` or other constant suffixes should not be used.
+  macros or the like. This is optional for 32-bit variables. `ULL` or other constant
+  suffixes should not be used.
 - Multi-line C-style comments should have opening `/*` and closing `*/` text on their
   own lines, and should have a `*` for each line
 - C++-style comments should have a space after the opening `//`
@@ -144,7 +147,7 @@ By making a contribution to this project, I certify that:
     personal information I submit with it, including my sign-off) is
     maintained indefinitely and may be redistributed consistent with
     this project or the open source license(s) involved.
-```    
+```
 
 If you cannot agree to that, then you should not send the contribution to SMHasher3.
 
@@ -152,7 +155,7 @@ Changes to Testlib
 ==================
 
 Changes to new or existing files in Testlib must use GPL3 for licensing, and the
-files need to have that license text at the top. 
+files need to have that license text at the top.
 
 When adding new tests, please consider how long it could take with slower hashes or
 hashes with longer outputs. It may make sense to only do some longer testing if
@@ -167,7 +170,7 @@ Please keep new tests to the general pattern of existing tests:
 - the .h file only contains the interface to be called by `main.cpp`
 - add a new `g_test` variable for the test and a matching entry in `g_testopts` in
   main.cpp, as well as a new section for the test in the `test()` function similar to
-  the existing ones  
+  the existing ones
 
 If at all possible, ensure new tests produce idential results regardless of system
 endianness.
