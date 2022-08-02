@@ -62,7 +62,9 @@ unsigned register_hash( const HashInfo * hinfo ) {
             printf("         Are you certain %s is a unique implementation?\n", hinfo->name);
         }
     }
-    if (hinfo->impl_flags & FLAG_IMPL_CANONICAL_BOTH) {
+    if (hinfo->verification_BE == 0) {
+        // Do nothing
+    } else if (hinfo->impl_flags & FLAG_IMPL_CANONICAL_BOTH) {
         if (!hinfo->isEndianDefined()) {
             printf("WARNING: Flags marked as IMPL_CANONICAL_BOTH, but HASH_ENDIAN_INDEPENDENT\n");
             printf("       flag not set for hash %s\n", hinfo->name);
@@ -85,7 +87,7 @@ unsigned register_hash( const HashInfo * hinfo ) {
             printf("         but also has same verification code %08x for both LE and BE.\n", hinfo->verification_LE);
             printf("         This is highly suspicious for %s\n", hinfo->name);
         }
-    } else if (hinfo->verification_BE != 0) {
+    } else {
         const auto it_BE = hashcodes.find(hinfo->verification_BE);
         if (it_BE == hashcodes.end()) {
             hashcodes[hinfo->verification_BE] = hinfo;
