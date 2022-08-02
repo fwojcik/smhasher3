@@ -251,6 +251,7 @@ There are some other things that SMHasher3 is explicitly NOT trying to do:
 
 - Be an authoritative or complete repository of hash implementations
 - Use hash authors' implementation code with as few changes as possible
+- Provide a numeric score for overall hash quality
 - Be a final arbiter of which hash functions are "best"
 
 Changes from base SMhasher
