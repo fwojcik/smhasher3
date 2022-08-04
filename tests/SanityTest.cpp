@@ -258,7 +258,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
-    const seed_t seed      = hinfo->Seed(0, true);
+          seed_t seed      = hinfo->Seed(0, true); // not const!
 
     const int    reps      = 5;
     const int    keymax    = 128;
@@ -289,7 +289,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
 
             // See if the hash behaves sanely using only key1
             for (int bit = 0; bit < (len * 8); bit++) {
-                // Flip a bit, hash the key -> we should get a different result.
+                // Flip a key bit, hash the key -> we should get a different result.
                 key1.flipbit(bit);
                 hash(key1, len, seed, hash2);
                 addVCodeOutput(hash2, hashbytes);
@@ -302,6 +302,35 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
 
                 // Flip it back, hash again -> we should get the original result.
                 key1.flipbit(bit);
+                hash(key1, len, seed, hash2);
+
+                if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
+                    result = false;
+                    goto end_sanity;
+                }
+            }
+
+            for (int bit = 0; bit < 64; bit++) {
+                // Flip a seed bit, hash the key -> we should get a different result.
+                seed = hinfo->Seed(UINT64_C(1) << bit, true);
+                hash(key1, len, seed, hash2);
+                addVCodeOutput(hash2, hashbytes);
+
+                if (unlikely(memcmp(hash1, hash2, hashbytes) == 0)) {
+                    if ((bit < 32) || !hinfo->is32BitSeed()) {
+                        maybeprintf(" flipped seed bit %d, got identical output:", bit);
+                        result = false;
+                        goto end_sanity;
+                    }
+                } else if ((bit >= 32) && hinfo->is32BitSeed()) {
+                    maybeprintf(" flipped seed bit %d for hash marked as 32-bit seed,\n"
+                                "                             got different output:", bit);
+                    result = false;
+                    goto end_sanity;
+                }
+
+                // Flip it back, hash again -> we should get the original result.
+                seed = hinfo->Seed(0, true);
                 hash(key1, len, seed, hash2);
 
                 if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
