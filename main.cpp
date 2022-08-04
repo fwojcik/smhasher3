@@ -737,6 +737,10 @@ int main( int argc, const char ** argv ) {
                 ReportCollisionEstimates();
                 exit(0);
             }
+            if (strcmp(arg, "--SortBench") == 0) {
+                BlobsortBenchmark();
+                exit(0);
+            }
             // invalid command
             printf("Invalid command \n");
             usage();

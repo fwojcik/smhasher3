@@ -196,3 +196,4 @@ static void blobsort( Iter iter_begin, Iter iter_end ) {
 
 //-----------------------------------------------------------------------------
 void BlobsortTest( void );
+void BlobsortBenchmark( void );
