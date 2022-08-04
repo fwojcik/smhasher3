@@ -28,7 +28,7 @@ static void radixsort( T * begin, T * end ) {
     const uint32_t RADIX_LEVELS = sizeof(T);
     const size_t   count        = end - begin;
 
-    size_t freqs[RADIX_LEVELS][RADIX_SIZE] = {};
+    size_t freqs[RADIX_SIZE][RADIX_LEVELS] = {};
     T *    ptr = begin;
 
     // Record byte frequencies in each position over all items except
@@ -36,7 +36,7 @@ static void radixsort( T * begin, T * end ) {
     do {
         for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
             uint8_t value = (*ptr)[pass];
-            ++freqs[pass][value];
+            ++freqs[value][pass];
         }
     } while (++ptr < (end - 1));
     // Process the last item separately, so that we can record which
@@ -45,7 +45,7 @@ static void radixsort( T * begin, T * end ) {
     uint32_t trivial_passes = 0;
     for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
         uint8_t value = (*ptr)[pass];
-        if (++freqs[pass][value] == count) {
+        if (++freqs[value][pass] == count) {
             trivial_passes |= 1UL << pass;
         }
     }
@@ -67,7 +67,7 @@ static void radixsort( T * begin, T * end ) {
         T * next = to;
         for (size_t i = 0; i < RADIX_SIZE; i++) {
             queue_ptrs[i] = next;
-            next += freqs[pass][i];
+            next += freqs[i][pass];
         }
 
         // Copy each element into its queue based on the current byte.
@@ -170,11 +170,12 @@ static void flagsort( T * begin, T * end, int idx ) {
 }
 
 //-----------------------------------------------------------------------------
-// For 32-bit values, radix sorting is a clear win on my system, and
-// flag sorting wins for all other item sizes. I'm not 100% sure why
-// that is, so some effort into finding the right cutoff might be
-// appropriate. This approach handily beats just using std::sort, at
-// least on my system (526 seconds vs 1430).
+// For 32-bit values, radix sorting is a clear win on my system, while for 64-bit
+// values radix sorting wins for more common cases but loses for some degenerate
+// cases, and flag sorting handily wins for all other item sizes. I'm not 100% sure
+// why that is, so some more effort into finding the right cutoff for the more
+// general case might be appropriate. This approach overwhelmingly beats just using
+// std::sort, at least on my system.
 template <class Iter>
 static void blobsort( Iter iter_begin, Iter iter_end ) {
     typedef typename std::iterator_traits<Iter>::value_type T;
@@ -187,7 +188,7 @@ static void blobsort( Iter iter_begin, Iter iter_end ) {
 
     T * begin = &(*iter_begin);
     T * end   = &(*iter_end  );
-    if (sizeof(T) > 4) {
+    if (sizeof(T) > 8) {
         flagsort(begin, end, sizeof(T) - 1);
     } else {
         radixsort(begin, end);
