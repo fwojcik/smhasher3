@@ -64,6 +64,7 @@
 #include "Timing.h"
 #include "Hashlib.h"
 #include "TestGlobals.h"
+#include "Blobsort.h"
 #include "Analyze.h"
 #include "Stats.h"
 #include "VCode.h"
@@ -616,10 +617,6 @@ static void usage( void ) {
            "  Hashnames can be supplied using any case letters.\n");
 }
 
-#if defined(DEBUG)
-extern bool blobsort_test_result;
-#endif
-
 int main( int argc, const char ** argv ) {
     setbuf(stdout, NULL); // Unbuffer stdout always
     setbuf(stderr, NULL); // Unbuffer stderr always
@@ -630,10 +627,7 @@ int main( int argc, const char ** argv ) {
     }
 
 #if defined(DEBUG)
-    if (!blobsort_test_result) {
-        printf("Blobsort self-test failed! Cannot continue\n");
-        exit(1);
-    }
+    BlobsortTest();
 #endif
 
     set_default_tests(true);

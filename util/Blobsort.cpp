@@ -228,32 +228,28 @@ static bool test_blobsort_type( void ) {
 //-----------------------------------------------------------------------------
 // Instantiator for test_blobsort_type()
 //
-// All this does is call test_blobsort_type() for every type in
-// HASHTYPELIST, then ANDs together all the boolean results.
-//
-// This is less magic than it looks. "int" is used as a sentinel to
-// mark the end of the list of types. The second template function
-// basically pops off the first type in the variadic pack, evaluates
-// it, and "passes the rest on". It is disabled if the first type is
-// an integral type. That only happens when "int" is the last type in
-// the list, which means the first template function gets called,
-// which ignores that type and just passes its input through.
+// All this does is create a std::vector<> full of function pointers to the various
+// instantiations of test_blobsort_type<>. Then SortBenchmark() can just iterate over
+// those function pointers, calling each one in turn.
 
-template <typename T>
-static bool AND( bool in ) {
-    return in;
+typedef bool (* SortTestFn)( void );
+
+template <typename... T>
+std::vector<SortTestFn> PACKEXPANDER() {
+    return {&test_blobsort_type<T>...};
 }
 
-template <typename T, typename... More>
-typename std::enable_if<!std::is_integral<T>::value, bool>::type
-static AND( bool in ) {
-    return test_blobsort_type<T>() && AND<More...>(in);
-}
+auto SortTestFns  = PACKEXPANDER<HASHTYPELIST>();
 
-// If the global variable isn't referenced anywhere, then this
-// constructor code isn't run, as the linker will exclude this whole
-// file. Adding a printout of blobsort_test_result somewhere will
-// cause it to run during startup, which takes a few seconds.
-// So this is only referenced in DEBUG mode.
-extern bool blobsort_test_result;
-bool        blobsort_test_result = AND<HASHTYPELIST, int>(true);
+void BlobsortTest( void ) {
+    bool result = true;
+    for (SortTestFn testFn: SortTestFns) {
+        result &= testFn();
+    }
+    if (!result) {
+        printf("Blobsort self-test failed! Cannot continue\n");
+        exit(1);
+    }
+    printf("Blobsort self-test passed.\n");
+    return;
+}
