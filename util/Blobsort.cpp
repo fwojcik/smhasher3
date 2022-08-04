@@ -29,13 +29,13 @@
 // Blob sorting routine unit tests
 
 static const uint32_t SORT_TESTS = 19;
-static const uint32_t TEST_SIZE  = 100000;
 
-template <typename blobtype>
-static void blobfill( std::vector<blobtype> & blobs, int testnum ) {
+
+template <typename blobtype, uint32_t TEST_SIZE>
+static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) {
     if (testnum >= SORT_TESTS) { return; }
 
-    Rand r( testnum + 0xb840a149 );
+    Rand r( testnum + 0xb840a149 * (iternum + 1) );
 
     switch (testnum) {
     case  0: // Consecutive numbers
@@ -210,15 +210,18 @@ static bool blobverify( std::vector<blobtype> & blobs ) {
     return passed;
 }
 
-template <typename blobtype>
-static bool test_blobsort_type( void ) {
+template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype>
+bool test_blobsort_type( void ) {
     bool passed = true;
     std::vector<blobtype> blobs( TEST_SIZE );
 
     for (int i = 0; i < SORT_TESTS; i++) {
-        blobfill(blobs, i);
-        blobsort(blobs.begin(), blobs.end());
-        passed &= blobverify(blobs);
+
+        for (int j = 0; j < TEST_ITER; j++) {
+            blobfill<blobtype, TEST_SIZE>(blobs, i, j);
+            blobsort(blobs.begin(), blobs.end());
+            passed &= blobverify(blobs);
+        }
         // printf("After test %d: %s\n", i, passed ? "ok" : "no");
     }
 
@@ -234,12 +237,12 @@ static bool test_blobsort_type( void ) {
 
 typedef bool (* SortTestFn)( void );
 
-template <typename... T>
+template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename... T>
 std::vector<SortTestFn> PACKEXPANDER() {
-    return {&test_blobsort_type<T>...};
+    return {&test_blobsort_type<TEST_SIZE, TEST_ITER, T>...};
 }
 
-auto SortTestFns  = PACKEXPANDER<HASHTYPELIST>();
+auto SortTestFns  = PACKEXPANDER<  100000,  1, HASHTYPELIST>();
 
 void BlobsortTest( void ) {
     bool result = true;
