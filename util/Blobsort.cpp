@@ -28,7 +28,7 @@
 //-----------------------------------------------------------------------------
 // Blob sorting routine unit tests
 
-static const uint32_t SORT_TESTS = 19;
+static const uint32_t SORT_TESTS = 20;
 
 
 template <typename blobtype, uint32_t TEST_SIZE>
@@ -38,7 +38,7 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
     Rand r( testnum + 0xb840a149 * (iternum + 1) );
 
     switch (testnum) {
-    case  0: // Consecutive numbers
+    case  0: // Consecutive numbers, sorted
     case  1: // Consecutive numbers, sorted almost
     case  2: // Consecutive numbers, scrambled
     {
@@ -47,29 +47,28 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
         }
         break;
     }
-    case  3: // Consecutive numbers, backwards
+    case  3: // Consecutive numbers, sorted backwards
     {
         for (uint32_t n = 0; n < TEST_SIZE; n++) {
             blobs[n] = TEST_SIZE - 1 - n;
         }
         break;
     }
-    case  4: // Random numbers
-    case  5: // Random numbers, sorted
-    case  6: // Random numbers, sorted almost
+    case  4: // Random numbers, sorted
+    case  5: // Random numbers, sorted almost
+    case  6: // Random numbers, scrambled
     case  7: // Random numbers, sorted backwards
-    case 10: // All zero bytes in LSB position
-    case 11: // All zero bytes in MSB position
-    case 12: // All zero bytes in LSB+1 position
-    case 13: // All zero bytes in MSB-1 position
-    case 14: // Random numbers, except each position has some missing bytes
+    case 11: // All zero bytes in LSB position
+    case 12: // All zero bytes in MSB position
+    case 13: // All zero bytes in LSB+1 position
+    case 14: // All zero bytes in MSB-1 position
+    case 15: // Random numbers, except each position has some missing bytes
     {
-        for (uint32_t n = 0; n < TEST_SIZE; n++) {
-            r.rand_p(&blobs[n], sizeof(blobtype));
-        }
+        r.rand_p(&blobs[0], sizeof(blobtype) * TEST_SIZE);
         break;
     }
     case  8: // Many duplicates
+    case  9: // Many duplicates, scrambled
     {
         uint32_t x = 0;
         do {
@@ -82,7 +81,7 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
         } while (x < TEST_SIZE);
         break;
     }
-    case  9: // All duplicates
+    case 10: // All duplicates
     {
         r.rand_p(&blobs[0], sizeof(blobtype));
         for (uint32_t i = 1; i < TEST_SIZE; i++) {
@@ -90,24 +89,24 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
         }
         break;
     }
-    case 15: // All zeroes
+    case 16: // All zeroes
     {
         memset(&blobs[0], 0, TEST_SIZE * sizeof(blobtype));
         break;
     }
-    case 16: // All ones
+    case 17: // All ones
     {
         for (uint32_t i = 0; i < TEST_SIZE; i++) {
             blobs[i] = 1;
         }
         break;
     }
-    case 17: // All Fs
+    case 18: // All Fs
     {
         memset(&blobs[0], 0xFF, TEST_SIZE * sizeof(blobtype));
         break;
     }
-    case 18: // All 0xAAA and 0x555
+    case 19: // All 0xAAA and 0x555
     {
         uint32_t i = 0;
         do {
@@ -136,13 +135,13 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
         break;
     }
     // Sorted
+    case  4:
     case  5:
-    case  6:
     {
         std::sort(blobs.begin(), blobs.end());
-        if (testnum == 5) { break; }
+        if (testnum == 4) { break; }
     }
-    // 6 is fallthrough to...
+    // 5 is fallthrough to...
     // "Almost sorted" == mix up a few entries
     case  1:
     {
@@ -153,6 +152,7 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
     }
     // "Scrambled" == shuffle all the entries
     case  2:
+    case  9:
     {
         for (uint32_t n = TEST_SIZE - 1; n > 0; n--) {
             std::swap(blobs[n], blobs[r.rand_range(n + 1)]);
@@ -160,21 +160,21 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
         break;
     }
     // Zero out bytes in some position
-    case 10:
     case 11:
     case 12:
     case 13:
+    case 14:
     {
-        uint32_t offset = (testnum == 10) ? 0 :
-                                            ((testnum == 11) ? (sizeof(blobtype) - 1) :
-                                                               ((testnum == 12) ? 1 : (sizeof(blobtype) - 2)));
+        uint32_t offset = (testnum == 11) ? 0 :
+                                            ((testnum == 12) ? (sizeof(blobtype) - 1) :
+                                                               ((testnum == 13) ? 1 : (sizeof(blobtype) - 2)));
         for (uint32_t n = 0; n < TEST_SIZE; n++) {
             blobs[n][offset] = 0;
         }
         break;
     }
     // Exclude a byte value from each position
-    case 14:
+    case 15:
     {
         uint8_t excludes[sizeof(blobtype)];
         r.rand_p(excludes, sizeof(excludes));
