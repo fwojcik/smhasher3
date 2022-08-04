@@ -147,13 +147,15 @@ static bool verify_hashmatch( const uint8_t * buf1, const uint8_t * buf2, size_t
 // that hashing the same thing gives the same result.
 //
 // This test can halt early, so don't add input bytes to the VCode.
-bool SanityTest1( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+bool SanityTest1( const HashInfo * hinfo, bool verbose ) {
     Rand r( 883743 );
     bool result            = true;
     bool danger            = false;
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
+    const seed_t seed      = hinfo->Seed(0, true);
+
     const int    reps      = 10;
     const int    keymax    = 256;
     const int    pad       = 16 * 3;
@@ -250,12 +252,14 @@ bool SanityTest1( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
 // This test is expensive, so only run 1 rep.
 //
 // This test can halt early, so don't add input bytes to the VCode.
-bool SanityTest2( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
     Rand r( 883744 );
     bool result            = true;
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
+    const seed_t seed      = hinfo->Seed(0, true);
+
     const int    reps      = 5;
     const int    keymax    = 128;
     const int    pad       = 16;// Max alignment offset tested
@@ -497,11 +501,12 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
 //----------------------------------------------------------------------------
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
-bool AppendedZeroesTest( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+bool AppendedZeroesTest( const HashInfo * hinfo, bool verbose ) {
     Rand r( 173994 );
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
+    const seed_t seed      = hinfo->Seed(0, true);
     bool         result    = true;
 
     maybeprintf("Running append zeroes test   ");
@@ -559,11 +564,12 @@ bool AppendedZeroesTest( const HashInfo * hinfo, const seed_t seed, bool verbose
 //----------------------------------------------------------------------------
 // Prepending zero bytes to a key should also always cause it to
 // produce a different hash value
-bool PrependedZeroesTest( const HashInfo * hinfo, const seed_t seed, bool verbose ) {
+bool PrependedZeroesTest( const HashInfo * hinfo, bool verbose ) {
     Rand r( 534281 );
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
+    const seed_t seed      = hinfo->Seed(0, true);
     bool         result    = true;
 
     maybeprintf("Running prepend zeroes test  ");
@@ -632,15 +638,10 @@ bool SanityTest( const HashInfo * hinfo, bool oneline ) {
 
     if (oneline) { printf("%-25s  ", hinfo->name); }
 
-    // Sanity tests are all done with seed of 0
-    const seed_t seed = hinfo->Seed(0, true);
-
-    result &= SanityTest1(hinfo, seed, verbose);
-    result &= SanityTest2(hinfo, seed, verbose);
-    result &= AppendedZeroesTest(hinfo, seed, verbose);
-    result &= PrependedZeroesTest(hinfo, seed, verbose);
-
-    // These should be last, as they re-seed
+    result &= SanityTest1(hinfo, verbose);
+    result &= SanityTest2(hinfo, verbose);
+    result &= AppendedZeroesTest(hinfo, verbose);
+    result &= PrependedZeroesTest(hinfo, verbose);
     threadresult &= ThreadingTest(hinfo, false, verbose);
     threadresult &= ThreadingTest(hinfo, true , verbose);
 
