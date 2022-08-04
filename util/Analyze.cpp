@@ -88,7 +88,11 @@ bool ReportBias( const int worstbiascnt, const int coinflips, const int trials, 
 
     recordLog2PValue(logp_value);
     if (drawDiagram) {
-        printf(" worst bias is %f%% (%6d) (p<%8.6f) (^%2d)", ratio * 200.0, worstbiascnt, p_value, logp_value);
+        if (p_value > 0.00001) {
+            printf(" worst bias is %f%% (%6d) (p<%8.6f) (^%2d)", ratio * 200.0, worstbiascnt, p_value, logp_value);
+        } else {
+            printf(" worst bias is %f%% (%6d) (p<%.2e) (^%2d)", ratio * 200.0, worstbiascnt, p_value, logp_value);
+        }
     } else {
         printf(" worst bias is %f%% (^%2d)", ratio * 200.0, logp_value);
     }
@@ -198,7 +202,11 @@ static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsi
         // in --verbose mode.
         recordLog2PValue(logp_value);
         if (drawDiagram) {
-            printf("(%+i) (p<%8.6f) (^%2d)", collcount - (int)round(expected), p_value, logp_value);
+            if (p_value > 0.00001) {
+                printf("(%+i) (p<%8.6f) (^%2d)", collcount - (int)round(expected), p_value, logp_value);
+            } else {
+                printf("(%+i) (p<%.2e) (^%2d)", collcount - (int)round(expected), p_value, logp_value);
+            }
         } else {
             printf("(^%2d)", logp_value);
         }
@@ -422,7 +430,11 @@ static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits,
 
     recordLog2PValue(logp_value);
     if (drawDiagram) {
-        printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+        if (p_value > 0.00001) {
+            printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+        } else {
+            printf("(%+i) (p<%.2e) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+        }
     } else {
         printf("(^%2d)", logp_value);
     }
@@ -538,7 +550,11 @@ static bool TestDistribution( std::vector<hashtype> & hashes, bool drawDiagram )
 
     recordLog2PValue(logp_value);
     if (drawDiagram) {
-        printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
+        if (p_value > 0.00001) {
+            printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
+        } else {
+            printf("(%f) (p<%.2e) (^%2d)", worstN, p_value, logp_value);
+        }
     } else {
         printf("(^%2d)", logp_value);
     }
