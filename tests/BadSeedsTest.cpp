@@ -252,6 +252,13 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
             }
             if (!known_seed && (fails < 32)) { // don't print too many lines
                 PrintCollisions(collisions);
+                // Can't just print hashes vector because it's now sorted
+                hashtype v;
+                printf("Hashes:\n");
+                for (int i = 0; i < numtestbytes; i++) {
+                    hash(&keys[i][0], 16, hseed, &v);
+                    printf("%3d:", i); v.printhex(" ");
+                }
             }
             collisions.clear();
             result = false;
