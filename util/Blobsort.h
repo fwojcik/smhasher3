@@ -193,3 +193,6 @@ static void blobsort( Iter iter_begin, Iter iter_end ) {
         radixsort(begin, end);
     }
 }
+
+//-----------------------------------------------------------------------------
+void BlobsortTest( void );
