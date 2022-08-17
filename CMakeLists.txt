@@ -161,7 +161,7 @@ target_include_directories(SMHasher3Hashlib PRIVATE include/hashlib PUBLIC inclu
 if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
   set_source_files_properties(lib/Hashinfo.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/util")
 else()
-  set_source_files_properties(lib/Hashinfo.cpp PROPERTIES INCLUDE_DIRECTORIES util)
+  set_source_files_properties(lib/Hashinfo.cpp PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/util")
 endif()
 
 ########################################
