@@ -19,7 +19,6 @@
 #define HAVE_HASHINFO
 #include <cstdlib>
 #include <set>
-#include <cstdlib>
 
 #define HASH_FLAGS                       \
     FLAG_EXPAND(HASH_MOCK)               \
