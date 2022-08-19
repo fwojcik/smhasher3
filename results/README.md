@@ -1,7 +1,7 @@
 SMHasher3 results summary
 =========================
 
-[[TOC]]
+[[_TOC_]]
 
 Passing hashes
 --------------
