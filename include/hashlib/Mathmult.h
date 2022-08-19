@@ -327,7 +327,29 @@ static FORCE_INLINE void add192( uint64_t & rlo, uint64_t & rmi, uint64_t & rhi,
 
 // 128-bit fused multiply addition [rhi:rlo += a * b]
 static FORCE_INLINE void fma64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
-#if defined(HAVE_X86_64_ASM)
+#if defined(HAVE_AVX2) && defined(HAVE_X86_64_ASM)
+    uint64_t tmplo, tmphi;
+    __asm__ ("mulxq %5,%2,%3\n"
+             "addq %2, %0\n"
+             "adcq %3, %1\n"
+    /*
+     * tmplo and tmphi aren't output-only variables so that the compiler can
+     * overwrite an input location if it thinks that's good. This is safe because
+     * both input variables are only used in the first instruction, so even if the
+     * mulxq overwrites %4 or %5 then the rest of the code will work correctly.
+     */
+  #if defined(DEBUG)
+             : "+r" (rlo), "+r" (rhi), "=r" (tmplo), "=r" (tmphi)
+             : "d" (a), "r" (b)
+  #elif defined(__clang__)
+             : "+r" (rlo), "+r" (rhi), "=r" (tmplo), "=r" (tmphi)
+             : "d" (a), "m" (b)
+  #else
+             : "+g" (rlo), "+g" (rhi), "=g" (tmplo), "=g" (tmphi)
+             : "d" (a), "g" (b)
+  #endif
+             : "cc");
+#elif defined(HAVE_X86_64_ASM)
     /*
      * Dummy variable to tell the compiler that the register rax is
      * input and clobbered but not actually output; see assembler code
