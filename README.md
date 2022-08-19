@@ -312,6 +312,9 @@ Since SMHasher3 supports 64-bit seeds and the current algorithm for computing
 verification codes does not exercise even all of the low 32 seed bits, I expect that
 the algorithm will change in the near-ish future.
 
+A stand-alone vanilla C99 program for computing hash verification codes outside of
+SMHasher3 is in `misc/hashverify.c`.
+
 VCodes
 ------
 
