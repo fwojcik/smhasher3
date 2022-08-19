@@ -25,7 +25,7 @@ Hashes that currently pass all tests, sorted by average short input speed.
 | [mx3.v3](mx3.v3.txt) | 64 | 221 |  56.96 |   3.98|
 | [mx3.v2](mx3.v2.txt) | 64 | 204 |  57.45 |   3.18|
 | [FarmHash-32.NT](FarmHash-32.NT.txt) | 32 | 243 |  57.46 |   7.74|
-| [XXH-64](XXH-64.txt) | 64 | 204 |  58.78 |   3.99|
+| [XXH-64](XXH-64.txt) | 64 | 221 |  58.76 |   3.99|
 | [CityMurmur.seed3](CityMurmur.seed3.txt) | 128 | 205 |  63.03 |   2.53|
 | [CityMurmur.seed2](CityMurmur.seed2.txt) | 128 | 205 |  63.06 |   2.53|
 | [CityMurmur.seed1](CityMurmur.seed1.txt) | 128 | 205 |  63.10 |   2.53|
@@ -203,7 +203,7 @@ Hashes that pass Sanity tests, but fail others, sorted by failing tests and then
 | [mum3.inexact.unroll3](mum3.inexact.unroll3.txt) | 64 | 82 | 204 |  40.93 |   1.91|
 | [mum3.inexact.unroll4](mum3.inexact.unroll4.txt) | 64 | 82 | 204 |  41.59 |   1.97|
 | [mum3.inexact.unroll1](mum3.inexact.unroll1.txt) | 64 | 82 | 204 |  44.75 |   1.40|
-| [XXH-32](XXH-32.txt) | 32 | 83 | 243 |  50.53 |   2.00|
+| [XXH-32](XXH-32.txt) | 32 | 85 | 260 |  50.42 |   2.00|
 | [perl-jenkins](perl-jenkins.txt) | 32 | 85 | 243 | 101.00 |   0.20|
 | [MurmurHash2-64.int32](MurmurHash2-64.int32.txt) | 64 | 97 | 204 |  47.62 |   1.33|
 | [lookup3](lookup3.txt) | 64 | 101 | 204 |  42.42 |   0.80|
