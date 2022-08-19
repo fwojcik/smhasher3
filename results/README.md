@@ -61,28 +61,28 @@ Hashes that currently pass all tests, sorted by average short input speed.
 | [ascon-XOFa-64](ascon-XOFa-64.txt) | 64 | 204 | 408.23 |   0.07|
 | [SHA-2-224.64](SHA-2-224.64.txt) | 64 | 204 | 415.13 |   0.45|
 | [SHA-2-256.64](SHA-2-256.64.txt) | 64 | 204 | 415.63 |   0.45|
-| [SHA-2-224](SHA-2-224.txt) | 224 | 205 | 420.04 \*\* |   0.45|
-| [SHA-2-256](SHA-2-256.txt) | 256 | 205 | 436.61 \*\* |   0.45|
+| [SHA-2-224](SHA-2-224.txt) | 224 | 205 | \*\* 420.04 |   0.45|
+| [SHA-2-256](SHA-2-256.txt) | 256 | 205 | \*\* 436.61 |   0.45|
 | [blake3](blake3.txt) | 256 | 205 | 483.81 |   0.35|
 | [ascon-XOF-32](ascon-XOF-32.txt) | 32 | 243 | 492.70 |   0.05|
 | [ascon-XOF-64](ascon-XOF-64.txt) | 64 | 204 | 493.33 |   0.05|
-| [SHA-1.64](SHA-1.64.txt) | 64 | 204 | 503.67 \*\* |   0.47|
+| [SHA-1.64](SHA-1.64.txt) | 64 | 204 | \*\* 503.67 |   0.47|
 | [RIPEMD-128](RIPEMD-128.txt) | 128 | 205 | 506.47 |   0.15|
-| [SHA-1](SHA-1.txt) | 128 | 205 | 507.04 \*\* |   0.47|
-| [SHA-1.32](SHA-1.32.txt) | 32 | 243 | 511.44 \*\* |   0.47|
-| [ascon-XOFa-128](ascon-XOFa-128.txt) | 128 | 205 | 514.68 \*\* |   0.07|
+| [SHA-1](SHA-1.txt) | 128 | 205 | \*\* 507.04 |   0.47|
+| [SHA-1.32](SHA-1.32.txt) | 32 | 243 | \*\* 511.44 |   0.47|
+| [ascon-XOFa-128](ascon-XOFa-128.txt) | 128 | 205 | \*\* 514.68 |   0.07|
 | [MD5.32](MD5.32.txt) | 32 | 243 | 545.52 |   0.14|
 | [MD5](MD5.txt) | 128 | 205 | 549.97 |   0.14|
 | [MD5.64](MD5.64.txt) | 64 | 204 | 550.33 |   0.14|
 | [RIPEMD-256](RIPEMD-256.txt) | 256 | 205 | 593.60 |   0.12|
-| [ascon-XOFa-160](ascon-XOFa-160.txt) | 160 | 205 | 642.23 \*\* |   0.07|
+| [ascon-XOFa-160](ascon-XOFa-160.txt) | 160 | 205 | \*\* 642.23 |   0.07|
 | [blake2s-256.64](blake2s-256.64.txt) | 64 | 204 | 660.79 |   0.11|
 | [blake2s-256](blake2s-256.txt) | 256 | 205 | 661.34 |   0.11|
 | [blake2s-128](blake2s-128.txt) | 128 | 205 | 662.11 |   0.11|
 | [blake2s-160](blake2s-160.txt) | 160 | 205 | 662.24 |   0.11|
 | [blake2s-224](blake2s-224.txt) | 224 | 205 | 667.02 |   0.11|
 | [ascon-XOF-128](ascon-XOF-128.txt) | 128 | 205 | 679.13 |   0.05|
-| [RIPEMD-160](RIPEMD-160.txt) | 160 | 205 | 760.60 \*\* |   0.09|
+| [RIPEMD-160](RIPEMD-160.txt) | 160 | 205 | \*\* 760.60 |   0.09|
 | [ascon-XOFa-256](ascon-XOFa-256.txt) | 256 | 205 | 768.95 |   0.07|
 | [ascon-XOFa-224](ascon-XOFa-224.txt) | 224 | 205 | 788.13 |   0.07|
 | [blake2b-256.64](blake2b-256.64.txt) | 64 | 204 | 793.01 |   0.18|
@@ -149,13 +149,13 @@ Hashes that pass Sanity tests, but fail others, sorted by failing tests and then
 | [FarmHash-128.CC.seed2](FarmHash-128.CC.seed2.txt) | 128 | 2 | 205 |  63.70 |   4.68|
 | [FarmHash-128.CC.seed3](FarmHash-128.CC.seed3.txt) | 128 | 2 | 205 |  63.93 |   4.68|
 | [prvhash-128.incr](prvhash-128.incr.txt) | 128 | 2 | 205 | 284.73 |   1.98|
-| [floppsyhash](floppsyhash.txt) | 64 | 2 | 204 | 744.99 \*\* |   0.05|
+| [floppsyhash](floppsyhash.txt) | 64 | 2 | 204 | \*\* 744.99 |   0.05|
 | [MetroHash-64](MetroHash-64.txt) | 64 | 3 | 204 |  48.56 |   5.08|
 | [MurmurHash3-128](MurmurHash3-128.txt) | 128 | 3 | 205 |  49.42 |   2.17|
 | [MurmurHash3-32](MurmurHash3-32.txt) | 32 | 3 | 243 |  50.61 |   0.99|
 | [seahash](seahash.txt) | 64 | 3 | 204 |  61.49 |   2.71|
 | [VHASH](VHASH.txt) | 64 | 4 | 204 | 101.48 |   4.96|
-| [floppsyhash.old](floppsyhash.old.txt) | 64 | 4 | 204 | 711.12 \*\* |   0.04|
+| [floppsyhash.old](floppsyhash.old.txt) | 64 | 4 | 204 | \*\* 711.12 |   0.04|
 | [mum2.inexact.unroll1](mum2.inexact.unroll1.txt) | 64 | 6 | 204 |  48.18 |   1.19|
 | [UMASH-64](UMASH-64.txt) | 64 | 6 | 204 |  48.19 |   5.93|
 | [FarmHash-32.SA](FarmHash-32.SA.txt) | 32 | 6 | 243 |  48.49 |   4.48|
@@ -236,10 +236,10 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 | Hash name | output width | tests failed | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
 |:----------|-------------:|-------------:|-----------:|-------------------------:|------------------------:|
 | [tabulation-64](tabulation-64.txt) | 64 | 1 | 204 |  43.77 |   3.00|
-| [aesrng-32](aesrng-32.txt) | 32 | 2 | 243 |  17.49 \*\* | 2509.84|
-| [aesrng-64](aesrng-64.txt) | 64 | 2 | 204 |  19.48 \*\* | 2507.47|
-| [aesrng-128](aesrng-128.txt) | 128 | 2 | 205 |  22.88 \*\* | 2168.29|
-| [aesrng-160](aesrng-160.txt) | 160 | 2 | 205 |  27.94 \*\* | 2102.37|
+| [aesrng-32](aesrng-32.txt) | 32 | 2 | 243 |  \*\* 17.49 | 2509.84|
+| [aesrng-64](aesrng-64.txt) | 64 | 2 | 204 |  \*\* 19.48 | 2507.47|
+| [aesrng-128](aesrng-128.txt) | 128 | 2 | 205 |  \*\* 22.88 | 2168.29|
+| [aesrng-160](aesrng-160.txt) | 160 | 2 | 205 |  \*\* 27.94 | 2102.37|
 | [aesrng-224](aesrng-224.txt) | 224 | 2 | 205 |  35.78 | 1993.52|
 | [aesrng-256](aesrng-256.txt) | 256 | 2 | 205 |  35.78 | 1996.32|
 | [poly-mersenne.deg3](poly-mersenne.deg3.txt) | 32 | 2 | 243 |  78.62 |   0.50|
@@ -247,7 +247,7 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 | [hasshe2](hasshe2.txt) | 256 | 15 | 205 | 111.30 |   0.76|
 | [FARSH-32](FARSH-32.txt) | 32 | 17 | 243 |  68.65 |  15.29|
 | [FARSH-64](FARSH-64.txt) | 64 | 17 | 204 | 117.03 |   7.78|
-| [FARSH-256](FARSH-256.txt) | 256 | 17 | 205 | 456.72 \*\* |   1.97|
+| [FARSH-256](FARSH-256.txt) | 256 | 17 | 205 | \*\* 456.72 |   1.97|
 | [aesnihash](aesnihash.txt) | 64 | 18 | 204 |  68.18 |   1.45|
 | [FARSH-128](FARSH-128.txt) | 128 | 18 | 205 | 236.21 |   3.87|
 | [poly-mersenne.deg2](poly-mersenne.deg2.txt) | 32 | 19 | 243 |  69.52 |   0.50|
@@ -274,7 +274,7 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 | [FNV-Totenschiff](FNV-Totenschiff.txt) | 32 | 207 | 243 |  35.97 |   2.00|
 | [poly-mersenne.deg1](poly-mersenne.deg1.txt) | 32 | 217 | 243 |  61.02 |   0.49|
 | [FNV-1a-32.wordwise](FNV-1a-32.wordwise.txt) | 32 | 233 | 243 |  35.68 |   1.00|
-| [badhash](badhash.txt) | 32 | 233 | 243 |  81.04 \*\* |   0.23|
+| [badhash](badhash.txt) | 32 | 233 | 243 |  \*\* 81.04 |   0.23|
 | [fibonacci-32](fibonacci-32.txt) | 32 | 239 | 243 |  23.69 |  15.17|
 | [sum32hash](sum32hash.txt) | 32 | 240 | 243 |  20.80 |  25.11|
 | [sum8hash](sum8hash.txt) | 32 | 240 | 243 |  30.04 |   3.35|
