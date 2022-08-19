@@ -16,8 +16,6 @@ egrep '^Overall result:' *.txt  |
     awk '{printf "%s\t%s\t%d\t%d\n",$1,$2,$4-$3,$4}' |
     sort > ${TMPDIR}/passfail.j
 
-#awk 'NR>6 && NF==10 {printf "%s\t%6.2f\t%6.2f\n",$1,($3+$5+$7+$9)/4.0,$2}' SpeedAll.txt |
-#    sort > ${TMPDIR}/speed.j
 egrep '^ +[0-9]+-byte keys' *.txt   |
     sed 's/\.txt:/:/'               |
     tr '(/:)' '    '                |
