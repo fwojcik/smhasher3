@@ -283,6 +283,6 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 | [donothing-32](donothing-32.txt) | 32 | 242 | 243 |   5.00 | 3744.01|
 | [donothingOAAT-32](donothingOAAT-32.txt) | 32 | 242 | 243 |  39.98 |   0.88|
 
-All results were generated using: SMHasher3 beta1-9080935e
+All results were generated using: SMHasher3 beta1-9080935e or SMHasher3 beta1-28-eb8e7ac0
 
 [\*\*]: this result had >= 1% std. deviation in >=25% of tests, and so may not be reliable
