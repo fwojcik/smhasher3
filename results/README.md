@@ -40,6 +40,8 @@ Hashes that currently pass all tests, sorted by average short input speed.
 | [MeowHash](MeowHash.txt) | 128 | 205 |  77.01 |  11.79|
 | [MeowHash.32](MeowHash.32.txt) | 32 | 243 |  77.01 |  11.79|
 | [MeowHash.64](MeowHash.64.txt) | 64 | 204 |  77.01 |  11.79|
+| [khashv-64](khashv-64.txt) | 64 | 221 |  77.56 |   2.17|
+| [khashv-32](khashv-32.txt) | 32 | 260 |  79.94 |   2.17|
 | [prvhash-128](prvhash-128.txt) | 128 | 205 |  86.09 |   0.93|
 | [HalfSipHash](HalfSipHash.txt) | 32 | 243 |  87.19 |   0.34|
 | [GoodOAAT](GoodOAAT.txt) | 32 | 243 |  90.33 |   0.24|
