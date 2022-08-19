@@ -93,12 +93,7 @@ static inline void nh_16_portable( const uint8_t * mp, const uint64_t * kp, size
     // uint64_t th, tl;
     rh = rl = 0;
     for (size_t i = 0; i < nw; i += 2) {
-#if 0
-        MUL64(th, tl, (GET_U64<bswap>(mp, i * 8) + kp[i]), (GET_U64<bswap>(mp, i * 8 + 8) + kp[i + 1]));
-        ADD128(rh, rl, th, tl);
-#else
         fma64_128(rl, rh, (GET_U64<bswap>(mp, i * 8) + kp[i]), (GET_U64<bswap>(mp, i * 8 + 8) + kp[i + 1]));
-#endif
     }
 }
 
@@ -507,11 +502,11 @@ static uint64_t l3hash( uint64_t p1, uint64_t p2, uint64_t k1, uint64_t k2, uint
     p1 &= m63;
 
     /* compute (p1,p2)/(2^64-2^32) and (p1,p2)%(2^64-2^32) */
-    t   = p1 + (p2 >> 32);
-    t  +=      (t  >> 32);
+    t   = (p2 >> 32) + p1;
+    t  += (t  >> 32);
     t  += (uint32_t)t > 0xfffffffeu;
-    p1 +=      (t  >> 32);
-    p2 +=      (p1 << 32);
+    p1 += (t  >> 32);
+    p2 += (p1 << 32);
 
     /* compute (p1+k1)%p64 and (p2+k2)%p64 */
     p1 += k1;
