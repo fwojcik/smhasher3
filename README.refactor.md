@@ -234,8 +234,7 @@ Specific hash changes (compared to SMHasher base)
    - Cleaned up some pointer handling
 - mx3
    - Added a local copy
-   - Brought up to latest revision (V2 at time of coding)
-   - V3 has since been released; it will be updated in SMHasher3 soon
+   - Added v2 and v3
 - nmhash
    - Added a local copy
    - Fixed to not use type-punning
