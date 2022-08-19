@@ -1331,32 +1331,24 @@ template <bool bswap>
 static void XXH32( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint32_t h = XXH32_impl<bswap>((const uint8_t *)in, len, (uint32_t)seed);
 
-#if 0
-    // Output in "canonical" format
+    // Output in "canonical" BE format
     if (isLE()) {
         PUT_U32<true>(h, (uint8_t *)out, 0);
     } else {
         PUT_U32<false>(h, (uint8_t *)out, 0);
     }
-#else
-    PUT_U32<bswap>(h, (uint8_t *)out, 0);
-#endif
 }
 
 template <bool bswap>
 static void XXH64( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = XXH64_impl<bswap>((const uint8_t *)in, len, (uint64_t)seed);
 
-#if 0
-    // Output in "canonical" format
+    // Output in "canonical" BE format
     if (isLE()) {
         PUT_U64<true>(h, (uint8_t *)out, 0);
     } else {
         PUT_U64<false>(h, (uint8_t *)out, 0);
     }
-#else
-    PUT_U64<bswap>(h, (uint8_t *)out, 0);
-#endif
 }
 
 //------------------------------------------------------------
@@ -1403,7 +1395,7 @@ REGISTER_HASH(XXH_32,
          FLAG_IMPL_ROTATE              |
          FLAG_IMPL_LICENSE_BSD,
    $.bits = 32,
-   $.verification_LE = 0xBA88B743,
+   $.verification_LE = 0x6FD78385,
    $.verification_BE = 0x2BC79298,
    $.hashfn_native   = XXH32<false>,
    $.hashfn_bswap    = XXH32<true>
@@ -1419,7 +1411,7 @@ REGISTER_HASH(XXH_64,
          FLAG_IMPL_ROTATE              |
          FLAG_IMPL_LICENSE_BSD,
    $.bits = 64,
-   $.verification_LE = 0x024B7CF4,
+   $.verification_LE = 0x8F8224C4,
    $.verification_BE = 0xB96ABE81,
    $.hashfn_native   = XXH64<false>,
    $.hashfn_bswap    = XXH64<true>
