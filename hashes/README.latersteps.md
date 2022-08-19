@@ -263,13 +263,6 @@ $ ./SMHasher3 --test=VerifyAll --verbose | grep WackyHash
             WackyHash-128 - Verification value BE 0xFDB0BF75 ...... PASS
 ```
 
-If you are implementing a pre-existing hash, you might find it helpful to compute the
-verification codes outside of SMHasher3 and fill them in before you start
-implementing. The algorithm for computing them is in `HashInfo::_ComputedVerifyImpl`
-in `lib/Hashinfo.cpp`. While it should be reasonably easy to port the code to exist
-outside of SMHasher, it is planned for a separate external program which does that to
-be written in plain C and shipped as part of the SMHasher3 distribution.
-
 In general, hashes should have different values emerge from the native and
 byteswapped versions. The exception to this is hashes that are byte-oriented, like
 the original Pearson hashes or CRC32. Those hashes basically operate identically on
@@ -279,6 +272,12 @@ verification values are also going to be identical for those hashes. In this cas
 you should make sure that the same function is specified for _both_ `$.hashfn_native`
 and `$.hashfn_bswap`. If different functions are specified, even if their
 implementations are identical, then a WARNING will be generated on startup.
+
+If you are implementing a pre-existing hash, you might find it helpful to compute the
+verification codes outside of SMHasher3 and fill them in before you start
+implementing. To do this, you can use `misc/hashverify.c`, which is a separate
+external stand-alone program, written in plain C99. It will compute the verification
+code for the platform you compile and run it on, but not the opposite endianness.
 
 Hash metadata flags
 -------------------
