@@ -28,7 +28,7 @@ egrep '^ +[0-9]+-byte keys' *.txt   |
                            if (cnt[h]>=24) {
                                printf "%s\t%6.2f\n", h, sum[h]/cnt[h];
                            } else {
-                               printf "%s\t%6.2f \\*\\*\n", h, xsum[h]/xcnt[h];
+                               printf "%s\t%6.2f XX\n", h, xsum[h]/xcnt[h];
                            }
                        }
                      }'             |
@@ -45,6 +45,7 @@ join -t"$TAB" ${TMPDIR}/bits.j ${TMPDIR}/sanity.j |
     join -t"$TAB" - ${TMPDIR}/speed1.j            |
     join -t"$TAB" - ${TMPDIR}/speed2.j            |
     sort -g -k7                                   |
+    sed 's/\([0-9.]\+\) XX/\\\*\\\* \1/'          |
     awk -F'\t' -vOFS='\t' '{$1=sprintf("[%s](%s.txt)", $1, $1); print}' > ${TMPDIR}/joined.t
 
 cat <<EOF
