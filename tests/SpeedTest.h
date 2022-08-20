@@ -45,5 +45,5 @@
  */
 
 bool SpeedTest( const HashInfo * info );
-void ShortSpeedTest( const HashInfo * hinfo );
-void ShortSpeedTestHeader( void );
+void ShortSpeedTest( const HashInfo * hinfo, bool verbose );
+void ShortSpeedTestHeader( bool verbose );
