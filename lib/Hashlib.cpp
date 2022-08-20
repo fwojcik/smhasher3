@@ -181,8 +181,14 @@ void listHashes( bool nameonly ) {
         printf("%-25s %4s  %6s  %-60s\n", "Name", "Bits", "Type", "Description");
         printf("%-25s %4s  %6s  %-60s\n", "----", "----", "----", "-----------");
     }
+    const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
+    uint64_t prev_flags = FLAG_HASH_MOCK;
     for (const HashInfo * h: defaultSort(hashMap())) {
         if (!nameonly) {
+            if ((h->hash_flags & mask_flags) != prev_flags) {
+                printf("\n");
+                prev_flags = h->hash_flags & mask_flags;
+            }
             printf("%-25s %4d  %6s  %-60s\n", h->name, h->bits,
                     h->isMock() ? "MOCK" : (h->isCrypto() ? "CRYPTO" : ""), h->desc);
         } else {
@@ -248,9 +254,15 @@ bool verifyHash( const HashInfo * hinfo, enum HashInfo::endianness endian, bool 
 }
 
 bool verifyAllHashes( bool verbose ) {
+    const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
+    uint64_t prev_flags = FLAG_HASH_MOCK;
     bool result = true;
 
     for (const HashInfo * h: defaultSort(hashMap())) {
+        if (verbose && ((h->hash_flags & mask_flags) != prev_flags)) {
+            printf("\n");
+            prev_flags = h->hash_flags & mask_flags;
+        }
         if (!h->Init()) {
             if (verbose) {
                 reportInitFailure(h);

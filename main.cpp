@@ -297,12 +297,18 @@ static bool HashSelfTest( const HashInfo * hinfo ) {
 }
 
 static void HashSanityTestAll( void ) {
+    const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
+    uint64_t prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ SanityAll Tests ]]]\n\n");
 
     SanityTestHeader();
     for (const HashInfo * h: allHashes) {
+        if ((h->hash_flags & mask_flags) != prev_flags) {
+            printf("\n");
+            prev_flags = h->hash_flags & mask_flags;
+        }
         if (!h->Init()) {
             printf("%s : hash initialization failed!", h->name);
             continue;
@@ -316,12 +322,18 @@ static void HashSanityTestAll( void ) {
 // Quickly speed test all hashes
 
 static void HashSpeedTestAll( void ) {
+    const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
+    uint64_t prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ Short Speed Tests ]]]\n\n");
 
     ShortSpeedTestHeader();
     for (const HashInfo * h: allHashes) {
+        if ((h->hash_flags & mask_flags) != prev_flags) {
+            printf("\n");
+            prev_flags = h->hash_flags & mask_flags;
+        }
         if (!h->Init()) {
             printf("%s : hash initialization failed!", h->name);
             continue;
