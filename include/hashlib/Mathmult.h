@@ -143,7 +143,12 @@ static FORCE_INLINE void fma32_96( uint32_t & rlo, uint32_t & rmi, uint32_t & rh
 
 // 64x64->128 multiplication [rhi:rlo = a * b]
 static FORCE_INLINE void mult64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
-#if defined(HAVE_ARM64_ASM)
+#if defined(HAVE_UMUL128)
+    rlo = _umul128(a, b, &rhi);
+#elif defined(HAVE_UMULH)
+    rlo = a * b;
+    rhi = __umulh(a, b);
+#elif defined(HAVE_ARM64_ASM)
     /*
      * AARCH64 needs 2 insns to calculate 128-bit result of the
      * multiplication.  If we use a generic code we actually call a
@@ -161,11 +166,6 @@ static FORCE_INLINE void mult64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a,
              : "=r" (rhi)
              : "r" (a), "r" (b)
     );
-#elif defined(HAVE_UMUL128)
-    rlo = _umul128(a, b, &rhi);
-#elif defined(HAVE_UMULH)
-    rlo = a * b;
-    rhi = __umulh(a, b);
 #elif defined(HAVE_AVX2) && defined(HAVE_X86_64_ASM)
     /*
      * We want to use AVX2 insn MULX instead of generic x86-64 MULQ
