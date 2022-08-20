@@ -299,16 +299,24 @@ bool SpeedTest( const HashInfo * hinfo ) {
 //-----------------------------------------------------------------------------
 // Does 5 different speed tests to try to summarize hash performance
 
-void ShortSpeedTestHeader( void ) {
+void ShortSpeedTestHeader( bool verbose ) {
     printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n\n");
-    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n",
-            "Name", "   Bulk    ", " 1-8 bytes ", "9-16 bytes", "17-24 bytes", "25-32 bytes");
-    printf("%-25s  %11s  %18s  %18s  %18s  %18s  \n",
-            "-------------------------", "-----------", "------------------",
-            "------------------", "------------------", "------------------");
+    if (verbose) {
+        printf("%-25s  %9s  %17s  %17s  %17s  %17s  \n",
+                "Name", "Bulk  ", "1-8 bytes    ", "9-16 bytes   ", "17-24 bytes   ", "25-32 bytes   ");
+        printf("%-25s  %9s  %17s  %17s  %17s  %17s  \n",
+                "-------------------------", "---------", "-----------------",
+                "-----------------", "-----------------", "-----------------");
+    } else {
+        printf("%-25s  %9s  %11s  %11s  %11s  %11s  \n",
+                "Name", "Bulk  ", "1-8 bytes ", "9-16 bytes", "17-24 bytes", "25-32 bytes");
+        printf("%-25s  %9s  %11s  %11s  %11s  %11s  \n",
+                "-------------------------", "---------", "-----------",
+                "-----------", "-----------", "-----------");
+    }
 }
 
-void ShortSpeedTest( const HashInfo * hinfo ) {
+void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
     Rand         r( 321321 );
@@ -331,7 +339,7 @@ void ShortSpeedTest( const HashInfo * hinfo ) {
         // Do a bulk speed test, varying precise block size and alignment
         double cycles = SpeedTest(hash, seed, BULK_TRIALS, baselen, basealignoffset, maxvarylen, maxvaryalign);
         double curbpc = ((double)baselen - ((double)maxvarylen / 2)) / cycles;
-        printf("    %8.2f  ", curbpc);
+        printf("   %7.2f ", curbpc);
     }
 
     // Do 4 different small block speed tests, averaging over each
@@ -349,7 +357,15 @@ void ShortSpeedTest( const HashInfo * hinfo ) {
                 worstdevpct = devpct;
             }
         }
-        printf("    %7.2f [%5.3f] ", cycles / 8.0, worstdevpct);
+        if (verbose) {
+            if (worstdevpct < 1.0) {
+                printf("   %7.2f [%5.3f] ", cycles / 8.0, worstdevpct);
+            } else {
+                printf("   %7.2f [%#.4g] ", cycles / 8.0, worstdevpct);
+            }
+        } else {
+            printf("    %7.2f  ", cycles / 8.0);
+        }
     }
 
     printf("\n");
