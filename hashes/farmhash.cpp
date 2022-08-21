@@ -1723,6 +1723,7 @@ REGISTER_HASH(FarmHash_64__UO,
 #if defined(HAVE_SSE_4_1)
 REGISTER_HASH(FarmHash_64__TE,
    $.desc       = "FarmHash Hash64WithSeed (TE version)",
+   $.impl       = "sse41",
    $.hash_flags =
          0,
    $.impl_flags =
@@ -1739,6 +1740,7 @@ REGISTER_HASH(FarmHash_64__TE,
 
 REGISTER_HASH(FarmHash_32__NT,
    $.desc       = "FarmHash Hash32WithSeed (NT version)",
+   $.impl       = "sse41",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
@@ -1773,6 +1775,7 @@ REGISTER_HASH(FarmHash_32__MK,
 #if defined(HAVE_X86_64_CRC32C) && defined(HAVE_X86_64_AES)
 REGISTER_HASH(FarmHash_32__SU,
    $.desc       = "FarmHash Hash32WithSeed (SU version)",
+   $.impl       = "x64crc+aes",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED  |
          FLAG_HASH_AES_BASED   |
@@ -1793,6 +1796,7 @@ REGISTER_HASH(FarmHash_32__SU,
 #if defined(HAVE_X86_64_CRC32C)
 REGISTER_HASH(FarmHash_32__SA,
    $.desc       = "FarmHash Hash32WithSeed (SA version)",
+   $.impl       = "x64crc",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED  |
          FLAG_HASH_CRC_BASED,

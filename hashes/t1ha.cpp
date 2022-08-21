@@ -1602,6 +1602,21 @@ static bool t1ha0_aes_selftest( void ) {
 
 #endif
 
+const char * t1ha_impl_str[] = {
+    [0] = "1N+a0",
+    [1] = "1N+a1",
+    [2] = "1N+a2",
+    [3] = "1Y+a0",
+    [4] = "1Y+a1",
+    [5] = "1Y+a2",
+    [6] = "1N+a0+aes",
+    [7] = "1N+a1+aes",
+    [8] = "1N+a2+aes",
+    [9] = "1Y+a0+aes",
+   [10] = "1Y+a1+aes",
+   [11] = "1Y+a2+aes",
+};
+
 REGISTER_FAMILY(t1ha,
    $.src_url    = "https://web.archive.org/web/20211209095620/https://github.com/erthink/t1ha",
    $.src_status = HashFamilyInfo::SRC_FROZEN
@@ -1609,6 +1624,7 @@ REGISTER_FAMILY(t1ha,
 
 REGISTER_HASH(t1ha0,
    $.desc       = "Fast Positive Hash #0 (portable, 32-bit core)",
+   $.impl       = t1ha_impl_str[T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          0,
    $.impl_flags =
@@ -1626,6 +1642,7 @@ REGISTER_HASH(t1ha0,
 
 REGISTER_HASH(t1ha1,
    $.desc       = "Fast Positive Hash #1 (portable, 64-bit core)",
+   $.impl       = t1ha_impl_str[T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          0,
    $.impl_flags =
@@ -1643,6 +1660,7 @@ REGISTER_HASH(t1ha1,
 
 REGISTER_HASH(t1ha2_64,
    $.desc       = "Fast Positive Hash #2 (portable, 64-bit core)",
+   $.impl       = t1ha_impl_str[T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          0,
    $.impl_flags =
@@ -1661,6 +1679,7 @@ REGISTER_HASH(t1ha2_64,
 
 REGISTER_HASH(t1ha2_128,
    $.desc       = "Fast Positive Hash #2 (portable, 64-bit core)",
+   $.impl       = t1ha_impl_str[T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          0,
    $.impl_flags =
@@ -1679,6 +1698,7 @@ REGISTER_HASH(t1ha2_128,
 
 REGISTER_HASH(t1ha2_64__incr,
    $.desc       = "Fast Positive Hash #2 (portable, 64-bit core, incremental version)",
+   $.impl       = t1ha_impl_str[T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          0,
    $.impl_flags =
@@ -1699,6 +1719,7 @@ REGISTER_HASH(t1ha2_64__incr,
 
 REGISTER_HASH(t1ha2_128__incr,
    $.desc       = "Fast Positive Hash #2 (portable, 64-bit core, incremental version)",
+   $.impl       = t1ha_impl_str[T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          0,
    $.impl_flags =
@@ -1720,6 +1741,7 @@ REGISTER_HASH(t1ha2_128__incr,
 #if defined(HAVE_X86_64_AES)
 REGISTER_HASH(t1ha0__aesA,
    $.desc       = "Fast Positive Hash #0a (AES-NI)",
+   $.impl       = t1ha_impl_str[6 + T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          FLAG_HASH_AES_BASED,
    $.impl_flags =
@@ -1737,6 +1759,7 @@ REGISTER_HASH(t1ha0__aesA,
 
 REGISTER_HASH(t1ha0__aesB,
    $.desc       = "Fast Positive Hash #0b (AES-NI)",
+   $.impl       = t1ha_impl_str[6 + T1HA_SYS_UNALIGNED_ACCESS + 3 * (T1HA_USE_ALIGNED_ONESHOT_READ)],
    $.hash_flags =
          FLAG_HASH_AES_BASED,
    $.impl_flags =

@@ -1190,6 +1190,7 @@ REGISTER_FAMILY(umash,
 
 REGISTER_HASH(UMASH_64,
    $.desc       = "UMASH-64 (which == 0)",
+   $.impl       = "hwclmul",
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_CLMUL_BASED,
@@ -1207,6 +1208,7 @@ REGISTER_HASH(UMASH_64,
 
 REGISTER_HASH(UMASH_64__reseed,
    $.desc       = "UMASH-64 (which == 0, with full reseeding)",
+   $.impl       = "hwclmul",
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_CLMUL_BASED,
@@ -1225,6 +1227,7 @@ REGISTER_HASH(UMASH_64__reseed,
 
 REGISTER_HASH(UMASH_128,
    $.desc       = "UMASH-128",
+   $.impl       = "hwclmul",
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_CLMUL_BASED,
@@ -1242,6 +1245,7 @@ REGISTER_HASH(UMASH_128,
 
 REGISTER_HASH(UMASH_128__reseed,
    $.desc       = "UMASH-128 (with full reseeding)",
+   $.impl       = "hwclmul",
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_CLMUL_BASED,

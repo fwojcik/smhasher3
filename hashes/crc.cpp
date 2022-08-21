@@ -35,6 +35,7 @@ typedef struct {
 
 #if defined(HAVE_X86_64_CRC32C)
   #include "Intrinsics.h"
+  #define CRC_IMPL_STR "hwcrc_x64"
 
 // Fancy hardware version
 
@@ -233,6 +234,8 @@ static uint32_t crc32c_hw( uint32_t crc, const crc_hw_table * tbl, const void * 
     return (uint32_t)(crc0 ^ 0xffffffff);
 }
 
+#else
+  #define CRC_IMPL_STR "sw"
 #endif
 
 
@@ -386,6 +389,7 @@ REGISTER_FAMILY(crc,
 
 REGISTER_HASH(CRC_32C,
    $.desc       = "CRC32-C (Castagnoli, 0x1EDC6F41 / 0x82F63B78)",
+   $.impl       = CRC_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRC_BASED          |
          FLAG_HASH_LOOKUP_TABLE       |

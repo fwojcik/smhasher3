@@ -145,6 +145,7 @@ static inline void poly_step_portable( uint64_t & ah, uint64_t & al, const uint6
 // SSE2-based 32-bit ASM code
 
 #if defined(HAVE_32BIT_PLATFORM) && defined(HAVE_SSE_2)
+  #define VMAC_IMPL_STR "32bitsse2"
 
 template <bool bswap>
 static void nh_16_sse2( const uint8_t * mp, const uint64_t * kp, size_t nw, uint64_t & rh, uint64_t & rl ) {
@@ -371,6 +372,8 @@ static void poly_step_sse2( uint64_t & ah, uint64_t & al, const uint64_t & kh,
   #undef k3
 }
 
+#else
+  #define VMAC_IMPL_STR "portable"
 #endif
 
 //-----------------------------------------------------------------------------
@@ -625,8 +628,8 @@ REGISTER_FAMILY(vmac,
 
 REGISTER_HASH(VHASH__32,
    $.desc       = "VHASH low 32 bits, by Ted Krovetz and Wei Dai",
+   $.impl       = VMAC_IMPL_STR,
    $.hash_flags =
-         FLAG_HASH_AES_BASED              |
          FLAG_HASH_CRYPTOGRAPHIC,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_128        |
@@ -642,8 +645,8 @@ REGISTER_HASH(VHASH__32,
 
 REGISTER_HASH(VHASH,
    $.desc       = "VHASH, by Ted Krovetz and Wei Dai",
+   $.impl       = VMAC_IMPL_STR,
    $.hash_flags =
-         FLAG_HASH_AES_BASED              |
          FLAG_HASH_CRYPTOGRAPHIC,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_128        |

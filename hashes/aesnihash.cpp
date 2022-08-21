@@ -86,6 +86,7 @@ REGISTER_FAMILY(aesnihash,
 
 REGISTER_HASH(aesnihash,
    $.desc       = "majek's aesnihash",
+   $.impl       = "aesni",
    $.hash_flags =
          FLAG_HASH_NO_SEED        |
          FLAG_HASH_AES_BASED,

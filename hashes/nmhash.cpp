@@ -55,6 +55,13 @@
   #define NMH_ACC_ALIGN 16
 #endif
 
+const char * nmh_impl_str[] = {
+    [NMH_SCALAR] = "scalar",
+    [NMH_SSE2]   = "sse2",
+    [NMH_AVX2]   = "avx2",
+    [NMH_AVX512] = "avx512",
+};
+
 #if NMH_VECTOR > NMH_SCALAR
   #include "Intrinsics.h"
 #endif
@@ -757,6 +764,7 @@ REGISTER_FAMILY(nmhash,
 
 REGISTER_HASH(NMHASH,
    $.desc       = "nmhash32 v2",
+   $.impl       = nmh_impl_str[NMH_VECTOR],
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE   |
          FLAG_HASH_SMALL_SEED,
@@ -775,6 +783,7 @@ REGISTER_HASH(NMHASH,
 
 REGISTER_HASH(NMHASHX,
    $.desc       = "nmhash32x v2",
+   $.impl       = nmh_impl_str[NMH_VECTOR],
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE   |
          FLAG_HASH_SMALL_SEED,

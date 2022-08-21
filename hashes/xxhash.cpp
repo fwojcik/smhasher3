@@ -1056,6 +1056,15 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar( void * RESTRICT customSec
 #define XXH_NEON   4
 #define XXH_VSX    5
 
+static const char * xxh_vector_str[] = {
+    [XXH_SCALAR] = "scalar",
+    [XXH_SSE2]   = "sse2",
+    [XXH_AVX2]   = "avx2",
+    [XXH_AVX512] = "avx512",
+    [XXH_NEON]   = "neon",
+    [XXH_VSX]    = "vsx",
+};
+
 #if defined(__has_builtin)
   #define XXH_HAS_BUILTIN(x) __has_builtin(x)
 #else
@@ -1419,6 +1428,7 @@ REGISTER_HASH(XXH_64,
 
 REGISTER_HASH(XXH3_64,
    $.desc       = "xxh3, 64-bit version",
+   $.impl       = xxh_vector_str[XXH_VECTOR],
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_ENDIAN_INDEPENDENT,
@@ -1436,6 +1446,7 @@ REGISTER_HASH(XXH3_64,
 
 REGISTER_HASH(XXH3_128,
    $.desc       = "xxh3, 128-bit version",
+   $.impl       = xxh_vector_str[XXH_VECTOR],
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_ENDIAN_INDEPENDENT,

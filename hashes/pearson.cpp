@@ -67,11 +67,14 @@ static bool pearson_hash_init( void ) {
 #if defined(HAVE_X86_64_AES)
   #include "Intrinsics.h"
   #include "pearson/hash-aesni.h"
+  #define PEARSON_IMPL_STR "aesni"
 #elif defined(HAVE_SSSE_3)
   #include "Intrinsics.h"
   #include "pearson/hash-ssse3.h"
+  #define PEARSON_IMPL_STR "ssse3"
 #else
   #include "pearson/hash-portable.h"
+  #define PEARSON_IMPL_STR "portable"
 #endif
 
 static void pearson64( const void * in, const size_t len, const seed_t seed, void * out ) {
@@ -93,6 +96,7 @@ REGISTER_FAMILY(pearson,
 
 REGISTER_HASH(Pearson_64,
    $.desc       = "Pearson hash, 8 lanes using AES sbox",
+   $.impl       = PEARSON_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_AES_BASED               |
          FLAG_HASH_LOOKUP_TABLE,
@@ -109,6 +113,7 @@ REGISTER_HASH(Pearson_64,
 
 REGISTER_HASH(Pearson_128,
    $.desc       = "Pearson hash, 16 lanes using AES sbox",
+   $.impl       = PEARSON_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_AES_BASED               |
          FLAG_HASH_LOOKUP_TABLE,
@@ -125,6 +130,7 @@ REGISTER_HASH(Pearson_128,
 
 REGISTER_HASH(Pearson_256,
    $.desc       = "Pearson hash, 32 lanes using AES sbox",
+   $.impl       = PEARSON_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_AES_BASED               |
          FLAG_HASH_LOOKUP_TABLE,

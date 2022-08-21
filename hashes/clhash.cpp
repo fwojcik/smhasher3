@@ -463,6 +463,7 @@ REGISTER_FAMILY(clhash,
 
 REGISTER_HASH(CLhash__bitmix,
    $.desc       = "Carryless multiplication hash, with -DBITMIX",
+   $.impl       = "hwclmul",
    $.hash_flags =
          FLAG_HASH_CLMUL_BASED      |
          FLAG_HASH_LOOKUP_TABLE     |
@@ -480,6 +481,7 @@ REGISTER_HASH(CLhash__bitmix,
 
 REGISTER_HASH(CLhash,
    $.desc       = "Carryless multiplication hash, without -DBITMIX",
+   $.impl       = "hwclmul",
    $.hash_flags =
          FLAG_HASH_CLMUL_BASED      |
          FLAG_HASH_LOOKUP_TABLE     |

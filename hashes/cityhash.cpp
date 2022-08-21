@@ -831,6 +831,7 @@ REGISTER_HASH(CityMurmur__seed3,
 
 REGISTER_HASH(CityHashCrc_128__seed1,
    $.desc       = "Google CityHashCrc128WithSeed (seeded low 64 bits)",
+   $.impl       = "hwcrc_x64",
    $.hash_flags =
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
@@ -846,6 +847,7 @@ REGISTER_HASH(CityHashCrc_128__seed1,
 
 REGISTER_HASH(CityHashCrc_128__seed2,
    $.desc       = "Google CityHashCrc128WithSeed (seeded high 64 bits)",
+   $.impl       = "hwcrc_x64",
    $.hash_flags =
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
@@ -861,6 +863,7 @@ REGISTER_HASH(CityHashCrc_128__seed2,
 
 REGISTER_HASH(CityHashCrc_128__seed3,
    $.desc       = "Google CityHashCrc128WithSeed (seeded low+high 64 bits)",
+   $.impl       = "hwcrc_x64",
    $.hash_flags =
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
@@ -876,6 +879,7 @@ REGISTER_HASH(CityHashCrc_128__seed3,
 
 REGISTER_HASH(CityHashCrc_256,
    $.desc       = "Google CityHashCrc256 (with modified seeding)",
+   $.impl       = "hwcrc_x64",
    $.hash_flags =
          FLAG_HASH_NO_SEED         |
          FLAG_HASH_CRC_BASED,

@@ -1247,6 +1247,7 @@ namespace halftime_hash {
 // XXX Assumes (e.g.) AVX512F implies having AVX2 and SSE2
 
 #if defined(HAVE_ARM_NEON)
+  #define HALFTIME_IMPL_STR "neon"
 
         SPECIALIZE_4(4, Neon  )
         SPECIALIZE_4(3, Neon  )
@@ -1254,6 +1255,7 @@ namespace halftime_hash {
         SPECIALIZE_4(1, Scalar)
 
 #elif defined(HAVE_AVX512_F)
+  #define HALFTIME_IMPL_STR "avx512f"
 
         SPECIALIZE_4(4, Avx512)
         SPECIALIZE_4(3, Avx2  )
@@ -1261,6 +1263,7 @@ namespace halftime_hash {
         SPECIALIZE_4(1, Scalar)
 
 #elif defined(HAVE_AVX2)
+  #define HALFTIME_IMPL_STR "avx2"
 
         SPECIALIZE_4(4, Avx2  )
         SPECIALIZE_4(3, Avx2  )
@@ -1268,6 +1271,7 @@ namespace halftime_hash {
         SPECIALIZE_4(1, Scalar)
 
 #elif defined(HAVE_SSE_2)
+  #define HALFTIME_IMPL_STR "sse2"
 
         SPECIALIZE_4(4, Sse2  )
         SPECIALIZE_4(3, Sse2  )
@@ -1275,6 +1279,7 @@ namespace halftime_hash {
         SPECIALIZE_4(1, Scalar)
 
 #else
+  #define HALFTIME_IMPL_STR "portable"
 
         SPECIALIZE_4(4, Scalar)
         SPECIALIZE_4(3, Scalar)
@@ -1397,6 +1402,7 @@ REGISTER_FAMILY(halftimehash,
 
 REGISTER_HASH(HalftimeHash_64,
    $.desc       = "Halftime Hash (64-bit blocks)",
+   $.impl       = HALFTIME_IMPL_STR,
    $.sort_order = 10,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
@@ -1414,6 +1420,7 @@ REGISTER_HASH(HalftimeHash_64,
 
 REGISTER_HASH(HalftimeHash_128,
    $.desc       = "Halftime Hash (128-bit blocks)",
+   $.impl       = HALFTIME_IMPL_STR,
    $.sort_order = 20,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
@@ -1431,6 +1438,7 @@ REGISTER_HASH(HalftimeHash_128,
 
 REGISTER_HASH(HalftimeHash_256,
    $.desc       = "Halftime Hash (256-bit blocks)",
+   $.impl       = HALFTIME_IMPL_STR,
    $.sort_order = 30,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
@@ -1448,6 +1456,7 @@ REGISTER_HASH(HalftimeHash_256,
 
 REGISTER_HASH(HalftimeHash_512,
    $.desc       = "Halftime Hash (512-bit blocks)",
+   $.impl       = HALFTIME_IMPL_STR,
    $.sort_order = 40,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,

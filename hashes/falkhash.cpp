@@ -187,6 +187,7 @@ REGISTER_FAMILY(falkhash,
 //     2) The hash output was truncated to 64 bits.
 REGISTER_HASH(falkhash1,
    $.desc            = "Falkhash v1",
+   $.impl            = "aesni",
    $.hash_flags      =
          FLAG_HASH_AES_BASED,
    $.impl_flags      =
@@ -200,6 +201,7 @@ REGISTER_HASH(falkhash1,
 
 REGISTER_HASH(falkhash2,
    $.desc            = "Falkhash v2",
+   $.impl            = "aesni",
    $.hash_flags      =
          FLAG_HASH_AES_BASED,
    $.impl_flags      =

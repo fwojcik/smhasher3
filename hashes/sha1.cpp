@@ -63,11 +63,14 @@ static void SHA1_Init( SHA1_CTX * context ) {
 #if defined(HAVE_X86_64_SHA1)
   #include "Intrinsics.h"
   #include "sha1/transform-sha1x64.h"
+  #define SHA1_IMPL_STR "x64"
 #elif defined(HAVE_ARM_SHA1)
   #include "Intrinsics.h"
   #include "sha1/transform-neon.h"
+  #define SHA1_IMPL_STR "neon"
 #else
   #include "sha1/transform-portable.h"
+  #define SHA1_IMPL_STR "portable"
 #endif
 
 template <bool bswap>
@@ -236,6 +239,7 @@ REGISTER_FAMILY(sha1,
 
 REGISTER_HASH(SHA_1__32,
    $.desc       = "SHA-1, bits 0-31",
+   $.impl       = SHA1_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
@@ -257,6 +261,7 @@ REGISTER_HASH(SHA_1__32,
 
 REGISTER_HASH(SHA_1__64,
    $.desc       = "SHA-1, bits 0-63",
+   $.impl       = SHA1_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
@@ -278,6 +283,7 @@ REGISTER_HASH(SHA_1__64,
 
 REGISTER_HASH(SHA_1,
    $.desc       = "SHA-1",
+   $.impl       = SHA1_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_CRYPTOGRAPHIC_WEAK   |
