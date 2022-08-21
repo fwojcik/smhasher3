@@ -48,6 +48,7 @@ set(HASH_SRC_FILES
   hashes/poly_mersenne.cpp
   hashes/murmurhash2.cpp
   hashes/falkhash.cpp
+  hashes/aquahash.cpp
   hashes/fletcher.cpp
   hashes/crap.cpp
   hashes/blockpearson.cpp
@@ -64,9 +65,8 @@ set(HASH_SRC_FILES
   hashes/pengyhash.cpp
   hashes/mx3.cpp
   hashes/superfasthash.cpp
+  hashes/khashv.cpp
   hashes/murmurhash1.cpp
   hashes/murmur_oaat.cpp
   hashes/x17.cpp
-  hashes/khashv.cpp
-  hashes/aquahash.cpp
 )
