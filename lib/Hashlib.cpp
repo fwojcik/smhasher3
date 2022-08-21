@@ -178,8 +178,8 @@ const HashInfo * findHash( const char * name ) {
 void listHashes( bool nameonly ) {
     if (!nameonly) {
         printf("Hashnames can be supplied using any case letters.\n\n");
-        printf("%-25s %4s  %6s  %-60s\n", "Name", "Bits", "Type", "Description");
-        printf("%-25s %4s  %6s  %-60s\n", "----", "----", "----", "-----------");
+        printf("%-25s %4s  %10s  %6s  %-60s\n", "Name", "Bits", "Impl   ", "Type ", "Description");
+        printf("%-25s %4s  %10s  %6s  %-60s\n", "----", "----", "----------", "------", "-----------");
     }
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
     uint64_t prev_flags = FLAG_HASH_MOCK;
@@ -189,7 +189,7 @@ void listHashes( bool nameonly ) {
                 printf("\n");
                 prev_flags = h->hash_flags & mask_flags;
             }
-            printf("%-25s %4d  %6s  %-60s\n", h->name, h->bits,
+            printf("%-25s %4d  %10s  %6s  %-60s\n", h->name, h->bits, h->impl,
                     h->isMock() ? "MOCK" : (h->isCrypto() ? "CRYPTO" : ""), h->desc);
         } else {
             printf("%s\n", h->name);
@@ -199,35 +199,6 @@ void listHashes( bool nameonly ) {
 
 //-----------------------------------------------------------------------------
 // Hash verification routines
-
-static void reportInitFailure( const HashInfo * hinfo ) {
-    printf("%25s - Hash initialization failed!      ...... FAIL!\n", hinfo->name);
-}
-
-static bool compareVerification( uint32_t expected, uint32_t actual, const char * endstr,
-        const char * name, bool verbose, bool prefix ) {
-    const char * result_str;
-    bool         result = true;
-
-    if (expected == actual) {
-        result_str = (actual != 0) ? "PASS\n" : "INSECURE (should not be 0)\n";
-    } else if (expected == 0) {
-        result_str = "SKIP (unverifiable)\n";
-    } else {
-        result_str = "FAIL! (Expected 0x%08x)\n";
-        result     = false;
-    }
-
-    if (verbose) {
-        if (prefix) {
-            printf("%25s - ", name);
-        }
-        printf("Verification value %2s 0x%08X ...... ", endstr, actual);
-        printf(result_str, expected);
-    }
-
-    return result;
-}
 
 static const char * endianstr( const HashInfo * hinfo, enum HashInfo::endianness e ) {
     switch (e) {
@@ -243,12 +214,42 @@ static const char * endianstr( const HashInfo * hinfo, enum HashInfo::endianness
     return NULL; /* unreachable */
 }
 
+static void reportInitFailure( const HashInfo * hinfo ) {
+    printf("%25s - Hash initialization failed!      ...... FAIL!\n", hinfo->name);
+}
+
+static bool compareVerification( uint32_t expected, uint32_t actual, const HashInfo * hinfo,
+        enum HashInfo::endianness endian, bool verbose, bool prefix ) {
+    const char * endstr = endianstr(hinfo, endian);
+    const char * result_str;
+    bool         result = true;
+
+    if (expected == actual) {
+        result_str = (actual != 0) ? "PASS\n" : "INSECURE (should not be 0)\n";
+    } else if (expected == 0) {
+        result_str = "SKIP (unverifiable)\n";
+    } else {
+        result_str = "FAIL! (Expected 0x%08x)\n";
+        result     = false;
+    }
+
+    if (verbose) {
+        if (prefix) {
+            printf("%10s| %25s - ", hinfo->impl, hinfo->name);
+        }
+        printf("Verification value %2s 0x%08X ...... ", endstr, actual);
+        printf(result_str, expected);
+    }
+
+    return result;
+}
+
 bool verifyHash( const HashInfo * hinfo, enum HashInfo::endianness endian, bool verbose, bool prefix = true ) {
     bool result = true;
     const uint32_t actual = hinfo->ComputedVerify(endian);
     const uint32_t expect = hinfo->ExpectedVerify(endian);
 
-    result &= compareVerification(expect, actual, endianstr(hinfo, endian), hinfo->name, verbose, prefix);
+    result &= compareVerification(expect, actual, hinfo, endian, verbose, prefix);
 
     return result;
 }

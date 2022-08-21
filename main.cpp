@@ -296,14 +296,14 @@ static bool HashSelfTest( const HashInfo * hinfo ) {
     return result;
 }
 
-static void HashSanityTestAll( void ) {
+static void HashSanityTestAll( bool verbose ) {
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
     uint64_t prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ SanityAll Tests ]]]\n\n");
 
-    SanityTestHeader();
+    SanityTestHeader(verbose);
     for (const HashInfo * h: allHashes) {
         if ((h->hash_flags & mask_flags) != prev_flags) {
             printf("\n");
@@ -313,7 +313,7 @@ static void HashSanityTestAll( void ) {
             printf("%s : hash initialization failed!", h->name);
             continue;
         }
-        SanityTest(h, true);
+        SanityTest(h, true, verbose);
     }
     printf("\n");
 }
@@ -398,7 +398,12 @@ static bool test( const HashInfo * hInfo ) {
     } else {
         outfile = stderr;
     }
-    fprintf(outfile, "--- Testing %s \"%s\" %s", hInfo->name, hInfo->desc, hInfo->isMock() ? "MOCK" : "");
+    if (hInfo->impl != NULL) {
+        fprintf(outfile, "--- Testing %s \"%s\" [%s] %s", hInfo->name, hInfo->desc,
+                hInfo->impl, hInfo->isMock() ? "MOCK" : "");
+    } else {
+        fprintf(outfile, "--- Testing %s \"%s\" %s", hInfo->name, hInfo->desc, hInfo->isMock() ? "MOCK" : "");
+    }
     if (g_seed != 0) {
         fprintf(outfile, " seed 0x%016" PRIx64 "\n\n", g_seed);
     } else {
@@ -767,7 +772,7 @@ int main( int argc, const char ** argv ) {
     if (g_testVerifyAll) {
         HashSelfTestAll(g_drawDiagram);
     } else if (g_testSanityAll) {
-        HashSanityTestAll();
+        HashSanityTestAll(g_drawDiagram);
     } else if (g_testSpeedAll) {
         HashSpeedTestAll(g_drawDiagram);
     } else {

@@ -302,10 +302,10 @@ bool SpeedTest( const HashInfo * hinfo ) {
 void ShortSpeedTestHeader( bool verbose ) {
     printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n\n");
     if (verbose) {
-        printf("%-25s  %9s  %17s  %17s  %17s  %17s  \n",
-                "Name", "Bulk  ", "1-8 bytes    ", "9-16 bytes   ", "17-24 bytes   ", "25-32 bytes   ");
-        printf("%-25s  %9s  %17s  %17s  %17s  %17s  \n",
-                "-------------------------", "---------", "-----------------",
+        printf("%-25s  %10s  %9s  %17s  %17s  %17s  %17s  \n",
+                "Name", "Impl   ", "Bulk  ", "1-8 bytes    ", "9-16 bytes   ", "17-24 bytes   ", "25-32 bytes   ");
+        printf("%-25s  %-10s  %9s  %17s  %17s  %17s  %17s  \n",
+                "-------------------------", "----------", "---------", "-----------------",
                 "-----------------", "-----------------", "-----------------");
     } else {
         printf("%-25s  %9s  %11s  %11s  %11s  %11s  \n",
@@ -325,6 +325,9 @@ void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
     const int basealignoffset = 0;
 
     printf("%-25s", hinfo->name);
+    if (verbose) {
+        printf("  %-10s", hinfo->impl);
+    }
 
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
