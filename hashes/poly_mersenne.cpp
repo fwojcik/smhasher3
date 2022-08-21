@@ -170,6 +170,7 @@ REGISTER_FAMILY(poly_mersenne,
 
 REGISTER_HASH(poly_mersenne__deg1,
    $.desc       = "Degree 1 Hashing mod 2^61-1",
+   $.impl       = "int128",
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_SYSTEM_SPECIFIC,
@@ -188,6 +189,7 @@ REGISTER_HASH(poly_mersenne__deg1,
 
 REGISTER_HASH(poly_mersenne__deg2,
    $.desc       = "Degree 2 Hashing mod 2^61-1",
+   $.impl       = "int128",
    $.hash_flags =
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
@@ -207,6 +209,7 @@ REGISTER_HASH(poly_mersenne__deg2,
 
 REGISTER_HASH(poly_mersenne__deg3,
    $.desc       = "Degree 3 Hashing mod 2^61-1",
+   $.impl       = "int128",
    $.hash_flags =
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
@@ -226,6 +229,7 @@ REGISTER_HASH(poly_mersenne__deg3,
 
 REGISTER_HASH(poly_mersenne__deg4,
    $.desc       = "Degree 4 Hashing mod 2^61-1",
+   $.impl       = "int128",
    $.hash_flags =
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =

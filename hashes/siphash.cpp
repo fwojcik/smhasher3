@@ -30,6 +30,13 @@
 
 #if defined(HAVE_SSSE_3) || defined(HAVE_SSE_2)
   #include "Intrinsics.h"
+  #if defined(HAVE_SSSE_3)
+    #define SIP_IMPL_STR "ssse3"
+  #else
+    #define SIP_IMPL_STR "sse2"
+  #endif
+#else
+  #define SIP_IMPL_STR "portable"
 #endif
 
 //------------------------------------------------------------
@@ -423,6 +430,7 @@ REGISTER_FAMILY(siphash,
 
 REGISTER_HASH(SipHash_2_4,
    $.desc       = "SipHash 2-4",
+   $.impl       = SIP_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_XL_SEED      |
          FLAG_HASH_CRYPTOGRAPHIC,
@@ -439,6 +447,7 @@ REGISTER_HASH(SipHash_2_4,
  );
 REGISTER_HASH(SipHash_1_3,
    $.desc       = "SipHash 1-3",
+   $.impl       = SIP_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_XL_SEED      |
          FLAG_HASH_CRYPTOGRAPHIC,

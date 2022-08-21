@@ -75,11 +75,14 @@ static void SHA256_Init( SHA2_CTX * context ) {
 #if defined(HAVE_X86_64_SHA2)
   #include "Intrinsics.h"
   #include "sha2/transform-sha2x64.h"
+  #define SHA2_IMPL_STR "x64"
 #elif defined(HAVE_ARM_SHA2)
   #include "Intrinsics.h"
   #include "sha2/transform-neon.h"
+  #define SHA2_IMPL_STR "neon"
 #else
   #include "sha2/transform-portable.h"
+  #define SHA2_IMPL_STR "portable"
 #endif
 
 //-----------------------------------------------------------------------------
@@ -259,6 +262,7 @@ REGISTER_FAMILY(sha2,
 
 REGISTER_HASH(SHA_2_256__64,
    $.desc       = "SHA-256, bits 0-63",
+   $.impl       = SHA2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
@@ -279,6 +283,7 @@ REGISTER_HASH(SHA_2_256__64,
 
 REGISTER_HASH(SHA_2_256,
    $.desc       = "SHA-256",
+   $.impl       = SHA2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
@@ -299,6 +304,7 @@ REGISTER_HASH(SHA_2_256,
 
 REGISTER_HASH(SHA_2_224__64,
    $.desc       = "SHA-224, bits 0-63",
+   $.impl       = SHA2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_ENDIAN_INDEPENDENT   |
@@ -319,6 +325,7 @@ REGISTER_HASH(SHA_2_224__64,
 
 REGISTER_HASH(SHA_2_224,
    $.desc       = "SHA-224",
+   $.impl       = SHA2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_ENDIAN_INDEPENDENT   |

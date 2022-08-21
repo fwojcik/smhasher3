@@ -36,14 +36,18 @@
 
 #if defined(HAVE_X86_64_AES)
   #include "AES-aesni.h"
+  #define AES_IMPL_STR "aesni"
 #elif defined(HAVE_ARM_AES)
   #include "AES-arm.h"
   #include "AES-portable.h" // ARM doesn't have any AES keygen intrinsics
+  #define AES_IMPL_STR "arm"
 #elif defined(HAVE_PPC_AES)
   #include "AES-ppc.h"
   #include "AES-portable.h" // PPC doesn't really have any AES keygen intrinsics
+  #define AES_IMPL_STR "ppc"
 #else
   #include "AES-portable.h"
+  #define AES_IMPL_STR "portable"
 #endif
 
 static inline void _bswap_subkeys( uint32_t rk[], int subkeys ) {

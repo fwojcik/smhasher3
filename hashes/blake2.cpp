@@ -143,8 +143,10 @@ static void blake2_increment_counter( T * ctx, const uint64_t inc ) {
 #if defined(HAVE_SSE_2)
   #include "Intrinsics.h"
   #include "blake2/compress-sse2-plus.h"
+  #define BLAKE2_IMPL_STR "sse2"
 #else
   #include "blake2/compress-portable.h"
+  #define BLAKE2_IMPL_STR "portable"
 #endif
 
 template <bool bswap, typename T>
@@ -223,6 +225,7 @@ REGISTER_FAMILY(blake2,
 
 REGISTER_HASH(blake2b_256,
    $.desc       = "BLAKE 2b, 256-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -243,6 +246,7 @@ REGISTER_HASH(blake2b_256,
 
 REGISTER_HASH(blake2b_224,
    $.desc       = "BLAKE 2b, 224-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -263,6 +267,7 @@ REGISTER_HASH(blake2b_224,
 
 REGISTER_HASH(blake2b_160,
    $.desc       = "BLAKE 2b, 160-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -283,6 +288,7 @@ REGISTER_HASH(blake2b_160,
 
 REGISTER_HASH(blake2b_128,
    $.desc       = "BLAKE 2b, 128-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -303,6 +309,7 @@ REGISTER_HASH(blake2b_128,
 
 REGISTER_HASH(blake2b_256__64,
    $.desc       = "BLAKE 2b, 256-bit digest, bits 0-63",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -323,6 +330,7 @@ REGISTER_HASH(blake2b_256__64,
 
 REGISTER_HASH(blake2s_256,
    $.desc       = "BLAKE 2s, 256-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -343,6 +351,7 @@ REGISTER_HASH(blake2s_256,
 
 REGISTER_HASH(blake2s_224,
    $.desc       = "BLAKE 2s, 224-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -363,6 +372,7 @@ REGISTER_HASH(blake2s_224,
 
 REGISTER_HASH(blake2s_160,
    $.desc       = "BLAKE 2s, 160-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -383,6 +393,7 @@ REGISTER_HASH(blake2s_160,
 
 REGISTER_HASH(blake2s_128,
    $.desc       = "BLAKE 2s, 128-bit digest",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |
@@ -403,6 +414,7 @@ REGISTER_HASH(blake2s_128,
 
 REGISTER_HASH(blake2s_256__64,
    $.desc       = "BLAKE 2s, 256-bit digest, bits 0-63",
+   $.impl       = BLAKE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_LOOKUP_TABLE         |

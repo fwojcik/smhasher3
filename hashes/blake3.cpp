@@ -322,11 +322,14 @@ static void blake3_seed( blake3_hasher * hasher, uint64_t seed ) {
 #if defined(HAVE_SSE_4_1)
   #include "Intrinsics.h"
   #include "blake3/compress-sse41.h"
+  #define BLAKE3_IMPL_STR "sse41"
 #elif defined(HAVE_SSE_2)
   #include "Intrinsics.h"
   #include "blake3/compress-sse2.h"
+  #define BLAKE3_IMPL_STR "sse2"
 #else
   #include "blake3/compress-portable.h"
+  #define BLAKE3_IMPL_STR "portable"
 #endif
 
 static FORCE_INLINE size_t compress_parents_parallel( const uint8_t * child_chaining_values, size_t num_chaining_values,
@@ -625,6 +628,7 @@ REGISTER_FAMILY(blake3,
 // homegrown with real seeding.
 REGISTER_HASH(blake3,
    $.desc       = "BLAKE 3, 256-bit digest",
+   $.impl       = BLAKE3_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_CRYPTOGRAPHIC        |
          FLAG_HASH_NO_SEED              |

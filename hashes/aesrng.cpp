@@ -197,6 +197,7 @@ REGISTER_FAMILY(aesrng,
 
 REGISTER_HASH(aesrng_32,
    $.desc       = "32-bit RNG using AES in CTR mode; not a hash",
+   $.impl       = AES_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_MOCK                |
          FLAG_HASH_AES_BASED           |
@@ -218,6 +219,7 @@ REGISTER_HASH(aesrng_32,
 
 REGISTER_HASH(aesrng_64,
    $.desc       = "64-bit RNG using AES in CTR mode; not a hash",
+   $.impl       = AES_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_MOCK                |
          FLAG_HASH_AES_BASED           |
@@ -239,6 +241,7 @@ REGISTER_HASH(aesrng_64,
 
 REGISTER_HASH(aesrng_128,
    $.desc       = "128-bit RNG using AES in CTR mode; not a hash",
+   $.impl       = AES_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_MOCK                |
          FLAG_HASH_AES_BASED           |
@@ -260,6 +263,7 @@ REGISTER_HASH(aesrng_128,
 
 REGISTER_HASH(aesrng_160,
    $.desc       = "160-bit RNG using AES in CTR mode; not a hash",
+   $.impl       = AES_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_MOCK                |
          FLAG_HASH_AES_BASED           |
@@ -281,6 +285,7 @@ REGISTER_HASH(aesrng_160,
 
 REGISTER_HASH(aesrng_224,
    $.desc       = "224-bit RNG using AES in CTR mode; not a hash",
+   $.impl       = AES_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_MOCK                |
          FLAG_HASH_AES_BASED           |
@@ -302,6 +307,7 @@ REGISTER_HASH(aesrng_224,
 
 REGISTER_HASH(aesrng_256,
    $.desc       = "256-bit RNG using AES in CTR mode; not a hash",
+   $.impl       = AES_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_MOCK                |
          FLAG_HASH_AES_BASED           |

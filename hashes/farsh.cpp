@@ -99,6 +99,7 @@ alignas(32) static const uint32_t FARSH_KEYS[STRIPE_ELEMENTS + EXTRA_ELEMENTS] =
 template <bool bswap>
 static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
 #if defined(HAVE_AVX2)
+  #define FARSH_IMPL_STR "avx2"
     __m256i         sum = _mm256_setzero_si256();
     const __m256i * xdata = (const __m256i *)data;
     const __m256i * xkey  = (const __m256i *)key;
@@ -117,6 +118,7 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
     __m128i sum128 = _mm_add_epi64(_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum, 1));
     return _mm_cvtsi128_si64(sum128);
 #elif defined(HAVE_SSE_2)
+  #define FARSH_IMPL_STR "sse2"
     __m128i         sum   = _mm_setzero_si128();
     const __m128i * xdata = (const __m128i *)data;
     const __m128i * xkey  = (const __m128i *)key;
@@ -132,6 +134,7 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
     sum = _mm_add_epi64(sum, _mm_shuffle_epi32(sum, 3 * 4 + 2)); // return sum of two 64-bit values in the sum
     return _mm_cvtsi128_si64(sum);
 #else
+  #define FARSH_IMPL_STR "portable"
     uint64_t sum = 0;
     for (int i = 0; i < STRIPE_ELEMENTS; i += 2) {
         sum += (GET_U32<bswap>(data, i * 4) + key[i]) *
@@ -249,6 +252,7 @@ REGISTER_FAMILY(farsh,
 
 REGISTER_HASH(FARSH_32,
    $.desc       = "FARSH 32-bit (1 hash output)",
+   $.impl       = FARSH_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
@@ -264,6 +268,7 @@ REGISTER_HASH(FARSH_32,
 
 REGISTER_HASH(FARSH_64,
    $.desc       = "FARSH 64-bit (2 hash outputs)",
+   $.impl       = FARSH_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
@@ -279,6 +284,7 @@ REGISTER_HASH(FARSH_64,
 
 REGISTER_HASH(FARSH_128,
    $.desc       = "FARSH 128-bit (4 hash outputs)",
+   $.impl       = FARSH_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
@@ -295,6 +301,7 @@ REGISTER_HASH(FARSH_128,
 
 REGISTER_HASH(FARSH_256,
    $.desc       = "FARSH 256-bit (8 hash outputs)",
+   $.impl       = FARSH_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =

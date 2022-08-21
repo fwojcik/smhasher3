@@ -343,6 +343,7 @@ REGISTER_HASH(MetroHash_64__var2,
 
 REGISTER_HASH(MetroHashCrc_64__var1,
    $.desc       = "Metrohash-crc v1 variant 1, 64-bit version (unofficial)",
+   $.impl       = "x64crc",
    $.hash_flags =
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
@@ -359,6 +360,7 @@ REGISTER_HASH(MetroHashCrc_64__var1,
 
 REGISTER_HASH(MetroHashCrc_64__var2,
    $.desc       = "Metrohash-crc v1 variant 2, 64-bit version (unofficial)",
+   $.impl       = "x64crc",
    $.hash_flags =
          0,
    $.impl_flags =
@@ -427,6 +429,7 @@ REGISTER_HASH(MetroHash_128__var2,
 
 REGISTER_HASH(MetroHashCrc_128__var1,
    $.desc       = "Metrohash-crc v1 variant 1, 128-bit version",
+   $.impl       = "x64crc",
    $.hash_flags =
          0,
    $.impl_flags =
@@ -443,6 +446,7 @@ REGISTER_HASH(MetroHashCrc_128__var1,
 
 REGISTER_HASH(MetroHashCrc_128__var2,
    $.desc       = "Metrohash-crc v1 variant 2, 128-bit version",
+   $.impl       = "x64crc",
    $.hash_flags =
          0,
    $.impl_flags =

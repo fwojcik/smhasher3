@@ -355,6 +355,7 @@ REGISTER_HASH(tabulation_32,
 #if defined(HAVE_INT128)
 REGISTER_HASH(tabulation_64,
    $.desc       = "64-bit Tabulation with Multiply-Shift Mixer",
+   $.impl       = "int128",
    $.hash_flags =
          FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_SYSTEM_SPECIFIC,

@@ -33,6 +33,9 @@
 
 #if defined(HAVE_SSE_2)
   #include "Intrinsics.h"
+  #define HASSHE2_IMPL_STR "sse2"
+#else
+  #define HASSHE2_IMPL_STR "portable"
 #endif
 
 //------------------------------------------------------------
@@ -285,6 +288,7 @@ REGISTER_FAMILY(hasshe2,
 
 REGISTER_HASH(hasshe2,
    $.desc       = "hasshe2 (SSE2-oriented hash)",
+   $.impl       = HASSHE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_NO_SEED,
    $.impl_flags =
@@ -300,6 +304,7 @@ REGISTER_HASH(hasshe2,
 
 REGISTER_HASH(hasshe2__tweaked,
    $.desc       = "hasshe2 (SSE2-oriented hash, tweaked to add len into IV)",
+   $.impl       = HASSHE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_NO_SEED,
    $.impl_flags =

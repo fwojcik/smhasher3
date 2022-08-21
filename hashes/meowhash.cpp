@@ -362,6 +362,7 @@ REGISTER_FAMILY(meowhash,
 
 REGISTER_HASH(MeowHash__32,
    $.desc       = "MeowHash (0.5/calico, low 32 bits)",
+   $.impl       = "aesni",
    $.hash_flags =
          FLAG_HASH_NO_SEED       |
          FLAG_HASH_AES_BASED,
@@ -377,6 +378,7 @@ REGISTER_HASH(MeowHash__32,
 
 REGISTER_HASH(MeowHash__64,
    $.desc       = "MeowHash (0.5/calico, low 64 bits)",
+   $.impl       = "aesni",
    $.hash_flags =
          FLAG_HASH_NO_SEED       |
          FLAG_HASH_AES_BASED,
@@ -392,6 +394,7 @@ REGISTER_HASH(MeowHash__64,
 
 REGISTER_HASH(MeowHash,
    $.desc       = "MeowHash (0.5/calico)",
+   $.impl       = "aesni",
    $.hash_flags =
          FLAG_HASH_NO_SEED       |
          FLAG_HASH_AES_BASED,
