@@ -68,4 +68,5 @@ set(HASH_SRC_FILES
   hashes/murmur_oaat.cpp
   hashes/x17.cpp
   hashes/khashv.cpp
+  hashes/aquahash.cpp
 )
