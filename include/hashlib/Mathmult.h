@@ -259,7 +259,13 @@ static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo 
 
 // 128-bit addition [rhi:rlo += addhi:addlo]
 static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo, uint64_t addhi ) {
-#if defined(HAVE_X86_64_ASM)
+#if defined(HAVE_PPC_ASM)
+    __asm__ ("addc %1, %1, %3\n"
+             "adde %0, %0, %2\n"
+             : "+r" (rhi), "+r" (rlo)
+             : "r" (addhi), "r" (addlo)
+    );
+#elif defined(HAVE_X86_64_ASM)
     __asm__ ("addq %2, %0\n"
              "adcq %3, %1\n"
   #if defined(DEBUG)
@@ -278,12 +284,6 @@ static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo,
              : "g" (addlo), "g" (addhi)
   #endif
              : "cc"
-    );
-#elif defined(HAVE_PPC_ASM)
-    __asm__ ("addc %1, %1, %3\n"
-             "adde %0, %0, %2\n"
-             : "+r" (rhi), "+r" (rlo)
-             : "r" (addhi), "r" (addlo)
     );
 #else
     rlo += addlo;
