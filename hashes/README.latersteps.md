@@ -178,6 +178,9 @@ The remaining user-settable parts of the metadata are all set via a comma-separa
 list of `$.KEY = VALUE` statements. The last one of those must not have a
 comma. The list of those metadata keys is:
 - `desc`, a textual description of the hash, which should not exceed 60 characters
+- `impl`, a textual description of the hash implementation chosen, if multiple are
+  available (e.g. "portable", "AVX2", "arm-neon", etc.), which should not exceed 10
+  characters. (optional; leave unset if no alternate implementations)
 - `hash_flags`, which marks specific yes/no information about the hash itself
 - `impl_flags`, which marks specific yes/no information about this particular
   implementation of the hash

@@ -46,5 +46,5 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-bool SanityTest( const HashInfo * hinfo, bool oneline = false );
-void SanityTestHeader( void );
+bool SanityTest( const HashInfo * hinfo, bool oneline = false, bool verbose = false );
+void SanityTestHeader( bool verbose );

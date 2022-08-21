@@ -653,19 +653,34 @@ bool PrependedZeroesTest( const HashInfo * hinfo, bool verbose ) {
     return result;
 }
 
-void SanityTestHeader( void ) {
-    printf("%-25s   %13s     %13s     %13s\n",
-            "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
-    printf("%-25s   %13s     %13s     %13s\n",
-            "-------------------------", "-------------", "-------------", "-------------");
+void SanityTestHeader( bool verbose ) {
+    if (verbose) {
+        printf("%-25s  %-10s   %13s     %13s     %13s\n",
+                "Name", "Impl   ", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
+        printf("%-25s  %-10s   %13s     %13s     %13s\n",
+                "-------------------------", "----------", "-------------", "-------------", "-------------");
+    } else {
+        printf("%-25s   %13s     %13s     %13s\n",
+                "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
+        printf("%-25s   %13s     %13s     %13s\n",
+                "-------------------------", "-------------", "-------------", "-------------");
+    }
 }
 
-bool SanityTest( const HashInfo * hinfo, bool oneline ) {
-    bool verbose      = !oneline;
+bool SanityTest( const HashInfo * hinfo, bool oneline, bool verbose ) {
     bool result       = true;
     bool threadresult = true;
 
-    if (oneline) { printf("%-25s  ", hinfo->name); }
+    if (oneline) {
+        if (verbose) {
+            printf("%-25s  %-10s  ", hinfo->name, hinfo->impl);
+        } else {
+            printf("%-25s  ", hinfo->name);
+        }
+    }
+
+    // Subtests are verbose unless oneline mode is enabled
+    verbose = !oneline;
 
     result &= SanityTest1(hinfo, verbose);
     result &= SanityTest2(hinfo, verbose);

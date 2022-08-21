@@ -145,6 +145,7 @@ class HashInfo {
     const char *      family;
     const char *      name;
     const char *      desc;
+    const char *      impl;
     uint64_t          hash_flags;
     uint64_t          impl_flags;
     uint32_t          sort_order;
@@ -159,7 +160,7 @@ class HashInfo {
     std::set<seed_t>  badseeds;
 
     HashInfo( const char * n, const char * f ) :
-        name( _fixup_name( n )), family( f ), desc( "" ),
+        name( _fixup_name( n )), family( f ), desc( "" ), impl( "" ),
         initfn( NULL ), seedfixfn( NULL ), seedfn( NULL ),
         hashfn_native( NULL ), hashfn_bswap( NULL ) {}
 
