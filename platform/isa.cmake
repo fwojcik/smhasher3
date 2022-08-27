@@ -53,6 +53,8 @@ endfunction()
 
 set(detectVarsFilesMap
   HAVE_SSE_2             x86_64_sse2.cpp
+  HAVE_GOOD_LOADU_32     x86_64_loadu_32.cpp
+  HAVE_GOOD_LOADU_64     x86_64_loadu_64.cpp
   HAVE_SSSE_3            x86_64_ssse3.cpp
   HAVE_SSE_4_1           x86_64_sse41.cpp
   HAVE_XOP               x86_64_xop.cpp
@@ -148,6 +150,20 @@ file(WRITE ${CMAKE_BINARY_DIR}/include/isa.h "${PREAMBLE}")
 feature_detect(HAVE_SSE_2)
 if(HAVE_SSE_2)
   message(STATUS "  x86_64 SSE 2 intrinsics available")
+
+  feature_detect(HAVE_GOOD_LOADU_32)
+  if(HAVE_GOOD_LOADU_32)
+    message(STATUS "  x86_64 16- and 32-bit loadu intrinsics available")
+  else()
+    message(STATUS "  x86_64 16- and 32-bit loadu intrinsics unavailable; using fallbacks")
+  endif()
+
+  feature_detect(HAVE_GOOD_LOADU_64)
+  if(HAVE_GOOD_LOADU_64)
+    message(STATUS "  x86_64 64-bit loadu intrinsics available")
+  else()
+    message(STATUS "  x86_64 64-bit loadu intrinsics unavailable; using fallbacks")
+  endif()
 
   feature_detect(HAVE_SSSE_3)
   if(HAVE_SSSE_3)
