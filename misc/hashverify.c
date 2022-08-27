@@ -112,5 +112,5 @@ int main( void ) {
         exit(1);
     }
 
-    printf("Native-endian verification code: %08x\n", ComputedVerifyImpl());
+    printf("Native-endian verification code: 0x%08X\n", ComputedVerifyImpl());
 }
