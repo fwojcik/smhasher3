@@ -146,6 +146,16 @@ set(CLZ64_VARIANTS
 )
 findVariant(CLZ64)
 
+# For this one, fallback really means "unsupported".
+# Users should check against HAVE_GENERIC_VECTOR.
+set(VECTOR_VARIANTS
+  "Generic vector types"
+  "vector"
+  "\n"
+  2
+)
+findVariant(VECTOR)
+
 # By depending on this .cmake file, the cache will be cleared if the
 # list of files were to ever change, as this file is the only one that
 # can change it.
