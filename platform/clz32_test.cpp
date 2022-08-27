@@ -9,7 +9,7 @@ int main(int argc, const char *argv[]) {
     const int count = clz4(i32);
     printf("count %d\n", count);
 #else
-    static_assert(clz4(i32) == 24);
+    static_assert(clz4(i32) == 24, "nope");
 #endif
     printf("OK!\n");
 }

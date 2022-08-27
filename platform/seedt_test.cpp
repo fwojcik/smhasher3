@@ -10,7 +10,7 @@
 // include the type_traits header just for this one thing.
 
 int main(int argc, const char *argv[]) {
-    static_assert(sizeof(seed_t) >= sizeof(uint64_t));
-    static_assert(sizeof(seed_t) >= sizeof(uintptr_t));
+    static_assert(sizeof(seed_t) >= sizeof(uint64_t), "nope");
+    static_assert(sizeof(seed_t) >= sizeof(uintptr_t), "nope");
     printf("OK!\n");
 }
