@@ -65,6 +65,7 @@ set(detectVarsFilesMap
   HAVE_AVX2              x86_64_avx2.cpp
   HAVE_AVX512_F          x86_64_avx512_f.cpp
   HAVE_AVX512_BW         x86_64_avx512_bw.cpp
+  HAVE_AVX512_VL         x86_64_avx512_vl.cpp
   HAVE_UMULH             x86_64_umulh.cpp
   HAVE_UMUL128           x86_64_umul128.cpp
   HAVE_X86_64_ASM        x86_64_asm.cpp
@@ -210,6 +211,12 @@ if(HAVE_SSE_2)
 	    feature_detect(HAVE_AVX512_BW)
 	    if(HAVE_AVX512_BW)
 	      message(STATUS "  x86_64 AVX512-BW intrinsics available")
+	    endif()
+
+	    # Vector Length
+	    feature_detect(HAVE_AVX512_VL)
+	    if(HAVE_AVX512_VL)
+	      message(STATUS "  x86_64 AVX512-VL intrinsics available")
 	    endif()
 	  endif()
         endif()
