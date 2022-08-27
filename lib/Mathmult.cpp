@@ -29,20 +29,23 @@ static void fail( const char * test, int idx, const T * expected, std::initializ
         printf("Test %s failed!\n\tGot     :", test);
     }
     int count = 0;
+    // The casts are needed in the printf()s so that clang doesn't complain about the
+    // if() branches that aren't taken. If we had C++17's constexpr if then this
+    // wouldn't be needed.
     for (auto val: actual) {
         if (sizeof(T) == 4) {
-            printf(" %08x", val);
+            printf(" %08x", (uint32_t)val);
         } else {
-            printf(" %016lx", val);
+            printf(" %016lx", (uint64_t)val);
         }
         count++;
     }
     printf("\n\tExpected:");
     for (int i = 0; i < count; i++) {
         if (sizeof(T) == 4) {
-            printf(" %08x", expected[i]);
+            printf(" %08x", (uint32_t)expected[i]);
         } else {
-            printf(" %016lx", expected[i]);
+            printf(" %016lx", (uint64_t)expected[i]);
         }
     }
     printf("\n\n");

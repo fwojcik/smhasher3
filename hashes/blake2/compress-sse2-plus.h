@@ -116,13 +116,15 @@
 #endif
 
 #if defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
-#define _mm_roti_epi64(x, c)                                                           \
+  #undef _mm_roti_epi64
+  #define _mm_roti_epi64(x, c)                                                         \
     (-(c) == 32) ? _mm_shuffle_epi32((x), _MM_SHUFFLE(2,3,0,1))                        \
     : (-(c) == 24) ? _mm_shuffle_epi8((x), r24)                                        \
     : (-(c) == 16) ? _mm_shuffle_epi8((x), r16)                                        \
     : (-(c) == 63) ? _mm_xor_si128(_mm_srli_epi64((x), -(c)), _mm_add_epi64((x), (x))) \
     : _mm_xor_si128(_mm_srli_epi64((x), -(c)), _mm_slli_epi64((x), 64-(-(c))))
 #elif !defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
+  #undef _mm_roti_epi64
   #define _mm_roti_epi64(r, c) _mm_xor_si128(_mm_srli_epi64((r), -(c)), _mm_slli_epi64((r), 64 - (-(c))))
 #endif
 
@@ -616,11 +618,13 @@ static void blake2_compress( blake2b_context * ctx, const uint8_t * in ) {
 #endif
 
 #if defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
-#define _mm_roti_epi32(r, c) (                       \
+  #undef _mm_roti_epi32
+  #define _mm_roti_epi32(r, c) (                     \
                 (8==-(c)) ? _mm_shuffle_epi8(r,r8)   \
               : (16==-(c)) ? _mm_shuffle_epi8(r,r16) \
               : _mm_xor_si128(_mm_srli_epi32( (r), -(c) ),_mm_slli_epi32( (r), 32-(-(c)) )) )
 #elif !defined(HAVE_SSSE_3) && !defined(HAVE_XOP)
+  #undef _mm_roti_epi32
   #define _mm_roti_epi32(r, c) _mm_xor_si128(_mm_srli_epi32((r), -(c)), _mm_slli_epi32((r), 32 - (-(c))))
 #endif
 
