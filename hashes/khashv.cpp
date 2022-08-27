@@ -19,6 +19,7 @@ SOFTWARE.
 */
 #include "Platform.h"
 #include "Hashlib.h"
+#include "Intrinsics.h"
 #include "khashv/khashv.h"
 
 //------------------------------------------------------------
