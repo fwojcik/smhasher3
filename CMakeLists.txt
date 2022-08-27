@@ -10,6 +10,10 @@ if(POLICY CMP0066) # honor per-config flags in try_compile() source-file
                    # signature.
   cmake_policy(SET CMP0066 NEW) # since 3.7
 endif()
+if(POLICY CMP0067) # honor C++ standard requirement in try_compile() source-file
+                   # signature.
+  cmake_policy(SET CMP0067 NEW) # since 3.8
+endif()
 if(POLICY CMP0069) # Honor IPO setting for all supported compilers, not just icc
   cmake_policy(SET CMP0069 NEW) # since 3.9
 endif()
