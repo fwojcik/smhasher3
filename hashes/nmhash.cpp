@@ -43,12 +43,16 @@
 
 #if defined(HAVE_AVX512_BW)
   #define NMH_VECTOR NMH_AVX512 /* _mm512_mullo_epi16 requires AVX512BW */
+  #define NMH_ACC_ALIGN 64
 #elif defined(HAVE_AVX2)
   #define NMH_VECTOR NMH_AVX2
+  #define NMH_ACC_ALIGN 32
 #elif defined(HAVE_SSE_2)
   #define NMH_VECTOR NMH_SSE2
+  #define NMH_ACC_ALIGN 16
 #else
   #define NMH_VECTOR NMH_SCALAR
+  #define NMH_ACC_ALIGN 16
 #endif
 
 #if NMH_VECTOR > NMH_SCALAR
@@ -65,7 +69,7 @@
 #define NMH_PRIME32_4  UINT32_C(0x27D4EB2F)
 
 // Pseudorandom secret taken directly from FARSH
-alignas(16) static const uint32_t NMH_ACC_INIT[32] = {
+alignas(NMH_ACC_ALIGN) static const uint32_t NMH_ACC_INIT[32] = {
     UINT32_C(0xB8FE6C39), UINT32_C(0x23A44BBE), UINT32_C(0x7C01812C), UINT32_C(0xF721AD1C),
     UINT32_C(0xDED46DE9), UINT32_C(0x839097DB), UINT32_C(0x7240A4A4), UINT32_C(0xB7B3671F),
     UINT32_C(0xCB79E64E), UINT32_C(0xCCC0E578), UINT32_C(0x825AD07D), UINT32_C(0xCCFF7221),
@@ -82,19 +86,19 @@ alignas(16) static const uint32_t NMH_ACC_INIT[32] = {
 #define __NMH_M2 UINT32_C(0x29A7935D)
 #define __NMH_M3 UINT32_C(0x55D35831)
 
-alignas(16) static const uint32_t __NMH_M1_V[32] = {
+alignas(NMH_ACC_ALIGN) static const uint32_t __NMH_M1_V[32] = {
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
     __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1, __NMH_M1,
 };
-alignas(16) static const uint32_t __NMH_M2_V[32] = {
+alignas(NMH_ACC_ALIGN) static const uint32_t __NMH_M2_V[32] = {
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
     __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2, __NMH_M2,
 };
-alignas(16) static const uint32_t __NMH_M3_V[32] = {
+alignas(NMH_ACC_ALIGN) static const uint32_t __NMH_M3_V[32] = {
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
     __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3, __NMH_M3,
@@ -471,8 +475,8 @@ static inline void NMHASH32_long_round( uint32_t * const RESTRICT accX, uint32_t
 
 template <bool bswap>
 static uint32_t NMHASH32_long( const uint8_t * const RESTRICT p, size_t const len, uint32_t const seed ) {
-    alignas(16) uint32_t accX[sizeof(NMH_ACC_INIT) / sizeof(*NMH_ACC_INIT)];
-    alignas(16) uint32_t accY[sizeof(accX) / sizeof(*accX)];
+    alignas(NMH_ACC_ALIGN) uint32_t accX[sizeof(NMH_ACC_INIT) / sizeof(*NMH_ACC_INIT)];
+    alignas(NMH_ACC_ALIGN) uint32_t accY[sizeof(accX) / sizeof(*accX)];
     size_t const nbRounds = (len - 1) / (sizeof(accX) + sizeof(accY));
     size_t       i;
     uint32_t     sum      = 0;
