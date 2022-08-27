@@ -156,6 +156,16 @@ set(VECTOR_VARIANTS
 )
 findVariant(VECTOR)
 
+if(NOT VECTOR_FALLBACK)
+  set(SHUFFLE_VARIANTS
+    "Integer shuffling"
+    "shuffle"
+    "@VECTOR_IMPL@\n"
+    2
+  )
+  findVariant(SHUFFLE)
+endif()
+
 # By depending on this .cmake file, the cache will be cleared if the
 # list of files were to ever change, as this file is the only one that
 # can change it.
