@@ -259,12 +259,12 @@ bool test_blobsort_type( void ) {
         }
         if (TEST_ITER > 1) {
             timetotal += timesum;
-            printf("%3d bits, test %2d [%-50s]\t\t %5.2f s\n", sizeof(blobtype)*8, i, teststr[i], (double)timesum / (double)NSEC_PER_SEC);
+            printf("%3lu bits, test %2d [%-50s]\t\t %5.2f s\n", sizeof(blobtype)*8, i, teststr[i], (double)timesum / (double)NSEC_PER_SEC);
         }
         // printf("After test %d: %s\n", i, passed ? "ok" : "no");
     }
     if (TEST_ITER > 1) {
-        printf("%3d bits, %-60s\t\t%6.2f s\n\n", sizeof(blobtype)*8, "SUM TOTAL", (double)timetotal / (double)NSEC_PER_SEC);
+        printf("%3lu bits, %-60s\t\t%6.2f s\n\n", sizeof(blobtype)*8, "SUM TOTAL", (double)timetotal / (double)NSEC_PER_SEC);
     }
 
     return passed;
