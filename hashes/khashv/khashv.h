@@ -440,6 +440,7 @@ static uint64_t khashv64_scalar(const khashvSeed* seed, const uint8_t* data, siz
 
 #define KHASH_VECTOR 1
 
+#if 0 // SMHasher3 now defines these for us
 #if !defined(_MSC_VER) && !defined(__clang__) && !(KHASH_GCC_LEAST__(11, 0))
     static KHASH_FINLINE __m128i _mm_loadu_si32(const void* data) {
         uint32_t val;
@@ -459,6 +460,7 @@ static uint64_t khashv64_scalar(const khashvSeed* seed, const uint8_t* data, siz
         memcpy(&val, data, sizeof(uint64_t));
         return _mm_cvtsi32_si128(val);
     }
+#endif
 #endif
 
 static KHASH_FINLINE __m128i khashv_mix_words_vector(__m128i val) {
