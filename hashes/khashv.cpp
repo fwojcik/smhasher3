@@ -26,8 +26,62 @@
  */
 #include "Platform.h"
 #include "Hashlib.h"
-#include "Intrinsics.h"
-#include "khashv/khashv.h"
+#if defined(HAVE_SSSE_3)
+  #include "Intrinsics.h"
+#endif
+
+//------------------------------------------------------------
+#define KHASH_FINLINE      FORCE_INLINE
+#define KHASH_BSWAP32(val) BSWAP32(val)
+#define KHASH_ROTR32(x, n) ROTR32(x, n)
+
+static KHASH_FINLINE int khashv_is_little_endian() {
+    return isLE() ? 1 : 0;
+}
+
+struct khashv_block_s {
+    union {
+        uint8_t   bytes[16];
+        uint32_t  words[4];
+#if defined(HAVE_SSSE_3)
+        __m128i  vec;
+#endif
+    };
+};
+
+typedef struct khashv_block_s  khashvBlock;
+typedef struct khashv_block_s  khashvSeed;
+
+static const khashvBlock khash_v_init = {
+    .words = {
+        // Really this could basically be almost anything
+        // So just using some bytes of the SHA-256 hashes
+        // of 1, 2, 3, and 4
+        0x7785459a, // SHA256 of the byte 0x01, using the last 4 bytes
+        0x6457d986, // SHA256 of the byte 0x02, using the last 4 bytes
+        0xadff29c5, // SHA256 of the byte 0x03, using the last 4 bytes
+        0x81c89e71, // SHA256 of the byte 0x04, using the last 4 bytes
+    }
+};
+
+//------------------------------------------------------------
+// Each implementation provides the following API:
+static void khashv_prep_seed32( khashvSeed * seed_prepped, uint32_t seed );
+static void khashv_prep_seed64( khashvSeed * seed_prepped, uint64_t seed );
+static void khashv_prep_seed128( khashvSeed * seed_prepped, const uint32_t seed[4] );
+static uint32_t khashv32( const khashvSeed * seed, const uint8_t * data, size_t data_len );
+static uint64_t khashv64( const khashvSeed * seed, const uint8_t * data, size_t data_len );
+
+#if defined(HAVE_SSSE_3)
+  #include "khashv/hash-ssse3.h"
+  #define KHASH_IMPL_STR "ssse3"
+#elif defined(HAVE_GENERIC_VECTOR) && defined(HAVE_GENERIC_VECTOR_SHUFFLE)
+  #include "khashv/hash-genericvec.h"
+  #define KHASH_IMPL_STR "gccvec"
+#else
+  #include "khashv/hash-portable.h"
+  #define KHASH_IMPL_STR "portable"
+#endif
 
 //------------------------------------------------------------
 
@@ -65,6 +119,7 @@ REGISTER_FAMILY(khashv,
 
 REGISTER_HASH(khashv_32,
    $.desc       = "K-Hashv vectorizable, 32-bit output",
+   $.impl       = KHASH_IMPL_STR,
    $.hash_flags =
         FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
@@ -80,6 +135,7 @@ REGISTER_HASH(khashv_32,
 
 REGISTER_HASH(khashv_64,
     $.desc       = "K-Hashv vectorizable, 64-bit output",
+    $.impl       = KHASH_IMPL_STR,
     $.hash_flags =
             FLAG_HASH_ENDIAN_INDEPENDENT,
     $.impl_flags =
