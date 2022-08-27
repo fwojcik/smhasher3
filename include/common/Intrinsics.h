@@ -111,6 +111,31 @@ typedef  __vector unsigned long long vec_t;
   #endif
 #endif
 
+//-----------------------------------------------------------------------------
+// Fallback versions of loadu intrinsics
+
+#if defined(HAVE_SSE_2)
+  #if !defined(HAVE_GOOD_LOADU_64)
+static FORCE_INLINE __m128i _mm_loadu_si64( const void * ptr ) {
+    uint64_t val;
+    memcpy(&val, ptr, sizeof(uint64_t));
+    return _mm_cvtsi64_si128(val);
+}
+  #endif
+  #if !defined(HAVE_GOOD_LOADU_32)
+static FORCE_INLINE __m128i _mm_loadu_si32( const void * ptr ) {
+    uint32_t val;
+    memcpy(&val, ptr, sizeof(uint32_t));
+    return _mm_cvtsi32_si128(val);
+}
+static FORCE_INLINE __m128i _mm_loadu_si16( const void * ptr ) {
+    uint16_t val;
+    memcpy(&val, ptr, sizeof(uint16_t));
+    return _mm_cvtsi32_si128(val);
+}
+  #endif
+#endif
+
 //------------------------------------------------------------
 // Make prefetch() use intrinsic support, if available
 // This is helpful for MSVC, which doesn't have a usable
