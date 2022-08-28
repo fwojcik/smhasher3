@@ -82,10 +82,13 @@ static void SHA1_Update( SHA1_CTX * context, const uint8_t * data, const size_t 
         context->count[1]++;
     }
     context->count[1] += (len >> 29);
-    j                  = (j   >>  3) & 63;
+    j = (j >> 3) & 63;
 
     if ((j + len) > 63) {
+        // #pragmas are a workaround for GCC bug 106709 in 12+
+#pragma GCC diagnostic ignored "-Wstringop-overread"
         memcpy(&context->buffer[j], data, (i = 64 - j));
+#pragma GCC diagnostic pop
         SHA1_Transform<bswap>(context->state, context->buffer);
         for (; i + 63 < len; i += 64) {
             SHA1_Transform<bswap>(context->state, &data[i]);
