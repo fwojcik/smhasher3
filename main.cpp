@@ -398,7 +398,7 @@ static bool test( const HashInfo * hInfo ) {
     } else {
         outfile = stderr;
     }
-    if (hInfo->impl != NULL) {
+    if ((hInfo->impl != NULL) && (hInfo->impl[0] != '\0')) {
         fprintf(outfile, "--- Testing %s \"%s\" [%s] %s", hInfo->name, hInfo->desc,
                 hInfo->impl, hInfo->isMock() ? "MOCK" : "");
     } else {
