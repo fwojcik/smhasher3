@@ -32,8 +32,6 @@
 //------------------------------------------------------------
 template <bool bswap>
 static __m128i SmallKeyAlgorithm(const uint8_t * key, const size_t bytes, __m128i hash) {
-    assert(bytes <= max_input);
-
     // bulk hashing loop -- 128-bit block size
     const __m128i * ptr128 = reinterpret_cast<const __m128i *>(key);
     if (bytes / sizeof(hash)) {
@@ -84,8 +82,6 @@ static __m128i SmallKeyAlgorithm(const uint8_t * key, const size_t bytes, __m128
 
 template <bool bswap>
 static __m128i LargeKeyAlgorithm(const uint8_t * key, const size_t bytes, __m128i seed) {
-    assert(bytes <= max_input);
-
     // initialize 4 x 128-bit hashing lanes, for a 512-bit block size
     __m128i block[4] = { _mm_xor_si128(seed, _mm_set_epi64x(0xa11202c9b468bea1, 0xd75157a01452495b)),
                         _mm_xor_si128(seed, _mm_set_epi64x(0xb1293b3305418592, 0xd210d232c6429b69)),
