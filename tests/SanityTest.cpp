@@ -406,6 +406,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
 
     delete [] hash1;
     delete [] hash2;
+    delete [] hash3;
 
     return result;
 }
