@@ -121,8 +121,10 @@ REGISTER_HASH(khashv_32,
    $.desc       = "K-Hashv vectorizable, 32-bit output",
    $.impl       = KHASH_IMPL_STR,
    $.hash_flags =
+        FLAG_HASH_XL_SEED           |
         FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
+        FLAG_IMPL_ROTATE            |
         FLAG_IMPL_CANONICAL_BOTH    |
         FLAG_IMPL_LICENSE_MIT       ,
    $.bits = 32,
@@ -137,10 +139,12 @@ REGISTER_HASH(khashv_64,
     $.desc       = "K-Hashv vectorizable, 64-bit output",
     $.impl       = KHASH_IMPL_STR,
     $.hash_flags =
-            FLAG_HASH_ENDIAN_INDEPENDENT,
+        FLAG_HASH_XL_SEED           |
+        FLAG_HASH_ENDIAN_INDEPENDENT,
     $.impl_flags =
-            FLAG_IMPL_CANONICAL_BOTH    |
-            FLAG_IMPL_LICENSE_MIT       ,
+        FLAG_IMPL_ROTATE            |
+        FLAG_IMPL_CANONICAL_BOTH    |
+        FLAG_IMPL_LICENSE_MIT       ,
     $.bits = 64,
     $.verification_LE = 0xA6B7E55B,
     // Should be the same on BE systems. It just won't be vectorized with GCCs
