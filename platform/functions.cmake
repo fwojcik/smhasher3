@@ -3,6 +3,7 @@ function(findVariant prefix)
   set(implfile    "${prefix}_IMPLFILE")
   set(isfallback  "${prefix}_FALLBACK")
   set(variantsvar "${prefix}_VARIANTS")
+  mark_as_advanced(${implfile} ${isfallback})
 
   #message(STATUS "Given: ${${variantsvar}}")
 
@@ -158,7 +159,6 @@ endfunction()
 # of clearing these cached variables iff the files post-date the CMake
 # cache... :-{
 function(setCachedVarsDepend PREFIX varListVar fileListVar)
-
   # If the cached data didn't change, then don't do anything except
   # for telling CMake AGAIN what files the config depends on, because
   # if it reconfigures for some reason other than these files then it
@@ -188,6 +188,7 @@ function(setCachedVarsDepend PREFIX varListVar fileListVar)
   set("${PREFIX}varList"  "${${varListVar}}"  CACHE STRING "List of ${PREFIX} variables" FORCE)
   set("${PREFIX}fileList" "${${fileListVar}}" CACHE STRING "List of files for ${PREFIX} variables" FORCE)
   set("${PREFIX}hashList" "${fileHashes}"     CACHE STRING "List of hashes of ${PREFIX} files" FORCE)
+  mark_as_advanced(FORCE "${PREFIX}varList" "${PREFIX}fileList" "${PREFIX}hashList")
 
 endfunction()
 
