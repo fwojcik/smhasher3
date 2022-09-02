@@ -180,9 +180,11 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
 
     Rand r( 11938 );
 
-    // Generate all the keys to be tested
-    std::vector<uint8_t> keys( keybytes * keybits * reps );
-    uint8_t * keyptr = &keys[0];
+    // Generate all the keys to be tested. We use malloc() because C++ things insist
+    // on zero-initializing this memory, even though we're going to fill the array
+    // with data immediately.
+    uint8_t * const keys = (uint8_t *)malloc(keybytes * keybits * reps);
+    uint8_t * keyptr = keys;
     r.rand_p(keyptr, keybytes * keybits * reps);
     addVCodeInput(keyptr, keybytes * keybits * reps);
 
@@ -233,6 +235,7 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
         }
     }
 
+    free(keys);
     printf("\n");
 
     // The set of "boxes" for each pair of bits looks like:
