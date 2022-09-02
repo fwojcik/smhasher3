@@ -53,8 +53,6 @@
 
 #include "SanityTest.h"
 
-#include <cassert>
-
 // These sentinel bytes MUST be different values
 static const uint8_t sentinel1 = 0x5c;
 static const uint8_t sentinel2 = 0x36;

@@ -54,7 +54,6 @@
 
 #include "AvalancheTest.h"
 
-#include <cassert>
 #include <math.h>
 
 // VCode might have already included this

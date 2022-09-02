@@ -55,8 +55,6 @@
 
 #include "PerlinNoiseTest.h"
 
-#include <cassert>
-
 //-----------------------------------------------------------------------------
 // Keyset 'Perlin Noise' - X,Y coordinates on input & seed
 
