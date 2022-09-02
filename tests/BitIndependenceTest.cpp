@@ -172,6 +172,136 @@ static bool BicTest3( HashFn hash, const seed_t seed, const int reps, bool verbo
     return result;
 }
 
+template <typename keytype, typename hashtype>
+static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbose = false ) {
+    const int keybytes  = sizeof(keytype);
+    const int keybits   = keybytes * 8;
+    const int hashbytes = sizeof(hashtype);
+    const int hashbits  = hashbytes * 8;
+
+    Rand r( 11938 );
+
+    double maxBias = 0;
+    int    maxK    = 0;
+    int    maxA    = 0;
+    int    maxB    = 0;
+
+    keytype  key;
+    hashtype h1, h2;
+
+    std::vector<uint32_t> popcount( keybits * hashbits, 0 );
+    std::vector<uint32_t> andcount( keybits * hashbits / 2 * (hashbits - 1), 0 );
+
+    for (int keybit = 0; keybit < keybits; keybit++) {
+        progressdots(keybit, 0, keybits - 1, 10);
+
+        for (int irep = 0; irep < reps; irep++) {
+            uint32_t * pop_cursor = &popcount[keybit * hashbits];
+            uint32_t * and_cursor = &andcount[keybit * hashbits / 2 * (hashbits - 1)];
+
+            r.rand_p(&key, keybytes);
+            addVCodeInput(&key  , keybytes);
+            addVCodeInput(keybit);
+
+            hash(&key, keybytes, seed, &h1);
+            key.flipbit(keybit);
+            hash(&key, keybytes, seed, &h2);
+
+            hashtype d = h1 ^ h2;
+
+            // First count how often each output bit changes
+            for (int oByte = 0; oByte < hashbytes; oByte++) {
+                uint8_t byte = d[oByte];
+                for (int oBit = 0; oBit < 8; oBit++) {
+                    (*pop_cursor++) += byte & 1;
+                    byte >>= 1;
+                }
+            }
+
+            // Then count how often each pair of output bits changed together
+            for (int out1 = 0; out1 < hashbits - 1; out1++) {
+                if (d.getbit(out1) == 0) {
+                    and_cursor += hashbits - 1 - out1;
+                    continue;
+                }
+                for (int out2 = out1 + 1; out2 < hashbits; out2++) {
+                    uint32_t x = d.getbit(out2);
+                    (*and_cursor++) += x;
+                }
+            }
+        }
+    }
+
+    printf("\n");
+
+    // The box looks like:
+    //
+    //   -------------------------------------
+    //   | bit x   changed | bit x unchanged |
+    //   | bit y   changed | bit y   changed |
+    //   |      [11]       |      [01]       |
+    //   -------------------------------------
+    //   | bit x   changed | bit x unchanged |
+    //   | bit y unchanged | bit y unchanged |
+    //   |      [10]       |      [00]       |
+    //   -------------------------------------
+    //
+    // The value of box [11] is the number of times bits x and y changed together.
+    // These values are in the andcount[] vector.
+    //
+    // The sum of boxes [11] and [01] is the number of times bit y changed.
+    // The sum of boxes [11] and [10] is the number of times bit x changed.
+    // These values are in the popcount[] vector.
+    //
+    // The sum of all the boxes is the number of tests, which is a known constant.
+    //
+    // The value in box [10] is therefore popcount[x] - andcount[x, y].
+    // The value in box [01] is therefore popcount[y] - andcount[x, y].
+    // The value in box [00] is therefore total - box[11] - box[10] - box[01].
+
+    for (int keybit = 0; keybit < keybits; keybit++) {
+        uint32_t * pop_cursor;
+        uint32_t * and_cursor = &andcount[keybit * hashbits / 2 * (hashbits - 1)];
+        for (int out1 = 0; out1 < hashbits - 1; out1++) {
+            pop_cursor = &popcount[keybit * hashbits + out1];
+            uint32_t popcount_y = *pop_cursor++;
+            for (int out2 = out1 + 1; out2 < hashbits; out2++) {
+                uint32_t boxes[4];
+                boxes[3] = *and_cursor++;
+                boxes[2] = *pop_cursor++ - boxes[3];
+                boxes[1] = popcount_y - boxes[3];
+                boxes[0] = reps - boxes[3] - boxes[2] - boxes[1];
+
+                double bias = 0;
+                for (int b = 0; b < 4; b++) {
+                    double b2 = double(boxes[b]) / double(reps / 2);
+                    b2 = fabs(b2 * 2 - 1);
+
+                    if (b2 > bias) { bias = b2; }
+                }
+
+                if (bias > maxBias) {
+                    maxBias = bias;
+                    maxK    = keybit;
+                    maxA    = out1;
+                    maxB    = out2;
+                }
+            }
+        }
+    }
+
+    addVCodeResult((uint32_t)(maxBias * 1000.0));
+    addVCodeResult(maxK);
+    addVCodeResult(maxA);
+    addVCodeResult(maxB);
+
+    printf("Max bias %f - (%3d : %3d,%3d)\n", maxBias, maxK, maxA, maxB);
+
+    // Bit independence is harder to pass than avalanche, so we're a bit more lax here.
+    bool result = (maxBias < 0.05);
+    return result;
+}
+
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
@@ -184,7 +314,10 @@ bool BicTest( const HashInfo * hinfo, const bool verbose ) {
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    if (fewerreps) {
+    if (1) {
+        result &= BicTest3<Blob<32>, hashtype>(hash, seed, 100, verbose);
+        result &= BicTest4<Blob<32>, hashtype>(hash, seed, 100, verbose);
+    } else if (fewerreps) {
         result &= BicTest3<Blob<128>, hashtype>(hash, seed, 100000, verbose);
     } else {
         const long reps = 64000000 / hinfo->bits;
