@@ -49,17 +49,13 @@
 #include "TestGlobals.h"
 #include "Random.h"
 #include "Analyze.h"
+#include "Histogram.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
 #include "AvalancheTest.h"
 
 #include <math.h>
-
-// VCode might have already included this
-#if defined(HAVE_AVX2) || defined(HAVE_SSE_4_1)
-  #include "Intrinsics.h"
-#endif
 
 #if defined(HAVE_THREADS)
   #include <atomic>
@@ -126,15 +122,6 @@ template <typename hashtype>
 static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uint32_t> & bins, const int keybytes,
         const uint8_t * keys, a_int & irepp, const int reps, const bool verbose ) {
     const int keybits   = keybytes * 8;
-    const int hashbytes = sizeof(hashtype);
-
-#if defined(HAVE_AVX2)
-    const __m256i ONE  = _mm256_set1_epi32(1);
-    const __m256i MASK = _mm256_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7);
-#elif defined(HAVE_SSE_4_1)
-    const __m128i ONE  = _mm_set1_epi32(1);
-    const __m128i MASK = _mm_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3);
-#endif
 
     uint8_t  buf[keybytes];
     hashtype A, B;
@@ -157,69 +144,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 
             B ^= A;
 
-#if defined(HAVE_AVX2)
-            for (int oWord = 0; oWord < (hashbytes / 4); oWord++) {
-                // Get the next 32-bit chunk of the hash difference
-                uint32_t word;
-                memcpy(&word, ((const uint8_t *)&B) + 4 * oWord, 4);
-
-                // Expand it out into 4 sets of 8 32-bit integer words, with
-                // each integer being zero or one.
-                __m256i base  = _mm256_set1_epi32(word);
-                __m256i incr1 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
-                base = _mm256_srli_epi32(base, 8);
-                __m256i incr2 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
-                base = _mm256_srli_epi32(base, 8);
-                __m256i incr3 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
-                base = _mm256_srli_epi32(base, 8);
-                __m256i incr4 = _mm256_min_epu32(_mm256_and_si256(base, MASK), ONE);
-
-                // Add these into the counts in bins[]
-                __m256i cnt1 = _mm256_loadu_si256((const __m256i *)cursor);
-                cnt1    = _mm256_add_epi32(cnt1, incr1);
-                _mm256_storeu_si256((__m256i *)cursor, cnt1);
-                cursor += 8;
-                __m256i cnt2 = _mm256_loadu_si256((const __m256i *)cursor);
-                cnt2    = _mm256_add_epi32(cnt2, incr2);
-                _mm256_storeu_si256((__m256i *)cursor, cnt2);
-                cursor += 8;
-                __m256i cnt3 = _mm256_loadu_si256((const __m256i *)cursor);
-                cnt3    = _mm256_add_epi32(cnt3, incr3);
-                _mm256_storeu_si256((__m256i *)cursor, cnt3);
-                cursor += 8;
-                __m256i cnt4 = _mm256_loadu_si256((const __m256i *)cursor);
-                cnt4    = _mm256_add_epi32(cnt4, incr4);
-                _mm256_storeu_si256((__m256i *)cursor, cnt4);
-                cursor += 8;
-            }
-#elif defined(HAVE_SSE_4_1)
-            for (int oWord = 0; oWord < (hashbytes / 4); oWord++) {
-                // Get the next 32-bit chunk of the hash difference
-                uint32_t word;
-                memcpy(&word, ((const uint8_t *)&B) + 4 * oWord, 4);
-
-                // Expand it out into 8 sets of 4 32-bit integer words, with
-                // each integer being zero or one, and add them into the
-                // counts in bins[].
-                __m128i base = _mm_set1_epi32(word);
-                for (int i = 0; i < 8; i++) {
-                    __m128i incr = _mm_min_epu32(_mm_and_si128(base, MASK), ONE);
-                    __m128i cnt  = _mm_loadu_si128((const __m128i *)cursor);
-                    cnt     = _mm_add_epi32(cnt, incr);
-                    _mm_storeu_si128((__m128i *)cursor, cnt);
-                    base    = _mm_srli_epi32(base, 4);
-                    cursor += 4;
-                }
-            }
-#else
-            for (int oByte = 0; oByte < hashbytes; oByte++) {
-                uint8_t byte = B[oByte];
-                for (int oBit = 0; oBit < 8; oBit++) {
-                    (*cursor++) += byte & 1;
-                    byte       >>= 1;
-                }
-            }
-#endif
+            cursor = HistogramHashBits(B, cursor);
         }
     }
 }
