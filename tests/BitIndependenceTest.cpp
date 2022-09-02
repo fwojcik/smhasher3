@@ -49,6 +49,7 @@
 #include "TestGlobals.h"
 #include "Random.h"
 #include "Analyze.h"
+#include "Histogram.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
@@ -223,13 +224,7 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
             hashtype d = h1 ^ h2;
 
             // First count how often each output bit changes
-            for (size_t oByte = 0; oByte < hashbytes; oByte++) {
-                uint8_t byte = d[oByte];
-                for (size_t oBit = 0; oBit < 8; oBit++) {
-                    (*pop_cursor++) += byte & 1;
-                    byte >>= 1;
-                }
-            }
+            pop_cursor = HistogramHashBits(d, pop_cursor);
 
             // Then count how often each pair of output bits changed together
             for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
