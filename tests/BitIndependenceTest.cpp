@@ -74,12 +74,65 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
     // Generate all the keys to be tested. We use malloc() because C++ things insist
     // on zero-initializing this memory, even though we're going to fill the array
     // with data immediately.
+    //
+    // This test works exactly the same as in SMHasher, except that the test keys are
+    // different. To replicate SMHasher's results exactly, make an array to hold a
+    // single key right here, then use r.rand_p() to fill it each loop by replacing
+    // the "ExtBlob key(keyptr, keybytes)" and "keyptr += keybytes" lines below.
     uint8_t * const keys = (uint8_t *)malloc(keybytes * keybits * reps);
     uint8_t * keyptr = keys;
     r.rand_p(keyptr, keybytes * keybits * reps);
     addVCodeInput(keyptr, keybytes * keybits * reps);
 
     hashtype h1, h2;
+
+    // This test checks to see if hash output bits tend to change independently or
+    // not, depending on the input bits. For each possible combination of output
+    // bits, it hashes a random inputs, flips a single bit of the input, hashes that,
+    // and sees which bits changed. This is repeated a number of times, and is also
+    // repeated for each keybit. A new set of test keys is randomly generated for
+    // each (keybit, output bit 1, output bit 2) tuple. The test then looks for
+    // whichever of those tuples had the highest deviation from average.
+    //
+    // For a random set of outputs, each pairing of bits should show that they are
+    // independent of each other. That is, every possible combination of results (00,
+    // 01, 10, 11) should be equally likely, and that should be true no matter which
+    // input bit was changed.
+    //
+    // To be efficient, this implementation counts these possibilities in neat but
+    // confusing ways. Each (keybit, output bit 1, output bit 2) tuple needs, in some
+    // sense, 4 numbers. These numbers form a table which looks like:
+    //
+    //   -------------------------------------
+    //   | bit x   changed | bit x unchanged |
+    //   | bit y   changed | bit y   changed |
+    //   |      [11]       |      [01]       |
+    //   -------------------------------------
+    //   | bit x   changed | bit x unchanged |
+    //   | bit y unchanged | bit y unchanged |
+    //   |      [10]       |      [00]       |
+    //   -------------------------------------
+    //
+    // Instead of keeping 4 integers per tuple, this implementation only keeps 1: the
+    // value of the '[11]' box. But it also keeps track of one number per (keybit,
+    // output bit) tuple, which is how many times that bit changed for the given
+    // keybit. These 2 sets of numbers take up less space than the full table would,
+    // and they are much cheaper to compute than than the full table would be, and
+    // they can be used to reconstruct each of those 4 boxes in the full table.
+    //
+    // The value of box [11] is the number of times bits x and y changed together.
+    // These values make up the andcount[] vector.
+    //
+    // The sum of boxes [11] and [01] is the number of times bit y changed.
+    // The sum of boxes [11] and [10] is the number of times bit x changed.
+    // These values are in the popcount[] vector.
+    //
+    // The sum of all the boxes is the number of tests, which is a known constant.
+    //
+    // The value in box [11] is andcount[x, y].
+    // The value in box [10] is therefore popcount[x] - andcount[x, y].
+    // The value in box [01] is therefore popcount[y] - andcount[x, y].
+    // The value in box [00] is therefore testcount - box[11] - box[10] - box[01].
 
     std::vector<uint32_t> popcount( keybits * hashbits, 0 );
     std::vector<uint32_t> andcount( keybits * hashbits / 2 * (hashbits - 1), 0 );
@@ -128,31 +181,6 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
 
     free(keys);
     printf("\n");
-
-    // The set of "boxes" for each pair of bits looks like:
-    //
-    //   -------------------------------------
-    //   | bit x   changed | bit x unchanged |
-    //   | bit y   changed | bit y   changed |
-    //   |      [11]       |      [01]       |
-    //   -------------------------------------
-    //   | bit x   changed | bit x unchanged |
-    //   | bit y unchanged | bit y unchanged |
-    //   |      [10]       |      [00]       |
-    //   -------------------------------------
-    //
-    // The value of box [11] is the number of times bits x and y changed together.
-    // These values are in the andcount[] vector.
-    //
-    // The sum of boxes [11] and [01] is the number of times bit y changed.
-    // The sum of boxes [11] and [10] is the number of times bit x changed.
-    // These values are in the popcount[] vector.
-    //
-    // The sum of all the boxes is the number of tests, which is a known constant.
-    //
-    // The value in box [10] is therefore popcount[x] - andcount[x, y].
-    // The value in box [01] is therefore popcount[y] - andcount[x, y].
-    // The value in box [00] is therefore total - box[11] - box[10] - box[01].
 
     uint32_t maxBias = 0;
     size_t   maxK    = 0;
