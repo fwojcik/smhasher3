@@ -181,10 +181,10 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
 
     Rand r( 11938 );
 
-    double maxBias = 0;
-    int    maxK    = 0;
-    int    maxA    = 0;
-    int    maxB    = 0;
+    uint32_t maxBias = 0;
+    size_t   maxK    = 0;
+    size_t   maxA    = 0;
+    size_t   maxB    = 0;
 
     keytype  key;
     hashtype h1, h2;
@@ -289,16 +289,16 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
                 boxes[1] = popcount_y - boxes[3];
                 boxes[0] = reps - boxes[3] - boxes[2] - boxes[1];
 
-                double bias = 0;
-                for (int b = 0; b < 4; b++) {
-                    double b2 = double(boxes[b]) / double(reps / 2);
-                    b2 = fabs(b2 * 2 - 1);
-
-                    if (b2 > bias) { bias = b2; }
+                uint32_t maxCurBias = 0;
+                for (size_t b = 0; b < 4; b++) {
+                    uint32_t curBias = 4 * boxes[b] > reps ? (4 * boxes[b] - reps) : (reps - 4 * boxes[b]);
+                    if (maxCurBias < curBias) {
+                        maxCurBias = curBias;
+                    }
                 }
 
-                if (bias > maxBias) {
-                    maxBias = bias;
+                if (maxBias < maxCurBias) {
+                    maxBias = maxCurBias;
                     maxK    = keybit;
                     maxA    = out1;
                     maxB    = out2;
@@ -307,15 +307,16 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
         }
     }
 
-    addVCodeResult((uint32_t)(maxBias * 1000.0));
+    addVCodeResult(maxBias);
     addVCodeResult(maxK);
     addVCodeResult(maxA);
     addVCodeResult(maxB);
 
-    printf("Max bias %f - (%3d : %3d,%3d)\n", maxBias, maxK, maxA, maxB);
+    double maxBiasPct = 100.0 * ((double)maxBias / (double)reps);
+    printf("Max bias %6.2f%% - (Key bit %3d : output bits %3d and %3d)\n", maxBiasPct, maxK, maxA, maxB);
 
     // Bit independence is harder to pass than avalanche, so we're a bit more lax here.
-    bool result = (maxBias < 0.05);
+    bool result = (maxBiasPct < 5.00);
     return result;
 }
 
