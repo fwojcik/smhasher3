@@ -172,22 +172,18 @@ static bool BicTest3( HashFn hash, const seed_t seed, const int reps, bool verbo
     return result;
 }
 
-template <typename keytype, typename hashtype>
-static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbose = false ) {
-    const int keybytes  = sizeof(keytype);
-    const int keybits   = keybytes * 8;
-    const int hashbytes = sizeof(hashtype);
-    const int hashbits  = hashbytes * 8;
+template <typename hashtype>
+static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, const size_t reps, bool verbose = false ) {
+    const size_t hashbytes = sizeof(hashtype);
+    const size_t hashbits  = hashbytes * 8;
+    const size_t keybits   = keybytes * 8;
 
     Rand r( 11938 );
 
-    uint32_t maxBias = 0;
-    size_t   maxK    = 0;
-    size_t   maxA    = 0;
-    size_t   maxB    = 0;
-
-    keytype  key;
     hashtype h1, h2;
+
+    std::vector<uint8_t> keydata( keybytes );
+    uint8_t * keyptr = &keydata[0];
 
     std::vector<uint32_t> popcount( keybits * hashbits, 0 );
     std::vector<uint32_t> andcount( keybits * hashbits / 2 * (hashbits - 1), 0 );
@@ -212,13 +208,11 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
             pop_cursor = pop_cursor_base;
             and_cursor = and_cursor_base;
 
-            r.rand_p(&key, keybytes);
-            addVCodeInput(&key  , keybytes);
-            addVCodeInput(keybit);
-
-            hash(&key, keybytes, seed, &h1);
+            r.rand_p(keyptr, keybytes);
+            ExtBlob key(keyptr, keybytes);
+            hash(key, keybytes, seed, &h1);
             key.flipbit(keybit);
-            hash(&key, keybytes, seed, &h2);
+            hash(key, keybytes, seed, &h2);
 
             hashtype d = h1 ^ h2;
 
@@ -265,6 +259,11 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
     // The value in box [10] is therefore popcount[x] - andcount[x, y].
     // The value in box [01] is therefore popcount[y] - andcount[x, y].
     // The value in box [00] is therefore total - box[11] - box[10] - box[01].
+
+    uint32_t maxBias = 0;
+    size_t   maxK    = 0;
+    size_t   maxA    = 0;
+    size_t   maxB    = 0;
 
     pop_cursor = &popcount[0];
     and_cursor = &andcount[0];
@@ -329,11 +328,10 @@ bool BicTest( const HashInfo * hinfo, const bool verbose ) {
     const seed_t seed = hinfo->Seed(g_seed);
 
     if (fewerreps) {
-        result &= BicTest4<Blob<128>, hashtype>(hash, seed, 100000, verbose);
+        result &= BicTest4<hashtype>(hash, seed, 16, 100000, verbose);
     } else {
-        const long reps = 64000000 / hinfo->bits;
-        // result &= BicTest<uint64_t,hashtype>(hash,2000000);
-        result &= BicTest4<Blob<88>, hashtype>(hash, seed, (int)reps, verbose);
+        const size_t reps = 64000000 / hinfo->bits;
+        result &= BicTest4<hashtype>(hash, seed, 11, reps, verbose);
     }
 
     recordTestResult(result, "BIC", (const char *)NULL);
