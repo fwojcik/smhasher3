@@ -228,10 +228,7 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
                     and_cursor += hashbits - 1 - out1;
                     continue;
                 }
-                for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
-                    uint32_t x = d.getbit(out2);
-                    (*and_cursor++) += x;
-                }
+                and_cursor = HistogramHashBits(d, and_cursor, out1 + 1);
             }
         }
     }
