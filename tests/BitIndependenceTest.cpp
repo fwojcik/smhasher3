@@ -303,6 +303,58 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
         }
     }
 
+    // For performance reasons, the analysis loop is coded to use the popcount and
+    // andcount arrays in linear order. But for human-oriented printouts, we want to
+    // iterate over them differently, and so reporting is now done here in its own
+    // loop, separate from analysis.
+    if (verbose) {
+        size_t xyoffset = 0;
+        for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
+            for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
+                printf("Output bits (%3d,%3d) - ", out1, out2);
+                for (int keybit = 0; keybit < keybits; keybit++) {
+                    uint32_t * pop_cursor = &popcount[keybit * hashbits];
+                    uint32_t * and_cursor = &andcount[xyoffset + keybit * hashbits / 2 * (hashbits - 1)];
+
+                    // Find worst bias for this tuple, out of all 4 boxes
+                    uint32_t boxes[4];
+                    boxes[3] = *and_cursor;
+                    boxes[2] = pop_cursor[out2] - boxes[3];
+                    boxes[1] = pop_cursor[out1] - boxes[3];
+                    boxes[0] = reps - boxes[3] - boxes[2] - boxes[1];
+
+                    uint32_t maxCurBias = 0;
+                    for (size_t b = 0; b < 4; b++) {
+                        uint32_t curBias = 4 * boxes[b] > reps ? (4 * boxes[b] - reps) : (reps - 4 * boxes[b]);
+                        if (maxCurBias < curBias) {
+                            maxCurBias = curBias;
+                        }
+                    }
+
+                    double bias = (double)maxCurBias / (double)reps;
+
+                    if (verbose) {
+                        if (bias < 0.01) {
+                            printf(".");
+                        } else if (bias < 0.05) {
+                            printf("o");
+                        } else if (bias < 0.33) {
+                            printf("O");
+                        } else {
+                            printf("X");
+                        }
+                    }
+                }
+                // Finished keybit
+                printf("\n");
+                xyoffset++;
+            }
+            // Finished out2
+            printf("\n");
+        }
+        // Finished out1
+    }
+
     addVCodeOutput(&popcount[0], keybits * hashbits * sizeof(popcount[0]));
     addVCodeOutput(&andcount[0], keybits * hashbits / 2 * (hashbits - 1) * sizeof(andcount[0]));
     addVCodeResult(maxBias);
