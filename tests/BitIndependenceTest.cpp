@@ -191,13 +191,26 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
 
     std::vector<uint32_t> popcount( keybits * hashbits, 0 );
     std::vector<uint32_t> andcount( keybits * hashbits / 2 * (hashbits - 1), 0 );
+    uint32_t * pop_cursor = &popcount[0];
+    uint32_t * and_cursor = &andcount[0];
 
-    for (int keybit = 0; keybit < keybits; keybit++) {
+    for (size_t keybit = 0; keybit < keybits; keybit++) {
+        uint32_t * pop_cursor_base = pop_cursor;
+        uint32_t * and_cursor_base = and_cursor;
+#if defined(DEBUG)
+        if (pop_cursor != &popcount[keybit * hashbits]) {
+            printf("bit %d   P %p != %p\n", keybit, pop_cursor, &popcount[keybit * hashbits]);
+        }
+        if (and_cursor != &andcount[keybit * hashbits / 2 * (hashbits - 1)]) {
+            printf("bit %d   A %p != %p\n", keybit, and_cursor, &andcount[keybit * hashbits / 2 * (hashbits - 1)]);
+        }
+#endif
+
         progressdots(keybit, 0, keybits - 1, 10);
 
-        for (int irep = 0; irep < reps; irep++) {
-            uint32_t * pop_cursor = &popcount[keybit * hashbits];
-            uint32_t * and_cursor = &andcount[keybit * hashbits / 2 * (hashbits - 1)];
+        for (size_t irep = 0; irep < reps; irep++) {
+            pop_cursor = pop_cursor_base;
+            and_cursor = and_cursor_base;
 
             r.rand_p(&key, keybytes);
             addVCodeInput(&key  , keybytes);
@@ -210,21 +223,21 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
             hashtype d = h1 ^ h2;
 
             // First count how often each output bit changes
-            for (int oByte = 0; oByte < hashbytes; oByte++) {
+            for (size_t oByte = 0; oByte < hashbytes; oByte++) {
                 uint8_t byte = d[oByte];
-                for (int oBit = 0; oBit < 8; oBit++) {
+                for (size_t oBit = 0; oBit < 8; oBit++) {
                     (*pop_cursor++) += byte & 1;
                     byte >>= 1;
                 }
             }
 
             // Then count how often each pair of output bits changed together
-            for (int out1 = 0; out1 < hashbits - 1; out1++) {
+            for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
                 if (d.getbit(out1) == 0) {
                     and_cursor += hashbits - 1 - out1;
                     continue;
                 }
-                for (int out2 = out1 + 1; out2 < hashbits; out2++) {
+                for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
                     uint32_t x = d.getbit(out2);
                     (*and_cursor++) += x;
                 }
@@ -234,7 +247,7 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
 
     printf("\n");
 
-    // The box looks like:
+    // The set of "boxes" for each pair of bits looks like:
     //
     //   -------------------------------------
     //   | bit x   changed | bit x unchanged |
@@ -259,13 +272,17 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
     // The value in box [01] is therefore popcount[y] - andcount[x, y].
     // The value in box [00] is therefore total - box[11] - box[10] - box[01].
 
-    for (int keybit = 0; keybit < keybits; keybit++) {
-        uint32_t * pop_cursor;
-        uint32_t * and_cursor = &andcount[keybit * hashbits / 2 * (hashbits - 1)];
-        for (int out1 = 0; out1 < hashbits - 1; out1++) {
-            pop_cursor = &popcount[keybit * hashbits + out1];
+    pop_cursor = &popcount[0];
+    and_cursor = &andcount[0];
+
+    for (size_t keybit = 0; keybit < keybits; keybit++) {
+        uint32_t * pop_cursor_base = pop_cursor;
+
+        for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
+            pop_cursor = pop_cursor_base++;
             uint32_t popcount_y = *pop_cursor++;
-            for (int out2 = out1 + 1; out2 < hashbits; out2++) {
+
+            for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
                 uint32_t boxes[4];
                 boxes[3] = *and_cursor++;
                 boxes[2] = *pop_cursor++ - boxes[3];
