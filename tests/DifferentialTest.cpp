@@ -166,7 +166,7 @@ static void DiffTestImplThread( const HashFn hash, const seed_t seed, std::map<k
 
     int irep;
     while ((irep = irepp++) < reps) {
-        if ((reps >= 10) && (irep % (reps / 10) == 0)) { printf("."); }
+        progressdots(irep, 0, reps - 1, 10);
 
         memcpy(&k1, &keys[keybytes * irep], sizeof(k1));
         k2 = k1;

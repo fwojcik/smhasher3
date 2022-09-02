@@ -84,7 +84,7 @@ static bool BicTest3( HashFn hash, const seed_t seed, const int reps, bool verbo
     std::vector<int> bins( keybits * pagesize, 0 );
 
     for (int keybit = 0; keybit < keybits; keybit++) {
-        if (keybit % (keybits / 10) == 0) { printf("."); }
+        progressdots(keybit, 0, keybits - 1, 10);
 
         int * page = &bins[keybit * pagesize];
 

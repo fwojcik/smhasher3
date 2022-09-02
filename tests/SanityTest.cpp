@@ -131,7 +131,9 @@ bool SanityTest1( const HashInfo * hinfo, bool verbose ) {
     memset(hash2, sentinel2, buflen);
 
     for (int irep = 0; irep < reps; irep++) {
-        if (irep % (reps / 10) == 0) { maybeprintf("."); }
+        if (verbose) {
+            progressdots(irep, 0, reps - 1, 10);
+        }
 
         for (int len = 0; len <= keymax; len++) {
             // Make 2 copies of some random input data, and hash one
@@ -501,7 +503,9 @@ bool AppendedZeroesTest( const HashInfo * hinfo, bool verbose ) {
     maybeprintf("Running append zeroes test   ");
 
     for (int rep = 0; rep < 100; rep++) {
-        if (rep % 10 == 0) { maybeprintf("."); }
+        if (verbose) {
+            progressdots(rep, 0, 99, 10);
+        }
 
         unsigned char key[256];
         memset(key, 0, sizeof(key));
@@ -564,7 +568,9 @@ bool PrependedZeroesTest( const HashInfo * hinfo, bool verbose ) {
     maybeprintf("Running prepend zeroes test  ");
 
     for (int rep = 0; rep < 100; rep++) {
-        if (rep % 10 == 0) { maybeprintf("."); }
+        if (verbose) {
+            progressdots(rep, 0, 99, 10);
+        }
 
         unsigned char key[256];
         memset(key, 0, sizeof(key));

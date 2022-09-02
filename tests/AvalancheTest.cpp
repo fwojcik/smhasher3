@@ -142,7 +142,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 
     while ((irep = irepp++) < reps) {
         if (verbose) {
-            if (irep % (reps / 10) == 0) { printf("."); }
+            progressdots(irep, 0, reps - 1, 10);
         }
 
         ExtBlob K( buf, &keys[keybytes * irep], keybytes );
