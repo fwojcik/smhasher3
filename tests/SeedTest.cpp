@@ -56,8 +56,6 @@
 
 #include "SeedTest.h"
 
-#include <cassert>
-
 //-----------------------------------------------------------------------------
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 

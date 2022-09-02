@@ -58,7 +58,6 @@
 #include "VCode.h"
 
 #include <set>
-#include <cassert>
 #include <cstring> // for memset
 #include <math.h>
 

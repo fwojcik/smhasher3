@@ -55,8 +55,6 @@
 
 #include "PermutationKeysetTest.h"
 
-#include <cassert>
-
 //-----------------------------------------------------------------------------
 // Keyset 'Combination' - all possible combinations of input blocks
 

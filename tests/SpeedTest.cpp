@@ -57,7 +57,6 @@
 
 #include <string>
 #include <functional>
-#include <cassert>
 
 constexpr int BULK_TRIALS  = 2999;  // Timings per hash for large (>=128b) keys
 constexpr int TINY_TRIALS  = 200;   // Timings per hash for small (<128b) keys

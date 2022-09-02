@@ -58,7 +58,6 @@
 
 #include <unordered_set>
 #include <string>
-#include <cassert>
 #include <math.h>
 
 //-----------------------------------------------------------------------------
