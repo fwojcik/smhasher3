@@ -222,6 +222,13 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
         }
     }
 
+    addVCodeOutput(&popcount[0], keybits * hashbits * sizeof(popcount[0]));
+    addVCodeOutput(&andcount[0], keybits * hashbits / 2 * (hashbits - 1) * sizeof(andcount[0]));
+    addVCodeResult(maxBias);
+    addVCodeResult(maxK);
+    addVCodeResult(maxA);
+    addVCodeResult(maxB);
+
     // For performance reasons, the analysis loop is coded to use the popcount and
     // andcount arrays in linear order. But for human-oriented printouts, we want to
     // iterate over them differently, and so reporting is now done here in its own
@@ -273,13 +280,6 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
         }
         // Finished out1
     }
-
-    addVCodeOutput(&popcount[0], keybits * hashbits * sizeof(popcount[0]));
-    addVCodeOutput(&andcount[0], keybits * hashbits / 2 * (hashbits - 1) * sizeof(andcount[0]));
-    addVCodeResult(maxBias);
-    addVCodeResult(maxK);
-    addVCodeResult(maxA);
-    addVCodeResult(maxB);
 
     double maxBiasPct = 100.0 * ((double)maxBias / (double)reps);
     printf("Max bias %6.2f%% - (Key bit %3d : output bits %3d and %3d)\n", maxBiasPct, maxK, maxA, maxB);
