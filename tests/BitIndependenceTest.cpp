@@ -332,15 +332,12 @@ bool BicTest( const HashInfo * hinfo, const bool verbose ) {
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    if (1) {
-        result &= BicTest3<Blob<32>, hashtype>(hash, seed, 100, verbose);
-        result &= BicTest4<Blob<32>, hashtype>(hash, seed, 100, verbose);
-    } else if (fewerreps) {
-        result &= BicTest3<Blob<128>, hashtype>(hash, seed, 100000, verbose);
+    if (fewerreps) {
+        result &= BicTest4<Blob<128>, hashtype>(hash, seed, 100000, verbose);
     } else {
         const long reps = 64000000 / hinfo->bits;
         // result &= BicTest<uint64_t,hashtype>(hash,2000000);
-        result &= BicTest3<Blob<88>, hashtype>(hash, seed, (int)reps, verbose);
+        result &= BicTest4<Blob<88>, hashtype>(hash, seed, (int)reps, verbose);
     }
 
     recordTestResult(result, "BIC", (const char *)NULL);
