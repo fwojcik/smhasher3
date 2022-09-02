@@ -301,6 +301,8 @@ static bool BicTest4( HashFn hash, const seed_t seed, const int reps, bool verbo
         }
     }
 
+    addVCodeOutput(&popcount[0], keybits * hashbits * sizeof(popcount[0]));
+    addVCodeOutput(&andcount[0], keybits * hashbits / 2 * (hashbits - 1) * sizeof(andcount[0]));
     addVCodeResult(maxBias);
     addVCodeResult(maxK);
     addVCodeResult(maxA);
