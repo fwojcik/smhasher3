@@ -882,6 +882,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     size_t maxKeybit  = 0;
     size_t maxOutbitA = 0;
     size_t maxOutbitB = 0;
+    bool   result;
 
     for (size_t keybit = 0; keybit < keybits; keybit++) {
         const uint32_t * pop_cursor_base = pop_cursor;
@@ -915,6 +916,28 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     addVCodeResult(maxKeybit);
     addVCodeResult(maxOutbitA);
     addVCodeResult(maxOutbitB);
+
+    const double p_value_raw = chiSqPValue(maxChiSq);
+    const double p_value = ScalePValue(p_value_raw, keybits * hashbitpairs);
+    const int log2_pvalue = GetLog2PValue(p_value);
+
+    if (maxChiSq > 999999) {
+        maxChiSq = 999999;
+    }
+
+    printf("max is %6d at keybit %3d -> out (%3d,%3d) (^%2d)",
+            (unsigned)maxChiSq, maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
+
+    if (p_value < FAILURE_PBOUND) {
+        printf(" !!!!!\n");
+        result = false;
+    } else if (p_value < WARNING_PBOUND) {
+        printf(" !\n");
+        result = true;
+    } else {
+        printf("\n");
+        result = true;
+    }
 
     // For performance reasons, the analysis loop is coded to use the popcount and
     // andcount arrays in linear order. But for human-oriented printouts, we want to
@@ -960,24 +983,5 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
         // Finished out1
     }
 
-    const double p_value_raw = chiSqPValue(maxChiSq);
-    const double p_value = ScalePValue(p_value_raw, keybits * hashbitpairs);
-    const int log2_pvalue = GetLog2PValue(p_value);
-
-    if (maxChiSq > 999999) {
-        maxChiSq = 999999;
-    }
-
-    printf("max is %6d at keybit %3d -> out (%3d,%3d) (^%2d)",
-            (unsigned)maxChiSq, maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
-
-    if (p_value < FAILURE_PBOUND) {
-        printf(" !!!!!\n");
-        return false;
-    } else if (p_value < WARNING_PBOUND) {
-        printf(" !\n");
-    } else {
-        printf("\n");
-    }
-    return true;
+    return result;
 }
