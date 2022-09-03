@@ -959,18 +959,23 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                     boxes[1] = pop_cursor[out1] - boxes[3];
                     boxes[0] = testcount - boxes[3] - boxes[2] - boxes[1];
 
+                    // I'm not 100% sure that this p_value _should_ be scaled here,
+                    // but this makes this report explicitly show which bits cause
+                    // overall warnings/failures, so I'm doing it for now.
                     const double chisq = chiSqIndepValue(boxes, testcount);
-                    const double p_value = chiSqPValue(chisq);
-                    const int log2_pvalue = GetLog2PValue(p_value);
+                    const double p_value = ScalePValue(chiSqPValue(chisq), keybits * hashbitpairs);
 
-                    if (log2_pvalue < 8) {
-                        printf(".");
-                    } else if (log2_pvalue < 12) {
-                        printf("o");
-                    } else if (log2_pvalue < 16) {
-                        printf("O");
+                    // This first threshhold is basically "take the distance between
+                    // warning and failure, and move that much further past failure".
+                    // So an 'X' shows a much-more-than-marginal failure.
+                    if (p_value < FAILURE_PBOUND/WARNING_PBOUND*FAILURE_PBOUND) {
+                        putchar('X');
+                    } else if (p_value < FAILURE_PBOUND) {
+                        putchar('O');
+                    } else if (p_value < WARNING_PBOUND) {
+                        putchar('o');
                     } else {
-                        printf("X");
+                        putchar('.');
                     }
                 }
                 // Finished keybit
