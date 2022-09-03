@@ -282,21 +282,15 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
 template <typename hashtype>
 bool BicTest( const HashInfo * hinfo, const bool verbose ) {
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
+    size_t       reps      = (hinfo->bits > 128 || hinfo->isVerySlow()) ? 100000 : 64000000 / hinfo->bits;
     bool         result    = true;
-    bool         fewerreps = (hinfo->bits > 64 || hinfo->isVerySlow()) ? true : false;
 
     printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    if (fewerreps) {
-        result &= BicTest4<hashtype>(hash, seed, 16, 100000, verbose);
-    } else {
-        const size_t reps = 64000000 / hinfo->bits;
-        result &= BicTest4<hashtype>(hash, seed, 11, reps, verbose);
-    }
-
-    recordTestResult(result, "BIC", (const char *)NULL);
+    result &= BicTest4<hashtype>(hash, seed, 11, reps, verbose);
+    result &= BicTest4<hashtype>(hash, seed, 16, reps, verbose);
 
     printf("\n%s\n", result ? "" : g_failstr);
 
