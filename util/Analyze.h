@@ -52,7 +52,8 @@
  */
 bool ReportBias( const int biascnt, const int coinflips, const int trials, const bool drawDiagram );
 
-bool ReportChiSqIndep( double maxChiSq, size_t testnum, size_t maxKeybit, size_t maxOutbitA, size_t maxOutbitB );
+bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
+        size_t hashbits, size_t testcount, bool drawDiagram );
 
 template <typename hashtype>
 unsigned int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
@@ -64,3 +65,4 @@ void PrintCollisions( std::set<hashtype> & collisions );
 template <typename hashtype>
 bool TestHashList( std::vector<hashtype> & hashes, bool drawDiagram, bool testCollision = true, bool testDist = true,
         bool testHighBits = true, bool testLowBits = true, bool verbose = true );
+
