@@ -839,8 +839,8 @@ bool TestHashList( std::vector<hashtype> & hashes, bool drawDiagram, bool testCo
 
 INSTANTIATE(TestHashList, HASHTYPELIST);
 
-//----------------------------------------------------------------------------
 #if 0
+//----------------------------------------------------------------------------
 // Bytepair test - generate 16-bit indices from all possible non-overlapping
 // 8-bit sections of the hash value, check distribution on all of them.
 
@@ -893,39 +893,6 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 
     return worst;
 }
+#endif /* 0 */
 
 //-----------------------------------------------------------------------------
-// Simplified test - only check 64k distributions, and only on byte boundaries
-
-template <typename hashtype>
-void TestDistributionFast( std::vector<hashtype> & hashes, double & dworst, double & davg ) {
-    const int hashbits = sizeof(hashtype) * 8;
-    const int nbins    = 65536;
-
-    std::vector<unsigned> bins( nbins, 0 );
-
-    dworst = -1.0e90;
-    davg   = 0;
-
-    for (int start = 0; start < hashbits; start += 8) {
-        bins.clear();
-        bins.resize(nbins, 0);
-
-        for (uint64_t j = 0; j < hashes.size(); j++) {
-            uint32_t index = window(hashes[j], start, 16);
-
-            bins[index]++;
-        }
-
-        double n = calcScore(&bins.front(), nbins, (int)hashes.size());
-
-        davg += n;
-
-        if (n > dworst) { dworst = n; }
-    }
-
-    davg /= double(hashbits / 8);
-}
-
-//-----------------------------------------------------------------------------
-#endif
