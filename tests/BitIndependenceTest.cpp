@@ -69,7 +69,10 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
     const size_t hashbytes    = sizeof(hashtype);
     const size_t hashbits     = hashbytes * 8;
     const size_t hashbitpairs = hashbits / 2 * (hashbits - 1);
+    hashtype h1, h2;
     Rand r( 11938 );
+
+    printf("Testing %3d-bit keys, %7d reps", keybits, reps);
 
     // Generate all the keys to be tested. We use malloc() because C++ things insist
     // on zero-initializing this memory, even though we're going to fill the array
@@ -84,26 +87,22 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
     r.rand_p(keyptr, keybytes * keybits * reps);
     addVCodeInput(keyptr, keybytes * keybits * reps);
 
-    hashtype h1, h2;
-
-    printf("Testing %3d-bit keys, %7d reps", keybits, reps);
-
     // This test checks to see if hash output bits tend to change independently or
     // not, depending on the input bits. For each possible combination of output
     // bits, it hashes a random inputs, flips a single bit of the input, hashes that,
     // and sees which bits changed. This is repeated a number of times, and is also
     // repeated for each keybit. A new set of test keys is randomly generated for
     // each (keybit, output bit 1, output bit 2) tuple. The test then looks for
-    // whichever of those tuples had the highest deviation from average.
+    // whichever of those tuples had the highest deviation from expected values.
     //
-    // For a random set of outputs, each pairing of bits should show that they are
-    // independent of each other. That is, every possible combination of results (00,
-    // 01, 10, 11) should be equally likely, and that should be true no matter which
-    // input bit was changed.
+    // Note that these expected values are not necessarily exactly equal to the test
+    // count divided by 4. This is because some individual bits may, by chance and/or
+    // due to bias in the hash, not be split exactly evenly across 0 and 1
+    // outputs. The chi-square test of independence handles this explicitly.
     //
-    // To be efficient, this implementation counts these possibilities in neat but
-    // confusing ways. Each (keybit, output bit 1, output bit 2) tuple needs, in some
-    // sense, 4 numbers. These numbers form a table which looks like:
+    // To be efficient, this implementation counts each bit pair possibility in neat
+    // but confusing ways. Each (key bit, output bit A, output bit B) tuple needs, in
+    // some sense, 4 numbers. These numbers form a table which looks like:
     //
     //   -------------------------------------
     //   | bit x   changed | bit x unchanged |
@@ -116,18 +115,18 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
     //   -------------------------------------
     //
     // Instead of keeping 4 integers per tuple, this implementation only keeps 1: the
-    // value of the '[11]' box. But it also keeps track of one number per (keybit,
+    // value of the '[11]' box. But it also keeps track of one number per (key bit,
     // output bit) tuple, which is how many times that bit changed for the given
     // keybit. These 2 sets of numbers take up less space than the full table would,
-    // and they are much cheaper to compute than than the full table would be, and
-    // they can be used to reconstruct each of those 4 boxes in the full table.
+    // they are much cheaper to compute than the full table would be, and they can be
+    // used to reconstruct the values in each of those 4 boxes in the full table.
     //
     // The value of box [11] is the number of times bits x and y changed together.
     // These values make up the andcount[] vector.
     //
     // The sum of boxes [11] and [01] is the number of times bit y changed.
     // The sum of boxes [11] and [10] is the number of times bit x changed.
-    // These values are in the popcount[] vector.
+    // These values make up the popcount[] vector.
     //
     // The sum of all the boxes is the number of tests, which is a known constant.
     //
