@@ -74,3 +74,6 @@ double BoundedPoissonPValue( const double expected, const uint64_t collisions );
 
 double calcScore( const unsigned * bins, const int bincount, const int ballcount );
 double normalizeScore( double score, int scorewidth, int tests );
+
+double chiSqIndepValue( const uint32_t * boxes, size_t total );
+double chiSqPValue( double chisq );
