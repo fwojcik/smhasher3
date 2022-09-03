@@ -164,18 +164,18 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
             hash(key, keybytes, seed, &h2);
             keyptr += keybytes;
 
-            hashtype d = h1 ^ h2;
+            h2 = h1 ^ h2;
 
             // First count how often each output bit changes
-            pop_cursor = HistogramHashBits(d, pop_cursor);
+            pop_cursor = HistogramHashBits(h2, pop_cursor);
 
             // Then count how often each pair of output bits changed together
             for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
-                if (d.getbit(out1) == 0) {
+                if (h2.getbit(out1) == 0) {
                     and_cursor += hashbits - 1 - out1;
                     continue;
                 }
-                and_cursor = HistogramHashBits(d, and_cursor, out1 + 1);
+                and_cursor = HistogramHashBits(h2, and_cursor, out1 + 1);
             }
         }
     }
