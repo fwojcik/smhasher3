@@ -1217,3 +1217,53 @@ double normalizeScore( double score, int scorewidth, int tests ) {
 }
 
 //----------------------------------------------------------------------------
+// Return the chi-square value for a chi-square test of independence on a 2x2
+// contingency matrix. Note that there is only one (1) degree of freedom here.
+//
+// This formulation works better than the normal chi-square test, and much better
+// than raw bias calculations, when the individual bits might themselves be biased
+// (e.g. bit X not being a 50/50 coin flip might throw off the result for
+// independence between bits X and Y).
+//
+// While I don't know that this is the very best test for this, it performs very well
+// in my tests. Fisher's exact test can't be used because the row and column sums
+// (aka the margin values) aren't fixed. The same is true of Barnard's exact test and
+// Boschloo's test. We might be able to get a p-value from the binomial approximation
+// above, since we know these are being compared against Bernoulli trials with p =
+// 0.5 exactly. That sounds complicated, tho. :) We might also be able to use a
+// G-test for mutual information.
+
+double chiSqIndepValue( const uint32_t * boxes, size_t total ) {
+    const double   N         = (double)total;
+    const uint64_t colsum[2] = { boxes[0] + boxes[1], boxes[2] + boxes[3] };
+    const uint64_t rowsum[2] = { boxes[0] + boxes[2], boxes[1] + boxes[3] };
+    const double   expect[4] = { colsum[0] * rowsum[0] / N,
+                                 colsum[0] * rowsum[1] / N,
+                                 colsum[1] * rowsum[0] / N,
+                                 colsum[1] * rowsum[1] / N, };
+    double chisq = 0.0;
+    for (int i = 0; i < 4; i++) {
+        if (expect[i] < 10.0) {
+            //printf("chisq of %d %d %d %d is INF, chi is INF, cdf is INF 99", boxes[0], boxes[1], boxes[2], boxes[3]);
+            return exp10(99);
+        }
+        chisq += ((double)boxes[i] - expect[i]) * ((double)boxes[i] - expect[i]) / expect[i];
+    }
+#if 0
+    printf("chisq of %d %d %d %d vs. %d %d %d %d is %f, chi is %f, cdf is %e %2d",
+            boxes[0], boxes[1], boxes[2], boxes[3],
+            (int)expect[0], (int)expect[1], (int)expect[2], (int)expect[3],
+            chisq, sqrt(chisq), cdf, GetLog2PValue(cdf));
+#endif
+    return chisq;
+}
+
+
+double chiSqPValue( double chisq ) {
+    // Chi-sq CDF for 1 degree-of-freedom is P(x) = 1 - 2 * Q(sqrt(x)) where
+    // Q(y) = 1 - StandardNormalCDF(y).
+    //
+    // Since we want this result in our usual "1.0 - p" format, and we already have a
+    // function for 1 - Q(y), this is easy to compute.
+    return 2.0 * GetNormalPValue(0.0, 1.0, sqrt(chisq));
+}
