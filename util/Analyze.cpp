@@ -923,13 +923,10 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     const double p_value_raw = chiSqPValue(maxChiSq);
     const double p_value = ScalePValue(p_value_raw, keybits * hashbitpairs);
     const int log2_pvalue = GetLog2PValue(p_value);
+    const double cramer_v = sqrt(maxChiSq / testcount);
 
-    if (maxChiSq > 999999) {
-        maxChiSq = 999999;
-    }
-
-    printf("max is %6d at keybit %3d -> out (%3d,%3d) (^%2d)",
-            (unsigned)maxChiSq, maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
+    printf("max is %6.4f at keybit %3d -> out (%3d,%3d) (^%2d)",
+            cramer_v, maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
 
     if (p_value < FAILURE_PBOUND) {
         printf(" !!!!!\n");

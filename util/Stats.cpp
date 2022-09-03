@@ -1245,7 +1245,7 @@ double chiSqIndepValue( const uint32_t * boxes, size_t total ) {
     for (int i = 0; i < 4; i++) {
         if (expect[i] < 10.0) {
             //printf("chisq of %d %d %d %d is INF, chi is INF, cdf is INF 99", boxes[0], boxes[1], boxes[2], boxes[3]);
-            return exp10(99);
+            return total;
         }
         chisq += ((double)boxes[i] - expect[i]) * ((double)boxes[i] - expect[i]) / expect[i];
     }
