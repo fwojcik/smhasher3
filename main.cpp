@@ -532,10 +532,9 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Bit Independence Criteria. Interesting, but doesn't tell us much about
-    // collision or distribution. For >=128bit hashes, do this only with --extra
+    // Bit Independence Criteria. Do this only with --extra for now.
 
-    if (g_testAll && g_testExtra && (hInfo->bits >= 128)) {
+    if (g_testAll && g_testExtra) {
         g_testBIC = true;
     }
     if (g_testBIC) {
