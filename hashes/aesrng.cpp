@@ -134,10 +134,19 @@ static seed_t aesrng_seedfix( const HashInfo * hinfo, const seed_t hint ) {
 //
 // Hash_mode 2 is for Avalanche, which is very hard to fool in a
 // consistent way, so we have some magic knowledge of how it calls us.
+//
+// Hash mode 3 is for BIC, where we also have some magic knowledge of
+// how it calls us. BIC could work with hash mode 1 if we wanted to
+// quickly mix together all the input words for a seed, but we don't.
 static thread_local uint64_t callcount;
 
 static void rng_keyseq( const void * key, size_t len, uint64_t seed ) {
-    if (hash_mode == 2) {
+    if (hash_mode == 3) {
+        if (callcount-- != 0) {
+            return;
+        }
+        callcount = 1;
+    } else if (hash_mode == 2) {
         if (callcount-- != 0) {
             return;
         }

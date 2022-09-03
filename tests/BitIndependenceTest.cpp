@@ -199,7 +199,7 @@ bool BicTest( const HashInfo * hinfo, const bool verbose ) {
 
     printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
 
-    const seed_t seed = hinfo->Seed(g_seed);
+    const seed_t seed = hinfo->Seed(g_seed, false, 3);
 
     result &= BicTest4<hashtype>(hash, seed, 11, reps, verbose);
     result &= BicTest4<hashtype>(hash, seed, 16, reps, verbose);
