@@ -65,10 +65,10 @@
 
 template <typename hashtype>
 static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, const size_t reps, bool verbose = false ) {
-    const size_t hashbytes = sizeof(hashtype);
-    const size_t hashbits  = hashbytes * 8;
-    const size_t keybits   = keybytes * 8;
-
+    const size_t keybits      = keybytes * 8;
+    const size_t hashbytes    = sizeof(hashtype);
+    const size_t hashbits     = hashbytes * 8;
+    const size_t hashbitpairs = hashbits / 2 * (hashbits - 1);
     Rand r( 11938 );
 
     // Generate all the keys to be tested. We use malloc() because C++ things insist
@@ -134,8 +134,8 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
     // The value in box [01] is therefore popcount[y] - andcount[x, y].
     // The value in box [00] is therefore testcount - box[11] - box[10] - box[01].
 
-    std::vector<uint32_t> popcount( keybits * hashbits, 0 );
-    std::vector<uint32_t> andcount( keybits * hashbits / 2 * (hashbits - 1), 0 );
+    std::vector<uint32_t> popcount( keybits * hashbits    , 0 );
+    std::vector<uint32_t> andcount( keybits * hashbitpairs, 0 );
     uint32_t * pop_cursor = &popcount[0];
     uint32_t * and_cursor = &andcount[0];
 
@@ -146,8 +146,8 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
         if (pop_cursor != &popcount[keybit * hashbits]) {
             printf("bit %d   P %p != %p\n", keybit, pop_cursor, &popcount[keybit * hashbits]);
         }
-        if (and_cursor != &andcount[keybit * hashbits / 2 * (hashbits - 1)]) {
-            printf("bit %d   A %p != %p\n", keybit, and_cursor, &andcount[keybit * hashbits / 2 * (hashbits - 1)]);
+        if (and_cursor != &andcount[keybit * hashbitpairs]) {
+            printf("bit %d   A %p != %p\n", keybit, and_cursor, &andcount[keybit * hashbitpairs]);
         }
 #endif
 
@@ -222,8 +222,8 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
         }
     }
 
-    addVCodeOutput(&popcount[0], keybits * hashbits * sizeof(popcount[0]));
-    addVCodeOutput(&andcount[0], keybits * hashbits / 2 * (hashbits - 1) * sizeof(andcount[0]));
+    addVCodeOutput(&popcount[0], keybits * hashbits     * sizeof(popcount[0]));
+    addVCodeOutput(&andcount[0], keybits * hashbitpairs * sizeof(andcount[0]));
     addVCodeResult(maxBias);
     addVCodeResult(maxK);
     addVCodeResult(maxA);
@@ -240,7 +240,7 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
                 printf("Output bits (%3d,%3d) - ", out1, out2);
                 for (int keybit = 0; keybit < keybits; keybit++) {
                     uint32_t * pop_cursor = &popcount[keybit * hashbits];
-                    uint32_t * and_cursor = &andcount[xyoffset + keybit * hashbits / 2 * (hashbits - 1)];
+                    uint32_t * and_cursor = &andcount[keybit * hashbitpairs + xyoffset];
 
                     // Find worst bias for this tuple, out of all 4 boxes
                     uint32_t boxes[4];
