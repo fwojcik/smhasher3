@@ -871,6 +871,9 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 #endif /* 0 */
 
 //-----------------------------------------------------------------------------
+// Reports on dependencies between hash output bit changes. For the math behind how
+// we convert from the popcount[] and andcount[] arrays into full 2x2 contingency
+// tables, see the comment in tests/BitIndependence.cpp.
 
 bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
         size_t hashbits, size_t testcount, bool drawDiagram ) {
