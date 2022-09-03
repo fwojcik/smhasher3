@@ -872,9 +872,96 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 
 //-----------------------------------------------------------------------------
 
-bool ReportChiSqIndep( double maxChiSq, size_t testnum, size_t maxKeybit, size_t maxOutbitA, size_t maxOutbitB ) {
+bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
+        size_t hashbits, size_t testcount, bool drawDiagram ) {
+    const size_t     hashbitpairs = hashbits / 2 * (hashbits - 1);
+    const uint32_t * pop_cursor   = popcount;
+    const uint32_t * and_cursor   = andcount;
+
+    double maxChiSq   = 0;
+    size_t maxKeybit  = 0;
+    size_t maxOutbitA = 0;
+    size_t maxOutbitB = 0;
+
+    for (size_t keybit = 0; keybit < keybits; keybit++) {
+        const uint32_t * pop_cursor_base = pop_cursor;
+
+        for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
+            pop_cursor = pop_cursor_base++;
+            uint32_t popcount_y = *pop_cursor++;
+
+            for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
+                uint32_t boxes[4];
+                boxes[3] = *and_cursor++;
+                boxes[2] = *pop_cursor++ - boxes[3];
+                boxes[1] = popcount_y - boxes[3];
+                boxes[0] = testcount - boxes[3] - boxes[2] - boxes[1];
+
+                double chisq = chiSqIndepValue(boxes, testcount);
+
+                if (maxChiSq   < chisq) {
+                    maxChiSq   = chisq;
+                    maxKeybit  = keybit;
+                    maxOutbitA = out1;
+                    maxOutbitB = out2;
+                }
+            }
+        }
+    }
+
+    addVCodeOutput(&popcount[0], keybits * hashbits     * sizeof(popcount[0]));
+    addVCodeOutput(&andcount[0], keybits * hashbitpairs * sizeof(andcount[0]));
+    addVCodeResult((uint64_t)maxChiSq);
+    addVCodeResult(maxKeybit);
+    addVCodeResult(maxOutbitA);
+    addVCodeResult(maxOutbitB);
+
+    // For performance reasons, the analysis loop is coded to use the popcount and
+    // andcount arrays in linear order. But for human-oriented printouts, we want to
+    // iterate over them differently, and so reporting is now done here in its own
+    // loop, separate from analysis.
+    if (drawDiagram) {
+        size_t xyoffset = 0;
+        for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
+            for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
+                printf("Output bits (%3d,%3d) - ", out1, out2);
+                for (int keybit = 0; keybit < keybits; keybit++) {
+                    const uint32_t * pop_cursor = &popcount[keybit * hashbits];
+                    const uint32_t * and_cursor = &andcount[keybit * hashbitpairs + xyoffset];
+
+                    // Find worst bias for this tuple, out of all 4 boxes
+                    uint32_t boxes[4];
+                    boxes[3] = *and_cursor;
+                    boxes[2] = pop_cursor[out2] - boxes[3];
+                    boxes[1] = pop_cursor[out1] - boxes[3];
+                    boxes[0] = testcount - boxes[3] - boxes[2] - boxes[1];
+
+                    const double chisq = chiSqIndepValue(boxes, testcount);
+                    const double p_value = chiSqPValue(chisq);
+                    const int log2_pvalue = GetLog2PValue(p_value);
+
+                    if (log2_pvalue < 8) {
+                        printf(".");
+                    } else if (log2_pvalue < 12) {
+                        printf("o");
+                    } else if (log2_pvalue < 16) {
+                        printf("O");
+                    } else {
+                        printf("X");
+                    }
+                }
+                // Finished keybit
+                printf("\n");
+                xyoffset++;
+            }
+            // Finished out2
+            printf("\n");
+        }
+        // Finished out1
+    }
+
     const double p_value_raw = chiSqPValue(maxChiSq);
-    const double p_value = ScalePValue(p_value_raw, testnum);
+    const double p_value = ScalePValue(p_value_raw, keybits * hashbitpairs);
     const int log2_pvalue = GetLog2PValue(p_value);
 
     if (maxChiSq > 999999) {
