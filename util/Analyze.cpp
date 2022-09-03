@@ -108,6 +108,31 @@ bool ReportBias( const int worstbiascnt, const int coinflips, const int trials, 
     return result;
 }
 
+//----------------------------------------------------------------------------
+
+bool ReportChiSqIndep( double maxChiSq, size_t testnum, size_t maxKeybit, size_t maxOutbitA, size_t maxOutbitB ) {
+    const double p_value_raw = chiSqPValue(maxChiSq);
+    const double p_value = ScalePValue(p_value_raw, testnum);
+    const int log2_pvalue = GetLog2PValue(p_value);
+
+    if (maxChiSq > 999999) {
+        maxChiSq = 999999;
+    }
+
+    printf("max is %6d at keybit %3d -> out (%3d,%3d) (^%2d)",
+            (unsigned)maxChiSq, maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
+
+    if (p_value < FAILURE_PBOUND) {
+        printf(" !!!!!\n");
+        return false;
+    } else if (p_value < WARNING_PBOUND) {
+        printf(" !\n");
+    } else {
+        printf("\n");
+    }
+    return true;
+}
+
 //-----------------------------------------------------------------------------
 
 static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, bool maxcoll,
