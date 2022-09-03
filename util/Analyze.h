@@ -52,6 +52,8 @@
  */
 bool ReportBias( const int biascnt, const int coinflips, const int trials, const bool drawDiagram );
 
+bool ReportChiSqIndep( double maxChiSq, size_t testnum, size_t maxKeybit, size_t maxOutbitA, size_t maxOutbitB );
+
 template <typename hashtype>
 unsigned int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
         int maxCollisions = 1000, bool drawDiagram = false );

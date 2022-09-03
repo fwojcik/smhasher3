@@ -47,6 +47,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
+#include "Stats.h"
 #include "Random.h"
 #include "Analyze.h"
 #include "Histogram.h"
@@ -85,6 +86,8 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
     addVCodeInput(keyptr, keybytes * keybits * reps);
 
     hashtype h1, h2;
+
+    printf("Testing %3d-bit keys, %7d reps", keybits, reps);
 
     // This test checks to see if hash output bits tend to change independently or
     // not, depending on the input bits. For each possible combination of output
@@ -180,9 +183,8 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
     }
 
     free(keys);
-    printf("\n");
 
-    uint32_t maxBias = 0;
+    double   maxChiSq = 0;
     size_t   maxK    = 0;
     size_t   maxA    = 0;
     size_t   maxB    = 0;
@@ -204,19 +206,12 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
                 boxes[1] = popcount_y - boxes[3];
                 boxes[0] = reps - boxes[3] - boxes[2] - boxes[1];
 
-                uint32_t maxCurBias = 0;
-                for (size_t b = 0; b < 4; b++) {
-                    uint32_t curBias = 4 * boxes[b] > reps ? (4 * boxes[b] - reps) : (reps - 4 * boxes[b]);
-                    if (maxCurBias < curBias) {
-                        maxCurBias = curBias;
-                    }
-                }
-
-                if (maxBias < maxCurBias) {
-                    maxBias = maxCurBias;
-                    maxK    = keybit;
-                    maxA    = out1;
-                    maxB    = out2;
+                double chisq = chiSqIndepValue(boxes, reps);
+                if (maxChiSq < chisq) {
+                    maxChiSq = chisq;
+                    maxK     = keybit;
+                    maxA     = out1;
+                    maxB     = out2;
                 }
             }
         }
@@ -224,7 +219,7 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
 
     addVCodeOutput(&popcount[0], keybits * hashbits     * sizeof(popcount[0]));
     addVCodeOutput(&andcount[0], keybits * hashbitpairs * sizeof(andcount[0]));
-    addVCodeResult(maxBias);
+    addVCodeResult((uint64_t)maxChiSq);
     addVCodeResult(maxK);
     addVCodeResult(maxA);
     addVCodeResult(maxB);
@@ -249,22 +244,16 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
                     boxes[1] = pop_cursor[out1] - boxes[3];
                     boxes[0] = reps - boxes[3] - boxes[2] - boxes[1];
 
-                    uint32_t maxCurBias = 0;
-                    for (size_t b = 0; b < 4; b++) {
-                        uint32_t curBias = 4 * boxes[b] > reps ? (4 * boxes[b] - reps) : (reps - 4 * boxes[b]);
-                        if (maxCurBias < curBias) {
-                            maxCurBias = curBias;
-                        }
-                    }
-
-                    double bias = (double)maxCurBias / (double)reps;
+                    const double chisq = chiSqIndepValue(boxes, reps);
+                    const double p_value = chiSqPValue(chisq);
+                    const int log2_pvalue = GetLog2PValue(p_value);
 
                     if (verbose) {
-                        if (bias < 0.01) {
+                        if (log2_pvalue < 8) {
                             printf(".");
-                        } else if (bias < 0.05) {
+                        } else if (log2_pvalue < 12) {
                             printf("o");
-                        } else if (bias < 0.33) {
+                        } else if (log2_pvalue < 16) {
                             printf("O");
                         } else {
                             printf("X");
@@ -281,11 +270,10 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
         // Finished out1
     }
 
-    double maxBiasPct = 100.0 * ((double)maxBias / (double)reps);
-    printf("Max bias %6.2f%% - (Key bit %3d : output bits %3d and %3d)\n", maxBiasPct, maxK, maxA, maxB);
+    bool result = ReportChiSqIndep(maxChiSq, keybits * hashbitpairs, maxK, maxA, maxB);
 
-    // Bit independence is harder to pass than avalanche, so we're a bit more lax here.
-    bool result = (maxBiasPct < 5.00);
+    recordTestResult(result, "BIC", keybits);
+
     return result;
 }
 
