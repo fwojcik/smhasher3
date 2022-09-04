@@ -121,9 +121,9 @@ class Rand {
         return (r * max) >> 32;
     }
 
-    void rand_p( void * blob, int bytes ) {
+    void rand_p( void * blob, uint64_t bytes ) {
         uint8_t * blocks = reinterpret_cast<uint8_t *>(blob);
-        int       i;
+        size_t    i;
 
         while (bytes >= 4) {
             uint32_t r = COND_BSWAP(rand_u32(), isBE());
@@ -131,9 +131,9 @@ class Rand {
             blocks += 4;
             bytes  -= 4;
         }
-
-        for (i = 0; i < bytes; i++) {
-            blocks[i] = (uint8_t)rand_u32();
+        if (bytes > 0) {
+            uint32_t r = COND_BSWAP(rand_u32(), isBE());
+            memcpy(blocks, &r, bytes);
         }
     }
 }; // class Rand
