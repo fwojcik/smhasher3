@@ -178,7 +178,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     const size_t hashbytes    = sizeof(hashtype);
     const size_t hashbits     = hashbytes * 8;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
-    Rand r( 11938 );
+    Rand r( 11938 + keybytes );
 
     printf("Testing %3d-bit keys, %7d reps", keybits, reps);
 
