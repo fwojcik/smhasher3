@@ -113,12 +113,12 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
     const int hashbytes = sizeof(hashtype);
 
 #if defined(HAVE_AVX2)
-    const __m256i ONE  = _mm256_set1_epi32(1);
-    const __m256i MASK = _mm256_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7);
+    const __m256i ONE       = _mm256_set1_epi32(1);
+    const __m256i MASK      = _mm256_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7);
     const size_t  startWord = startbit / 32;
     startbit &= 31;
     // Align the cursor to the start of the chunk of 32 integer counters
-    cursor -= startbit;
+    cursor   -= startbit;
     for (int oWord = startWord; oWord < (hashbytes / 4); oWord++) {
         // Get the next 32-bit chunk of the hash difference
         uint32_t word;
@@ -140,31 +140,31 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
 
         // Add these into the counts in the histogram.
         __m256i cnt1 = _mm256_loadu_si256((const __m256i *)cursor);
-        cnt1    = _mm256_add_epi32(cnt1, incr1);
+        cnt1     = _mm256_add_epi32(cnt1, incr1);
         _mm256_storeu_si256((__m256i *)cursor, cnt1);
-        cursor += 8;
+        cursor  += 8;
         __m256i cnt2 = _mm256_loadu_si256((const __m256i *)cursor);
-        cnt2    = _mm256_add_epi32(cnt2, incr2);
+        cnt2     = _mm256_add_epi32(cnt2, incr2);
         _mm256_storeu_si256((__m256i *)cursor, cnt2);
-        cursor += 8;
+        cursor  += 8;
         __m256i cnt3 = _mm256_loadu_si256((const __m256i *)cursor);
-        cnt3    = _mm256_add_epi32(cnt3, incr3);
+        cnt3     = _mm256_add_epi32(cnt3, incr3);
         _mm256_storeu_si256((__m256i *)cursor, cnt3);
-        cursor += 8;
+        cursor  += 8;
         __m256i cnt4 = _mm256_loadu_si256((const __m256i *)cursor);
-        cnt4    = _mm256_add_epi32(cnt4, incr4);
+        cnt4     = _mm256_add_epi32(cnt4, incr4);
         _mm256_storeu_si256((__m256i *)cursor, cnt4);
-        cursor += 8;
+        cursor  += 8;
         // For all other times through the loop, leave the word variable unchanged
         startbit = 0;
     }
 #elif defined(HAVE_SSE_4_1)
-    const __m128i ONE  = _mm_set1_epi32(1);
-    const __m128i MASK = _mm_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3);
+    const __m128i ONE       = _mm_set1_epi32(1);
+    const __m128i MASK      = _mm_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3);
     const size_t  startWord = startbit / 32;
     startbit &= 31;
     // Align the cursor to the start of the chunk of 32 integer counters
-    cursor -= startbit;
+    cursor   -= startbit;
     for (int oWord = startWord; oWord < (hashbytes / 4); oWord++) {
         // Get the next 32-bit chunk of the hash difference
         uint32_t word;
@@ -192,7 +192,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
     const size_t startByte = startbit / 8;
     startbit &= 7;
     // Align the cursor to the start of the chunk of 8 integer counters
-    cursor -= startbit;
+    cursor   -= startbit;
     for (int oByte = startByte; oByte < hashbytes; oByte++) {
         uint8_t byte = hash[oByte];
         // Mask off the bits before startbit
