@@ -1237,27 +1237,28 @@ double chiSqIndepValue( const uint32_t * boxes, size_t total ) {
     const double   N         = (double)total;
     const uint64_t colsum[2] = { boxes[0] + boxes[1], boxes[2] + boxes[3] };
     const uint64_t rowsum[2] = { boxes[0] + boxes[2], boxes[1] + boxes[3] };
-    const double   expect[4] = { colsum[0] * rowsum[0] / N,
-                                 colsum[0] * rowsum[1] / N,
-                                 colsum[1] * rowsum[0] / N,
-                                 colsum[1] * rowsum[1] / N, };
+    const double   expect[4] = {
+        colsum[0] * rowsum[0] / N,
+        colsum[0] * rowsum[1] / N,
+        colsum[1] * rowsum[0] / N,
+        colsum[1] * rowsum[1] / N,
+    };
     double chisq = 0.0;
+
     for (int i = 0; i < 4; i++) {
         if (expect[i] < 10.0) {
-            //printf("chisq of %d %d %d %d is INF, chi is INF, cdf is INF 99", boxes[0], boxes[1], boxes[2], boxes[3]);
+            // printf("chisq of %d %d %d %d is INF, chi is INF, cdf is INF 99", boxes[0], boxes[1], boxes[2], boxes[3]);
             return total;
         }
         chisq += ((double)boxes[i] - expect[i]) * ((double)boxes[i] - expect[i]) / expect[i];
     }
 #if 0
-    printf("chisq of %d %d %d %d vs. %d %d %d %d is %f, chi is %f, cdf is %e %2d",
-            boxes[0], boxes[1], boxes[2], boxes[3],
-            (int)expect[0], (int)expect[1], (int)expect[2], (int)expect[3],
-            chisq, sqrt(chisq), cdf, GetLog2PValue(cdf));
+    printf("chisq of %d %d %d %d vs. %d %d %d %d is %f, chi is %f, cdf is %e %2d", boxes[0],
+            boxes[1], boxes[2], boxes[3], (int)expect[0], (int)expect[1], (int)expect[2],
+            (int)expect[3], chisq, sqrt(chisq), cdf, GetLog2PValue(cdf));
 #endif
     return chisq;
 }
-
 
 double chiSqPValue( double chisq ) {
     // Chi-sq CDF for 1 degree-of-freedom is P(x) = 1 - 2 * Q(sqrt(x)) where

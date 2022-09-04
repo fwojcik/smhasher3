@@ -868,6 +868,7 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 
     return worst;
 }
+
 #endif /* 0 */
 
 //-----------------------------------------------------------------------------
@@ -877,7 +878,7 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 
 bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
         size_t hashbits, size_t testcount, bool drawDiagram ) {
-    const size_t     hashbitpairs = hashbits / 2 * hashbits;
+    const size_t hashbitpairs     = hashbits / 2 * hashbits;
     const size_t realhashbitpairs = hashbits / 2 * (hashbits - 1);
 
     double maxChiSq   = 0;
@@ -887,8 +888,8 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     bool   result;
 
     for (size_t keybit = 0; keybit < keybits; keybit++) {
-        const uint32_t * pop_cursor_base = &popcount[keybit * hashbits];
-        const uint32_t * and_cursor = &andcount[keybit * hashbitpairs];
+        const uint32_t * pop_cursor_base = &popcount[keybit * hashbits    ];
+        const uint32_t * and_cursor      = &andcount[keybit * hashbitpairs];
 
         for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
             const uint32_t * pop_cursor = pop_cursor_base++;
@@ -898,7 +899,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                 uint32_t boxes[4];
                 boxes[3] = *and_cursor++;
                 boxes[2] = *pop_cursor++ - boxes[3];
-                boxes[1] = popcount_y - boxes[3];
+                boxes[1] = popcount_y    - boxes[3];
                 boxes[0] = testcount - boxes[3] - boxes[2] - boxes[1];
 
                 double chisq = chiSqIndepValue(boxes, testcount);
@@ -921,12 +922,12 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     addVCodeResult(maxOutbitB);
 
     const double p_value_raw = chiSqPValue(maxChiSq);
-    const double p_value = ScalePValue(p_value_raw, keybits * realhashbitpairs);
-    const int log2_pvalue = GetLog2PValue(p_value);
-    const double cramer_v = sqrt(maxChiSq / testcount);
+    const double p_value     = ScalePValue(p_value_raw, keybits * realhashbitpairs);
+    const int    log2_pvalue = GetLog2PValue(p_value);
+    const double cramer_v    = sqrt(maxChiSq / testcount);
 
-    printf("max is %6.4f at keybit %3d -> out (%3d,%3d) (^%2d)",
-            cramer_v, maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
+    printf("max is %6.4f at keybit %3d -> out (%3d,%3d) (^%2d)", cramer_v,
+            maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
 
     if (p_value < FAILURE_PBOUND) {
         printf(" !!!!!\n");
@@ -949,7 +950,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
             for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
                 printf("Output bits (%3d,%3d) - ", out1, out2);
                 for (int keybit = 0; keybit < keybits; keybit++) {
-                    const uint32_t * pop_cursor = &popcount[keybit * hashbits];
+                    const uint32_t * pop_cursor = &popcount[keybit * hashbits               ];
                     const uint32_t * and_cursor = &andcount[keybit * hashbitpairs + xyoffset];
 
                     // Find worst bias for this tuple, out of all 4 boxes
@@ -962,13 +963,13 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                     // I'm not 100% sure that this p_value _should_ be scaled here,
                     // but this makes this report explicitly show which bits cause
                     // overall warnings/failures, so I'm doing it for now.
-                    const double chisq = chiSqIndepValue(boxes, testcount);
+                    const double chisq   = chiSqIndepValue(boxes, testcount);
                     const double p_value = ScalePValue(chiSqPValue(chisq), keybits * realhashbitpairs);
 
                     // This first threshhold is basically "take the distance between
                     // warning and failure, and move that much further past failure".
                     // So an 'X' shows a much-more-than-marginal failure.
-                    if (p_value < FAILURE_PBOUND/WARNING_PBOUND*FAILURE_PBOUND) {
+                    if (p_value < FAILURE_PBOUND / WARNING_PBOUND * FAILURE_PBOUND) {
                         putchar('X');
                     } else if (p_value < FAILURE_PBOUND) {
                         putchar('O');
