@@ -192,7 +192,7 @@ consistency, gcc 9.3, Slackware 14.2):
 | Diff        |      263s |      171s |  -34% |      263s |       43s |  -84% |
 | Permutation |      256s |       98s |  -62% ||||
 | Popcount    |      163s |       20s |  -87% |       90s |        5s |  -94% |
-| BIC         |      152s |      152s |    0% ||||
+| BIC         |      152s |        9s |  -94% |      152s |        3s |  -98% |
 | Text        |       65s |       20s |  -69% ||||
 | PerlinNoise |       47s |       30s |  -36% ||||
 | Prng        |       33s |        8s |  -76% ||||
@@ -214,11 +214,6 @@ data sharing across threads, so I am unsure of its source. The Avalanche test is
 threaded in SMHasher, but it takes more wall clock time than the unthreaded version
 regardless, which I have no good hypothesis about. Both of these results are
 repeatable and consistent, though, so I am keeping them in the table.
-
-I believe that most important and easy optimizations have been made, but not
-all. There are some significant gains to be had in the BIC test in particular. Other
-code could also be made to use threading profitably. I should get to those things
-before beta2.
 
 **By far**, the most important code which I have not yet been able to optimize is the
 histogram code in `TestDistribution()` in `util/Analyze.cpp`.
