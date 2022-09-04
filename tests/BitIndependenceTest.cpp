@@ -60,15 +60,18 @@
 //-----------------------------------------------------------------------------
 // BIC test
 //
-// The choices for VCode inputs may seem strange here, but they were
-// chosen in anticipation of threading this test.
+// The technically-correct value for hashbitpairs is "hashbits / 2 * (hashbits - 1)",
+// but the formulations currently used allow for space between rows of data in the
+// andcount vector, which will allow for threads to separate themselves using the
+// keybit index alone, since it won't ever share a cacheline with data from a
+// different keybit.
 
 template <typename hashtype>
 static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, const size_t reps, bool verbose = false ) {
     const size_t keybits      = keybytes * 8;
     const size_t hashbytes    = sizeof(hashtype);
     const size_t hashbits     = hashbytes * 8;
-    const size_t hashbitpairs = hashbits / 2 * (hashbits - 1);
+    const size_t hashbitpairs = hashbits / 2 * hashbits;
     hashtype h1, h2;
     Rand r( 11938 );
 
@@ -137,26 +140,16 @@ static bool BicTest4( HashFn hash, const seed_t seed, const size_t keybytes, con
 
     std::vector<uint32_t> popcount( keybits * hashbits    , 0 );
     std::vector<uint32_t> andcount( keybits * hashbitpairs, 0 );
-    uint32_t * pop_cursor = &popcount[0];
-    uint32_t * and_cursor = &andcount[0];
 
     for (size_t keybit = 0; keybit < keybits; keybit++) {
-        uint32_t * pop_cursor_base = pop_cursor;
-        uint32_t * and_cursor_base = and_cursor;
-#if defined(DEBUG)
-        if (pop_cursor != &popcount[keybit * hashbits]) {
-            printf("bit %d   P %p != %p\n", keybit, pop_cursor, &popcount[keybit * hashbits]);
-        }
-        if (and_cursor != &andcount[keybit * hashbitpairs]) {
-            printf("bit %d   A %p != %p\n", keybit, and_cursor, &andcount[keybit * hashbitpairs]);
-        }
-#endif
+        uint32_t * pop_cursor_base = &popcount[keybit * hashbits];
+        uint32_t * and_cursor_base = &andcount[keybit * hashbitpairs];
 
         progressdots(keybit, 0, keybits - 1, 10);
 
         for (size_t irep = 0; irep < reps; irep++) {
-            pop_cursor = pop_cursor_base;
-            and_cursor = and_cursor_base;
+            uint32_t * pop_cursor = pop_cursor_base;
+            uint32_t * and_cursor = and_cursor_base;
 
             ExtBlob key(keyptr, keybytes);
             hash(key, keybytes, seed, &h1);
