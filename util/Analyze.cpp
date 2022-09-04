@@ -877,9 +877,8 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 
 bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
         size_t hashbits, size_t testcount, bool drawDiagram ) {
-    const size_t     hashbitpairs = hashbits / 2 * (hashbits - 1);
-    const uint32_t * pop_cursor   = popcount;
-    const uint32_t * and_cursor   = andcount;
+    const size_t     hashbitpairs = hashbits / 2 * hashbits;
+    const size_t realhashbitpairs = hashbits / 2 * (hashbits - 1);
 
     double maxChiSq   = 0;
     size_t maxKeybit  = 0;
@@ -888,10 +887,11 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     bool   result;
 
     for (size_t keybit = 0; keybit < keybits; keybit++) {
-        const uint32_t * pop_cursor_base = pop_cursor;
+        const uint32_t * pop_cursor_base = &popcount[keybit * hashbits];
+        const uint32_t * and_cursor = &andcount[keybit * hashbitpairs];
 
         for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
-            pop_cursor = pop_cursor_base++;
+            const uint32_t * pop_cursor = pop_cursor_base++;
             uint32_t popcount_y = *pop_cursor++;
 
             for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
@@ -921,7 +921,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     addVCodeResult(maxOutbitB);
 
     const double p_value_raw = chiSqPValue(maxChiSq);
-    const double p_value = ScalePValue(p_value_raw, keybits * hashbitpairs);
+    const double p_value = ScalePValue(p_value_raw, keybits * realhashbitpairs);
     const int log2_pvalue = GetLog2PValue(p_value);
     const double cramer_v = sqrt(maxChiSq / testcount);
 
@@ -963,7 +963,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                     // but this makes this report explicitly show which bits cause
                     // overall warnings/failures, so I'm doing it for now.
                     const double chisq = chiSqIndepValue(boxes, testcount);
-                    const double p_value = ScalePValue(chiSqPValue(chisq), keybits * hashbitpairs);
+                    const double p_value = ScalePValue(chiSqPValue(chisq), keybits * realhashbitpairs);
 
                     // This first threshhold is basically "take the distance between
                     // warning and failure, and move that much further past failure".
