@@ -148,43 +148,43 @@ static uint64_t siphash_sse( const uint64_t key[2], const uint8_t * m, size_t le
     v13 = _mm_xor_si128(v13, _mm_unpackhi_epi64(k, k));
 
   #if defined(HAVE_SSSE_3)
-#define sipcompress()                                                 \
-	v11 = v13;                                                        \
-	v33 = v13;                                                        \
-	v11 = _mm_or_si128(_mm_slli_epi64(v11, 13), _mm_srli_epi64(v11, 64-13));\
-	v02 = _mm_add_epi64(v02, v13);                                    \
-	v33 = _mm_shuffle_epi8(v33, siphash_rot16v3.v);                   \
-	v13 = _mm_unpacklo_epi64(v11, v33);                               \
-	v13 = _mm_xor_si128(v13, v02);                                    \
-	v20 = _mm_shuffle_epi32(v02, _MM_SHUFFLE(0,1,3,2));               \
-	v11 = v13;                                                        \
-	v33 = _mm_shuffle_epi32(v13, _MM_SHUFFLE(1,0,3,2));               \
-	v11 = _mm_or_si128(_mm_slli_epi64(v11, 17), _mm_srli_epi64(v11, 64-17));\
-	v20 = _mm_add_epi64(v20, v13);                                    \
-	v33 = _mm_or_si128(_mm_slli_epi64(v33, 21), _mm_srli_epi64(v33, 64-21));\
-	v13 = _mm_unpacklo_epi64(v11, v33);                               \
-	v13 = _mm_unpacklo_epi64(v11, v33);                               \
-	v02 = _mm_shuffle_epi32(v20, _MM_SHUFFLE(0,1,3,2));               \
-	v13 = _mm_xor_si128(v13, v20);
+#define sipcompress()                                                        \
+    v11 = v13;                                                               \
+    v33 = v13;                                                               \
+    v11 = _mm_or_si128(_mm_slli_epi64(v11, 13), _mm_srli_epi64(v11, 64-13)); \
+    v02 = _mm_add_epi64(v02, v13);                                           \
+    v33 = _mm_shuffle_epi8(v33, siphash_rot16v3.v);                          \
+    v13 = _mm_unpacklo_epi64(v11, v33);                                      \
+    v13 = _mm_xor_si128(v13, v02);                                           \
+    v20 = _mm_shuffle_epi32(v02, _MM_SHUFFLE(0,1,3,2));                      \
+    v11 = v13;                                                               \
+    v33 = _mm_shuffle_epi32(v13, _MM_SHUFFLE(1,0,3,2));                      \
+    v11 = _mm_or_si128(_mm_slli_epi64(v11, 17), _mm_srli_epi64(v11, 64-17)); \
+    v20 = _mm_add_epi64(v20, v13);                                           \
+    v33 = _mm_or_si128(_mm_slli_epi64(v33, 21), _mm_srli_epi64(v33, 64-21)); \
+    v13 = _mm_unpacklo_epi64(v11, v33);                                      \
+    v13 = _mm_unpacklo_epi64(v11, v33);                                      \
+    v02 = _mm_shuffle_epi32(v20, _MM_SHUFFLE(0,1,3,2));                      \
+    v13 = _mm_xor_si128(v13, v20);
   #else
-#define sipcompress()                                                 \
-	v11 = v13;                                                        \
-	v33 = _mm_shuffle_epi32(v13, _MM_SHUFFLE(1,0,3,2));               \
-	v11 = _mm_or_si128(_mm_slli_epi64(v11, 13), _mm_srli_epi64(v11, 64-13));\
-	v02 = _mm_add_epi64(v02, v13);                                    \
-	v33 = _mm_or_si128(_mm_slli_epi64(v33, 16), _mm_srli_epi64(v33, 64-16));\
-	v13 = _mm_unpacklo_epi64(v11, v33);                               \
-	v13 = _mm_xor_si128(v13, v02);                                    \
-	v20 = _mm_shuffle_epi32(v02, _MM_SHUFFLE(0,1,3,2));               \
-	v11 = v13;                                                        \
-	v33 = _mm_shuffle_epi32(v13, _MM_SHUFFLE(1,0,3,2));               \
-	v11 = _mm_or_si128(_mm_slli_epi64(v11, 17), _mm_srli_epi64(v11, 64-17));\
-	v20 = _mm_add_epi64(v20, v13);                                    \
-	v33 = _mm_or_si128(_mm_slli_epi64(v33, 21), _mm_srli_epi64(v33, 64-21));\
-	v13 = _mm_unpacklo_epi64(v11, v33);                               \
-	v13 = _mm_unpacklo_epi64(v11, v33);                               \
-	v02 = _mm_shuffle_epi32(v20, _MM_SHUFFLE(0,1,3,2));               \
-	v13 = _mm_xor_si128(v13, v20);
+#define sipcompress()                                                        \
+    v11 = v13;                                                               \
+    v33 = _mm_shuffle_epi32(v13, _MM_SHUFFLE(1,0,3,2));                      \
+    v11 = _mm_or_si128(_mm_slli_epi64(v11, 13), _mm_srli_epi64(v11, 64-13)); \
+    v02 = _mm_add_epi64(v02, v13);                                           \
+    v33 = _mm_or_si128(_mm_slli_epi64(v33, 16), _mm_srli_epi64(v33, 64-16)); \
+    v13 = _mm_unpacklo_epi64(v11, v33);                                      \
+    v13 = _mm_xor_si128(v13, v02);                                           \
+    v20 = _mm_shuffle_epi32(v02, _MM_SHUFFLE(0,1,3,2));                      \
+    v11 = v13;                                                               \
+    v33 = _mm_shuffle_epi32(v13, _MM_SHUFFLE(1,0,3,2));                      \
+    v11 = _mm_or_si128(_mm_slli_epi64(v11, 17), _mm_srli_epi64(v11, 64-17)); \
+    v20 = _mm_add_epi64(v20, v13);                                           \
+    v33 = _mm_or_si128(_mm_slli_epi64(v33, 21), _mm_srli_epi64(v33, 64-21)); \
+    v13 = _mm_unpacklo_epi64(v11, v33);                                      \
+    v13 = _mm_unpacklo_epi64(v11, v33);                                      \
+    v02 = _mm_shuffle_epi32(v20, _MM_SHUFFLE(0,1,3,2));                      \
+    v13 = _mm_xor_si128(v13, v20);
   #endif
 
     for (i = 0, blocks = (len & ~7); i < blocks; i += 8) {
