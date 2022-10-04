@@ -32,10 +32,7 @@ static inline uint64_t mix( uint64_t x ) {
 
 template <unsigned ver>
 static inline uint64_t mix_stream( uint64_t h, uint64_t x ) {
-    constexpr uint32_t R1 =
-        (ver == 1) ? 33 :
-        (ver == 2) ? 43 :
-                     39;
+    constexpr uint32_t R1 = (ver == 1) ? 33 : (ver == 2) ? 43 : 39;
 
     x *= C;
     if (ver == 3) {
@@ -51,31 +48,31 @@ static inline uint64_t mix_stream( uint64_t h, uint64_t x ) {
 
 // v3 only
 static inline uint64_t mix_stream_v3( uint64_t h, uint64_t a, uint64_t b, uint64_t c, uint64_t d ) {
-	a *= C;
-	b *= C;
-	c *= C;
-	d *= C;
-	a ^= a >> 39;
-	b ^= b >> 39;
-	c ^= c >> 39;
-	d ^= d >> 39;
-	h += a * C;
-	h *= C;
-	h += b * C;
-	h *= C;
-	h += c * C;
-	h *= C;
-	h += d * C;
-	h *= C;
-	return h;
+    a *= C;
+    b *= C;
+    c *= C;
+    d *= C;
+    a ^= a >> 39;
+    b ^= b >> 39;
+    c ^= c >> 39;
+    d ^= d >> 39;
+    h += a * C;
+    h *= C;
+    h += b * C;
+    h *= C;
+    h += c * C;
+    h *= C;
+    h += d * C;
+    h *= C;
+    return h;
 }
 
 template <unsigned ver, bool bswap>
 static inline uint64_t mx3( const uint8_t * buf, size_t len, uint64_t seed ) {
     const uint8_t * const tail = buf + (len & ~7);
 
-    uint64_t h = (ver < 3) ? (seed ^ len) :
-                             mix_stream<ver>(seed, len + 1);
+    uint64_t h = (ver < 3) ? (seed ^ len) : mix_stream<ver>(seed, len + 1);
+
     if (ver < 3) {
         while (len >= 32) {
             len -= 32;
@@ -117,15 +114,17 @@ static inline uint64_t mx3( const uint8_t * buf, size_t len, uint64_t seed ) {
     } else {
         const uint8_t * const tail8 = buf;
         switch (len) {
-		case 0: return mix<ver>(h);
-		case 1: return mix<ver>(mix_stream<ver>(h, tail8[0]));
-		case 2: return mix<ver>(mix_stream<ver>(h, GET_U16<bswap>(tail8, 0)));
-		case 3: return mix<ver>(mix_stream<ver>(h, GET_U16<bswap>(tail8, 0) | static_cast<uint64_t>(tail8[2]) << 16));
-		case 4: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0)));
-		case 5: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0) | static_cast<uint64_t>(tail8[4]) << 32));
-		case 6: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0) | static_cast<uint64_t>(GET_U16<bswap>(tail8, 4)) << 32));
-		case 7: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0) | static_cast<uint64_t>(GET_U16<bswap>(tail8, 4)) << 32 | static_cast<uint64_t>(tail8[6]) << 48));
-		default: ;
+        case 0: return mix<ver>(h);
+        case 1: return mix<ver>(mix_stream<ver>(h, tail8[0]));
+        case 2: return mix<ver>(mix_stream<ver>(h, GET_U16<bswap>(tail8, 0)));
+        case 3: return mix<ver>(mix_stream<ver>(h, GET_U16<bswap>(tail8, 0) | static_cast<uint64_t>(tail8[2]) << 16));
+        case 4: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0)));
+        case 5: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0) | static_cast<uint64_t>(tail8[4]) << 32));
+        case 6: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0) |
+                    static_cast<uint64_t>(GET_U16<bswap>(tail8, 4)) << 32));
+        case 7: return mix<ver>(mix_stream<ver>(h, GET_U32<bswap>(tail8, 0) |
+                    static_cast<uint64_t>(GET_U16<bswap>(tail8, 4)) << 32   | static_cast<uint64_t>(tail8[6]) << 48));
+        default:;
         }
     }
 
