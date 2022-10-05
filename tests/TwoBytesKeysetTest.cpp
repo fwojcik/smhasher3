@@ -116,12 +116,12 @@ static void TwoBytesKeygen( HashFn hash, const seed_t seed, int maxlen, std::vec
 }
 
 template <typename hashtype>
-static bool TwoBytesTest2( HashFn hash, const seed_t seed, int maxlen, bool drawDiagram ) {
+static bool TwoBytesTest2( HashFn hash, const seed_t seed, int maxlen, bool verbose ) {
     std::vector<hashtype> hashes;
 
     TwoBytesKeygen(hash, seed, maxlen, hashes);
 
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     recordTestResult(result, "TwoBytes", maxlen);

@@ -62,6 +62,60 @@ unsigned int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> 
 template <typename hashtype>
 void PrintCollisions( std::set<hashtype> & collisions );
 
+//-----------------------------------------------------------------------------
+// This is not intended to be used directly; see below
 template <typename hashtype>
-bool TestHashList( std::vector<hashtype> & hashes, bool drawDiagram, bool testCollision = true, bool testDist = true,
-        bool testHighBits = true, bool testLowBits = true, bool verbose = true );
+bool TestHashListImpl( std::vector<hashtype> & hashes, bool drawDiagram, bool testCollision,
+        bool testDist, bool testHighBits, bool testLowBits, bool verbose );
+
+// This provides a user-friendly wrapper to TestHashListImpl<>() by using
+// the Named Parameter Idiom.
+//
+// There is also a wrapper function for this wrapper class, so that the
+// template type of the class can be inferred from the type of the hash
+// vector. This is needed since we are on C++11, and class types can't be
+// automatically inferred from constructor parameters until C++17.
+
+template <typename hashtype>
+class TestHashListWrapper {
+  private:
+    std::vector<hashtype> & hashes_;
+    bool  testCollisions_;
+    bool  testDistribution_;
+    bool  testHighBits_;
+    bool  testLowBits_;
+    bool  verbose_;
+    bool  drawDiagram_;
+
+  public:
+    inline TestHashListWrapper( std::vector<hashtype> & hashes ) :
+        hashes_( hashes ),
+        testCollisions_( true ), testDistribution_( true ),
+        testHighBits_( true ), testLowBits_( true ),
+        verbose_( true ), drawDiagram_( false ) {}
+
+    inline TestHashListWrapper & testCollisions( bool s )   { testCollisions_   = s; return *this; }
+
+    inline TestHashListWrapper & testDistribution( bool s ) { testDistribution_ = s; return *this; }
+
+    inline TestHashListWrapper & testHighBits( bool s )     { testHighBits_     = s; return *this; }
+
+    inline TestHashListWrapper & testLowBits( bool s )      { testLowBits_      = s; return *this; }
+
+    inline TestHashListWrapper & verbose( bool s )          { verbose_          = s; return *this; }
+
+    inline TestHashListWrapper & drawDiagram( bool s )      { drawDiagram_      = s; return *this; }
+
+    // This can't be explicit, because we want code like
+    // "bool result = TestHashList()" to Just Work(tm),
+    // even if that allows other, nonsensical uses of TestHashList().
+    inline operator bool () const {
+        return TestHashListImpl(hashes_, drawDiagram_, testCollisions_, testDistribution_,
+                testHighBits_, testLowBits_, verbose_);
+    }
+}; // class TestHashListWrapper
+
+template <typename hashtype>
+TestHashListWrapper<hashtype> TestHashList( std::vector<hashtype> & hashes ) {
+    return TestHashListWrapper<hashtype>(hashes);
+}

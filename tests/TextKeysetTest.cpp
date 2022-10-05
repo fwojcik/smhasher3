@@ -67,7 +67,7 @@
 
 template <typename hashtype>
 static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, const char * coreset,
-        const int corelen, const char * suffix, bool drawDiagram ) {
+        const int corelen, const char * suffix, bool verbose ) {
     const int prefixlen = (int)strlen(prefix);
     const int suffixlen = (int)strlen(suffix);
     const int corecount = (int)strlen(coreset);
@@ -104,7 +104,7 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
     }
 
     //----------
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     memset(key + prefixlen, 'X', corelen);
@@ -122,7 +122,7 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
 
 template <typename hashtype>
 static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, const int minlen,
-        const int maxlen, const char * coreset, const char * name, bool drawDiagram ) {
+        const int maxlen, const char * coreset, const char * name, bool verbose ) {
     const int corecount = (int)strlen(coreset);
 
     printf("Keyset 'Words' - %d-%d random chars from %s charset - %ld keys\n", minlen, maxlen, name, keycount);
@@ -162,7 +162,7 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
     delete [] key;
 
     //----------
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     recordTestResult(result, "Text", name);
@@ -173,7 +173,7 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
 }
 
 template <typename hashtype>
-static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::string> & words, bool drawDiagram ) {
+static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::string> & words, bool verbose ) {
     long wordscount = words.size();
 
     printf("Keyset 'Words' - dictionary words - %ld keys\n", wordscount);
@@ -196,7 +196,7 @@ static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::st
     }
 
     //----------
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     recordTestResult(result, "Text", "dictionary");

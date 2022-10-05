@@ -86,10 +86,8 @@ static void Prn_gen( int nbRn, HashFn hash, const seed_t seed, std::vector<hasht
 
 template <typename hashtype>
 bool PRNGTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    const HashFn hash             = hinfo->hashFn(g_hashEndian);
-    bool         result           = true;
-    bool         testCollision    = true;
-    bool         testDistribution = extra;
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    bool         result = true;
     std::vector<hashtype> hashes;
 
     printf("[[[ Prng Tests ]]]\n\n");
@@ -103,7 +101,7 @@ bool PRNGTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
 
     Prn_gen(32 << 20, hash, seed, hashes);
 
-    result &= TestHashList(hashes, verbose, testCollision, testDistribution);
+    result &= TestHashList(hashes).drawDiagram(verbose).testDistribution(extra);
 
     printf("\n%s\n", result ? "" : g_failstr);
 

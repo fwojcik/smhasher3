@@ -631,8 +631,11 @@ static int FindMaxBits_TargetCollisionNb( uint64_t nbHashes, int minCollisions, 
     return nb;
 }
 
+// This is not intended to be used directly; see TestHashList() and class
+// TestHashListWrapper in Analyze.h.
+
 template <typename hashtype>
-bool TestHashList( std::vector<hashtype> & hashes, bool drawDiagram, bool testCollision,
+bool TestHashListImpl( std::vector<hashtype> & hashes, bool drawDiagram, bool testCollision,
         bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
     bool result = true;
 
@@ -812,7 +815,7 @@ bool TestHashList( std::vector<hashtype> & hashes, bool drawDiagram, bool testCo
     return result;
 }
 
-INSTANTIATE(TestHashList, HASHTYPELIST);
+INSTANTIATE(TestHashListImpl, HASHTYPELIST);
 
 #if 0
 //----------------------------------------------------------------------------
