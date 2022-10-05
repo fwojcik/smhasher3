@@ -105,7 +105,7 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleLen,
 
     //----------
 
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(drawDiagram);
     printf("\n");
 
     delete [] key;

@@ -63,8 +63,7 @@
 // all possible keys with bits set in that window
 
 template <typename keytype, typename hashtype>
-static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits,
-        bool testCollision, bool testDistribution, bool drawDiagram ) {
+static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits, bool verbose, bool extra ) {
     const int keybits  = sizeof(keytype ) * 8;
     const int hashbits = sizeof(hashtype) * 8;
     // calc keycount to expect min. 0.5 collisions: EstimateNbCollisions, except for 64++bit.
@@ -103,9 +102,11 @@ static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits,
 
         printf("Window at bit %3d\n", j);
 
-        bool thisresult = TestHashList(hashes, drawDiagram, testCollision, testDistribution,
-                /* do not test high/low bits (to not clobber the screen) */
-                false, false, true);
+        // Skip distribution test for these by default - they're too easy
+        // to distribute well, and it generates a _lot_ of testing. Also
+        // don't test high/low bits, so as to not clutter the screen.
+        bool thisresult = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra).
+            testHighBits(false).testLowBits(false);
 
         recordTestResult(thisresult, "Windowed", j);
 
@@ -123,10 +124,6 @@ template <typename hashtype>
 bool WindowedKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     const HashFn hash          = hinfo->hashFn(g_hashEndian);
     bool         result        = true;
-    bool         testCollision = true;
-    // Skip distribution test for these - they're too easy to
-    // distribute well, and it generates a _lot_ of testing.
-    bool testDistribution = extra;
     // This value is now adjusted to generate at least 0.5 collisions per window,
     // except for 64++bit where it unrealistic. There use smaller but more keys,
     // to get a higher collision percentage.
@@ -138,8 +135,7 @@ bool WindowedKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &=
-            WindowedKeyImpl<Blob<keybits>, hashtype>(hash, seed, windowbits, testCollision, testDistribution, verbose);
+    result &= WindowedKeyImpl<Blob<keybits>, hashtype>(hash, seed, windowbits, verbose, extra);
 
     printf("\n%s\n", result ? "" : g_failstr);
 

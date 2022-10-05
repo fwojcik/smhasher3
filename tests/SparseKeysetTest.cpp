@@ -85,7 +85,7 @@ static void SparseKeygenRecurse( HashFn hash, const seed_t seed, int start, int 
 
 //----------
 template <int keybits, typename hashtype>
-static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bool inclusive, bool drawDiagram ) {
+static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bool inclusive, bool verbose ) {
     printf("Keyset 'Sparse' - %d-bit keys with %s %d bits set - ", keybits, inclusive ? "up to" : "exactly", setbits);
 
     typedef Blob<keybits> keytype;
@@ -104,7 +104,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bo
 
     printf("%d keys\n", (int)hashes.size());
 
-    bool result = TestHashList<hashtype>(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     recordTestResult(result, "Sparse", keybits);

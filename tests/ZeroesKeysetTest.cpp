@@ -60,7 +60,7 @@
 // We reuse one block of empty bytes, otherwise the RAM cost is enormous.
 
 template <typename hashtype>
-static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool drawDiagram ) {
+static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool verbose ) {
     int keycount = 200 * 1024;
 
     printf("Keyset 'Zeroes' - %d keys\n", keycount);
@@ -79,7 +79,7 @@ static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool drawDiagram ) {
         hash(nullblock, i, seed, &hashes[i]);
     }
 
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     delete [] nullblock;

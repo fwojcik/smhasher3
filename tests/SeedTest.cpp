@@ -90,7 +90,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, bool drawDiagram ) {
         }
     }
 
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(drawDiagram);
     printf("\n");
 
     recordTestResult(result, "Seed", "Seq");
@@ -151,7 +151,7 @@ static bool SparseSeedTestImpl( const HashInfo * hinfo, uint32_t maxbits, bool d
         } while (!done);
     }
 
-    bool result = TestHashList(hashes, drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(drawDiagram);
     printf("\n");
 
     recordTestResult(result, "Seed", "Sparse");

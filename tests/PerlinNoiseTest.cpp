@@ -62,7 +62,7 @@
 
 template <typename hashtype>
 static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const HashInfo * hinfo,
-        bool testColl, bool testDist, bool drawDiagram ) {
+        bool extra, bool verbose ) {
     assert(0 < Ybits && Ybits < 31  );
     assert(0 < Xbits && Xbits < 31  );
     assert(Xbits + Ybits < 31       );
@@ -94,7 +94,7 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const Has
         }
     }
 
-    bool result = TestHashList(hashes, drawDiagram, testColl, testDist);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra);
     printf("\n");
 
     recordTestResult(result, "PerlinNoise", inputLen);
@@ -109,15 +109,13 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const Has
 template <typename hashtype>
 bool PerlinNoiseTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     bool result           = true;
-    bool testCollision    = true;
-    bool testDistribution = extra;
 
     printf("[[[ Keyset 'PerlinNoise' Tests ]]]\n\n");
 
-    result &= PerlinNoise<hashtype>(12, 12, 2, 1, hinfo, testCollision, testDistribution, verbose);
+    result &= PerlinNoise<hashtype>(12, 12, 2, 1, hinfo, extra, verbose);
     if (extra) {
-        result &= PerlinNoise<hashtype>(12, 12, 4, 1, hinfo, testCollision, testDistribution, verbose);
-        result &= PerlinNoise<hashtype>(12, 12, 8, 1, hinfo, testCollision, testDistribution, verbose);
+        result &= PerlinNoise<hashtype>(12, 12, 4, 1, hinfo, extra, verbose);
+        result &= PerlinNoise<hashtype>(12, 12, 8, 1, hinfo, extra, verbose);
     }
 
     printf("%s\n", result ? "" : g_failstr);
