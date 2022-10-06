@@ -209,8 +209,9 @@ static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::st
 template <typename hashtype>
 bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
     const HashFn hash          = hinfo->hashFn(g_hashEndian);
-    const char * alnum         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    const char * alpha         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const char * alnum         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+    const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
             ".,!?:;-+=()<>/|\"'@#$%&*_^";
     bool result = true;
 
@@ -218,13 +219,13 @@ bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foo"   , alnum, 4, "Bar"   , verbose);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alnum, 4, ""      , verbose);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""      , alnum, 4, "FooBar", verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foo"   , alpha, 4, "Bar"   , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alpha, 4, ""      , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""      , alpha, 4, "FooBar", verbose);
 
-    // maybe use random-len vector of strings here, from len 6-16
-    result &= WordsKeyImpl   <hashtype>(hash, seed, 4000000, 6, 16, alnum        , "alnum", verbose);
-    result &= WordsKeyImpl   <hashtype>(hash, seed, 4000000, 6, 16, passwordchars, "password", verbose);
+    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 16, alpha        , "alpha", verbose);
+    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 32, alnum        , "alnum", verbose);
+    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 32, passwordchars, "password", verbose);
 
     std::vector<std::string> words = GetWordlist(false, verbose);
     result &= WordsStringImpl<hashtype>(hash, seed, words, verbose);
