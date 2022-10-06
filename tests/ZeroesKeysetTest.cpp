@@ -79,7 +79,7 @@ static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool verbose ) {
         hash(nullblock, i, seed, &hashes[i]);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1);
     printf("\n");
 
     delete [] nullblock;

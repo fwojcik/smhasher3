@@ -94,7 +94,7 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen, cons
 
     //----------
 
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1);
     printf("\n");
 
     return result;
