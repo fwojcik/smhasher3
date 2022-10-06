@@ -1233,7 +1233,7 @@ double normalizeScore( double score, int scorewidth, int tests ) {
 // 0.5 exactly. That sounds complicated, tho. :) We might also be able to use a
 // G-test for mutual information.
 
-double chiSqIndepValue( const uint32_t * boxes, size_t total ) {
+double ChiSqIndepValue( const uint32_t * boxes, size_t total ) {
     const double   N         = (double)total;
     const uint64_t colsum[2] = { boxes[0] + boxes[1], boxes[2] + boxes[3] };
     const uint64_t rowsum[2] = { boxes[0] + boxes[2], boxes[1] + boxes[3] };
@@ -1260,11 +1260,21 @@ double chiSqIndepValue( const uint32_t * boxes, size_t total ) {
     return chisq;
 }
 
-double chiSqPValue( double chisq ) {
-    // Chi-sq CDF for 1 degree-of-freedom is P(x) = 1 - 2 * Q(sqrt(x)) where
-    // Q(y) = 1 - StandardNormalCDF(y).
-    //
-    // Since we want this result in our usual "1.0 - p" format, and we already have a
-    // function for 1 - Q(y), this is easy to compute.
-    return 2.0 * GetNormalPValue(0.0, 1.0, sqrt(chisq));
+double ChiSqPValue( double chisq, uint64_t dof ) {
+    if (dof == 1) {
+        // Chi-sq CDF for 1 degree-of-freedom is P(x) = 1 - 2 * Q(sqrt(x)) where
+        // Q(y) = 1 - StandardNormalCDF(y).
+        //
+        // Since we want this result in our usual "1.0 - p" format, and we
+        // already have a function for 1 - Q(y), this is easy to compute.
+        return 2.0 * GetNormalPValue(0.0, 1.0, sqrt(chisq));
+    }
+
+    double ddof = (double)dof;
+
+    if (chisq <= ddof) {
+        return 1.0;
+    }
+
+    return exp(-ddof / 2.0 * (chisq / ddof - 1.0 - log(chisq / ddof)));
 }
