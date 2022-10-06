@@ -137,10 +137,10 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
     std::string key_str;
 
     for (long i = 0; i < keycount; i++) {
-        const int len = minlen + (r.rand_u32() % (maxlen - minlen));
+        const int len = minlen + r.rand_range(maxlen - minlen + 1);
         key[len] = 0;
         for (int j = 0; j < len; j++) {
-            key[j] = coreset[r.rand_u32() % corecount];
+            key[j] = coreset[r.rand_range(corecount)];
         }
         key_str = key;
         if (words.count(key_str) > 0) { // not unique
@@ -184,7 +184,6 @@ static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::st
 
     for (int i = 0; i < (int)wordscount; i++) {
         if (wordset.count(words[i]) > 0) { // not unique
-            i--;
             continue;
         }
         wordset.insert(words[i]);
