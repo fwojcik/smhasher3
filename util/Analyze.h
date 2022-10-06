@@ -65,8 +65,8 @@ void PrintCollisions( std::set<hashtype> & collisions );
 //-----------------------------------------------------------------------------
 // This is not intended to be used directly; see below
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, bool drawDiagram, bool testCollision,
-        bool testDist, bool testHighBits, bool testLowBits, bool verbose );
+bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bool drawDiagram,
+        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
 
 // This provides a user-friendly wrapper to TestHashListImpl<>() by using
 // the Named Parameter Idiom.
@@ -80,6 +80,7 @@ template <typename hashtype>
 class TestHashListWrapper {
   private:
     std::vector<hashtype> & hashes_;
+    unsigned deltaNum_;
     bool  testCollisions_;
     bool  testDistribution_;
     bool  testHighBits_;
@@ -89,7 +90,7 @@ class TestHashListWrapper {
 
   public:
     inline TestHashListWrapper( std::vector<hashtype> & hashes ) :
-        hashes_( hashes ),
+        hashes_( hashes ), deltaNum_( 0 ),
         testCollisions_( true ), testDistribution_( true ),
         testHighBits_( true ), testLowBits_( true ),
         verbose_( true ), drawDiagram_( false ) {}
@@ -97,6 +98,8 @@ class TestHashListWrapper {
     inline TestHashListWrapper & testCollisions( bool s )   { testCollisions_   = s; return *this; }
 
     inline TestHashListWrapper & testDistribution( bool s ) { testDistribution_ = s; return *this; }
+
+    inline TestHashListWrapper & testDeltas( unsigned n )   { deltaNum_         = n; return *this; }
 
     inline TestHashListWrapper & testHighBits( bool s )     { testHighBits_     = s; return *this; }
 
@@ -110,8 +113,8 @@ class TestHashListWrapper {
     // "bool result = TestHashList()" to Just Work(tm),
     // even if that allows other, nonsensical uses of TestHashList().
     inline operator bool () const {
-        return TestHashListImpl(hashes_, drawDiagram_, testCollisions_, testDistribution_,
-                testHighBits_, testLowBits_, verbose_);
+        return TestHashListImpl(hashes_, deltaNum_, drawDiagram_, testCollisions_,
+                testDistribution_, testHighBits_, testLowBits_, verbose_);
     }
 }; // class TestHashListWrapper
 

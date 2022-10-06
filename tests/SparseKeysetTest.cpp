@@ -104,7 +104,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bo
 
     printf("%d keys\n", (int)hashes.size());
 
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1);
     printf("\n");
 
     recordTestResult(result, "Sparse", keybits);

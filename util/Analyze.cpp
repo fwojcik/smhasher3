@@ -635,13 +635,43 @@ static int FindMaxBits_TargetCollisionNb( uint64_t nbHashes, int minCollisions, 
 // TestHashListWrapper in Analyze.h.
 
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, bool drawDiagram, bool testCollision,
-        bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
+bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bool drawDiagram,
+        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
+    uint64_t const nbH = hashes.size();
     bool result = true;
+
+    // If testDeltaNum is 1, then compute the difference between each hash
+    // and its successor, and test that list of deltas. If it is greater
+    // than 1, then do that same thing but *also* compute the difference
+    // between each hash and the hash testDeltaNum hashes back and test
+    // those deltas also.
+    //
+    // This must be done before the list of hashes is sorted below via
+    // FindCollisions(). The calls to test the list(s) of deltas come at
+    // the bottom of this function.
+    std::vector<hashtype> hashdeltas_1;
+    std::vector<hashtype> hashdeltas_N;
+    if (testDeltaNum >= 1) {
+        hashdeltas_1.reserve(nbH);
+
+        hashtype h;
+        for (size_t hnb = 1; hnb < nbH; hnb++) {
+            h = hashes[hnb - 1] ^ hashes[hnb];
+            hashdeltas_1.push_back(h);
+        }
+
+        if (testDeltaNum >= 2) {
+            hashdeltas_N.reserve(nbH);
+
+            for (size_t hnb = testDeltaNum; hnb < nbH; hnb++) {
+                h = hashes[hnb - testDeltaNum] ^ hashes[hnb];
+                hashdeltas_N.push_back(h);
+            }
+        }
+    }
 
     if (testCollision) {
         unsigned const hashbits = sizeof(hashtype) * 8;
-        uint64_t const nbH      = hashes.size();
         if (verbose) {
             printf("Testing all collisions (     %3i-bit)", hashbits);
         }
@@ -810,6 +840,19 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, bool drawDiagram, bool te
 
     if (testDist) {
         result &= TestDistribution(hashes, drawDiagram);
+    }
+
+    //----------
+
+    if (testDeltaNum >= 1) {
+        printf("---Analyzing hash deltas\n");
+        result &= TestHashListImpl(hashdeltas_1, 0, drawDiagram, testCollision,
+                testDist, testHighBits, testLowBits, verbose);
+        if (testDeltaNum >= 2) {
+            printf("---Analyzing additional hash deltas\n");
+            result &= TestHashListImpl(hashdeltas_N, 0, drawDiagram, testCollision,
+                    testDist, testHighBits, testLowBits, verbose);
+        }
     }
 
     return result;

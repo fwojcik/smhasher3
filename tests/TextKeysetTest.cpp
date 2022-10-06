@@ -180,7 +180,6 @@ static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::st
     std::unordered_set<std::string> wordset; // need to be unique, otherwise we report collisions
     std::vector<hashtype>           hashes;
     hashes.resize(wordscount);
-    Rand r( 483723 );
 
     for (int i = 0; i < (int)wordscount; i++) {
         if (wordset.count(words[i]) > 0) { // not unique

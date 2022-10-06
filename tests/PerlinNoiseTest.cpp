@@ -94,7 +94,7 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const Has
         }
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra).testDeltas(xMax);
     printf("\n");
 
     recordTestResult(result, "PerlinNoise", inputLen);

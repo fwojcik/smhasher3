@@ -121,7 +121,7 @@ static bool TwoBytesTest2( HashFn hash, const seed_t seed, int maxlen, bool verb
 
     TwoBytesKeygen(hash, seed, maxlen, hashes);
 
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1);
     printf("\n");
 
     recordTestResult(result, "TwoBytes", maxlen);
