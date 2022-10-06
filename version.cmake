@@ -10,7 +10,7 @@ if(GIT_EXECUTABLE)
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
-  if(NOT GIT_DESCRIBE_ERROR_CODE)
+  if(NOT GIT_BRANCH_ERROR_CODE)
     # Generate a git-describe version string.
     # Have to do this in two parts; thanks, git!
     if (GIT_BRANCH)
