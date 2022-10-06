@@ -284,8 +284,8 @@ static double EstimateNbCollisions_fwojcik( const double nbH, const int nbBits )
     // This means the probability that any given hash bucket is
     // occupied after nbH insertions is:
     //     pF = 1 - pE
-    //     pF = 1 - exp(ln(pE)
-    //     pF = -(exp(ln(pE) - 1)
+    //     pF = 1 - exp(ln(pE))
+    //     pF = -(exp(ln(pE)) - 1)
     //     pF = -expm1(ln(pE))
     // And the expected number of collisions is:
     //     C = m - n + n * pE
