@@ -181,6 +181,7 @@ add_library(
   util/Blobsort.cpp
   util/Stats.cpp
   util/VCode.cpp
+  util/Wordlist.cpp
 #
   tests/SanityTest.cpp
   tests/AvalancheTest.cpp
