@@ -905,7 +905,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                 boxes[1] = popcount_y    - boxes[3];
                 boxes[0] = testcount - boxes[3] - boxes[2] - boxes[1];
 
-                double chisq = chiSqIndepValue(boxes, testcount);
+                double chisq = ChiSqIndepValue(boxes, testcount);
 
                 if (maxChiSq   < chisq) {
                     maxChiSq   = chisq;
@@ -924,7 +924,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     addVCodeResult(maxOutbitA);
     addVCodeResult(maxOutbitB);
 
-    const double p_value_raw = chiSqPValue(maxChiSq);
+    const double p_value_raw = ChiSqPValue(maxChiSq, 1);
     const double p_value     = ScalePValue(p_value_raw, keybits * realhashbitpairs);
     const int    log2_pvalue = GetLog2PValue(p_value);
     const double cramer_v    = sqrt(maxChiSq / testcount);
@@ -966,8 +966,8 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                     // I'm not 100% sure that this p_value _should_ be scaled here,
                     // but this makes this report explicitly show which bits cause
                     // overall warnings/failures, so I'm doing it for now.
-                    const double chisq   = chiSqIndepValue(boxes, testcount);
-                    const double p_value = ScalePValue(chiSqPValue(chisq), keybits * realhashbitpairs);
+                    const double chisq   = ChiSqIndepValue(boxes, testcount);
+                    const double p_value = ScalePValue(ChiSqPValue(chisq, 1), keybits * realhashbitpairs);
 
                     // This first threshhold is basically "take the distance between
                     // warning and failure, and move that much further past failure".
