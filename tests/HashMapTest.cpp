@@ -48,9 +48,9 @@
 #include "TestGlobals.h"
 #include "Stats.h" // For FilterOutliers, CalcMean, CalcStdv
 #include "Random.h"
+#include "Wordlist.h"
 
 #include "HashMapTest.h"
-#include "Wordlist.h"
 
 #include <string>
 #include <unordered_map>
@@ -70,36 +70,6 @@ typedef std::unordered_map<std::string, int,
         std::function<size_t (const std::string & key)>> std_hashmap;
 typedef phmap::flat_hash_map<std::string, int,
         std::function<size_t (const std::string & key)>> fast_hashmap;
-
-//-----------------------------------------------------------------------------
-// This should be a realistic I-Cache test, when our hash is used inlined
-// in a hash table. There the size matters more than the bulk speed.
-
-std::vector<std::string> HashMapInit( bool verbose ) {
-    std::vector<std::string> wordvec;
-    std::string line;
-    unsigned    sum  = 0;
-
-    const char * ptr = hashmap_words + 1; // Skip over initial newline
-
-    while (*ptr != '\0') {
-        const char * end = (const char *)rawmemchr(ptr, '\n');
-        std::string  str( ptr, end - ptr );
-        wordvec.push_back(str);
-        std::transform(str.begin(), str.begin() + 1, str.begin(), ::toupper);
-        wordvec.push_back(str);
-        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-        wordvec.push_back(str);
-        sum += end - ptr;
-        ptr  = end + 1;
-    }
-
-    if (verbose) {
-        printf("Read %" PRId64 " words from internal list, ", wordvec.size());
-        printf("avg len: %0.3f\n\n", (sum + 0.0) / wordvec.size());
-    }
-    return wordvec;
-}
 
 //-----------------------------------------------------------------------------
 
@@ -274,7 +244,7 @@ bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra )
         return result;
     }
 
-    std::vector<std::string> words = HashMapInit(verbose);
+    std::vector<std::string> words = GetWordlist(true, verbose);
     if (!words.size()) {
         printf("WARNING: Hashmap initialization failed! Skipping Hashmap test.\n");
         return result;

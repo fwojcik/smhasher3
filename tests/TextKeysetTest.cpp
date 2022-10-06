@@ -53,8 +53,7 @@
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
-
-#include "HashMapTest.h"
+#include "Wordlist.h"
 
 #include <unordered_set>
 #include <string>
@@ -228,7 +227,7 @@ bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
     result &= WordsKeyImpl   <hashtype>(hash, seed, 4000000, 6, 16, alnum        , "alnum", verbose);
     result &= WordsKeyImpl   <hashtype>(hash, seed, 4000000, 6, 16, passwordchars, "password", verbose);
 
-    std::vector<std::string> words = HashMapInit(verbose);
+    std::vector<std::string> words = GetWordlist(false, verbose);
     result &= WordsStringImpl<hashtype>(hash, seed, words, verbose);
 
     printf("%s\n", result ? "" : g_failstr);
