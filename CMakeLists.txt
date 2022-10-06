@@ -236,7 +236,7 @@ if(0)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-fno-fat-lto-objects")
       message(STATUS "  Enabling LTO fat objects")
-      string(REGEX REPLACE "-fno-fat-lto-objects" "" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
+      string(REGEX REPLACE "-fno-fat-lto-objects" "-ffat-lto-objects" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
     endif()
     # We get a warning forced on us even if we specify 1 explictly! Thanks, gcc!
     if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-flto=")
