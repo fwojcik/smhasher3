@@ -555,7 +555,7 @@ static bool test( const HashInfo * hInfo ) {
         printf("-------------------------------------------------------------------------------\n");
         print_pvaluecounts();
         printf("-------------------------------------------------------------------------------\n");
-        printf("Overall result: %s            (%d/%d passed)\n", result ? "pass" : "FAIL",
+        printf("Overall result: %s            ( %d / %d passed)\n", result ? "pass" : "FAIL",
                 g_testPass, g_testPass + g_testFail);
         if (!result) {
             const char * prev = "";
