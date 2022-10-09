@@ -326,7 +326,7 @@ bool PopcountTest( const HashInfo * hinfo, const bool extra ) {
     const int step   = ((hinfo->isVerySlow() || hinfo->bits > 128) && extra) ? 6 : 2;
     bool      result = true;
 
-    printf("[[[ Popcount Tests ]]]\n");
+    printf("[[[ Popcount Tests (deprecated) ]]]\n");
 
     result &= PopcountTestImpl(hinfo, 4, step);
     if (extra) {
