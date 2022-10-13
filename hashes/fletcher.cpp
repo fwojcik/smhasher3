@@ -70,7 +70,7 @@ static void fletcher4( const uint8_t * key, size_t len, uint64_t seed, uint8_t *
         C += B;
         D += C;
     }
-    if (len & 7) {
+    if (len & 3) {
         for (; key < endc; key++) {
             A += *key;
             B += A;
