@@ -170,7 +170,7 @@ static TestOpts g_testopts[] = {
     { g_testDiff,          true,     false,    "Diff" },
     { g_testDiffDist,      true,     false,    "DiffDist" },
     { g_testPopcount,     false,     false,    "Popcount" },
-    { g_testPrng,          true,     false,    "Prng" },
+    { g_testPrng,         false,     false,    "Prng" },
     { g_testBIC,          false,     false,    "BIC" },
     { g_testBadSeeds,     false,     false,    "BadSeeds" },
 };
