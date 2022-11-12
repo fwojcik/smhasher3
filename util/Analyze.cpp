@@ -636,7 +636,7 @@ static int FindMaxBits_TargetCollisionNb( uint64_t nbHashes, int minCollisions, 
 
 template <typename hashtype>
 bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bool drawDiagram,
-        bool testCollision, bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
+        bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
     uint64_t const nbH = hashes.size();
     bool result = true;
 
@@ -687,7 +687,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
          * more human-friendly.
          */
 
-        std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, 12, 8, };
+        std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, };
         /*
          * cyan: The 12- and -8-bit tests are too small : tables are necessarily saturated.
          * It would be better to count the nb of collisions per Cell, and
@@ -711,6 +711,10 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
          * are being tested, and ReportCollisions() computes an
          * appropriate "expected" statistic.
          */
+        if (testMaxColl) {
+            nbBitsvec.push_back(12);
+            nbBitsvec.push_back(8);
+        }
 
         /*
          * Compute the number of bits for a collision count of
@@ -814,7 +818,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
                 if ((nbBits < minBits) || (nbBits > maxBits)) {
                     continue;
                 }
-                bool maxcoll = (nbBits <= threshBits) ? true : false;
+                bool maxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
                 if (testHighBits) {
                     result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits],
                             nbBits, maxcoll, true, true, true, drawDiagram);
@@ -847,11 +851,11 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
     if (testDeltaNum >= 1) {
         printf("---Analyzing hash deltas\n");
         result &= TestHashListImpl(hashdeltas_1, 0, drawDiagram, testCollision,
-                testDist, testHighBits, testLowBits, verbose);
+                testMaxColl, testDist, testHighBits, testLowBits, verbose);
         if (testDeltaNum >= 2) {
             printf("---Analyzing additional hash deltas\n");
             result &= TestHashListImpl(hashdeltas_N, 0, drawDiagram, testCollision,
-                    testDist, testHighBits, testLowBits, verbose);
+                    testMaxColl, testDist, testHighBits, testLowBits, verbose);
         }
     }
 
