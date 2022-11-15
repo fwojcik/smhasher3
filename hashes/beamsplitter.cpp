@@ -426,7 +426,9 @@ REGISTER_FAMILY(beamsplitter,
    $.src_status = HashFamilyInfo::SRC_STABLEISH
  );
 
-// Yes, this has no bad seeds! See note at the top near "thread_local".
+// Yes, this has no bad seeds! The state was inadvertently
+// shared across threads, giving bad test results. It has been changed to
+// be on the stack instead.
 REGISTER_HASH(beamsplitter,
    $.desc       = "A possibly universal hash made with a 10x64 s-box",
    $.hash_flags =

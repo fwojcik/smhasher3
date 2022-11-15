@@ -135,12 +135,12 @@ static void MurmurHash2_32_64( const void * in, const size_t olen, const seed_t 
 
     while (len >= 8) {
         uint32_t k1 = GET_U32<bswap>(data, 0);
-        k1 *= m; k1   ^= k1 >> r; k1 *= m;
+        k1 *= m; k1 ^= k1 >> r; k1 *= m;
         h1 *= m; h1 ^= k1;
 
         uint32_t k2 = GET_U32<bswap>(data, 4);
-        k2   *= m; k2 ^= k2 >> r; k2 *= m;
-        h2   *= m; h2 ^= k2;
+        k2 *= m; k2 ^= k2 >> r; k2 *= m;
+        h2 *= m; h2 ^= k2;
 
         len  -= 8;
         data += 8;

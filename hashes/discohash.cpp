@@ -207,7 +207,9 @@ REGISTER_FAMILY(discohash,
    $.src_status = HashFamilyInfo::SRC_STABLEISH
  );
 
-// Yes, none of these have any bad seeds! See note at the top near "thread_local".
+// Yes, none of these have any bad seeds! The state was inadvertently
+// shared across threads, giving bad test results. It has been changed to
+// be on the stack instead.
 REGISTER_HASH(Discohash__old,
    $.desc       = "Discohash (aka BEBB4185) prior version",
    $.hash_flags =
