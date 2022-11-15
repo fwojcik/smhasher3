@@ -159,11 +159,12 @@ class HashInfo {
     HashFn            hashfn_native;
     HashFn            hashfn_bswap;
     std::set<seed_t>  badseeds;
+    const char *      badseeddesc;
 
     HashInfo( const char * n, const char * f ) :
         name( _fixup_name( n )), family( f ), desc( "" ), impl( "" ),
         initfn( NULL ), seedfixfn( NULL ), seedfn( NULL ),
-        hashfn_native( NULL ), hashfn_bswap( NULL ) {}
+        badseeddesc( NULL ), hashfn_native( NULL ), hashfn_bswap( NULL ) {}
 
     ~HashInfo() {
         free((char *)name);

@@ -360,6 +360,14 @@ static bool BadSeedsKnown( const HashInfo * hinfo ) {
     bool result = true;
     const std::set<seed_t> & seeds = hinfo->badseeds;
 
+    if (hinfo->badseeddesc != NULL) {
+        printf("Too many bad seeds to test; stated description:\n");
+        printf("\t%s\n", hinfo->badseeddesc);
+        printf("Use --extra to demonstrate.\n");
+        result = false;
+        return result;
+    }
+
     if (!seeds.size()) {
         printf("No known bad seeds to test. Use --extra to search for them.\n");
         return result;
