@@ -223,8 +223,7 @@ REGISTER_HASH(Discohash__old,
    $.verification_LE = 0xBEBB4185,
    $.verification_BE = 0x4B5579AD,
    $.hashfn_native   = BEBB4185<64, false, true>,
-   $.hashfn_bswap    = BEBB4185<64, true, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = BEBB4185<64, true, true>
  );
 
 REGISTER_HASH(Discohash,
@@ -240,8 +239,7 @@ REGISTER_HASH(Discohash,
    $.verification_LE = 0xFBA72400,
    $.verification_BE = 0x286DD52C,
    $.hashfn_native   = BEBB4185<64, false, false>,
-   $.hashfn_bswap    = BEBB4185<64, true, false>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = BEBB4185<64, true, false>
  );
 
 REGISTER_HASH(Discohash_128__old,
@@ -257,8 +255,7 @@ REGISTER_HASH(Discohash_128__old,
    $.verification_LE = 0x000ED2A6,
    $.verification_BE = 0x3110ECFA,
    $.hashfn_native   = BEBB4185<128, false, true>,
-   $.hashfn_bswap    = BEBB4185<128, true, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = BEBB4185<128, true, true>
  );
 
 REGISTER_HASH(Discohash_128,
@@ -274,6 +271,5 @@ REGISTER_HASH(Discohash_128,
    $.verification_LE = 0x231868B1,
    $.verification_BE = 0xEB4228F3,
    $.hashfn_native   = BEBB4185<128, false, false>,
-   $.hashfn_bswap    = BEBB4185<128, true, false>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = BEBB4185<128, true, false>
  );

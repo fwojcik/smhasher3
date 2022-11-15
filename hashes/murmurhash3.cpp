@@ -331,7 +331,7 @@ REGISTER_HASH(MurmurHash3_128__int32,
    $.hashfn_native   = MurmurHash3_32_128<false>,
    $.hashfn_bswap    = MurmurHash3_32_128<true>,
    $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { 0x239b961b }
+   $.badseeds        = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
  );
 
 REGISTER_HASH(MurmurHash3_128,
@@ -348,5 +348,5 @@ REGISTER_HASH(MurmurHash3_128,
    $.hashfn_native   = MurmurHash3_128<false>,
    $.hashfn_bswap    = MurmurHash3_128<true>,
    $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { 0x239b961b }
+   $.badseeds        = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
  );

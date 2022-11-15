@@ -1441,7 +1441,18 @@ REGISTER_HASH(XXH3_64,
    $.verification_LE = 0x1AAEE62C,
    $.verification_BE = 0xF8DBB4DD,
    $.hashfn_native   = XXH3_64<false>,
-   $.hashfn_bswap    = XXH3_64<true>
+   $.hashfn_bswap    = XXH3_64<true>,
+   // Seems to be simpler-than-expected relationship between seed and hash
+   // for keys of 1-3 bytes.
+   $.seedfixfn       = excludeBadseeds,
+   $.badseeds        = { 0x58b7a744, 0x58b7a844, 0x58b7a944, 0x70cfa75c, 0x70cfa85c, 0x70cfa95c,
+                         0x76d5a762, 0x76d5a862, 0x76d5a962, 0x78d7a764, 0x78d7a864, 0x78d7a964,
+                         0xffffffff78d8a665, 0xffffffff78d8a765, 0xffffffff78d8a865,
+                         0xffffffff7adaa667, 0xffffffff7adaa767, 0xffffffff7adaa867,
+                         0xffffffff80e0a66d, 0xffffffff80e0a76d, 0xffffffff80e0a86d,
+                         0xffffffff98f8a685, 0xffffffff98f8a785, 0xffffffff98f8a885,
+                         0xfffffffff857a6e4, 0xfffffffff857a7e4, 0xfffffffff857a8e4,
+                         0xfffffffff958a6e5, 0xfffffffff958a7e5, 0xfffffffff958a8e5 }
  );
 
 REGISTER_HASH(XXH3_128,

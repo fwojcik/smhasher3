@@ -156,5 +156,6 @@ REGISTER_HASH(jodyhash_64,
    $.verification_LE = 0x9F09E57F,
    $.verification_BE = 0xF9CDDA2C,
    $.hashfn_native   = jodyhash64<false>,
-   $.hashfn_bswap    = jodyhash64<true>
+   $.hashfn_bswap    = jodyhash64<true>,
+   $.badseeds        = { 0xffffffffe0c2a486 }
  );

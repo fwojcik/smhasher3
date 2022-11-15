@@ -369,6 +369,7 @@ REGISTER_HASH(tabulation_64,
    $.verification_BE = 0x4EE5569F,
    $.seedfn          = tabulation64_seed,
    $.hashfn_native   = tabulation64<false>,
-   $.hashfn_bswap    = tabulation64<true>
+   $.hashfn_bswap    = tabulation64<true>,
+   $.badseeddesc     = "Many seeds can collide on keys of all zero bytes"
  );
 #endif

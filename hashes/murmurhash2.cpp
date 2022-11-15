@@ -121,6 +121,15 @@ static void MurmurHash2_64( const void * in, const size_t len, const seed_t seed
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
+// MurmurHash2_32_64() breaks on all-zero keys unless a high bit is set
+seed_t MurmurHash2_32_64_seedfix( const HashInfo * hinfo, const seed_t seed ) {
+    uint64_t seed64 = (uint64_t)seed;
+    if (seed64 >= 0xffffffff) {
+        seed64 |= (seed64 | 1) << 32;
+    }
+    return (seed_t)seed64;
+}
+
 // 64-bit hash for 32-bit platforms
 template <bool bswap>
 static void MurmurHash2_32_64( const void * in, const size_t olen, const seed_t seed, void * out ) {
@@ -255,7 +264,7 @@ REGISTER_HASH(MurmurHash2_64,
    $.hashfn_native   = MurmurHash2_64<false>,
    $.hashfn_bswap    = MurmurHash2_64<true>,
    $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { UINT64_C (0xc6a4a7935bd1e995) }
+   $.badseeds        = { 0xc6a4a7935bd1e995 }
  );
 
 REGISTER_HASH(MurmurHash2_64__int32,
@@ -270,8 +279,8 @@ REGISTER_HASH(MurmurHash2_64__int32,
    $.verification_BE = 0xBF573795,
    $.hashfn_native   = MurmurHash2_32_64<false>,
    $.hashfn_bswap    = MurmurHash2_32_64<true>,
-   $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { 0x10, UINT64_C (0xffffffff00000010) }
+   $.seedfixfn       = MurmurHash2_32_64_seedfix,
+   $.badseeddesc     = "If seed==len, then hash of all zeroes is zero. Many seeds collide on varying lengths of all zero bytes."
  );
 
 REGISTER_HASH(MurmurHash2a,

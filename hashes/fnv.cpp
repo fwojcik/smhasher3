@@ -270,7 +270,7 @@ REGISTER_HASH(fibonacci_64,
    $.verification_BE = 0x3E67D58C,
    $.hashfn_native   = fibonacci<uint64_t, false>,
    $.hashfn_bswap    = fibonacci<uint64_t, true>,
-   $.badseeds        = { 0, UINT64_C (0xffffffff00000000) } /* !! all keys ending with 0x0000_0000 */
+   $.badseeddesc     = "All keys of zero bytes produce the seed as the hash."
  );
 
 REGISTER_HASH(FNV_1a_32,
@@ -285,8 +285,7 @@ REGISTER_HASH(FNV_1a_32,
    $.verification_LE = 0xE3CBBE91,
    $.verification_BE = 0x656F95A0,
    $.hashfn_native   = FNV1a<uint32_t, false>,
-   $.hashfn_bswap    = FNV1a<uint32_t, true>,
-   $.badseeds        = { 0x811c9dc5 }
+   $.hashfn_bswap    = FNV1a<uint32_t, true>
  );
 
 REGISTER_HASH(FNV_1a_64,
@@ -301,7 +300,7 @@ REGISTER_HASH(FNV_1a_64,
    $.verification_BE = 0x4B032B63,
    $.hashfn_native   = FNV1a<uint64_t, false>,
    $.hashfn_bswap    = FNV1a<uint64_t, true>,
-   $.badseeds        = { 0x811c9dc5, 0xcbf29ce4, 0x84222325, UINT64_C (0xcbf29ce484222325) }
+   $.badseeds        = { 0xcbf29ce484222325 }
  );
 
 REGISTER_HASH(FNV_1a_32__wordwise,
@@ -332,7 +331,8 @@ REGISTER_HASH(FNV_1a_64__wordwise,
    $.verification_LE = 0x1967C625,
    $.verification_BE = 0x06F5053E,
    $.hashfn_native   = FNV2<uint64_t, false>,
-   $.hashfn_bswap    = FNV2<uint64_t, true>
+   $.hashfn_bswap    = FNV2<uint64_t, true>,
+   $.badseeddesc     = "All seeds collide on keys of all zero bytes of varying lengths (e.g. 18 vs. 32 bytes, 52 vs. 80)."
  );
 
 REGISTER_HASH(FNV_YoshimitsuTRIAD,

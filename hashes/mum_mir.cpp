@@ -310,7 +310,8 @@ REGISTER_HASH(mum1__exact__unroll1,
    $.verification_LE = 0xCB93DE58,
    $.verification_BE = 0xE820D0FB,
    $.hashfn_native   = mum_aligned<1, 1, false, true>,
-   $.hashfn_bswap    = mum_aligned<1, 1, true, true>
+   $.hashfn_bswap    = mum_aligned<1, 1, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum1__exact__unroll2,
@@ -325,7 +326,8 @@ REGISTER_HASH(mum1__exact__unroll2,
    $.verification_LE = 0x3EEAE2D4,
    $.verification_BE = 0xF23A691C,
    $.hashfn_native   = mum_aligned<1, 2, false, true>,
-   $.hashfn_bswap    = mum_aligned<1, 2, true, true>
+   $.hashfn_bswap    = mum_aligned<1, 2, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum1__exact__unroll3,
@@ -340,7 +342,8 @@ REGISTER_HASH(mum1__exact__unroll3,
    $.verification_LE = 0x7C0A2F98,
    $.verification_BE = 0x210F4BEB,
    $.hashfn_native   = mum_aligned<1, 3, false, true>,
-   $.hashfn_bswap    = mum_aligned<1, 3, true, true>
+   $.hashfn_bswap    = mum_aligned<1, 3, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum1__exact__unroll4,
@@ -355,7 +358,8 @@ REGISTER_HASH(mum1__exact__unroll4,
    $.verification_LE = 0x280B2CC6,
    $.verification_BE = 0x0609C4A6,
    $.hashfn_native   = mum_aligned<1, 4, false, true>,
-   $.hashfn_bswap    = mum_aligned<1, 4, true, true>
+   $.hashfn_bswap    = mum_aligned<1, 4, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum1__inexact__unroll1,
@@ -370,7 +374,8 @@ REGISTER_HASH(mum1__inexact__unroll1,
    $.verification_LE = 0x689214DF,
    $.verification_BE = 0x14FBDFDD,
    $.hashfn_native   = mum_aligned<1, 1, false, false>,
-   $.hashfn_bswap    = mum_aligned<1, 1, true, false>
+   $.hashfn_bswap    = mum_aligned<1, 1, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum1__inexact__unroll2,
@@ -385,7 +390,8 @@ REGISTER_HASH(mum1__inexact__unroll2,
    $.verification_LE = 0xA973C6C0,
    $.verification_BE = 0x9C12DFA3,
    $.hashfn_native   = mum_aligned<1, 2, false, false>,
-   $.hashfn_bswap    = mum_aligned<1, 2, true, false>
+   $.hashfn_bswap    = mum_aligned<1, 2, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum1__inexact__unroll3,
@@ -400,7 +406,8 @@ REGISTER_HASH(mum1__inexact__unroll3,
    $.verification_LE = 0x5FC8FC51,
    $.verification_BE = 0x907AB469,
    $.hashfn_native   = mum_aligned<1, 3, false, false>,
-   $.hashfn_bswap    = mum_aligned<1, 3, true, false>
+   $.hashfn_bswap    = mum_aligned<1, 3, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum1__inexact__unroll4,
@@ -415,7 +422,8 @@ REGISTER_HASH(mum1__inexact__unroll4,
    $.verification_LE = 0x2EF256D3,
    $.verification_BE = 0xBF27AAE6,
    $.hashfn_native   = mum_aligned<1, 4, false, false>,
-   $.hashfn_bswap    = mum_aligned<1, 4, true, false>
+   $.hashfn_bswap    = mum_aligned<1, 4, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 #if defined(NOTYET)
@@ -552,7 +560,8 @@ REGISTER_HASH(mum2__exact__unroll1,
    $.verification_LE = 0x9B36F94C,
    $.verification_BE = 0x50F10B41,
    $.hashfn_native   = mum_aligned<2, 1, false, true>,
-   $.hashfn_bswap    = mum_aligned<2, 1, true, true>
+   $.hashfn_bswap    = mum_aligned<2, 1, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum2__exact__unroll2,
@@ -567,7 +576,8 @@ REGISTER_HASH(mum2__exact__unroll2,
    $.verification_LE = 0x40427228,
    $.verification_BE = 0x43DB198B,
    $.hashfn_native   = mum_aligned<2, 2, false, true>,
-   $.hashfn_bswap    = mum_aligned<2, 2, true, true>
+   $.hashfn_bswap    = mum_aligned<2, 2, true, true>,
+   $.badseeddesc     = "All seeds have byte pairs which produce collisions on some lengths (e.g. 0x08 vs. 0x7f on 32-byte keys)"
  );
 
 REGISTER_HASH(mum2__exact__unroll3,
@@ -582,7 +592,8 @@ REGISTER_HASH(mum2__exact__unroll3,
    $.verification_LE = 0xB5D1CB5C,
    $.verification_BE = 0xA718EDE8,
    $.hashfn_native   = mum_aligned<2, 3, false, true>,
-   $.hashfn_bswap    = mum_aligned<2, 3, true, true>
+   $.hashfn_bswap    = mum_aligned<2, 3, true, true>,
+   $.badseeddesc     = "All seeds have byte pairs which produce collisions on some lengths (e.g. 0x08 vs. 0x7f on 32-byte keys)"
  );
 
 REGISTER_HASH(mum2__exact__unroll4,
@@ -597,7 +608,8 @@ REGISTER_HASH(mum2__exact__unroll4,
    $.verification_LE = 0x59AEDABF,
    $.verification_BE = 0x3B1A2832,
    $.hashfn_native   = mum_aligned<2, 4, false, true>,
-   $.hashfn_bswap    = mum_aligned<2, 4, true, true>
+   $.hashfn_bswap    = mum_aligned<2, 4, true, true>,
+   $.badseeddesc     = "All seeds have byte pairs which produce collisions on some lengths (e.g. 0x08 vs. 0x7f on 32-byte keys)"
  );
 
 REGISTER_HASH(mum2__inexact__unroll1,
@@ -612,7 +624,8 @@ REGISTER_HASH(mum2__inexact__unroll1,
    $.verification_LE = 0x1CC6D1E3,
    $.verification_BE = 0x297D8E45,
    $.hashfn_native   = mum_aligned<2, 1, false, false>,
-   $.hashfn_bswap    = mum_aligned<2, 1, true, false>
+   $.hashfn_bswap    = mum_aligned<2, 1, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum2__inexact__unroll2,
@@ -627,7 +640,8 @@ REGISTER_HASH(mum2__inexact__unroll2,
    $.verification_LE = 0x62325A27,
    $.verification_BE = 0x5324AEEA,
    $.hashfn_native   = mum_aligned<2, 2, false, false>,
-   $.hashfn_bswap    = mum_aligned<2, 2, true, false>
+   $.hashfn_bswap    = mum_aligned<2, 2, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum2__inexact__unroll3,
@@ -642,7 +656,8 @@ REGISTER_HASH(mum2__inexact__unroll3,
    $.verification_LE = 0xF4DD9947,
    $.verification_BE = 0x98C9448F,
    $.hashfn_native   = mum_aligned<2, 3, false, false>,
-   $.hashfn_bswap    = mum_aligned<2, 3, true, false>
+   $.hashfn_bswap    = mum_aligned<2, 3, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum2__inexact__unroll4,
@@ -657,7 +672,8 @@ REGISTER_HASH(mum2__inexact__unroll4,
    $.verification_LE = 0x62C46C55,
    $.verification_BE = 0x0E9DDA53,
    $.hashfn_native   = mum_aligned<2, 4, false, false>,
-   $.hashfn_bswap    = mum_aligned<2, 4, true, false>
+   $.hashfn_bswap    = mum_aligned<2, 4, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 #if defined(NOTYET)
@@ -794,7 +810,8 @@ REGISTER_HASH(mum3__exact__unroll1,
    $.verification_LE = 0x3D14C6E2,
    $.verification_BE = 0x360A792D,
    $.hashfn_native   = mum_aligned<3, 1, false, true>,
-   $.hashfn_bswap    = mum_aligned<3, 1, true, true>
+   $.hashfn_bswap    = mum_aligned<3, 1, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum3__exact__unroll2,
@@ -809,7 +826,8 @@ REGISTER_HASH(mum3__exact__unroll2,
    $.verification_LE = 0x3A556EB2,
    $.verification_BE = 0x752891D0,
    $.hashfn_native   = mum_aligned<3, 2, false, true>,
-   $.hashfn_bswap    = mum_aligned<3, 2, true, true>
+   $.hashfn_bswap    = mum_aligned<3, 2, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes)"
  );
 
 REGISTER_HASH(mum3__exact__unroll3,
@@ -824,7 +842,8 @@ REGISTER_HASH(mum3__exact__unroll3,
    $.verification_LE = 0x8BD72B8C,
    $.verification_BE = 0xDD8DD247,
    $.hashfn_native   = mum_aligned<3, 3, false, true>,
-   $.hashfn_bswap    = mum_aligned<3, 3, true, true>
+   $.hashfn_bswap    = mum_aligned<3, 3, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes)"
  );
 
 REGISTER_HASH(mum3__exact__unroll4,
@@ -839,7 +858,8 @@ REGISTER_HASH(mum3__exact__unroll4,
    $.verification_LE = 0x0AD998DF,
    $.verification_BE = 0x05832709,
    $.hashfn_native   = mum_aligned<3, 4, false, true>,
-   $.hashfn_bswap    = mum_aligned<3, 4, true, true>
+   $.hashfn_bswap    = mum_aligned<3, 4, true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mum3__inexact__unroll1,
@@ -854,7 +874,8 @@ REGISTER_HASH(mum3__inexact__unroll1,
    $.verification_LE = 0x475D666B,
    $.verification_BE = 0xE75B31F7,
    $.hashfn_native   = mum_aligned<3, 1, false, false>,
-   $.hashfn_bswap    = mum_aligned<3, 1, true, false>
+   $.hashfn_bswap    = mum_aligned<3, 1, true, false>,
+   $.badseeddesc     = "All seeds give zero hashes on keys of all zero bytes if len+seed==0"
  );
 
 REGISTER_HASH(mum3__inexact__unroll2,
@@ -869,7 +890,8 @@ REGISTER_HASH(mum3__inexact__unroll2,
    $.verification_LE = 0xF6E13B23,
    $.verification_BE = 0x7B00F4F6,
    $.hashfn_native   = mum_aligned<3, 2, false, false>,
-   $.hashfn_bswap    = mum_aligned<3, 2, true, false>
+   $.hashfn_bswap    = mum_aligned<3, 2, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes)"
  );
 
 REGISTER_HASH(mum3__inexact__unroll3,
@@ -884,7 +906,8 @@ REGISTER_HASH(mum3__inexact__unroll3,
    $.verification_LE = 0xB5560703,
    $.verification_BE = 0x1220D737,
    $.hashfn_native   = mum_aligned<3, 3, false, false>,
-   $.hashfn_bswap    = mum_aligned<3, 3, true, false>
+   $.hashfn_bswap    = mum_aligned<3, 3, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes)"
  );
 
 REGISTER_HASH(mum3__inexact__unroll4,
@@ -899,7 +922,8 @@ REGISTER_HASH(mum3__inexact__unroll4,
    $.verification_LE = 0xE96A20C0,
    $.verification_BE = 0xE784308C,
    $.hashfn_native   = mum_aligned<3, 4, false, false>,
-   $.hashfn_bswap    = mum_aligned<3, 4, true, false>
+   $.hashfn_bswap    = mum_aligned<3, 4, true, false>,
+   $.badseeddesc     = "All seeds collide on keys of all 0x00 versus all 0xFF for some lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 #if defined(NOTYET)
@@ -1036,7 +1060,7 @@ REGISTER_HASH(mir__exact,
    $.verification_BE = 0x39F99A44,
    $.hashfn_native   = mir_hash<false, true>,
    $.hashfn_bswap    = mir_hash<true, true>,
-   $.badseeds        = { 0x0, 0x1, 0x2 } // !! I think literally *ALL* seeds are bad
+   $.badseeddesc     = "All seeds produce many collisions on certain key lengths (e.g. 32 bytes, 80 bytes)"
  );
 
 REGISTER_HASH(mir__inexact,
@@ -1052,5 +1076,5 @@ REGISTER_HASH(mir__inexact,
    $.hashfn_native   = mir_hash<false, false>,
    $.hashfn_bswap    = mir_hash<true, false>,
    $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { UINT64_C (0xfffffffffffffff0) }
+   $.badseeddesc     = "All seeds give zero hashes on keys of all zero bytes if len+seed==0"
  );

@@ -204,7 +204,8 @@ REGISTER_HASH(fletcher2__64,
    $.verification_LE = 0x890767C0,
    $.verification_BE = 0x8FC6FD34,
    $.hashfn_native   = fletcher2_64<false>,
-   $.hashfn_bswap    = fletcher2_64<true>
+   $.hashfn_bswap    = fletcher2_64<true>,
+   $.badseeddesc     = "All seeds collide for keys of all zero for some lengths (e.g. 3 bytes vs. 6, 15 vs. 18"
  );
 
 REGISTER_HASH(fletcher2,
@@ -218,7 +219,8 @@ REGISTER_HASH(fletcher2,
    $.verification_LE = 0x70FD3480,
    $.verification_BE = 0xFC346DA5,
    $.hashfn_native   = fletcher2_128<false>,
-   $.hashfn_bswap    = fletcher2_128<true>
+   $.hashfn_bswap    = fletcher2_128<true>,
+   $.badseeddesc     = "All seeds collide for keys of all zero for some lengths (e.g. 3 bytes vs. 6, 15 vs. 18)"
  );
 
 REGISTER_HASH(fletcher4__64,
@@ -233,7 +235,8 @@ REGISTER_HASH(fletcher4__64,
    $.verification_LE = 0x47660EB7,
    $.verification_BE = 0xA502FD23,
    $.hashfn_native   = fletcher4_64<false>,
-   $.hashfn_bswap    = fletcher4_64<true>
+   $.hashfn_bswap    = fletcher4_64<true>,
+   $.badseeddesc     = "All seeds collide for keys of all zero for some lengths (e.g. 3 bytes vs. 6, 15 vs. 18)"
  );
 
 REGISTER_HASH(fletcher4,
@@ -247,7 +250,8 @@ REGISTER_HASH(fletcher4,
    $.verification_LE = 0x1F1358EF,
    $.verification_BE = 0x94EECE23,
    $.hashfn_native   = fletcher4_256<false>,
-   $.hashfn_bswap    = fletcher4_256<true>
+   $.hashfn_bswap    = fletcher4_256<true>,
+   $.badseeddesc     = "All seeds collide for keys of all zero for some lengths (e.g. 3 bytes vs. 6, 15 vs. 18)"
  );
 
 REGISTER_HASH(Fletcher_32,
@@ -276,5 +280,6 @@ REGISTER_HASH(Fletcher_64,
    $.verification_LE = 0x2E16C3AA,
    $.verification_BE = 0x1E644927,
    $.hashfn_native   = fletcher64<false>,
-   $.hashfn_bswap    = fletcher64<true>
+   $.hashfn_bswap    = fletcher64<true>,
+   $.badseeddesc     = "Many seeds collide for keys of all 0x00 versus all 0xFF"
  );

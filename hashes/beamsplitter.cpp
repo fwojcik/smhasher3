@@ -442,6 +442,5 @@ REGISTER_HASH(beamsplitter,
    $.verification_LE = 0x1BDF358B,
    $.verification_BE = 0x4791907E,
    $.hashfn_native   = beamsplitter_64<false>,
-   $.hashfn_bswap    = beamsplitter_64<true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = beamsplitter_64<true>
  );

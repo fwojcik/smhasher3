@@ -222,5 +222,6 @@ REGISTER_HASH(CrapWow_64,
    $.verification_LE = 0x669D3A9B,
    $.verification_BE = 0xCBB7690C,
    $.hashfn_native   = CrapWow64<false>,
-   $.hashfn_bswap    = CrapWow64<true>
+   $.hashfn_bswap    = CrapWow64<true>,
+   $.badseeddesc     = "Any keys of len==32*N consisting of repeated 16-byte blocks collide with any seed"
  );

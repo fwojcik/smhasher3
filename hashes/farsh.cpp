@@ -263,7 +263,8 @@ REGISTER_HASH(FARSH_32,
    $.verification_LE = 0xBCDE332C,
    $.verification_BE = 0x1AD2B744,
    $.hashfn_native   = farsh<false, 1>,
-   $.hashfn_bswap    = farsh<true, 1>
+   $.hashfn_bswap    = farsh<true, 1>,
+   $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
  );
 
 REGISTER_HASH(FARSH_64,
@@ -279,7 +280,8 @@ REGISTER_HASH(FARSH_64,
    $.verification_LE = 0xDE2FDAEE,
    $.verification_BE = 0xEFE7812E,
    $.hashfn_native   = farsh<false, 2>,
-   $.hashfn_bswap    = farsh<true, 2>
+   $.hashfn_bswap    = farsh<true, 2>,
+   $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
  );
 
 REGISTER_HASH(FARSH_128,
@@ -296,7 +298,8 @@ REGISTER_HASH(FARSH_128,
    $.verification_LE = 0x82B6CBEC,
    $.verification_BE = 0x51150D39,
    $.hashfn_native   = farsh<false, 4>,
-   $.hashfn_bswap    = farsh<true, 4>
+   $.hashfn_bswap    = farsh<true, 4>,
+   $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
  );
 
 REGISTER_HASH(FARSH_256,
@@ -313,5 +316,6 @@ REGISTER_HASH(FARSH_256,
    $.verification_LE = 0xFEBEA0BC,
    $.verification_BE = 0x75FAC191,
    $.hashfn_native   = farsh<false, 8>,
-   $.hashfn_bswap    = farsh<true, 8>
+   $.hashfn_bswap    = farsh<true, 8>,
+   $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
  );

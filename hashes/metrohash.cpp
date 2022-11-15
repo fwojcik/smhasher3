@@ -304,7 +304,7 @@ REGISTER_HASH(MetroHash_64,
    $.verification_BE = 0xFB8D54A5,
    $.hashfn_native   = MetroHash64<0, false>,
    $.hashfn_bswap    = MetroHash64<0, true>,
-   $.badseeds        = {}
+   $.badseeds        = { 0xffffffff9d66d03f }
  );
 
 REGISTER_HASH(MetroHash_64__var1,
@@ -319,8 +319,7 @@ REGISTER_HASH(MetroHash_64__var1,
    $.verification_LE = 0xEE88F7D2,
    $.verification_BE = 0xCC0F03D7,
    $.hashfn_native   = MetroHash64<1, false>,
-   $.hashfn_bswap    = MetroHash64<1, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash64<1, true>
  );
 
 REGISTER_HASH(MetroHash_64__var2,
@@ -335,8 +334,7 @@ REGISTER_HASH(MetroHash_64__var2,
    $.verification_LE = 0xE1FC7C6E,
    $.verification_BE = 0x7F8C6EF1,
    $.hashfn_native   = MetroHash64<2, false>,
-   $.hashfn_bswap    = MetroHash64<2, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash64<2, true>
  );
 
 #if defined(HAVE_X86_64_CRC32C)
@@ -354,8 +352,7 @@ REGISTER_HASH(MetroHashCrc_64__var1,
    $.verification_LE = 0x29C68A50,
    $.verification_BE = 0xACEEC1FC,
    $.hashfn_native   = MetroHash64<3, false>,
-   $.hashfn_bswap    = MetroHash64<3, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash64<3, true>
  );
 
 REGISTER_HASH(MetroHashCrc_64__var2,
@@ -371,8 +368,7 @@ REGISTER_HASH(MetroHashCrc_64__var2,
    $.verification_LE = 0x2C00BD9F,
    $.verification_BE = 0x590D5688,
    $.hashfn_native   = MetroHash64<4, false>,
-   $.hashfn_bswap    = MetroHash64<4, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash64<4, true>
  );
 
 #endif
@@ -389,8 +385,7 @@ REGISTER_HASH(MetroHash_128,
    $.verification_LE = 0x4A6673E7,
    $.verification_BE = 0xD5F2CD8C,
    $.hashfn_native   = MetroHash128<0, false>,
-   $.hashfn_bswap    = MetroHash128<0, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash128<0, true>
  );
 
 REGISTER_HASH(MetroHash_128__var1,
@@ -405,8 +400,7 @@ REGISTER_HASH(MetroHash_128__var1,
    $.verification_LE = 0x20E8A1D7,
    $.verification_BE = 0x78661274,
    $.hashfn_native   = MetroHash128<1, false>,
-   $.hashfn_bswap    = MetroHash128<1, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash128<1, true>
  );
 
 REGISTER_HASH(MetroHash_128__var2,
@@ -421,8 +415,7 @@ REGISTER_HASH(MetroHash_128__var2,
    $.verification_LE = 0x5437C684,
    $.verification_BE = 0x01A244A6,
    $.hashfn_native   = MetroHash128<2, false>,
-   $.hashfn_bswap    = MetroHash128<2, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash128<2, true>
  );
 
 #if defined(HAVE_X86_64_CRC32C)
@@ -440,8 +433,7 @@ REGISTER_HASH(MetroHashCrc_128__var1,
    $.verification_LE = 0x5E75144E,
    $.verification_BE = 0xCD4C6C7E,
    $.hashfn_native   = MetroHash128<3, false>,
-   $.hashfn_bswap    = MetroHash128<3, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash128<3, true>
  );
 
 REGISTER_HASH(MetroHashCrc_128__var2,
@@ -457,8 +449,7 @@ REGISTER_HASH(MetroHashCrc_128__var2,
    $.verification_LE = 0x1ACF3E77,
    $.verification_BE = 0x3772DA12,
    $.hashfn_native   = MetroHash128<4, false>,
-   $.hashfn_bswap    = MetroHash128<4, true>,
-   $.badseeds        = {}
+   $.hashfn_bswap    = MetroHash128<4, true>
  );
 
 #endif

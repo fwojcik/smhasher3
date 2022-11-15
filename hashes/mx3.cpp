@@ -184,7 +184,8 @@ REGISTER_HASH(mx3__v2,
    $.verification_LE = 0x527399AD,
    $.verification_BE = 0x5B6AAE8F,
    $.hashfn_native   = mx3_v2<false>,
-   $.hashfn_bswap    = mx3_v2<true>
+   $.hashfn_bswap    = mx3_v2<true>,
+   $.badseeddesc     = "All seeds give zero hashes on keys of all zero bytes if length==seed"
  );
 
 REGISTER_HASH(mx3__v1,
@@ -198,5 +199,6 @@ REGISTER_HASH(mx3__v1,
    $.verification_LE = 0x4DB51E5B,
    $.verification_BE = 0x93E930B0,
    $.hashfn_native   = mx3_v1<false>,
-   $.hashfn_bswap    = mx3_v1<true>
+   $.hashfn_bswap    = mx3_v1<true>,
+   $.badseeddesc     = "All seeds give zero hashes on keys of all zero bytes if length==seed"
  );

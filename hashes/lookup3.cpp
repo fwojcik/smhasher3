@@ -29,6 +29,16 @@
   c ^= b; c -= ROTL32(b,24); \
 }
 
+// If seed+len==0x21524111, then hash of all zeros is zero. Fix this by
+// setting a high bit in the seed.
+seed_t lookup3_seedfix( const HashInfo * hinfo, const seed_t seed ) {
+    uint64_t seed64 = (uint64_t)seed;
+    if (seed64 >= 0xffffffff) {
+        seed64 |= (seed64 | 1) << 32;
+    }
+    return (seed_t)seed64;
+}
+
 template <bool hash64, bool bswap>
 static void hashlittle( const uint8_t * key, size_t length, uint64_t seed64, uint8_t * out ) {
     uint32_t a, b, c;                                      /* internal state */
@@ -111,5 +121,7 @@ REGISTER_HASH(lookup3,
    $.verification_LE = 0x6AE8AB7C,
    $.verification_BE = 0x074EBE4E,
    $.hashfn_native   = lookup3<true, false>,
-   $.hashfn_bswap    = lookup3<true, true>
+   $.hashfn_bswap    = lookup3<true, true>,
+   $.seedfixfn       = lookup3_seedfix,
+   $.badseeddesc     = "If seed+len==0x21524111, then hash of all zeros is zero."
  );

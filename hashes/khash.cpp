@@ -174,5 +174,6 @@ REGISTER_HASH(khash_64,
    $.verification_LE = 0x44BD88C4,
    $.verification_BE = 0xCF3003D1,
    $.hashfn_native   = khash64<false>,
-   $.hashfn_bswap    = khash64<true>
+   $.hashfn_bswap    = khash64<true>,
+   $.badseeddesc     = "All seeds are bad"
  );

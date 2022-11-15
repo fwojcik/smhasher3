@@ -98,7 +98,7 @@ REGISTER_HASH(aesnihash,
    $.verification_BE = 0xEBC48EDA,
    $.hashfn_native   = aesnihash<false>,
    $.hashfn_bswap    = aesnihash<true>,
-   $.badseeds        = { 0x70736575 }
+   $.badseeddesc     = "All seeds collide on keys of all zero bytes when (len/16) is constant."
  );
 
 #else

@@ -299,7 +299,8 @@ REGISTER_HASH(hasshe2,
    $.verification_LE = 0x68CBC5F1,
    $.verification_BE = 0x562ECEB4,
    $.hashfn_native   = Hasshe2<true, false>,
-   $.hashfn_bswap    = Hasshe2<true, true>
+   $.hashfn_bswap    = Hasshe2<true, true>,
+   $.badseeddesc     = "All seeds collide on keys of all zero bytes when (len/16) is constant."
  );
 
 REGISTER_HASH(hasshe2__tweaked,
