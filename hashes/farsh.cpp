@@ -38,8 +38,7 @@
 #define STRIPE          FARSH_BASE_KEY_SIZE
 #define STRIPE_ELEMENTS (STRIPE / sizeof(uint32_t)) /*
                                                      * should be power of 2 due to use of 'x % STRIPE_ELEMENTS' below
-                                                     * 
-                                                                                                         */
+                                                     */
 #define EXTRA_ELEMENTS  (((FARSH_MAX_HASHES - 1) * FARSH_EXTRA_KEY_SIZE) / sizeof(uint32_t))
 
 /* STRIPE bytes of key material plus extra keys for hashes up to 1024 bits long */
@@ -198,9 +197,10 @@ static uint32_t farsh_final( uint64_t sum ) {
 /* ////////////////////////////////////////////////////////////////////////// */
 
 /* Public API functions documented in farsh.h */
-template <bool bswap>
+template <bool tweaked, bool bswap>
 static uint32_t farsh_keyed( const void * data, size_t bytes, const void * key, uint64_t seed ) {
     uint64_t         sum     = seed;
+    const size_t     obytes  = bytes;
     const uint8_t  * ptr     = (const uint8_t * )data;
     const uint32_t * key_ptr = (const uint32_t *)key;
 
@@ -216,33 +216,37 @@ static uint32_t farsh_keyed( const void * data, size_t bytes, const void * key, 
         sum  = farsh_combine(sum, h);
         ptr += chunk;  bytes -= chunk;
     }
-    return farsh_final(sum) ^ key_ptr[bytes % STRIPE_ELEMENTS]; /*
-                                                                 * ensure that zeroes at the end of data will affect the
-                                                                 * hash value 
-                                                                 */
+    if (tweaked) {
+        /*
+         * ensure that zeroes at the end of data will affect the
+         * hash value
+         */
+        return farsh_final(sum) ^ key_ptr[obytes % STRIPE_ELEMENTS];
+    } else {
+        return farsh_final(sum) ^ key_ptr[bytes % STRIPE_ELEMENTS];
+    }
 }
 
-template <bool bswap>
+template <bool tweaked, bool bswap>
 static void farsh_keyed_n( const void * data, size_t bytes, const void * key, int n, uint64_t seed, void * hash ) {
     uint32_t * hash_ptr = (uint32_t *)hash;
 
     for (int i = 0; i < n; i++) {
-        hash_ptr[i] = COND_BSWAP(farsh_keyed<bswap>(data, bytes, (const uint8_t *)key + i * FARSH_EXTRA_KEY_SIZE,
-                seed), bswap);
+        hash_ptr[i] = COND_BSWAP(farsh_keyed<tweaked, bswap>(data, bytes, (const uint8_t *)key + i * FARSH_EXTRA_KEY_SIZE, seed), bswap);
     }
 }
 
-template <bool bswap>
+template <bool tweaked, bool bswap>
 static void farsh_n( const void * data, size_t bytes, int k, int n, uint64_t seed, void * hash ) {
     /* FARSH_KEYS contains only material for the hashes 0..FARSH_MAX_HASHES-1 */
     if (k + n > FARSH_MAX_HASHES) { return; }
 
-    farsh_keyed_n<bswap>(data, bytes, (const uint8_t *)FARSH_KEYS + k * FARSH_EXTRA_KEY_SIZE, n, seed, hash);
+    farsh_keyed_n<tweaked, bswap>(data, bytes, (const uint8_t *)FARSH_KEYS + k * FARSH_EXTRA_KEY_SIZE, n, seed, hash);
 }
 
-template <bool bswap, uint32_t hashcount>
+template <bool tweaked, bool bswap, uint32_t hashcount>
 static void farsh( const void * in, const size_t len, const seed_t seed, void * out ) {
-    farsh_n<bswap>(in, len, 0, hashcount, (uint64_t)seed, out);
+    farsh_n<tweaked, bswap>(in, len, 0, hashcount, (uint64_t)seed, out);
 }
 
 REGISTER_FAMILY(farsh,
@@ -262,9 +266,24 @@ REGISTER_HASH(FARSH_32,
    $.bits = 32,
    $.verification_LE = 0xBCDE332C,
    $.verification_BE = 0x1AD2B744,
-   $.hashfn_native   = farsh<false, 1>,
-   $.hashfn_bswap    = farsh<true, 1>,
+   $.hashfn_native   = farsh<false, false, 1>,
+   $.hashfn_bswap    = farsh<false, true, 1>,
    $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
+ );
+
+REGISTER_HASH(FARSH_32__tweaked,
+   $.desc       = "FARSH 32-bit (1 hash output, tweaked to include key len)",
+   $.impl       = FARSH_IMPL_STR,
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0,
+   $.verification_BE = 0,
+   $.hashfn_native   = farsh< true, false, 1>,
+   $.hashfn_bswap    = farsh< true, true, 1>
  );
 
 REGISTER_HASH(FARSH_64,
@@ -279,9 +298,24 @@ REGISTER_HASH(FARSH_64,
    $.bits = 64,
    $.verification_LE = 0xDE2FDAEE,
    $.verification_BE = 0xEFE7812E,
-   $.hashfn_native   = farsh<false, 2>,
-   $.hashfn_bswap    = farsh<true, 2>,
+   $.hashfn_native   = farsh<false, false, 2>,
+   $.hashfn_bswap    = farsh<false, true, 2>,
    $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
+ );
+
+REGISTER_HASH(FARSH_64__tweaked,
+   $.desc       = "FARSH 64-bit (2 hash outputs, tweaked to include key len)",
+   $.impl       = FARSH_IMPL_STR,
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0,
+   $.verification_BE = 0,
+   $.hashfn_native   = farsh< true, false, 2>,
+   $.hashfn_bswap    = farsh< true, true, 2>
  );
 
 REGISTER_HASH(FARSH_128,
@@ -297,9 +331,25 @@ REGISTER_HASH(FARSH_128,
    $.bits = 128,
    $.verification_LE = 0x82B6CBEC,
    $.verification_BE = 0x51150D39,
-   $.hashfn_native   = farsh<false, 4>,
-   $.hashfn_bswap    = farsh<true, 4>,
+   $.hashfn_native   = farsh<false, false, 4>,
+   $.hashfn_bswap    = farsh<false, true, 4>,
    $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
+ );
+
+REGISTER_HASH(FARSH_128__tweaked,
+   $.desc       = "FARSH 128-bit (4 hash outputs, tweaked to include key len)",
+   $.impl       = FARSH_IMPL_STR,
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_SLOW            |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 128,
+   $.verification_LE = 0,
+   $.verification_BE = 0,
+   $.hashfn_native   = farsh< true, false, 4>,
+   $.hashfn_bswap    = farsh< true, true, 4>
  );
 
 REGISTER_HASH(FARSH_256,
@@ -315,7 +365,23 @@ REGISTER_HASH(FARSH_256,
    $.bits = 256,
    $.verification_LE = 0xFEBEA0BC,
    $.verification_BE = 0x75FAC191,
-   $.hashfn_native   = farsh<false, 8>,
-   $.hashfn_bswap    = farsh<true, 8>,
+   $.hashfn_native   = farsh<false, false, 8>,
+   $.hashfn_bswap    = farsh<false, true, 8>,
    $.badseeddesc     = "All seeds collide on keys of all zero bytes of length < 8"
+ );
+
+REGISTER_HASH(FARSH_256__tweaked,
+   $.desc       = "FARSH 256-bit (8 hash outputs, tweaked to include key len)",
+   $.impl       = FARSH_IMPL_STR,
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_VERY_SLOW       |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 256,
+   $.verification_LE = 0,
+   $.verification_BE = 0,
+   $.hashfn_native   = farsh< true, false, 8>,
+   $.hashfn_bswap    = farsh< true, true, 8>
  );
