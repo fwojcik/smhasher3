@@ -132,7 +132,7 @@ REGISTER_HASH(sum32hash,
    $.verification_BE = 0x00A10D9E,
    $.hashfn_native   = sumhash32<false>,
    $.hashfn_bswap    = sumhash32<true>,
-   $.seedfixfn       = excludeZeroSeed,
-   $.badseeds        = { UINT64_C (0x9e3779b97f4a7c15) },
+   $.seedfixfn       = excludeBadseeds,
+   $.badseeds        = { 0 },
    $.sort_order      = 31
  );
