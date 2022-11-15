@@ -64,84 +64,11 @@
 //-----------------------------------------------------------------------------
 // Find bad seeds, and test against the known secrets/bad seeds.
 
-template <typename hashtype>
-static bool TestSeed( const HashInfo * hinfo, const seed_t seed ) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    const std::vector<int>     testlens  = { 1, 2, 4, 8, 12, 16, 32, 64, 128 };
-    const std::vector<uint8_t> testbytes = { 0, 32, '0', 127, 128, 255 };
-    const unsigned        numtestbytes   = testbytes.size();
-    const hashtype        zero = { 0 };
-    std::vector<hashtype> hashes( numtestbytes );
-    std::set<hashtype>    dummy_collisions;
-    bool result = true;
+const std::vector<int>     testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
+const std::vector<uint8_t> testbytes = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
+const unsigned        numtestbytes   = testbytes.size();
+const unsigned        numtestlens    = testlens.size();
 
-    if (hinfo->is32BitSeed() && (seed > UINT64_C(0xffffffff))) {
-        return true;
-    }
-
-    /* Premake all the test keys */
-    uint8_t keys[numtestbytes][128];
-    for (int i = 0; i < numtestbytes; i++) {
-        memset(&keys[i][0], testbytes[i], 128);
-    }
-
-    printf("0x%" PRIx64 "\n", seed);
-    const seed_t hseed = hinfo->Seed(seed, true);
-
-    for (int len: testlens) {
-        memset(&hashes[0], 0, numtestbytes * sizeof(hashtype));
-        for (int i = 0; i < numtestbytes; i++) {
-            hash(&keys[i][0], len, hseed, &hashes[i]);
-            if (hashes[0] == zero) {
-                printf("Confirmed broken seed 0x%" PRIx64 " => hash of 0"
-                        " with key[%d] of all 0x%02x\n", seed, len, testbytes[i]);
-                result = false;
-            }
-        }
-
-        if (FindCollisions(hashes, dummy_collisions, 0, false) > 0) {
-            printf("Confirmed bad seed 0x%" PRIx64 " for len %d\n", seed, len);
-            for (int i = 0; i < numtestbytes; i++) {
-                hashes[i].printhex("  ");
-            }
-            result = false;
-        }
-    }
-
-    return result;
-}
-
-template <typename hashtype>
-static bool BadSeedsKnown( const HashInfo * hinfo ) {
-    bool result = true;
-    const std::set<seed_t> & seeds = hinfo->badseeds;
-
-    printf("Testing %" PRIu64 " known bad seeds:\n", seeds.size());
-
-    for (seed_t seed: seeds) {
-        bool thisresult = true;
-        thisresult &= TestSeed<hashtype>(hinfo, seed);
-        if (!hinfo->is32BitSeed() && (seed <= 0xffffffff) && (seed != 0)) {
-            thisresult &= TestSeed<hashtype>(hinfo, seed << 32);
-        }
-        if (thisresult) {
-            printf("Huh! \"Known\" bad seed %016lx isn't bad\n", seed);
-        }
-        result &= thisresult;
-    }
-
-    if (!seeds.size()) {
-        result &= TestSeed<hashtype>(hinfo, 0x0);
-    }
-
-    if (result) {
-        printf("PASS\n");
-    }
-
-    return result;
-}
-
-//-----------------------------------------------------------------------------
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
 static std::atomic<unsigned> seed_progress;
@@ -158,10 +85,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
     const HashFn   hash = hinfo->hashFn(g_hashEndian);
     const seed_t   last = hi | endlow;
     const hashtype zero = { 0 };
-    // static_assert(testbytes[0] == 0, "Code assumes first test byte is 0");
-    const std::vector<uint8_t> testbytes = { 0, 32, 127, 255 };
-    const unsigned        numtestbytes   = testbytes.size();
-    std::vector<hashtype> hashes( numtestbytes );
+    std::vector<hashtype> hashes( numtestbytes * numtestlens );
     std::set<hashtype>    collisions;
 
     const char * progress_fmt =
@@ -182,9 +106,9 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
     }
 
     /* Premake all the test keys */
-    uint8_t keys[numtestbytes][16];
+    uint8_t keys[numtestbytes][128];
     for (int i = 0; i < numtestbytes; i++) {
-        memset(&keys[i][0], testbytes[i], 16);
+        memset(&keys[i][0], testbytes[i], 128);
     }
 
     seed_t seed = (hi | start);
@@ -204,35 +128,19 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
             printf(progress_fmt, seed, spacer);
         }
 
-        /* Test the next seed against 16 copies of each test byte */
+        /* Test the next seed against each test byte */
         const seed_t hseed = hinfo->Seed(seed, true, 1);
-        memset(&hashes[0], 0, numtestbytes * sizeof(hashtype));
-        for (int i = 0; i < numtestbytes; i++) {
-            hash(&keys[i][0], 16, hseed, &hashes[i]);
-        }
 
-        /* Check for a broken seed */
-        if (hashes[0] == zero) {
-            bool known_seed = (std::find(seeds.begin(), seeds.end(), seed) != seeds.end());
-            {
-#if defined(HAVE_THREADS)
-                std::lock_guard<std::mutex> lock( print_mutex );
-#endif
-                if (known_seed) {
-                    printf("\nVerified broken seed 0x%" PRIx64 " => 0 with key[16] of all 0 bytes\n", seed);
-                } else {
-                    printf("\nNew broken seed 0x%" PRIx64 " => 0 with key[16] of all 0 bytes\n", seed);
-                }
-            }
-            fails++;
-            result = false;
-            if (!known_seed) {
-                newresult = true;
+        memset(&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
+        unsigned cnt = 0;
+        for (int i = 0; i < numtestbytes; i++) {
+            for (int len: testlens) {
+                hash(&keys[i][0], len, hseed, &hashes[cnt++]);
             }
         }
 
         /* Report if any collisions were found */
-        if (FindCollisions(hashes, collisions, 1000, true) > 0) {
+        if (FindCollisions(hashes, collisions, numtestbytes * numtestlens, true) > 0) {
 #if defined(HAVE_THREADS)
             std::lock_guard<std::mutex> lock( print_mutex );
 #endif
@@ -251,16 +159,49 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
                 goto out;
             }
             if (!known_seed && (fails < 32)) { // don't print too many lines
-                PrintCollisions(collisions);
                 // Can't just print hashes vector because it's now sorted
                 hashtype v;
-                printf("Hashes:\n");
+                printf("Colliding hashes:\n");
                 for (int i = 0; i < numtestbytes; i++) {
-                    hash(&keys[i][0], 16, hseed, &v);
-                    printf("%3d:", i); v.printhex(" ");
+                    for (int len: testlens) {
+                        hash(&keys[i][0], len, hseed, &v);
+                        if (std::find(collisions.begin(), collisions.end(), v) != collisions.end()) {
+                            printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
+                        }
+                    }
                 }
             }
             collisions.clear();
+            result = false;
+            if (!known_seed) {
+                newresult = true;
+            }
+        }
+
+        /* Check for a broken seed */
+        if (hashes[0] == zero) {
+            bool known_seed = (std::find(seeds.begin(), seeds.end(), seed) != seeds.end());
+#if defined(HAVE_THREADS)
+            std::lock_guard<std::mutex> lock( print_mutex );
+#endif
+            if (known_seed) {
+                printf("\nVerified broken seed 0x%" PRIx64 " => 0 hash value\n", seed);
+            } else {
+                printf("\nNew broken seed 0x%" PRIx64 " => 0 hash value\n", seed);
+            }
+            fails++;
+            if (!known_seed && (fails < 32)) { // don't print too many lines
+                hashtype v;
+                printf("Zero hashes:\n");
+                for (int i = 0; i < numtestbytes; i++) {
+                    for (int len: testlens) {
+                        hash(&keys[i][0], len, hseed, &v);
+                        if (v == zero) {
+                            printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
+                        }
+                    }
+                }
+            }
             result = false;
             if (!known_seed) {
                 newresult = true;
@@ -358,6 +299,89 @@ static bool BadSeedsFind( const HashInfo * hinfo ) {
 }
 
 //-----------------------------------------------------------------------------
+
+template <typename hashtype>
+static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    const hashtype        zero = { 0 };
+    std::vector<hashtype> hashes( numtestbytes * numtestlens );
+    std::set<hashtype>    collisions;
+    bool result = true;
+
+    if (hinfo->is32BitSeed() && (seed > UINT64_C(0xffffffff))) {
+        return true;
+    }
+
+    /* Premake all the test keys */
+    uint8_t keys[numtestbytes][128];
+    for (int i = 0; i < numtestbytes; i++) {
+        memset(&keys[i][0], testbytes[i], 128);
+    }
+
+    printf("0x%" PRIx64 "\n", seed);
+    const seed_t hseed = hinfo->Seed(seed, true);
+
+    memset(&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
+    unsigned cnt = 0;
+    for (int i = 0; i < numtestbytes; i++) {
+        for (int len: testlens) {
+            hash(&keys[i][0], len, hseed, &hashes[cnt++]);
+        }
+    }
+
+    if (FindCollisions(hashes, collisions, numtestbytes * numtestlens, true) > 0) {
+        printf("Confirmed bad seed 0x%" PRIx64 "\n", seed);
+        PrintCollisions(collisions);
+#if 0
+        hashtype v;
+        cnt = 0;
+        for (int i = 0; i < numtestbytes; i++) {
+            for (int len: testlens) {
+                hash(&keys[i][0], len, hseed, &v);
+                if (std::find(collisions.begin(), collisions.end(), v) != collisions.end()) {
+                    printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
+                }
+            }
+        }
+#endif
+        result = false;
+    }
+
+    if (hashes[0] == zero) {
+        printf("Confirmed broken seed 0x%" PRIx64 " => 0 hash value\n", seed);
+        result = false;
+    }
+
+    return result;
+}
+
+template <typename hashtype>
+static bool BadSeedsKnown( const HashInfo * hinfo ) {
+    bool result = true;
+    const std::set<seed_t> & seeds = hinfo->badseeds;
+
+    if (!seeds.size()) {
+        printf("No known bad seeds to test. Use --extra to search for them.\n");
+        return result;
+    }
+
+    printf("Testing %" PRIu64 " known bad seeds:\n", seeds.size());
+
+    for (seed_t seed: seeds) {
+        bool thisresult = true;
+        thisresult &= TestSingleSeed<hashtype>(hinfo, seed);
+        if (thisresult) {
+            printf("Huh! \"Known\" bad seed %016lx isn't bad\n", seed);
+        }
+        result &= thisresult;
+    }
+
+    printf("\n%s\n", result ? "PASS" : g_failstr);
+
+    return result;
+}
+
+//-----------------------------------------------------------------------------
 template <typename hashtype>
 bool BadSeedsTest( const HashInfo * hinfo, bool find_new_seeds ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
@@ -371,10 +395,9 @@ bool BadSeedsTest( const HashInfo * hinfo, bool find_new_seeds ) {
     printf("[[[ BadSeeds Tests ]]]\n\n");
 
     /*
-     * FIXME - With the current definition of a "bad" seed, some
-     * failures on 32-bit hashes are expected by chance. Either the
-     * bad seed test needs to change, or the pass/fail needs to be
-     * based on the count of bad seeds.
+     * With the current definition of a "bad" seed, some failures on 32-bit
+     * hashes are expected by chance. For this test to be meaningful, the
+     * pass/fail needs to be based on the count of bad seeds.
      *
      * For now, just don't test 32-bit hashes.
      */
