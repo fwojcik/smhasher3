@@ -185,7 +185,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     const size_t hashbits     = hashbytes * 8;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
-    printf("Testing %3d-bit keys, %7d reps", keybits, reps);
+    printf("Testing %4d-bit keys, %7d reps", keybits, reps);
 
     std::vector<uint32_t> popcount( keybits * hashbits    , 0 );
     std::vector<uint32_t> andcount( keybits * hashbitpairs, 0 );
@@ -219,17 +219,25 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool BicTest( const HashInfo * hinfo, const bool verbose ) {
+bool BicTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
-    size_t       reps   = (hinfo->bits > 128 || hinfo->isVerySlow()) ? 100000 : 64000000 / hinfo->bits;
+    size_t       reps   = (hinfo->bits > 128 || hinfo->isVerySlow()) ? 100000 : 600000;
     bool         result = true;
 
     printf("[[[ BIC 'Bit Independence Criteria' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed, false, 3);
 
-    result &= BicTestImpl<hashtype>(hash, seed, 11, reps, verbose);
-    result &= BicTestImpl<hashtype>(hash, seed, 16, reps, verbose);
+    //std::vector<size_t> keylens = { 3, 6, 11, 15, 16, 18, 31, 52, 80, 200 };
+    //std::vector<size_t> keylens = { 3, 6, 11, 15, 16, 18, 28, 31, 52, 67, 80, 200 };
+    std::vector<size_t> keylens = { 3, 4, 6, 8, 11, 15, 28, 52 };
+    for (const auto keylen: keylens) {
+        if (keylen <= 16) {
+            result &= BicTestImpl<hashtype>(hash, seed, keylen, reps * 2, verbose);
+        } else if (extra && !hinfo->isSlow()) {
+            result &= BicTestImpl<hashtype>(hash, seed, keylen, reps, verbose);
+        }
+    }
 
     printf("\n%s\n", result ? "" : g_failstr);
 

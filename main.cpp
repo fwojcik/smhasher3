@@ -538,7 +538,7 @@ static bool test( const HashInfo * hInfo ) {
         g_testBIC = true;
     }
     if (g_testBIC) {
-        result &= BicTest<hashtype>(hInfo, g_drawDiagram);
+        result &= BicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
