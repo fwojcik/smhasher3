@@ -763,7 +763,6 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
          * Given the range of hash sizes we care about, compute all
          * collision counts for them, for high- and low-bits as requested.
          */
-        std::vector<hashtype> revhashes;
         std::vector<int>      collcounts_fwd;
         std::vector<int>      collcounts_rev;
         int minBits, maxBits, threshBits;
@@ -784,17 +783,18 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
         }
 
         if (testLowBits && (maxBits > 0)) {
-            // reverse: bitwise flip the hashes. lowest bits first
-            revhashes.reserve(hashes.size());
-            for (const auto hashval: hashes) {
-                hashtype rev = hashval;
-                rev.reversebits();
-                revhashes.push_back(rev);
-            }
-            blobsort(revhashes.begin(), revhashes.end());
-
             collcounts_rev.reserve(maxBits - minBits + 1);
-            CountRangedNbCollisions(revhashes, nbH, minBits, maxBits, threshBits, &collcounts_rev[0]);
+            for (size_t hnb = 0; hnb < nbH; hnb++) {
+                hashes[hnb].reversebits();
+            }
+            blobsort(hashes.begin(), hashes.end());
+
+            CountRangedNbCollisions(hashes, nbH, minBits, maxBits, threshBits, &collcounts_rev[0]);
+
+            for (size_t hnb = 0; hnb < nbH; hnb++) {
+                hashes[hnb].reversebits();
+            }
+            // No need to re-sort, since TestDistribution doesn't care
         }
 
         addVCodeResult(collcount);
