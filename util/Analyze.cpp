@@ -451,7 +451,7 @@ static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits,
 
 //----------------------------------------------------------------------------
 // Measure the distribution "score" for each possible N-bit span, with
-// N going from 8 to 20 inclusive.
+// N going from 8 to up-to-24 inclusive.
 
 static int MaxDistBits( const uint64_t nbH ) {
     // If there aren't 5 keys per bin over 8 bins, then don't bother
@@ -459,7 +459,7 @@ static int MaxDistBits( const uint64_t nbH ) {
     if (nbH < (5 * 8)) {
         return 0;
     }
-    int maxwidth = 20;
+    int maxwidth = 24;
     // We need at least 5 keys per bin to reliably test distribution biases
     // down to 1%, so don't bother to test sparser distributions than that
     while (double(nbH) / double(1 << maxwidth) < 5.0) {
