@@ -167,11 +167,11 @@ static TestOpts g_testopts[] = {
     { g_testSeed,          true,     false,    "Seed" },
     { g_testPerlinNoise,   true,     false,    "PerlinNoise" },
     { g_testDiffDist,      true,     false,    "DiffDist" },
+    { g_testBIC,           true,     false,    "BIC" },
     { g_testDiff,         false,     false,    "Diff" },
     { g_testWindow,       false,     false,    "Window" },
     { g_testPopcount,     false,     false,    "Popcount" },
     { g_testPrng,         false,     false,    "Prng" },
-    { g_testBIC,          false,     false,    "BIC" },
     { g_testBadSeeds,     false,     false,    "BadSeeds" },
 };
 
@@ -532,11 +532,8 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Bit Independence Criteria. Do this only with --extra for now.
+    // Bit Independence Criteria.
 
-    if (g_testAll && g_testExtra) {
-        g_testBIC = true;
-    }
     if (g_testBIC) {
         result &= BicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
