@@ -125,23 +125,29 @@ typedef int a_int;
 
 template <typename hashtype>
 static void BicTestBatch( HashFn hash, const seed_t seed, size_t reps, a_int & ikeybit, size_t batch_size,
-        size_t keybytes, uint8_t * key0, uint32_t * popcount0, uint32_t * andcount0 ) {
+        size_t keybytes, uint32_t * popcount0, uint32_t * andcount0 ) {
     const size_t keybits      = keybytes * 8;
     const size_t hashbytes    = sizeof(hashtype);
     const size_t hashbits     = hashbytes * 8;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
     hashtype     h1, h2;
     size_t       startkeybit;
+    Rand         r;
+
+    std::vector<uint8_t> keys( keybytes * reps );
 
     while ((startkeybit = FETCH_ADD(ikeybit, batch_size)) < keybits) {
-        uint8_t *    key_cursor = &key0[startkeybit * keybytes * reps];
         const size_t stopkeybit = std::min(startkeybit + batch_size, keybits);
 
         for (size_t keybit = startkeybit; keybit < stopkeybit; keybit++) {
             uint32_t * pop_cursor_base = &popcount0[keybit * hashbits    ];
             uint32_t * and_cursor_base = &andcount0[keybit * hashbitpairs];
+            uint8_t  *      key_cursor = &keys[0];
 
             progressdots(keybit, 0, keybits - 1, 10);
+
+            r.reseed(1798473 + keybytes * 8193 + keybit);
+            r.rand_p(key_cursor, keybytes * reps);
 
             for (size_t irep = 0; irep < reps; irep++) {
                 uint32_t * pop_cursor = pop_cursor_base;
@@ -178,23 +184,15 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     const size_t hashbytes    = sizeof(hashtype);
     const size_t hashbits     = hashbytes * 8;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
-    Rand r( 11938 + keybytes );
 
     printf("Testing %3d-bit keys, %7d reps", keybits, reps);
-
-    // Generate all the keys to be tested. We use malloc() because C++ things insist
-    // on zero-initializing this memory, even though we're going to fill the array
-    // with data immediately.
-    uint8_t * const keys = (uint8_t *)malloc(keybytes * keybits * reps);
-    r.rand_p(keys, keybytes * keybits * reps);
-    addVCodeInput(keys, keybytes * keybits * reps);
 
     std::vector<uint32_t> popcount( keybits * hashbits    , 0 );
     std::vector<uint32_t> andcount( keybits * hashbitpairs, 0 );
     a_int ikeybit( 0 );
 
     if (g_NCPU == 1) {
-        BicTestBatch<hashtype>(hash, seed, reps, ikeybit, keybits, keybytes, &keys[0], &popcount[0], &andcount[0]);
+        BicTestBatch<hashtype>(hash, seed, reps, ikeybit, keybits, keybytes, &popcount[0], &andcount[0]);
     } else {
 #if defined(HAVE_THREADS)
         // Giving each thread a batch size of 2 keybits is consistently best on my box
@@ -202,7 +200,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
         for (int i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 BicTestBatch<hashtype>, hash, seed, reps, std::ref(ikeybit),
-                2, keybytes, &keys[0], &popcount[0], &andcount[0]
+                2, keybytes, &popcount[0], &andcount[0]
             };
         }
         for (int i = 0; i < g_NCPU; i++) {
@@ -210,8 +208,6 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
         }
 #endif
     }
-
-    free(keys);
 
     bool result = ReportChiSqIndep(&popcount[0], &andcount[0], keybits, hashbits, reps, verbose);
 
