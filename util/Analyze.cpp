@@ -72,28 +72,73 @@ static const double WARNING_PBOUND = exp2(-12); // 2**-12 == 1/4096 =~ 0.0244%, 
 // about 1000 tests, so a 1/1000 chance event will hit once per run on
 // average, even with a perfect-quality hash function.
 
+//----------------------------------------------------------------------------
+
+static void plot( double n ) {
+    int ni = (int)floor(n);
+
+    // Less than [0,3) sigma is fine, [3, 12) sigma is notable, 12+ sigma is pretty bad
+    if (ni <= 2) {
+        putchar('.');
+    } else if (ni <= 11) {
+        putchar('1' + ni - 3);
+    } else if (ni <= 17) {
+        putchar('a' + ni - 12);
+    } else {
+        putchar('X');
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Report on the fact that, in each of the specified number of trials,
 // a fair coin was "flipped" coinflips times, and the worst bias
 // (number of excess "heads" or "tails") over all those trials was the
 // specified worstbiascnt.
 
-bool ReportBias( const int worstbiascnt, const int coinflips, const int trials, const bool drawDiagram ) {
-    double ratio      = (double)worstbiascnt / (double)coinflips;
-    double p1value    = 2.0 * exp(-(double)worstbiascnt * 2.0 * ratio); // two-tailed Chernoff Bound
+bool ReportBias( const uint32_t * counts, const int coinflips, const int trials, const int hashbits, const bool drawDiagram ) {
+    const int expected = coinflips / 2;
+    int worstbias      = 0;
+    int worstbiasN     = 0;
+
+    for (int i = 0; i < trials; i++) {
+        int bias = abs((int)counts[i] - expected);
+        if (worstbias < bias) {
+            worstbias = bias;
+            worstbiasN = i;
+        }
+        double rt = (double)bias / (double)coinflips;
+        double pv = 2.0 * exp(-(double)bias * 2.0 * rt);
+    }
+    const int worstbiasKeybit  = worstbiasN / hashbits;
+    const int worstbiasHashbit = worstbiasN % hashbits;
+
+    // Due to threading and memory complications, add the summed
+    // avalanche results instead of the hash values. Not ideal, but the
+    // "real" way is just too expensive.
+    addVCodeOutput(counts, trials * sizeof(counts[0]));
+    addVCodeResult(worstbias);
+    addVCodeResult(worstbiasN);
+
+    // p1value is using two-tailed Chernoff Bound
+    double ratio      = (double)worstbias / (double)coinflips;
+    double p1value    = 2.0 * exp(-(double)worstbias * 2.0 * ratio);
     double p_value    = ScalePValue(p1value, trials);
     int    logp_value = GetLog2PValue(p_value);
+    double pct        = (ratio <= (5e-7)) ? 0.0 : ratio * 200.0;
+    int    pctdigits  = (pct >= 100.0) ? 1 : (pct >= 10.0) ? 2 : 3;
     bool   result     = true;
 
     recordLog2PValue(logp_value);
     if (drawDiagram) {
         if (p_value > 0.00001) {
-            printf(" worst bias is %f%% (%6d) (p<%8.6f) (^%2d)", ratio * 200.0, worstbiascnt, p_value, logp_value);
+            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%8.6f) (^%2d)",
+                    pctdigits, pct, worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
         } else {
-            printf(" worst bias is %f%% (%6d) (p<%.2e) (^%2d)", ratio * 200.0, worstbiascnt, p_value, logp_value);
+            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%.2e) (^%2d)",
+                    pctdigits, pct, worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
         }
     } else {
-        printf(" worst bias is %f%% (^%2d)", ratio * 200.0, logp_value);
+        printf("max is %5.*f%% at bit %4d -> out %3d (^%2d)", pctdigits, pct, worstbiasKeybit, worstbiasHashbit, logp_value);
     }
 
     if (p_value < FAILURE_PBOUND) {
@@ -105,6 +150,20 @@ bool ReportBias( const int worstbiascnt, const int coinflips, const int trials, 
         printf("\n");
     }
 
+    if (drawDiagram) {
+        printf("[");
+        for (int i = 0; i < trials; i++) {
+            int    thisbias  = abs((int)counts[i] - expected);
+            double thisratio = (double)thisbias / (double)coinflips;
+            double thisp     = 2.0 * exp(-(double)thisbias * 2.0 * thisratio);
+            double thislogp  = GetLog2PValue(thisp);
+            plot(thislogp);
+            if (((i % hashbits) == (hashbits - 1)) && (i < (trials - 1))) {
+                printf("]\n[");
+            }
+        }
+        printf("]\n");
+    }
     return result;
 }
 
@@ -220,21 +279,6 @@ static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsi
     }
 
     return !failure;
-}
-
-//----------------------------------------------------------------------------
-
-static void plot( double n ) {
-    int ni = (int)floor(n);
-
-    // Less than [0,3) sigma is fine, [3, 12) sigma is notable, 12+ sigma is pretty bad
-    if (ni <= 2) {
-        putchar('.');
-    } else if (ni <= 11) {
-        putchar('1' + ni - 3);
-    } else {
-        putchar('X');
-    }
 }
 
 //-----------------------------------------------------------------------------

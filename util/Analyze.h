@@ -50,7 +50,7 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-bool ReportBias( const int biascnt, const int coinflips, const int trials, const bool drawDiagram );
+bool ReportBias( const uint32_t * counts, const int coinflips, const int trials, const int hashbits, const bool drawDiagram );
 
 bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
         size_t hashbits, size_t testcount, bool drawDiagram );

@@ -65,52 +65,6 @@ typedef int a_int;
 #endif
 
 //-----------------------------------------------------------------------------
-
-static void PrintAvalancheDiagram( int x, int y, int reps, double scale, uint32_t * bins ) {
-    const char * symbols = ".123456789X";
-
-    for (int i = 0; i < y; i++) {
-        printf("[");
-        for (int j = 0; j < x; j++) {
-            int k        = (y - i) - 1;
-
-            uint32_t bin = bins[k + (j * y)];
-
-            double b     = double(bin) / double(reps);
-            b  = fabs(b * 2 - 1);
-
-            b *= scale;
-
-            int s = (int)floor(b * 10);
-
-            if (s > 10) { s = 10; }
-            if (s < 0) { s = 0; }
-
-            printf("%c", symbols[s]);
-        }
-
-        printf("]\n");
-        fflush(NULL);
-    }
-}
-
-//----------------------------------------------------------------------------
-
-static int maxBias( uint32_t * counts, int buckets, int reps ) {
-    int expected = reps / 2;
-    int worst    = 0;
-
-    for (int i = 0; i < buckets; i++) {
-        int c = abs((int)counts[i] - expected);
-        if (worst < c) {
-            worst = c;
-        }
-    }
-
-    return worst;
-}
-
-//-----------------------------------------------------------------------------
 // Flipping a single bit of a key should cause an "avalanche" of changes in
 // the hash function's output. Ideally, each output bits should flip 50% of
 // the time - if the probability of an output bit flipping is not 50%, that bit
@@ -165,8 +119,8 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     const int arraysize = keybits * hashbits;
 
-    printf("Testing %4d-bit keys -> %3d-bit hashes, %6d reps", keybits, hashbits, reps);
-    //----------
+    printf("Testing %4d-bit keys, %6d reps........", keybits, reps);
+
     std::vector<uint8_t> keys( reps * keybytes );
     for (int i = 0; i < reps; i++) {
         r.rand_p(&keys[i * keybytes], keybytes);
@@ -204,16 +158,9 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     //----------
 
-    int  bias   = maxBias(&bins[0][0], arraysize, reps);
     bool result = true;
 
-    // Due to threading and memory complications, add the summed
-    // avalanche results instead of the hash values. Not ideal, but the
-    // "real" way is just too expensive.
-    addVCodeOutput(&bins[0][0], arraysize * sizeof(bins[0][0]));
-    addVCodeResult(bias);
-
-    result &= ReportBias(bias, reps, arraysize, drawDiagram);
+    result &= ReportBias(&bins[0][0], reps, arraysize, hashbits, drawDiagram);
 
     recordTestResult(result, "Avalanche", keybits);
 
