@@ -57,25 +57,16 @@
 
 #include "CyclicKeysetTest.h"
 
+#include <unordered_set>
+
 //-----------------------------------------------------------------------------
 // Keyset 'Cyclic' - generate keys that consist solely of N repetitions of M
 // bytes.
 //
 // (This keyset type is designed to make MurmurHash2 fail)
 
-static inline uint32_t f3mix( uint32_t k ) {
-    k ^= k >> 16;
-    k *= 0x85ebca6b;
-    k ^= k >> 13;
-    k *= 0xc2b2ae35;
-    k ^= k >> 16;
-
-    return k;
-}
-
-template <typename hashtype>
-static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleLen,
-        int cycleReps, const int keycount, bool drawDiagram ) {
+template <typename hashtype, int cycleLen, bool ckuniq = (cycleLen < 6)>
+static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleReps, const int keycount, bool drawDiagram ) {
     printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n", cycleReps, cycleLen, keycount);
 
     Rand r( 483723 );
@@ -85,18 +76,27 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleLen,
 
     int keyLen      = cycleLen * cycleReps;
 
-    uint8_t * cycle = new uint8_t[cycleLen + 16];
-    uint8_t * key   = new uint8_t[keyLen       ];
+    uint8_t * cycle = new uint8_t[cycleLen];
+    uint8_t * key   = new uint8_t[keyLen  ];
+
+    std::unordered_set<uint64_t> seen; // need to be unique, otherwise we report collisions
+    uint64_t curcycle = 0;
 
     //----------
 
     for (int i = 0; i < keycount; i++) {
         r.rand_p(cycle, cycleLen);
+        if (ckuniq) {
+            memcpy(&curcycle, cycle, cycleLen);
+            if (seen.count(curcycle) > 0) { // not unique
+                i--;
+                continue;
+            }
+            seen.insert(curcycle);
+        }
 
-        *(uint32_t *)cycle = f3mix(i ^ 0x746a94f1);
-
-        for (int j = 0; j < keyLen; j++) {
-            key[j] = cycle[j % cycleLen];
+        for (int j = 0; j < cycleReps; j++) {
+            memcpy(&key[j * cycleLen], cycle, cycleLen);
         }
 
         hash(key, keyLen, seed, &hashes[i]);
@@ -135,12 +135,12 @@ bool CyclicKeyTest( const HashInfo * hinfo, const bool verbose ) {
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= CyclicKeyImpl<hashtype>(hash, seed, sizeof(hashtype) + 0, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype>(hash, seed, sizeof(hashtype) + 1, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype>(hash, seed, sizeof(hashtype) + 2, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype>(hash, seed, sizeof(hashtype) + 3, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype>(hash, seed, sizeof(hashtype) + 4, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype>(hash, seed, sizeof(hashtype) + 8, 8, reps, verbose);
+    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 0>(hash, seed, 8, reps, verbose);
+    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 1>(hash, seed, 8, reps, verbose);
+    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 2>(hash, seed, 8, reps, verbose);
+    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 3>(hash, seed, 8, reps, verbose);
+    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 4>(hash, seed, 8, reps, verbose);
+    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 8>(hash, seed, 8, reps, verbose);
 
     printf("%s\n", result ? "" : g_failstr);
 
