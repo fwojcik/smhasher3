@@ -976,7 +976,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     const int    log2_pvalue = GetLog2PValue(p_value);
     const double cramer_v    = sqrt(maxChiSq / testcount);
 
-    printf("max is %6.4f at keybit %3d -> out (%3d,%3d) (^%2d)", cramer_v,
+    printf("max is %6.4f at bit %4d -> out (%3d,%3d)  (^%2d)", cramer_v,
             maxKeybit, maxOutbitA, maxOutbitB, log2_pvalue);
 
     if (p_value < FAILURE_PBOUND) {
