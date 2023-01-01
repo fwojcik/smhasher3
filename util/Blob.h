@@ -90,7 +90,7 @@ class Blob {
     Blob & operator = ( const uint32_t & x ) {
         const uint32_t y = COND_BSWAP(x, isBE());
 
-        memcpy(bytes, &y, sizeof(y));
+        memcpy(bytes, &y, std::min(sizeof(y), sizeof(bytes)));
         return *this;
     }
 
