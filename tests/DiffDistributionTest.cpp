@@ -62,11 +62,12 @@
 // hash differentials
 
 template <typename keytype, typename hashtype, bool ckuniq = (sizeof(keytype) < 6)>
-static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
+static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawDiagram ) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     Rand r( 857374 );
 
     int       keybits  = sizeof(keytype) * 8;
-    const int keycount = ckuniq ? 256 * 256 * 16 : 256 * 256 * 32;
+    const int keycount = 512 * 1024 * (ckuniq ? 2 : (hinfo->bits <= 64) ? 3 : 4);
     keytype   k;
 
     std::vector<hashtype> hashes( keycount );
@@ -112,17 +113,17 @@ static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
             hashes[i] = h1 ^ h2;
         }
 
-        bool thisresult = TestHashList(hashes).drawDiagram(drawDiagram).testDistribution(false);
+        bool thisresult = TestHashList(hashes).drawDiagram(drawDiagram).testDistribution(true);
         printf("\n");
 
         addVCodeResult(thisresult);
-
-        recordTestResult(thisresult, "DiffDist", keybit);
 
         result &= thisresult;
 
         seen.clear();
     }
+
+    recordTestResult(result, "DiffDist", keybits);
 
     return result;
 }
@@ -130,15 +131,20 @@ static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
 //----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool DiffDistTest( const HashInfo * hinfo, const bool verbose ) {
-    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+bool DiffDistTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     bool         result = true;
 
     printf("[[[ DiffDist 'Differential Distribution' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffDistTest2<Blob<64>, hashtype>(hash, seed, verbose);
+    result &= DiffDistTest2<Blob< 24>, hashtype>(hinfo, seed, verbose);
+    result &= DiffDistTest2<Blob< 32>, hashtype>(hinfo, seed, verbose);
+    result &= DiffDistTest2<Blob< 64>, hashtype>(hinfo, seed, verbose);
+    if (extra && !hinfo->isVerySlow()) {
+        result &= DiffDistTest2<Blob<160>, hashtype>(hinfo, seed, verbose);
+        result &= DiffDistTest2<Blob<256>, hashtype>(hinfo, seed, verbose);
+    }
 
     printf("%s\n", result ? "" : g_failstr);
 

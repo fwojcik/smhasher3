@@ -512,7 +512,7 @@ static bool test( const HashInfo * hInfo ) {
     // Differential-distribution tests
 
     if (g_testDiffDist) {
-        result &= DiffDistTest<hashtype>(hInfo, g_drawDiagram);
+        result &= DiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
