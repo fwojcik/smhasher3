@@ -57,10 +57,10 @@
 #include "TwoBytesKeysetTest.h"
 
 //-----------------------------------------------------------------------------
-// Keyset 'TwoBytes' - generate all keys up to length N with two non-zero bytes
+// Keyset 'TwoBytesUpToLen' - generate all keys up to length N with one or two non-zero bytes
 
 template <typename hashtype>
-static void TwoBytesKeygen( HashFn hash, const seed_t seed, int maxlen, std::vector<hashtype> & hashes ) {
+static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, int maxlen, std::vector<hashtype> & hashes ) {
     //----------
     // Compute # of keys
     int keycount = 0;
@@ -77,8 +77,9 @@ static void TwoBytesKeygen( HashFn hash, const seed_t seed, int maxlen, std::vec
 
     //----------
     // Add all keys with one non-zero byte
-    uint8_t key[256];
-    memset(key, 0, 256);
+    uint8_t key[maxlen];
+    memset(key, 0, maxlen);
+    hashes.reserve(keycount);
 
     for (int keylen = 2; keylen <= maxlen; keylen++) {
         for (int byteA = 0; byteA < keylen; byteA++) {
@@ -116,15 +117,15 @@ static void TwoBytesKeygen( HashFn hash, const seed_t seed, int maxlen, std::vec
 }
 
 template <typename hashtype>
-static bool TwoBytesTest2( HashFn hash, const seed_t seed, int maxlen, bool verbose ) {
+static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, int maxlen, bool verbose, const bool extra ) {
     std::vector<hashtype> hashes;
 
-    TwoBytesKeygen(hash, seed, maxlen, hashes);
+    TwoBytesUpToLenKeygen(hash, seed, maxlen, hashes);
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).testDistribution(extra);
     printf("\n");
 
-    recordTestResult(result, "TwoBytes", maxlen);
+    recordTestResult(result, "TwoBytesUpToLen", maxlen);
 
     addVCodeResult(result);
 
@@ -136,26 +137,15 @@ template <typename hashtype>
 bool TwoBytesKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
-    int          maxlen;
-
-    if (extra) {
-        maxlen = 24;
-    } else if (hinfo->isVerySlow()) {
-        maxlen = 8;
-    } else if (hinfo->bits <= 32) {
-        maxlen = 24;
-    } else if (hinfo->bits <= 64) {
-        maxlen = 20;
-    } else {
-        maxlen = 12;
-    }
 
     printf("[[[ Keyset 'TwoBytes' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    for (int len = 4; len <= maxlen; len += 4) {
-        result &= TwoBytesTest2<hashtype>(hash, seed, len, verbose);
+    if (hinfo->isVerySlow()) {
+        result &= TwoBytesTestUpToLen<hashtype>(hash, seed,  8, verbose, true);
+    } else {
+        result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 20, verbose, extra);
     }
 
     printf("%s\n", result ? "" : g_failstr);
