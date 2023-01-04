@@ -105,7 +105,7 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleReps, const 
 
     //----------
 
-    bool result = TestHashList(hashes).drawDiagram(drawDiagram);
+    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDistribution(false);
     printf("\n");
 
     delete [] key;
@@ -125,22 +125,17 @@ bool CyclicKeyTest( const HashInfo * hinfo, const bool verbose ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
 
-#if defined(DEBUG)
-    const int reps = 2;
-#else
-    const int reps = hinfo->isVerySlow() ? 100000 : 1000000;
-#endif
-
     printf("[[[ Keyset 'Cyclic' Tests ]]]\n\n");
 
+    const int    reps = hinfo->isVerySlow() ? 100000 : 1000000;
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 0>(hash, seed, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 1>(hash, seed, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 2>(hash, seed, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 3>(hash, seed, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 4>(hash, seed, 8, reps, verbose);
-    result &= CyclicKeyImpl<hashtype, sizeof(hashtype) + 8>(hash, seed, 8, reps, verbose);
+    for (int count = 4; count <= 16; count += 4) {
+        result &= CyclicKeyImpl<hashtype, 3>(hash, seed, count, reps, verbose);
+        result &= CyclicKeyImpl<hashtype, 4>(hash, seed, count, reps, verbose);
+        result &= CyclicKeyImpl<hashtype, 5>(hash, seed, count, reps, verbose);
+        result &= CyclicKeyImpl<hashtype, 8>(hash, seed, count, reps, verbose);
+    }
 
     printf("%s\n", result ? "" : g_failstr);
 
