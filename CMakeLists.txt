@@ -197,6 +197,7 @@ add_library(
   tests/TextKeysetTest.cpp
   tests/PermutationKeysetTest.cpp
   tests/SeedTest.cpp
+  tests/SeedZeroesTest.cpp
   tests/BadSeedsTest.cpp
   tests/PerlinNoiseTest.cpp
   tests/PopcountTest.cpp
