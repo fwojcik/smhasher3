@@ -54,21 +54,26 @@
 
 #include "DiffDistributionTest.h"
 
+#include <unordered_set>
+
 //-----------------------------------------------------------------------------
 // Simpler differential-distribution test - for all 1-bit differentials,
 // generate random key pairs and run full distribution/collision tests on the
 // hash differentials
 
-template <typename keytype, typename hashtype>
+template <typename keytype, typename hashtype, bool ckuniq = (sizeof(keytype) < 6)>
 static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
     Rand r( 857374 );
 
     int       keybits  = sizeof(keytype) * 8;
-    const int keycount = 256 * 256 * 32;
+    const int keycount = ckuniq ? 256 * 256 * 16 : 256 * 256 * 32;
     keytype   k;
 
     std::vector<hashtype> hashes( keycount );
     hashtype h1, h2;
+
+    std::unordered_set<uint64_t> seen; // need to be unique, otherwise we report collisions
+    uint64_t curkey = 0;
 
     bool result = true;
 
@@ -77,10 +82,30 @@ static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
 
         for (int i = 0; i < keycount; i++) {
             r.rand_p(&k, sizeof(keytype));
+
+            if (ckuniq) {
+                memcpy(&curkey, &k, sizeof(keytype));
+                if (seen.count(curkey) > 0) { // not unique
+                    i--;
+                    continue;
+                }
+                seen.insert(curkey);
+            }
+
             hash(&k, sizeof(keytype), seed, &h1);
             addVCodeInput(&k, sizeof(keytype));
 
             k.flipbit(keybit);
+
+            if (ckuniq) {
+                memcpy(&curkey, &k, sizeof(keytype));
+                if (seen.count(curkey) > 0) { // not unique
+                    i--;
+                    continue;
+                }
+                seen.insert(curkey);
+            }
+
             hash(&k, sizeof(keytype), seed, &h2);
             addVCodeInput(&k, sizeof(keytype));
 
@@ -95,6 +120,8 @@ static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
         recordTestResult(thisresult, "DiffDist", keybit);
 
         result &= thisresult;
+
+        seen.clear();
     }
 
     return result;
