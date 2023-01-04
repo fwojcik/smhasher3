@@ -200,6 +200,7 @@ add_library(
   tests/SeedZeroesTest.cpp
   tests/SeedDiffDistTest.cpp
   tests/SeedAvalancheTest.cpp
+  tests/SeedBitIndependenceTest.cpp
   tests/BadSeedsTest.cpp
   tests/PerlinNoiseTest.cpp
   tests/PopcountTest.cpp

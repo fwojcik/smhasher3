@@ -91,6 +91,7 @@
 #include "SeedZeroesTest.h"
 #include "SeedDiffDistTest.h"
 #include "SeedAvalancheTest.h"
+#include "SeedBitIndependenceTest.h"
 #include "BadSeedsTest.h"
 
 #include <stdio.h>
@@ -140,6 +141,7 @@ static bool g_testSeed;
 static bool g_testSeedZeroes;
 static bool g_testSeedDiffDist;
 static bool g_testSeedAvalanche;
+static bool g_testSeedBIC;
 static bool g_testPerlinNoise;
 static bool g_testDiff;
 static bool g_testDiffDist;
@@ -174,6 +176,7 @@ static TestOpts g_testopts[] = {
     { g_testSeedZeroes,    true,     false,    "SeedZeroes" },
     { g_testSeedDiffDist,  true,     false,    "SeedDiffDist" },
     { g_testSeedAvalanche, true,     false,    "SeedAvalanche" },
+    { g_testSeedBIC,       true,     false,    "SeedBIC" },
     { g_testPerlinNoise,   true,     false,    "PerlinNoise" },
     { g_testDiffDist,      true,     false,    "DiffDist" },
     { g_testBIC,           true,     false,    "BIC" },
@@ -522,6 +525,13 @@ static bool test( const HashInfo * hInfo ) {
 
     if (g_testSeedAvalanche) {
         result &= SeedAvalancheTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Keyset 'SeedBIC'
+
+    if (g_testSeedBIC) {
+        result &= SeedBicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
