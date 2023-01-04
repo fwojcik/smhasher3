@@ -101,7 +101,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
     bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1 << lobits);
     printf("\n");
 
-    recordTestResult(result, "Seed", "Seq");
+    recordTestResult(result, "Seed", keylen);
 
     addVCodeResult(result);
 
@@ -168,7 +168,7 @@ static bool SparseSeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
     bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(2);
     printf("\n");
 
-    recordTestResult(result, "Seed", "Sparse");
+    recordTestResult(result, "SparseSeed", keylen);
 
     addVCodeResult(result);
 
