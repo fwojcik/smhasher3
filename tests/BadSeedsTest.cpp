@@ -64,10 +64,10 @@
 //-----------------------------------------------------------------------------
 // Find bad seeds, and test against the known secrets/bad seeds.
 
-const std::vector<int>     testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
-const std::vector<uint8_t> testbytes = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
-const unsigned        numtestbytes   = testbytes.size();
-const unsigned        numtestlens    = testlens.size();
+const std::set<int>        testlens     = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
+const std::vector<uint8_t> testbytes    = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
+const unsigned             numtestbytes = testbytes.size();
+const unsigned             numtestlens  = testlens.size();
 
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads

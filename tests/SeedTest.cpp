@@ -183,7 +183,7 @@ bool SeedTest( const HashInfo * hinfo, const bool verbose ) {
 
     printf("[[[ Keyset 'Seed' Tests ]]]\n\n");
 
-    const std::vector<uint32_t> testkeylens = { 2, 3, 6, 15, 18, 31, 52, 80, 200, 1025 };
+    const std::set<uint32_t> testkeylens = { 2, 3, 6, 15, 18, 31, 52, 80, 200, 1025 };
 
     if (hinfo->is32BitSeed()) {
         for (const auto testkeylen: testkeylens) {

@@ -228,9 +228,9 @@ bool BicTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
 
     const seed_t seed = hinfo->Seed(g_seed, false, 3);
 
-    //std::vector<size_t> keylens = { 3, 6, 11, 15, 16, 18, 31, 52, 80, 200 };
-    //std::vector<size_t> keylens = { 3, 6, 11, 15, 16, 18, 28, 31, 52, 67, 80, 200 };
-    std::vector<size_t> keylens = { 3, 4, 6, 8, 11, 15, 28, 52 };
+    //std::set<size_t> keylens = { 3, 6, 11, 15, 16, 18, 31, 52, 80, 200 };
+    //std::set<size_t> keylens = { 3, 6, 11, 15, 16, 18, 28, 31, 52, 67, 80, 200 };
+    std::set<size_t> keylens = { 3, 4, 6, 8, 11, 15, 28, 52 };
     for (const auto keylen: keylens) {
         if (keylen <= 16) {
             result &= BicTestImpl<hashtype>(hash, seed, keylen, reps * 2, verbose);

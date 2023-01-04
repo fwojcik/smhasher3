@@ -179,16 +179,13 @@ bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra
 
     const seed_t seed = hinfo->Seed(g_seed, false, 2);
 
-    std::vector<int> testBitsvec = { 24, 32, 40, 48, 56, 64, 80, 128, 160 };
-    testBitsvec.reserve(50); // Workaround for GCC bug 100366
+    std::set<int> testBitsvec = { 24, 32, 40, 48, 56, 64, 80, 128, 160 };
     if (hinfo->bits <= 64) {
-        testBitsvec.insert(testBitsvec.end(), { 512, 1024 });
+        testBitsvec.insert({ 512, 1024 });
     }
     if (extra) {
-        testBitsvec.insert(testBitsvec.end(), { 192, 224, 256, 320, 384, 448, 512, 1024, 1280 });
+        testBitsvec.insert({ 192, 224, 256, 320, 384, 448, 512, 1024, 1280 });
     }
-    std::sort(testBitsvec.begin(), testBitsvec.end());
-    testBitsvec.erase(std::unique(testBitsvec.begin(), testBitsvec.end()), testBitsvec.end());
 
     for (int testBits: testBitsvec) {
         result &= AvalancheImpl<hashtype>(hash, seed, testBits, 300000, verbose, drawdots);

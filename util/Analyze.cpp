@@ -618,7 +618,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, bool drawDiagram )
 // comparing them to a list of i.i.d. random numbers across the full
 // origBits range.
 
-static void ComputeCollBitBounds( std::vector<int> & nbBitsvec, int origBits,
+static void ComputeCollBitBounds( std::set<int> & nbBitsvec, int origBits,
         uint64_t nbH, int & minBits, int & maxBits, int & threshBits ) {
     const int nlognBits = GetNLogNBound(nbH);
 
@@ -731,7 +731,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
          * more human-friendly.
          */
 
-        std::vector<int> nbBitsvec = { 224, 160, 128, 64, 32, };
+        std::set<int, std::greater<int>> nbBitsvec = { 224, 160, 128, 64, 32, };
         /*
          * cyan: The 12- and -8-bit tests are too small : tables are necessarily saturated.
          * It would be better to count the nb of collisions per Cell, and
@@ -756,8 +756,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
          * appropriate "expected" statistic.
          */
         if (testMaxColl) {
-            nbBitsvec.push_back(12);
-            nbBitsvec.push_back(8);
+            nbBitsvec.insert({12, 8});
         }
 
         /*
@@ -767,10 +766,8 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
         if (testHighBits || testLowBits) {
             int const hundredCollBits = FindMaxBits_TargetCollisionNb(nbH, 100, hashbits);
             if (EstimateNbCollisions(nbH, hundredCollBits) >= 100) {
-                nbBitsvec.push_back(hundredCollBits);
+                nbBitsvec.insert(hundredCollBits);
             }
-            std::sort(nbBitsvec.rbegin(), nbBitsvec.rend());
-            nbBitsvec.erase(std::unique(nbBitsvec.begin(), nbBitsvec.end()), nbBitsvec.end());
         }
 
         /*
@@ -792,14 +789,14 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
          * there's no point in doubly-reporting on collision counts for
          * those bit widths, so they get excluded here.
          */
-        std::vector<int> testBitsvec;
-        int const        nlognBits = GetNLogNBound(nbH);
-        int const        minTBits  = testDist ? std::max(MaxDistBits(nbH) + 1, nlognBits) : nlognBits;
-        int const        maxTBits  = FindMaxBits_TargetCollisionNb(nbH, 10, hashbits - 1);
+        std::set<int> testBitsvec;
+        int const     nlognBits = GetNLogNBound(nbH);
+        int const     minTBits  = testDist ? std::max(MaxDistBits(nbH) + 1, nlognBits) : nlognBits;
+        int const     maxTBits  = FindMaxBits_TargetCollisionNb(nbH, 10, hashbits - 1);
 
         if (testHighBits || testLowBits) {
             for (int i = minTBits; i <= maxTBits; i++) {
-                testBitsvec.push_back(i);
+                testBitsvec.insert(testBitsvec.end(), i);
             }
         }
 
@@ -807,17 +804,14 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
          * Given the range of hash sizes we care about, compute all
          * collision counts for them, for high- and low-bits as requested.
          */
-        std::vector<int>      collcounts_fwd;
-        std::vector<int>      collcounts_rev;
+        std::vector<int> collcounts_fwd;
+        std::vector<int> collcounts_rev;
         int minBits, maxBits, threshBits;
 
         if (testHighBits || testLowBits) {
-            std::vector<int> combinedBitsvec;
-            combinedBitsvec.reserve(200); // Workaround for GCC bug 100366
-            combinedBitsvec.insert(combinedBitsvec.begin(), nbBitsvec.begin()  , nbBitsvec.end()  );
-            combinedBitsvec.insert(combinedBitsvec.begin(), testBitsvec.begin(), testBitsvec.end());
-            std::sort(combinedBitsvec.rbegin(), combinedBitsvec.rend());
-            combinedBitsvec.erase(std::unique(combinedBitsvec.begin(), combinedBitsvec.end()), combinedBitsvec.end());
+            std::set<int> combinedBitsvec;
+            combinedBitsvec.insert(nbBitsvec.begin(), nbBitsvec.end());
+            combinedBitsvec.insert(testBitsvec.begin(), testBitsvec.end());
             ComputeCollBitBounds(combinedBitsvec, hashbits, nbH, minBits, maxBits, threshBits);
         }
 
