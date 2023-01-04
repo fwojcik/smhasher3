@@ -89,6 +89,7 @@
 #include "HashMapTest.h"
 #include "SeedTest.h"
 #include "SeedZeroesTest.h"
+#include "SeedDiffDistTest.h"
 #include "BadSeedsTest.h"
 
 #include <stdio.h>
@@ -136,6 +137,7 @@ static bool g_testText;
 static bool g_testZeroes;
 static bool g_testSeed;
 static bool g_testSeedZeroes;
+static bool g_testSeedDiffDist;
 static bool g_testPerlinNoise;
 static bool g_testDiff;
 static bool g_testDiffDist;
@@ -168,6 +170,7 @@ static TestOpts g_testopts[] = {
     { g_testZeroes,        true,     false,    "Zeroes" },
     { g_testSeed,          true,     false,    "Seed" },
     { g_testSeedZeroes,    true,     false,    "SeedZeroes" },
+    { g_testSeedDiffDist,  true,     false,    "SeedDiffDist" },
     { g_testPerlinNoise,   true,     false,    "PerlinNoise" },
     { g_testDiffDist,      true,     false,    "DiffDist" },
     { g_testBIC,           true,     false,    "BIC" },
@@ -502,6 +505,13 @@ static bool test( const HashInfo * hInfo ) {
 
     if (g_testSeedZeroes) {
         result &= SeedZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Keyset 'SeedDiffDist'
+
+    if (g_testSeedDiffDist) {
+        result &= SeedDiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
