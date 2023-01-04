@@ -211,28 +211,52 @@ static bool WordsDictImpl( HashFn hash, const seed_t seed, bool verbose ) {
 
 template <typename hashtype>
 bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
-    const HashFn hash          = hinfo->hashFn(g_hashEndian);
-    const char * alpha         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    const char * alnum         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-    const char * passwordchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
-            ".,!?:;-+=()<>/|\"'@#$%&*_^";
-    bool result = true;
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    const seed_t seed   = hinfo->Seed(g_seed);
+    const char * alnum  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
 
     printf("[[[ Keyset 'Text' Tests ]]]\n\n");
 
-    const seed_t seed = hinfo->Seed(g_seed);
-
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foo"   , alpha, 4, "Bar"   , verbose);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alpha, 4, ""      , verbose);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""      , alpha, 4, "FooBar", verbose);
+    bool result = true;
 
     // Dictionary words
     result &= WordsDictImpl<hashtype>(hash, seed, verbose);
 
-    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 16, alpha        , "alpha", verbose);
-    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 32, alnum        , "alnum", verbose);
-    result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 32, passwordchars, "password", verbose);
+    // 6-byte keys, varying only in middle 4 bytes
+    result &= TextKeyImpl<hashtype>(hash, seed, "F" , alnum, 4, "B" , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FB", alnum, 4, ""  , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""  , alnum, 4, "FB", verbose);
 
+    // 10-byte keys, varying only in middle 4 bytes
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foo"   , alnum, 4, "Bar"   , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alnum, 4, ""      , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""      , alnum, 4, "FooBar", verbose);
+
+    // 14-byte keys, varying only in middle 4 bytes
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foooo"     , alnum, 4, "Baaar"     , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooooBaaar", alnum, 4, ""          , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""          , alnum, 4, "FooooBaaar", verbose);
+
+    // 18-byte keys, varying only in middle 4 bytes
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foooooo"       , alnum, 4, "Baaaaar"       , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooooooBaaaaar", alnum, 4, ""              , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""              , alnum, 4, "FooooooBaaaaar", verbose);
+
+    // 22-byte keys, varying only in middle 4 bytes
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foooooooo"         , alnum, 4, "Baaaaaaar"         , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooooooooBaaaaaaar", alnum, 4, ""                  , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""                  , alnum, 4, "FooooooooBaaaaaaar", verbose);
+
+    // 26-byte keys, varying only in middle 4 bytes
+    result &= TextKeyImpl<hashtype>(hash, seed, "Foooooooooo"           , alnum, 4, "Baaaaaaaaar"           , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, "FooooooooooBaaaaaaaaar", alnum, 4, ""                      , verbose);
+    result &= TextKeyImpl<hashtype>(hash, seed, ""                      , alnum, 4, "FooooooooooBaaaaaaaaar", verbose);
+
+    // Random sets of 1..4 word-like characters
+    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1,  4, alnum, "alnum", verbose);
+
+    // Random sets of 1..16 word-like characters
+    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1, 16, alnum, "alnum", verbose);
 
     printf("%s\n", result ? "" : g_failstr);
 
