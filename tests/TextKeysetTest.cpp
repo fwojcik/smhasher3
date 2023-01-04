@@ -172,6 +172,60 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
 }
 
 //-----------------------------------------------------------------------------
+// Keyset 'Long' - hash very long strings of text with small changes
+
+template <typename hashtype, bool varyprefix>
+static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, const int varylen, const int minlen,
+        const int maxlen, const char * coreset, const char * name, bool verbose ) {
+    const int    corecount = (int)strlen(coreset);
+    const size_t totalkeys = keycount * (corecount - 1) * varylen;
+    char *       key       = new char[maxlen + 1];
+
+    printf("Keyset 'Long' - %d-%d random chars from %s charset - varying %s %d chars - %ld keys\n",
+            minlen, maxlen, name, varyprefix ? "first" : "last", varylen, totalkeys);
+    assert(minlen >= 0    );
+    assert(maxlen > minlen);
+
+    std::vector<hashtype> hashes;
+    hashes.resize(totalkeys);
+    Rand r( 425379 );
+    size_t cnt = 0;
+
+    for (long i = 0; i < keycount; i++) {
+        const int len = minlen + r.rand_range(maxlen - minlen + 1);
+        key[len] = 0;
+        for (int j = 0; j < len; j++) {
+            key[j] = coreset[r.rand_range(corecount)];
+        }
+
+        for (int offset = 0; offset < varylen; offset++) {
+            size_t j = offset + (varyprefix ? 0 : (len - varylen));
+            uint8_t prv = key[j];
+            for (int k = 0; k < corecount; k++) {
+                if (prv == coreset[k]) {
+                    continue;
+                }
+                key[j] = coreset[k];
+                hash(key, len, seed, &hashes[cnt++]);
+                addVCodeInput(key, len);
+            }
+            key[j] = prv;
+        }
+    }
+    delete [] key;
+
+    //----------
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(corecount - 1).testDistribution(true);
+    printf("\n");
+
+    recordTestResult(result, "Text", name);
+
+    addVCodeResult(result);
+
+    return result;
+}
+
+//-----------------------------------------------------------------------------
 // Keyset 'Dict' - hash a list of dictionary words, all-lowercase or all-uppercase
 
 template <typename hashtype>
@@ -257,6 +311,15 @@ bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
 
     // Random sets of 1..16 word-like characters
     result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1, 16, alnum, "alnum", verbose);
+
+    // Random sets of approx 4096 word-like characters, with small changes
+    for (auto blksz: { 4096 }) {
+        result &= WordsLongImpl<hashtype,  true>(hash, seed, 3000, 16, blksz - 16, blksz + 16, alnum, "alnum", verbose);
+        result &= WordsLongImpl<hashtype, false>(hash, seed, 3000, 16, blksz - 16, blksz + 16, alnum, "alnum", verbose);
+
+        result &= WordsLongImpl<hashtype,  true>(hash, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", verbose);
+        result &= WordsLongImpl<hashtype, false>(hash, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", verbose);
+    }
 
     printf("%s\n", result ? "" : g_failstr);
 
