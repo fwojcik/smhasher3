@@ -171,11 +171,15 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
     return result;
 }
 
+//-----------------------------------------------------------------------------
+// Keyset 'Dict' - hash a list of dictionary words, all-lowercase or all-uppercase
+
 template <typename hashtype>
-static bool WordsStringImpl( HashFn hash, const seed_t seed, std::vector<std::string> & words, bool verbose ) {
+static bool WordsDictImpl( HashFn hash, const seed_t seed, bool verbose ) {
+    std::vector<std::string> words = GetWordlist(false, verbose);
     long wordscount = words.size();
 
-    printf("Keyset 'Words' - dictionary words - %ld keys\n", wordscount);
+    printf("Keyset 'Dict' - dictionary words - %ld keys\n", wordscount);
 
     std::unordered_set<std::string> wordset; // need to be unique, otherwise we report collisions
     std::vector<hashtype>           hashes;
@@ -222,12 +226,13 @@ bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
     result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alpha, 4, ""      , verbose);
     result &= TextKeyImpl<hashtype>(hash, seed, ""      , alpha, 4, "FooBar", verbose);
 
+    // Dictionary words
+    result &= WordsDictImpl<hashtype>(hash, seed, verbose);
+
     result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 16, alpha        , "alpha", verbose);
     result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 32, alnum        , "alnum", verbose);
     result &= WordsKeyImpl<hashtype>(hash, seed, 4000000, 2, 32, passwordchars, "password", verbose);
 
-    std::vector<std::string> words = GetWordlist(false, verbose);
-    result &= WordsStringImpl<hashtype>(hash, seed, words, verbose);
 
     printf("%s\n", result ? "" : g_failstr);
 
