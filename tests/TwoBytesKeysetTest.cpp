@@ -57,6 +57,86 @@
 #include "TwoBytesKeysetTest.h"
 
 //-----------------------------------------------------------------------------
+// Keyset 'TwoBytesLen' - generate all keys with length N with one or two non-zero bytes
+
+static constexpr int MAX_TWOBYTES = 56;
+
+template <typename hashtype>
+static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, int keylen, std::vector<hashtype> & hashes ) {
+    //----------
+    // Compute # of keys
+    int keycount = 0;
+
+    if (keylen < MAX_TWOBYTES) {
+        keycount += (int)chooseK(keylen, 2);
+        keycount *= 255 * 255;
+    }
+    keycount += keylen * 255;
+
+    if (keylen < MAX_TWOBYTES) {
+        printf("Keyset 'TwoBytes' - all %d-byte keys with 1 or 2 non-zero bytes - %d keys\n", keylen, keycount);
+    } else {
+        printf("Keyset 'OneByte ' - %d-byte keys - %d keys\n", keylen, keycount);
+    }
+
+    //----------
+    // Add all keys with one non-zero byte
+    uint8_t key[keylen];
+    memset(key, 0, keylen);
+    hashes.reserve(keycount);
+
+    for (int byteA = 0; byteA < keylen; byteA++) {
+        for (int valA = 1; valA <= 255; valA++) {
+            hashtype h;
+            key[byteA] = (uint8_t)valA;
+            hash(key, keylen, seed, &h);
+            addVCodeInput(key, keylen);
+            hashes.push_back(h);
+        }
+        key[byteA] = 0;
+    }
+
+    if (keylen >= MAX_TWOBYTES) {
+        return;
+    }
+
+    //----------
+    // Add all keys with two non-zero bytes
+    for (int byteA = 0; byteA < keylen - 1; byteA++) {
+        for (int byteB = byteA + 1; byteB < keylen; byteB++) {
+            for (int valA = 1; valA <= 255; valA++) {
+                key[byteA] = (uint8_t)valA;
+                for (int valB = 1; valB <= 255; valB++) {
+                    hashtype h;
+                    key[byteB] = (uint8_t)valB;
+                    hash(key, keylen, seed, &h);
+                    addVCodeInput(key, keylen);
+                    hashes.push_back(h);
+                }
+                key[byteB] = 0;
+            }
+            key[byteA] = 0;
+        }
+    }
+}
+
+template <typename hashtype>
+static bool TwoBytesTestLen( HashFn hash, const seed_t seed, int keylen, bool verbose, const bool extra ) {
+    std::vector<hashtype> hashes;
+
+    TwoBytesLenKeygen(hash, seed, keylen, hashes);
+
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).testDistribution(extra);
+    printf("\n");
+
+    recordTestResult(result, "TwoBytesLen", keylen);
+
+    addVCodeResult(result);
+
+    return result;
+}
+
+//-----------------------------------------------------------------------------
 // Keyset 'TwoBytesUpToLen' - generate all keys up to length N with one or two non-zero bytes
 
 template <typename hashtype>
@@ -146,7 +226,14 @@ bool TwoBytesKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
         result &= TwoBytesTestUpToLen<hashtype>(hash, seed,  8, verbose, true);
     } else {
         result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 20, verbose, extra);
+        result &= TwoBytesTestLen<hashtype>(hash, seed, 32, verbose, extra);
+        if (!hinfo->isSlow()) {
+            result &= TwoBytesTestLen<hashtype>(hash, seed, 48, verbose, extra);
+        }
     }
+    result &= TwoBytesTestLen<hashtype>(hash, seed, 1024, verbose, true);
+    result &= TwoBytesTestLen<hashtype>(hash, seed, 2048, verbose, true);
+    result &= TwoBytesTestLen<hashtype>(hash, seed, 4096, verbose, true);
 
     printf("%s\n", result ? "" : g_failstr);
 
