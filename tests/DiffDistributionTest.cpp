@@ -73,7 +73,7 @@ static bool DiffDistTest2( HashFn hash, const seed_t seed, bool drawDiagram ) {
     bool result = true;
 
     for (int keybit = 0; keybit < keybits; keybit++) {
-        printf("Testing bit %d - %d keys\n", keybit, keycount);
+        printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
 
         for (int i = 0; i < keycount; i++) {
             r.rand_p(&k, sizeof(keytype));
