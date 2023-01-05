@@ -169,8 +169,8 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
 
 //-----------------------------------------------------------------------------
 
-static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, bool maxcoll,
-        bool highbits, bool header, bool verbose, bool drawDiagram ) {
+static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int * logpp,
+        bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram ) {
     bool largehash = hashsize > (8 * sizeof(uint32_t));
 
     // The expected number depends on what collision statistic is being
@@ -189,6 +189,9 @@ static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsi
         p_value  = BoundedPoissonPValue(expected, collcount);
     }
     int logp_value = GetLog2PValue(p_value);
+    if (logpp != NULL) {
+        *logpp = logp_value;
+    }
 
     // Since p-values are now used to determine pass/warning/failure
     // status, ratios are now solely for humans reading the results.
@@ -420,7 +423,7 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t co
 //
 
 static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits,
-        int maxBits, bool highbits, bool verbose, bool drawDiagram ) {
+        int maxBits, int * logpp, bool highbits, bool verbose, bool drawDiagram ) {
     if ((maxBits <= 1) || (minBits > maxBits)) { return true; }
 
     int spacelen = 80;
@@ -453,6 +456,9 @@ static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits,
     double p_value    = ScalePValue(maxPValue, maxBits - minBits + 1);
     int    logp_value = GetLog2PValue(p_value);
 
+    if (logpp != NULL) {
+        *logpp = logp_value;
+    }
     recordLog2PValue(logp_value);
 
     bool warning = false, failure = false;
@@ -526,13 +532,18 @@ static int MaxDistBits( const uint64_t nbH ) {
 }
 
 template <typename hashtype>
-static bool TestDistribution( std::vector<hashtype> & hashes, bool verbose, bool drawDiagram ) {
+static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool verbose, bool drawDiagram ) {
     const int      hashbits = sizeof(hashtype) * 8;
     const uint64_t nbH      = hashes.size();
     int            maxwidth = MaxDistBits(nbH);
     int            minwidth = 8;
 
-    if (maxwidth < minwidth) { return true; }
+    if (maxwidth < minwidth) {
+        if (logpp != NULL) {
+            *logpp = 0;
+        }
+        return true;
+    }
 
     if (verbose) {
         printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
@@ -599,6 +610,9 @@ static bool TestDistribution( std::vector<hashtype> & hashes, bool verbose, bool
     double mult       = normalizeScore(worstN, worstWidth, tests);
 
     recordLog2PValue(logp_value);
+    if (logpp != NULL) {
+        *logpp = logp_value;
+    }
 
     bool warning = false, failure = false;
     if (p_value <  FAILURE_PBOUND) {
@@ -704,10 +718,12 @@ static int FindMaxBits_TargetCollisionNb( uint64_t nbHashes, int minCollisions, 
 // TestHashListWrapper in Analyze.h.
 
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bool drawDiagram,
-        bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
+bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, int * logpSumPtr,
+        bool drawDiagram, bool testCollision, bool testMaxColl, bool testDist,
+        bool testHighBits, bool testLowBits, bool verbose ) {
     uint64_t const nbH = hashes.size();
     bool result = true;
+    int  curlogp;
 
     // If testDeltaNum is 1, then compute the difference between each hash
     // and its successor, and test that list of deltas. If it is greater
@@ -871,7 +887,10 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
         }
 
         // Report on complete collisions, now that the heavy lifting is complete
-        result &= ReportCollisions(nbH, collcount, hashbits, false, false, false, verbose, drawDiagram);
+        result &= ReportCollisions(nbH, collcount, hashbits, &curlogp, false, false, false, verbose, drawDiagram);
+        if (logpSumPtr != NULL) {
+            *logpSumPtr += curlogp;
+        }
         if (!result && drawDiagram) {
             PrintCollisions(collisions);
         }
@@ -884,29 +903,44 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
                 bool maxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
                 if (testHighBits) {
                     result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits],
-                            nbBits, maxcoll, true, true, verbose, drawDiagram);
+                            nbBits, &curlogp, maxcoll, true, true, verbose, drawDiagram);
+                    if (logpSumPtr != NULL) {
+                        *logpSumPtr += curlogp;
+                    }
                 }
                 if (testLowBits) {
                     result &= ReportCollisions(nbH, collcounts_rev[nbBits - minBits],
-                            nbBits, maxcoll, false, true, verbose, drawDiagram);
+                            nbBits, &curlogp, maxcoll, false, true, verbose, drawDiagram);
+                    if (logpSumPtr != NULL) {
+                        *logpSumPtr += curlogp;
+                    }
                 }
             }
         }
 
         if (testHighBits) {
             result &= ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
-                    minTBits, maxTBits, true, verbose, drawDiagram);
+                    minTBits, maxTBits, &curlogp, true, verbose, drawDiagram);
+            if (logpSumPtr != NULL) {
+                *logpSumPtr += curlogp;
+            }
         }
         if (testLowBits) {
             result &= ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
-                    minTBits, maxTBits, false, verbose, drawDiagram);
+                    minTBits, maxTBits, &curlogp, false, verbose, drawDiagram);
+            if (logpSumPtr != NULL) {
+                *logpSumPtr += curlogp;
+            }
         }
     }
 
     //----------
 
     if (testDist) {
-        result &= TestDistribution(hashes, verbose, drawDiagram);
+        result &= TestDistribution(hashes, &curlogp, verbose, drawDiagram);
+        if (logpSumPtr != NULL) {
+            *logpSumPtr += curlogp;
+        }
     }
 
     //----------
@@ -915,14 +949,14 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
         if (verbose) {
             printf("---Analyzing hash deltas\n");
         }
-        result &= TestHashListImpl(hashdeltas_1, 0, drawDiagram, testCollision,
-                testMaxColl, testDist, testHighBits, testLowBits, verbose);
+        result &= TestHashListImpl(hashdeltas_1, 0, logpSumPtr, drawDiagram,
+                testCollision, testMaxColl, testDist, testHighBits, testLowBits, verbose);
         if (testDeltaNum >= 2) {
             if (verbose) {
                 printf("---Analyzing additional hash deltas\n");
             }
-            result &= TestHashListImpl(hashdeltas_N, 0, drawDiagram, testCollision,
-                    testMaxColl, testDist, testHighBits, testLowBits, verbose);
+            result &= TestHashListImpl(hashdeltas_N, 0, logpSumPtr, drawDiagram,
+                    testCollision, testMaxColl, testDist, testHighBits, testLowBits, verbose);
         }
     }
 
