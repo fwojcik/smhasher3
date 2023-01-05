@@ -71,6 +71,11 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
     const int keycount = 512 * 1024 * (ckuniq ? 2 : 3);
     keytype   k;
 
+    std::vector<hashtype> worsthashes;
+    int worstlogp    = -1;
+    int worstseedbit = -1;
+    int fails        =  0;
+
     std::vector<hashtype> hashes( keycount );
     hashtype h1, h2;
 
@@ -82,8 +87,14 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
 
     bool result = true;
 
+    if (!drawDiagram) {
+        printf("Testing %3d-byte keys, %2d-bit seeds, %d reps", sizeof(keytype), seedbits, keycount);
+    }
+
     for (int seedbit = 0; seedbit < seedbits; seedbit++) {
-        printf("Testing seed bit %d / %d - %3d-byte keys - %d keys\n", seedbit, seedbits, sizeof(keytype), keycount);
+        if (drawDiagram) {
+            printf("Testing seed bit %d / %d - %3d-byte keys - %d keys\n", seedbit, seedbits, sizeof(keytype), keycount);
+        }
 
         for (int i = 0; i < keycount; i++) {
             r.rand_p(&k, sizeof(keytype));
@@ -117,8 +128,25 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
             hashes[i] = h1 ^ h2;
         }
 
-        bool thisresult = TestHashList(hashes).drawDiagram(drawDiagram).testDistribution(true);
-        printf("\n");
+        int curlogp = 0;
+        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).sumLogp(&curlogp);
+        if (drawDiagram) {
+            printf("\n");
+        } else {
+            progressdots(seedbit, 0, seedbits - 1, 10);
+            // Record worst result, but don't let a pass override a failure
+            if ((fails == 0) && !thisresult) {
+                worstlogp = -1;
+            }
+            if (((fails == 0) || !thisresult) && (worstlogp < curlogp)) {
+                worstlogp = curlogp;
+                worstseedbit = seedbit;
+                worsthashes  = hashes;
+            }
+            if (!thisresult) {
+                fails++;
+            }
+        }
 
         addVCodeResult(thisresult);
 
@@ -126,6 +154,12 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
 
         seenkeys.clear();
         seenseeds.clear();
+    }
+
+    if (!drawDiagram) {
+        printf("%3d failed, worst is seed bit %3d\n", fails, worstseedbit, worstlogp);
+        bool ignored = TestHashList(worsthashes).testDistribution(true);
+        printf("\n");
     }
 
     recordTestResult(result, "SeedDiffDist", sizeof(keytype));

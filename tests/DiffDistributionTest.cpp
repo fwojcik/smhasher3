@@ -71,6 +71,11 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
     const int keycount = 512 * 1024 * (ckuniq ? 2 : (hinfo->bits <= 64) ? 3 : 4);
     keytype   k;
 
+    std::vector<hashtype> worsthashes;
+    int worstlogp   = -1;
+    int worstkeybit = -1;
+    int fails       =  0;
+
     std::vector<hashtype> hashes( keycount );
     hashtype h1, h2;
 
@@ -79,8 +84,14 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
 
     bool result = true;
 
+    if (!drawDiagram) {
+        printf("Testing %3d-byte keys, %d reps", keybytes, keycount);
+    }
+
     for (int keybit = 0; keybit < keybits; keybit++) {
-        printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
+        if (drawDiagram) {
+            printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
+        }
 
         for (int i = 0; i < keycount; i++) {
             r.rand_p(&k, sizeof(keytype));
@@ -114,14 +125,37 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
             hashes[i] = h1 ^ h2;
         }
 
-        bool thisresult = TestHashList(hashes).drawDiagram(drawDiagram).testDistribution(true);
-        printf("\n");
+        int curlogp = 0;
+        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).sumLogp(&curlogp);
+        if (drawDiagram) {
+            printf("\n");
+        } else {
+            progressdots(keybit, 0, keybits - 1, 10);
+            // Record worst result, but don't let a pass override a failure
+            if ((fails == 0) && !thisresult) {
+                worstlogp = -1;
+            }
+            if (((fails == 0) || !thisresult) && (worstlogp < curlogp)) {
+                worstlogp = curlogp;
+                worstkeybit = keybit;
+                worsthashes = hashes;
+            }
+            if (!thisresult) {
+                fails++;
+            }
+        }
 
         addVCodeResult(thisresult);
 
         result &= thisresult;
 
         seen.clear();
+    }
+
+    if (!drawDiagram) {
+        printf("%3d failed, worst is key bit %3d\n", fails, worstkeybit, worstlogp);
+        bool ignored = TestHashList(worsthashes).testDistribution(true);
+        printf("\n");
     }
 
     recordTestResult(result, "DiffDist", keybytes);
