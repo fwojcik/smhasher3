@@ -90,6 +90,7 @@
 #include "SeedTest.h"
 #include "SeedZeroesTest.h"
 #include "SeedBlockLenTest.h"
+#include "SeedBlockOffsetTest.h"
 #include "SeedDiffDistTest.h"
 #include "SeedAvalancheTest.h"
 #include "SeedBitIndependenceTest.h"
@@ -141,6 +142,7 @@ static bool g_testZeroes;
 static bool g_testSeed;
 static bool g_testSeedZeroes;
 static bool g_testSeedBlockLen;
+static bool g_testSeedBlockOffset;
 static bool g_testSeedDiffDist;
 static bool g_testSeedAvalanche;
 static bool g_testSeedBIC;
@@ -160,34 +162,35 @@ struct TestOpts {
 };
 // These first 3 override all other selections
 static TestOpts g_testopts[] = {
-    { g_testVerifyAll,    false,     false,    "VerifyAll" },
-    { g_testSanityAll,    false,     false,    "SanityAll" },
-    { g_testSpeedAll,     false,     false,    "SpeedAll" },
-    { g_testAll,           true,     false,    "All" },
-    { g_testSanity,        true,     false,    "Sanity" },
-    { g_testSpeed,         true,      true,    "Speed" },
-    { g_testHashmap,       true,      true,    "Hashmap" },
-    { g_testAvalanche,     true,     false,    "Avalanche" },
-    { g_testSparse,        true,     false,    "Sparse" },
-    { g_testPermutation,   true,     false,    "Permutation" },
-    { g_testCyclic,        true,     false,    "Cyclic" },
-    { g_testTwoBytes,      true,     false,    "TwoBytes" },
-    { g_testText,          true,     false,    "Text" },
-    { g_testZeroes,        true,     false,    "Zeroes" },
-    { g_testSeed,          true,     false,    "Seed" },
-    { g_testSeedZeroes,    true,     false,    "SeedZeroes" },
-    { g_testSeedBlockLen,  true,     false,    "SeedBlockLen" },
-    { g_testSeedDiffDist,  true,     false,    "SeedDiffDist" },
-    { g_testSeedAvalanche, true,     false,    "SeedAvalanche" },
-    { g_testSeedBIC,       true,     false,    "SeedBIC" },
-    { g_testPerlinNoise,   true,     false,    "PerlinNoise" },
-    { g_testDiffDist,      true,     false,    "DiffDist" },
-    { g_testBIC,           true,     false,    "BIC" },
-    { g_testDiff,         false,     false,    "Diff" },
-    { g_testWindow,       false,     false,    "Window" },
-    { g_testPopcount,     false,     false,    "Popcount" },
-    { g_testPrng,         false,     false,    "Prng" },
-    { g_testBadSeeds,     false,     false,    "BadSeeds" },
+    { g_testVerifyAll,       false,     false,    "VerifyAll" },
+    { g_testSanityAll,       false,     false,    "SanityAll" },
+    { g_testSpeedAll,        false,     false,    "SpeedAll" },
+    { g_testAll,              true,     false,    "All" },
+    { g_testSanity,           true,     false,    "Sanity" },
+    { g_testSpeed,            true,      true,    "Speed" },
+    { g_testHashmap,          true,      true,    "Hashmap" },
+    { g_testAvalanche,        true,     false,    "Avalanche" },
+    { g_testSparse,           true,     false,    "Sparse" },
+    { g_testPermutation,      true,     false,    "Permutation" },
+    { g_testCyclic,           true,     false,    "Cyclic" },
+    { g_testTwoBytes,         true,     false,    "TwoBytes" },
+    { g_testText,             true,     false,    "Text" },
+    { g_testZeroes,           true,     false,    "Zeroes" },
+    { g_testSeed,             true,     false,    "Seed" },
+    { g_testSeedZeroes,       true,     false,    "SeedZeroes" },
+    { g_testSeedBlockLen,     true,     false,    "SeedBlockLen" },
+    { g_testSeedBlockOffset,  true,     false,    "SeedBlockOffset" },
+    { g_testSeedDiffDist,     true,     false,    "SeedDiffDist" },
+    { g_testSeedAvalanche,    true,     false,    "SeedAvalanche" },
+    { g_testSeedBIC,          true,     false,    "SeedBIC" },
+    { g_testPerlinNoise,      true,     false,    "PerlinNoise" },
+    { g_testDiffDist,         true,     false,    "DiffDist" },
+    { g_testBIC,              true,     false,    "BIC" },
+    { g_testDiff,            false,     false,    "Diff" },
+    { g_testWindow,          false,     false,    "Window" },
+    { g_testPopcount,        false,     false,    "Popcount" },
+    { g_testPrng,            false,     false,    "Prng" },
+    { g_testBadSeeds,        false,     false,    "BadSeeds" },
 };
 
 static void set_default_tests( bool enable ) {
@@ -521,6 +524,13 @@ static bool test( const HashInfo * hInfo ) {
 
     if (g_testSeedBlockLen) {
         result &= SeedBlockLenTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Keyset 'SeedBlockOffset'
+
+    if (g_testSeedBlockOffset) {
+        result &= SeedBlockOffsetTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------

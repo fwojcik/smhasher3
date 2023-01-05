@@ -199,6 +199,7 @@ add_library(
   tests/SeedTest.cpp
   tests/SeedZeroesTest.cpp
   tests/SeedBlockLenTest.cpp
+  tests/SeedBlockOffsetTest.cpp
   tests/SeedDiffDistTest.cpp
   tests/SeedAvalancheTest.cpp
   tests/SeedBitIndependenceTest.cpp
