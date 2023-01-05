@@ -119,7 +119,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     const int arraysize = keybits * hashbits;
 
-    printf("Testing %4d-bit keys, %6d reps........", keybits, reps);
+    printf("Testing %3d-byte keys, %6d reps........", keybytes, reps);
 
     std::vector<uint8_t> keys( reps * keybytes );
     for (int i = 0; i < reps; i++) {
@@ -162,7 +162,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     result &= ReportBias(&bins[0][0], reps, arraysize, hashbits, drawDiagram);
 
-    recordTestResult(result, "Avalanche", keybits);
+    recordTestResult(result, "Avalanche", keybytes);
 
     return result;
 }

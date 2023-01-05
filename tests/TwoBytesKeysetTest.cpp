@@ -76,7 +76,7 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, int keylen, std::
     if (keylen < MAX_TWOBYTES) {
         printf("Keyset 'TwoBytes' - all %d-byte keys with 1 or 2 non-zero bytes - %d keys\n", keylen, keycount);
     } else {
-        printf("Keyset 'OneByte ' - %d-byte keys - %d keys\n", keylen, keycount);
+        printf("Keyset 'OneByte ' - all %d-byte keys with 1 non-zero byte  - %d keys\n", keylen, keycount);
     }
 
     //----------

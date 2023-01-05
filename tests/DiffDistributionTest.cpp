@@ -66,7 +66,8 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     Rand r( 857374 );
 
-    int       keybits  = sizeof(keytype) * 8;
+    int       keybytes = sizeof(keytype);
+    int       keybits  = keybytes * 8;
     const int keycount = 512 * 1024 * (ckuniq ? 2 : (hinfo->bits <= 64) ? 3 : 4);
     keytype   k;
 
@@ -123,7 +124,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
         seen.clear();
     }
 
-    recordTestResult(result, "DiffDist", keybits);
+    recordTestResult(result, "DiffDist", keybytes);
 
     return result;
 }

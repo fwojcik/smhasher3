@@ -113,7 +113,9 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleReps, const 
 
     addVCodeResult(result);
 
-    recordTestResult(result, "Cyclic", cycleLen);
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%d cycles of %d bytes", cycleReps, cycleLen);
+    recordTestResult(result, "Cyclic", buf);
 
     return result;
 }

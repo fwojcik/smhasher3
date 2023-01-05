@@ -185,7 +185,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     const size_t hashbits     = hashbytes * 8;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
-    printf("Testing %4d-bit keys, %7d reps", keybits, reps);
+    printf("Testing %4d-byte keys, %7d reps  ", keybytes, reps);
 
     std::vector<uint32_t> popcount( keybits * hashbits    , 0 );
     std::vector<uint32_t> andcount( keybits * hashbitpairs, 0 );
@@ -211,7 +211,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
 
     bool result = ReportChiSqIndep(&popcount[0], &andcount[0], keybits, hashbits, reps, verbose);
 
-    recordTestResult(result, "BIC", keybits);
+    recordTestResult(result, "BIC", keybytes);
 
     return result;
 }

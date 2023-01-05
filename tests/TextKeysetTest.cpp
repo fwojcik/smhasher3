@@ -164,7 +164,9 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
     bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
-    recordTestResult(result, "Text", name);
+    char buf[32];
+    snprintf(buf, sizeof(buf), "Words %s %d-%d", name, minlen, maxlen);
+    recordTestResult(result, "Text", buf);
 
     addVCodeResult(result);
 
@@ -218,7 +220,9 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(corecount - 1).testDistribution(true);
     printf("\n");
 
-    recordTestResult(result, "Text", name);
+    char buf[32];
+    snprintf(buf, sizeof(buf), "Long %s %s %d-%d", name, varyprefix ? "first" : "last", minlen, maxlen);
+    recordTestResult(result, "Text", buf);
 
     addVCodeResult(result);
 
