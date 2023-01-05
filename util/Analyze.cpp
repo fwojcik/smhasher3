@@ -238,6 +238,8 @@ static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsi
         warning = true;
     }
 
+    recordLog2PValue(logp_value);
+
     if (verbose) {
         if (header) {
             printf("Testing %s collisions (%s %3i-bit)", maxcoll ? "max" : "all", highbits ? "high" : "low ", hashsize);
@@ -258,7 +260,6 @@ static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsi
         // and deltas and exact p-values add visual noise and variable line
         // widths and possibly field counts, they are now only printed out
         // in --verbose mode.
-        recordLog2PValue(logp_value);
         if (drawDiagram) {
             if (p_value > 0.00001) {
                 printf("(%+i) (p<%8.6f) (^%2d)", collcount - (int)round(expected), p_value, logp_value);
@@ -419,11 +420,13 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t co
 //
 
 static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits,
-        int maxBits, bool highbits, bool drawDiagram ) {
+        int maxBits, bool highbits, bool verbose, bool drawDiagram ) {
     if ((maxBits <= 1) || (minBits > maxBits)) { return true; }
 
     int spacelen = 80;
-    spacelen -= printf("Testing all collisions (%s %2i..%2i bits) - ", highbits ? "high" : "low ", minBits, maxBits);
+    if (verbose) {
+        spacelen -= printf("Testing all collisions (%s %2i..%2i bits) - ", highbits ? "high" : "low ", minBits, maxBits);
+    }
 
     double maxCollDev     = 0.0;
     int    maxCollDevBits = 0;
@@ -447,50 +450,60 @@ static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits,
         }
     }
 
-    const char * spaces = "                ";
-    int          i_maxCollDevExp = (int)round(maxCollDevExp);
-    spacelen -= printf("Worst is %2i bits: %i/%i ", maxCollDevBits, maxCollDevNb, i_maxCollDevExp);
-    if (spacelen < 0) {
-        spacelen = 0;
-    } else if (spacelen > strlen(spaces)) {
-        spacelen = strlen(spaces);
-    }
-
-    if (maxCollDev >= 999.95) {
-        maxCollDev = INFINITY;
-    }
-
-    if (!finite(maxCollDev)) {
-        printf("%.*s(------) ", spacelen, spaces);
-    } else if (maxCollDev < 9.0) {
-        printf("%.*s(%5.3fx) ", spacelen, spaces, maxCollDev);
-    } else {
-        printf("%.*s(%#.4gx) ", spacelen, spaces, maxCollDev);
-    }
-
     double p_value    = ScalePValue(maxPValue, maxBits - minBits + 1);
     int    logp_value = GetLog2PValue(p_value);
 
     recordLog2PValue(logp_value);
-    if (drawDiagram) {
-        if (p_value > 0.00001) {
-            printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
-        } else {
-            printf("(%+i) (p<%.2e) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
-        }
-    } else {
-        printf("(^%2d)", logp_value);
+
+    bool warning = false, failure = false;
+    if (p_value <  FAILURE_PBOUND) {
+        failure = true;
+    } else if (p_value < WARNING_PBOUND) {
+        warning = true;
     }
 
-    if (p_value < FAILURE_PBOUND) {
-        printf(" !!!!!\n");
-        return false;
-    } else if (p_value < WARNING_PBOUND) {
-        printf(" !\n");
-    } else {
-        printf("\n");
+    if (verbose) {
+        const char * spaces = "                ";
+        int          i_maxCollDevExp = (int)round(maxCollDevExp);
+        spacelen -= printf("Worst is %2i bits: %i/%i ", maxCollDevBits, maxCollDevNb, i_maxCollDevExp);
+        if (spacelen < 0) {
+            spacelen = 0;
+        } else if (spacelen > strlen(spaces)) {
+            spacelen = strlen(spaces);
+        }
+
+        if (maxCollDev >= 999.95) {
+            maxCollDev = INFINITY;
+        }
+
+        if (!finite(maxCollDev)) {
+            printf("%.*s(------) ", spacelen, spaces);
+        } else if (maxCollDev < 9.0) {
+            printf("%.*s(%5.3fx) ", spacelen, spaces, maxCollDev);
+        } else {
+            printf("%.*s(%#.4gx) ", spacelen, spaces, maxCollDev);
+        }
+
+        if (drawDiagram) {
+            if (p_value > 0.00001) {
+                printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+            } else {
+                printf("(%+i) (p<%.2e) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+            }
+        } else {
+            printf("(^%2d)", logp_value);
+        }
+
+        if (failure) {
+            printf(" !!!!!\n");
+        } else if (warning) {
+            printf(" !\n");
+        } else {
+            printf("\n");
+        }
     }
-    return true;
+
+    return !failure;
 }
 
 //----------------------------------------------------------------------------
@@ -513,7 +526,7 @@ static int MaxDistBits( const uint64_t nbH ) {
 }
 
 template <typename hashtype>
-static bool TestDistribution( std::vector<hashtype> & hashes, bool drawDiagram ) {
+static bool TestDistribution( std::vector<hashtype> & hashes, bool verbose, bool drawDiagram ) {
     const int      hashbits = sizeof(hashtype) * 8;
     const uint64_t nbH      = hashes.size();
     int            maxwidth = MaxDistBits(nbH);
@@ -521,7 +534,9 @@ static bool TestDistribution( std::vector<hashtype> & hashes, bool drawDiagram )
 
     if (maxwidth < minwidth) { return true; }
 
-    printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
+    if (verbose) {
+        printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
+    }
 
     std::vector<unsigned> bins;
     bins.resize(1 << maxwidth);
@@ -583,34 +598,44 @@ static bool TestDistribution( std::vector<hashtype> & hashes, bool drawDiagram )
     int    logp_value = GetLog2PValue(p_value);
     double mult       = normalizeScore(worstN, worstWidth, tests);
 
-    if (worstStart == -1) {
-        printf("No positive bias detected            %5.3fx  ", 0.0);
-    } else if (mult < 9.0) {
-        printf("Worst bias is %2d bits at bit %3d:    %5.3fx  ", worstWidth, worstStart, mult);
-    } else {
-        printf("Worst bias is %2d bits at bit %3d:    %#.4gx  ", worstWidth, worstStart, mult);
-    }
-
     recordLog2PValue(logp_value);
-    if (drawDiagram) {
-        if (p_value > 0.00001) {
-            printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
-        } else {
-            printf("(%f) (p<%.2e) (^%2d)", worstN, p_value, logp_value);
-        }
-    } else {
-        printf("(^%2d)", logp_value);
+
+    bool warning = false, failure = false;
+    if (p_value <  FAILURE_PBOUND) {
+        failure = true;
+    } else if (p_value < WARNING_PBOUND) {
+        warning = true;
     }
 
-    if (p_value < FAILURE_PBOUND) {
-        printf(" !!!!!\n");
-        return false;
-    } else if (p_value < WARNING_PBOUND) {
-        printf(" !\n");
-    } else {
-        printf("\n");
+    if (verbose) {
+        if (worstStart == -1) {
+            printf("No positive bias detected            %5.3fx  ", 0.0);
+        } else if (mult < 9.0) {
+            printf("Worst bias is %2d bits at bit %3d:    %5.3fx  ", worstWidth, worstStart, mult);
+        } else {
+            printf("Worst bias is %2d bits at bit %3d:    %#.4gx  ", worstWidth, worstStart, mult);
+        }
+
+        if (drawDiagram) {
+            if (p_value > 0.00001) {
+                printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
+            } else {
+                printf("(%f) (p<%.2e) (^%2d)", worstN, p_value, logp_value);
+            }
+        } else {
+            printf("(^%2d)", logp_value);
+        }
+
+        if (failure) {
+            printf(" !!!!!\n");
+        } else if (warning) {
+            printf(" !\n");
+        } else {
+            printf("\n");
+        }
     }
-    return true;
+
+    return !failure;
 }
 
 //-----------------------------------------------------------------------------
@@ -859,39 +884,43 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, bo
                 bool maxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
                 if (testHighBits) {
                     result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits],
-                            nbBits, maxcoll, true, true, true, drawDiagram);
+                            nbBits, maxcoll, true, true, verbose, drawDiagram);
                 }
                 if (testLowBits) {
                     result &= ReportCollisions(nbH, collcounts_rev[nbBits - minBits],
-                            nbBits, maxcoll, false, true, true, drawDiagram);
+                            nbBits, maxcoll, false, true, verbose, drawDiagram);
                 }
             }
         }
 
         if (testHighBits) {
             result &= ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
-                    minTBits, maxTBits, true, drawDiagram);
+                    minTBits, maxTBits, true, verbose, drawDiagram);
         }
         if (testLowBits) {
             result &= ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
-                    minTBits, maxTBits, false, drawDiagram);
+                    minTBits, maxTBits, false, verbose, drawDiagram);
         }
     }
 
     //----------
 
     if (testDist) {
-        result &= TestDistribution(hashes, drawDiagram);
+        result &= TestDistribution(hashes, verbose, drawDiagram);
     }
 
     //----------
 
     if (testDeltaNum >= 1) {
-        printf("---Analyzing hash deltas\n");
+        if (verbose) {
+            printf("---Analyzing hash deltas\n");
+        }
         result &= TestHashListImpl(hashdeltas_1, 0, drawDiagram, testCollision,
                 testMaxColl, testDist, testHighBits, testLowBits, verbose);
         if (testDeltaNum >= 2) {
-            printf("---Analyzing additional hash deltas\n");
+            if (verbose) {
+                printf("---Analyzing additional hash deltas\n");
+            }
             result &= TestHashListImpl(hashdeltas_N, 0, drawDiagram, testCollision,
                     testMaxColl, testDist, testHighBits, testLowBits, verbose);
         }
