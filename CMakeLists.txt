@@ -198,6 +198,7 @@ add_library(
   tests/PermutationKeysetTest.cpp
   tests/SeedTest.cpp
   tests/SeedZeroesTest.cpp
+  tests/SeedBlockLenTest.cpp
   tests/SeedDiffDistTest.cpp
   tests/SeedAvalancheTest.cpp
   tests/SeedBitIndependenceTest.cpp

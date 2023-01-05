@@ -89,6 +89,7 @@
 #include "HashMapTest.h"
 #include "SeedTest.h"
 #include "SeedZeroesTest.h"
+#include "SeedBlockLenTest.h"
 #include "SeedDiffDistTest.h"
 #include "SeedAvalancheTest.h"
 #include "SeedBitIndependenceTest.h"
@@ -139,6 +140,7 @@ static bool g_testText;
 static bool g_testZeroes;
 static bool g_testSeed;
 static bool g_testSeedZeroes;
+static bool g_testSeedBlockLen;
 static bool g_testSeedDiffDist;
 static bool g_testSeedAvalanche;
 static bool g_testSeedBIC;
@@ -174,6 +176,7 @@ static TestOpts g_testopts[] = {
     { g_testZeroes,        true,     false,    "Zeroes" },
     { g_testSeed,          true,     false,    "Seed" },
     { g_testSeedZeroes,    true,     false,    "SeedZeroes" },
+    { g_testSeedBlockLen,  true,     false,    "SeedBlockLen" },
     { g_testSeedDiffDist,  true,     false,    "SeedDiffDist" },
     { g_testSeedAvalanche, true,     false,    "SeedAvalanche" },
     { g_testSeedBIC,       true,     false,    "SeedBIC" },
@@ -511,6 +514,13 @@ static bool test( const HashInfo * hInfo ) {
 
     if (g_testSeedZeroes) {
         result &= SeedZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Keyset 'SeedBlockLen'
+
+    if (g_testSeedBlockLen) {
+        result &= SeedBlockLenTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
