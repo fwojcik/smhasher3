@@ -9,7 +9,7 @@ int main(int argc, const char *argv[]) {
     const int count = popcount8(i64);
     printf("count %d\n", count);
 #else
-    static_assert(popcount8(i64) == (1+1+2+1+2+2+3+1+4+4+4+4));
+    static_assert(popcount8(i64) == (1+1+2+1+2+2+3+1+4+4+4+4), "popcount8() worked");
 #endif
     printf("OK!\n");
 }
