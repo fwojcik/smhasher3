@@ -104,39 +104,45 @@ const static uint64_t MERSENNE_31   = (UINT64_C(1) << 31) - 1;
 const static int      CHAR_SIZE     = 8;
 const static int      BLOCK_SIZE_32 = 1 << 8;
 
-static uint64_t multiply_shift_random_64[BLOCK_SIZE_32];
-static uint32_t multiply_shift_a_64;
-static uint64_t multiply_shift_b_64;
-static int32_t  tabulation_32[32 / CHAR_SIZE][1 << CHAR_SIZE];
-static bool     have_broken_rand = false;
+struct seed32_struct {
+    uint64_t multiply_shift_random_64[BLOCK_SIZE_32];
+    uint32_t multiply_shift_a_64;
+    uint64_t multiply_shift_b_64;
+    int32_t  tabulation_32[32 / CHAR_SIZE][1 << CHAR_SIZE];
+    uint64_t seed;
+};
+
+static thread_local seed32_struct seed32;
 
 static uintptr_t tabulation32_seed( const seed_t seed ) {
+    bool have_broken_rand = false;
+    seed32.seed = (uint64_t)seed;
     BSD_srand((uint64_t)seed);
     // the lazy mersenne combination requires 30 bits values in the polynomial.
-    multiply_shift_a_64 = tab_rand64() & ((UINT64_C(1) << 30) - 1);
-    if (!multiply_shift_a_64) {
-        multiply_shift_a_64 = tab_rand64() & ((UINT64_C(1) << 30) - 1);
+    seed32.multiply_shift_a_64 = tab_rand64() & ((UINT64_C(1) << 30) - 1);
+    if (!seed32.multiply_shift_a_64) {
+        seed32.multiply_shift_a_64 = tab_rand64() & ((UINT64_C(1) << 30) - 1);
     }
-    if (!multiply_shift_a_64) {
-        have_broken_rand    = true;
-        multiply_shift_a_64 = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 30) - 1);
+    if (!seed32.multiply_shift_a_64) {
+        have_broken_rand = true;
+        seed32.multiply_shift_a_64 = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 30) - 1);
     }
-    multiply_shift_b_64 = tab_rand64();
-    if (!multiply_shift_b_64) {
-        multiply_shift_b_64 = have_broken_rand ? 0xdeadbeef : tab_rand64();
+    seed32.multiply_shift_b_64 = tab_rand64();
+    if (!seed32.multiply_shift_b_64) {
+        seed32.multiply_shift_b_64 = have_broken_rand ? 0xdeadbeef : tab_rand64();
     }
     for (int i = 0; i < BLOCK_SIZE_32; i++) {
-        multiply_shift_random_64[i] = tab_rand64();
-        if (!multiply_shift_random_64[i]) {
-            multiply_shift_random_64[i] = have_broken_rand ? 0xdeadbeef : tab_rand64();
+        seed32.multiply_shift_random_64[i] = tab_rand64();
+        if (!seed32.multiply_shift_random_64[i]) {
+            seed32.multiply_shift_random_64[i] = have_broken_rand ? 0xdeadbeef : tab_rand64();
         }
     }
     for (int i = 0; i < 32 / CHAR_SIZE; i++) {
         for (int j = 0; j < 1 << CHAR_SIZE; j++) {
-            tabulation_32[i][j] = tab_rand64();
+            seed32.tabulation_32[i][j] = tab_rand64();
         }
     }
-    return 0;
+    return (seed_t)(uintptr_t)&seed32;
 }
 
 static inline uint32_t combine31( uint32_t h, uint32_t x, uint32_t a ) {
@@ -147,23 +153,24 @@ static inline uint32_t combine31( uint32_t h, uint32_t x, uint32_t a ) {
 
 template <bool bswap>
 static void tabulation32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    const uint8_t * buf           = (const uint8_t *)in;
+    const uint8_t *       buf     = (const uint8_t *)in;
+    const seed32_struct * seed32  = (const seed32_struct *)(uintptr_t)seed;
     size_t          len_words_32  = len / 4;
     size_t          len_blocks_32 = len_words_32 / BLOCK_SIZE_32;
 
-    uint32_t h = len ^ seed;
+    uint32_t h = len ^ (uint32_t)seed32->seed;
 
     for (size_t b = 0; b < len_blocks_32; b++) {
         uint32_t block_hash = 0;
         for (int i = 0; i < BLOCK_SIZE_32; i++, buf += 4) {
-            block_hash ^= multiply_shift_random_64[i] * GET_U32<bswap>(buf, 0) >> 32;
+            block_hash ^= seed32->multiply_shift_random_64[i] * GET_U32<bswap>(buf, 0) >> 32;
         }
-        h = combine31(h, multiply_shift_a_64, block_hash >> 2);
+        h = combine31(h, seed32->multiply_shift_a_64, block_hash >> 2);
     }
 
     int remaining_words = len_words_32 % BLOCK_SIZE_32;
     for (int i = 0; i < remaining_words; i++, buf += 4) {
-        h ^= multiply_shift_random_64[i] * GET_U32<bswap>(buf, 0) >> 32;
+        h ^= seed32->multiply_shift_random_64[i] * GET_U32<bswap>(buf, 0) >> 32;
     }
 
     int remaining_bytes = len % 4;
@@ -171,13 +178,13 @@ static void tabulation32( const void * in, const size_t len, const seed_t seed, 
         uint32_t last = 0;
         if (remaining_bytes & 2) { last = GET_U16<bswap>(buf, 0); buf += 2; }
         if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
-        h ^= multiply_shift_b_64 * last >> 32;
+        h ^= seed32->multiply_shift_b_64 * last >> 32;
     }
 
     // Finalization
     uint32_t tab = 0;
     for (int i = 0; i < 32 / CHAR_SIZE; i++, h >>= CHAR_SIZE) {
-        tab ^= tabulation_32[i][h & ((1 << CHAR_SIZE) - 1)];
+        tab ^= seed32->tabulation_32[i][h & ((1 << CHAR_SIZE) - 1)];
     }
 
     PUT_U32<bswap>(tab, (uint8_t *)out, 0);
@@ -191,31 +198,38 @@ const static uint64_t TAB_MERSENNE_61 = (UINT64_C(1) << 61) - 1;
 // this size can be tuned depending on the system.
 const static int TAB_BLOCK_SIZE = 1 << 8;
 
-static uint128_t tab_multiply_shift_random[TAB_BLOCK_SIZE];
-static uint128_t tab_multiply_shift_a;
-static uint128_t tab_multiply_shift_b;
-static int64_t   tabulation[64 / CHAR_SIZE][1 << CHAR_SIZE];
+struct seed64_struct {
+    uint128_t tab_multiply_shift_random[TAB_BLOCK_SIZE];
+    uint128_t tab_multiply_shift_a;
+    uint128_t tab_multiply_shift_b;
+    int64_t   tabulation[64 / CHAR_SIZE][1 << CHAR_SIZE];
+    uint64_t  seed;
+};
+
+static thread_local seed64_struct seed64;
 
 static uintptr_t tabulation64_seed( const seed_t seed ) {
+    bool have_broken_rand = false;
+    seed64.seed = (uint64_t)seed;
     BSD_srand((uint64_t)seed);
     // the lazy mersenne combination requires 60 bits values in the polynomial.
     // rurban: added checks for bad seeds
-    tab_multiply_shift_a = tab_rand128() & ((UINT64_C(1) << 60) - 1);
-    tab_multiply_shift_b = tab_rand128();
-    if (!tab_multiply_shift_a) { tab_multiply_shift_a = tab_rand128() & ((UINT64_C(1) << 60) - 1); }
-    if (!tab_multiply_shift_a) {
-        have_broken_rand     = true;
-        tab_multiply_shift_a = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 60) - 1);
-    }
-    if (!tab_multiply_shift_b) { tab_multiply_shift_b = tab_rand128(); }
-    if (!tab_multiply_shift_b) {
+    seed64.tab_multiply_shift_a = tab_rand128() & ((UINT64_C(1) << 60) - 1);
+    seed64.tab_multiply_shift_b = tab_rand128();
+    if (!seed64.tab_multiply_shift_a) { seed64.tab_multiply_shift_a = tab_rand128() & ((UINT64_C(1) << 60) - 1); }
+    if (!seed64.tab_multiply_shift_a) {
         have_broken_rand = true;
-        tab_multiply_shift_b++;
+        seed64.tab_multiply_shift_a = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 60) - 1);
+    }
+    if (!seed64.tab_multiply_shift_b) { seed64.tab_multiply_shift_b = tab_rand128(); }
+    if (!seed64.tab_multiply_shift_b) {
+        have_broken_rand = true;
+        seed64.tab_multiply_shift_b++;
     }
     for (int i = 0; i < TAB_BLOCK_SIZE; i++) {
-        tab_multiply_shift_random[i] = tab_rand128();
-        if (!tab_multiply_shift_random[i]) {
-            tab_multiply_shift_random[i] = 0x12345678;
+        seed64.tab_multiply_shift_random[i] = tab_rand128();
+        if (!seed64.tab_multiply_shift_random[i]) {
+            seed64.tab_multiply_shift_random[i] = 0x12345678;
         }
     }
     if (have_broken_rand) {
@@ -223,10 +237,10 @@ static uintptr_t tabulation64_seed( const seed_t seed ) {
     }
     for (int i = 0; i < 64 / CHAR_SIZE; i++) {
         for (int j = 0; j < 1 << CHAR_SIZE; j++) {
-            tabulation[i][j] = have_broken_rand ? tab_multiply_shift_random[i] : tab_rand128();
+            seed64.tabulation[i][j] = have_broken_rand ? seed64.tab_multiply_shift_random[i] : tab_rand128();
         }
     }
-    return 0;
+    return (seed_t)(uintptr_t)&seed64;
 }
 
 static inline uint64_t combine61( uint64_t h, uint64_t x, uint64_t a ) {
@@ -252,7 +266,8 @@ static inline uint64_t combine61( uint64_t h, uint64_t x, uint64_t a ) {
 
 template <bool bswap>
 static void tabulation64( const void * in, const size_t len, const seed_t seed, void * out ) {
-    const uint8_t * buf = (const uint8_t *)in;
+    const uint8_t *       buf    = (const uint8_t *)in;
+    const seed64_struct * seed64 = (const seed64_struct *)(uintptr_t)seed;
 
     // the idea is to compute a fast "signature" of the string before doing
     // tabulation hashing. this signature only has to be collision resistant,
@@ -267,7 +282,7 @@ static void tabulation64( const void * in, const size_t len, const seed_t seed, 
     // of different length to be different, even if all the extra bits are 0.
     // this is needed for the appendzero test.
 
-    uint64_t h = len ^ seed ^ (seed << 8);
+    uint64_t h = len ^ seed64->seed ^ (seed64->seed << 8);
 
     if (len >= 8) {
         const size_t len_words = len / 8;
@@ -283,7 +298,7 @@ static void tabulation64( const void * in, const size_t len, const seed_t seed, 
                 for (int i = 0; i < TAB_BLOCK_SIZE; i++, buf += 8) {
                     // we don't have to shift yet, but shifting by 64 allows the
                     // compiler to produce a single "high bits only" multiplication instruction.
-                    block_hash ^= (tab_multiply_shift_random[i] * GET_U64<bswap>(buf, 0)) >> 64;
+                    block_hash ^= (seed64->tab_multiply_shift_random[i] * GET_U64<bswap>(buf, 0)) >> 64;
 
                     // the following is very fast, basically using mum, but theoretically wrong.
                     // __uint128_t mum = (__uint128_t)tab_multiply_shift_random_64[i] * take64(buf);
@@ -294,7 +309,7 @@ static void tabulation64( const void * in, const size_t len, const seed_t seed, 
                 // values have to be less than mersenne for the combination to work.
                 // we can shift down, since any shift of multiply-shift outputs is
                 // strongly-universal.
-                h = combine61(h, tab_multiply_shift_a, block_hash >> 4);
+                h = combine61(h, seed64->tab_multiply_shift_a, block_hash >> 4);
             }
 
             // in principle we should finish the mersenne modular reduction.
@@ -305,7 +320,7 @@ static void tabulation64( const void * in, const size_t len, const seed_t seed, 
         // then read the remaining words
         const int remaining_words = len_words % TAB_BLOCK_SIZE;
         for (int i = 0; i < remaining_words; i++, buf += 8) {
-            h ^= tab_multiply_shift_random[i] * GET_U64<bswap>(buf, 0) >> 64;
+            h ^= seed64->tab_multiply_shift_random[i] * GET_U64<bswap>(buf, 0) >> 64;
         }
     }
 
@@ -316,12 +331,12 @@ static void tabulation64( const void * in, const size_t len, const seed_t seed, 
         if (remaining_bytes & 4) { last = GET_U32<bswap>(buf, 0); buf += 4; }
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
         if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
-        h ^= tab_multiply_shift_b * last >> 64;
+        h ^= seed64->tab_multiply_shift_b * last >> 64;
     }
 
     uint64_t tab = 0;
     for (int i = 0; i < 64 / CHAR_SIZE; i++, h >>= CHAR_SIZE) {
-        tab ^= tabulation[i][h % (1 << CHAR_SIZE)];
+        tab ^= seed64->tabulation[i][h % (1 << CHAR_SIZE)];
     }
 
     PUT_U64<bswap>(tab, (uint8_t *)out, 0);
@@ -341,7 +356,6 @@ REGISTER_HASH(tabulation_32,
          FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
    $.bits = 32,
@@ -360,7 +374,6 @@ REGISTER_HASH(tabulation_64,
          FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
