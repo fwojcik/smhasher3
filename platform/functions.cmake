@@ -96,7 +96,11 @@ function(findVariant prefix)
       CMAKE_FLAGS -DINCLUDE_DIRECTORIES:PATH=${CMAKE_BINARY_DIR}
       OUTPUT_VARIABLE dump
     )
+
+    # Record output from compilation attempts
+    list(APPEND COMPILER_OUTPUTS ${dump})
     #message(STATUS "Got result ${dump} for ${ATTEMPT}")
+
     if(WORKED)
       set(IMPL ${ATTEMPT})
       break()
@@ -105,12 +109,16 @@ function(findVariant prefix)
 
   if(${isfallback})
     if(NOT WORKED)
+      message(STATUS "Compiler outputs for compilation attempts:")
+      message(STATUS "${COMPILER_OUTPUTS}")
       if(NOT EXISTS "${FN}")
-        message(FATAL_ERROR
-          "Fallback not possible for ${FILEPREFIX} (${desc})! Cannot continue.\n")
+        message(FATAL_ERROR "\
+Fallback not possible for ${FILEPREFIX} (${desc})! Cannot continue.\n\
+The compiler outputs above may give a clue to the root cause.\n")
       else()
-        message(FATAL_ERROR
-          "Fallback variant for ${FILEPREFIX} (${desc}) failed! Cannot continue.\n")
+        message(FATAL_ERROR "\
+Fallback variant for ${FILEPREFIX} (${desc}) failed! Cannot continue.\n\
+The compiler outputs above may give a clue to the root cause.\n")
       endif()
     else()
       message(STATUS "  ${desc} not found, using fallback")
