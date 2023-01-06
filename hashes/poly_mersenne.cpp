@@ -76,9 +76,13 @@ static uint32_t BSD_rand( void ) {
 
 const static uint64_t MERSENNE_61         = (1ull << 61) - 1;
 const static uint32_t POLY_MERSENNE_MAX_K = 4;
-static uint64_t       poly_mersenne_random[POLY_MERSENNE_MAX_K + 1];
-static uint64_t       poly_mersenne_a;
-static uint64_t       poly_mersenne_b;
+
+struct poly_mersenne_struct {
+    uint64_t       poly_mersenne_random[POLY_MERSENNE_MAX_K + 1];
+    uint64_t       poly_mersenne_a;
+    uint64_t       poly_mersenne_b;
+};
+static thread_local struct poly_mersenne_struct poly_mersenne_data;
 
 static uint128_t rand_u128( void ) {
     // We don't know how many bits we get from rand(),
@@ -95,14 +99,14 @@ static uint128_t rand_u128( void ) {
 static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
     BSD_srand(seed);
     // a has be at most 2^60, or the lazy modular reduction won't work.
-    poly_mersenne_a = rand_u128() % (MERSENNE_61 / 2);
-    poly_mersenne_b = rand_u128() % MERSENNE_61;
+    poly_mersenne_data.poly_mersenne_a = rand_u128() % (MERSENNE_61 / 2);
+    poly_mersenne_data.poly_mersenne_b = rand_u128() % MERSENNE_61;
     for (int i = 0; i < POLY_MERSENNE_MAX_K + 1; i++) {
         // The random values should be at most 2^61-2, or the lazy
         // modular reduction won't work.
-        poly_mersenne_random[i] = rand_u128() % MERSENNE_61;
+        poly_mersenne_data.poly_mersenne_random[i] = rand_u128() % MERSENNE_61;
     }
-    return 0;
+    return (seed_t)(uintptr_t)&poly_mersenne_data;
 }
 
 static uint64_t mult_combine61( uint64_t h, uint64_t x, uint64_t a ) {
@@ -121,12 +125,13 @@ static uint64_t mult_combine61( uint64_t h, uint64_t x, uint64_t a ) {
 template <uint32_t K, bool bswap>
 static void Poly_Mersenne( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint8_t * buf = (const uint8_t *)in;
+    const struct poly_mersenne_struct * data = (const struct poly_mersenne_struct *)(uintptr_t)seed;
 
     // We first combine hashes using a polynomial in `a`:
     // hash = x1 + x2 * a + x3 * a^2 + ... (mod p)
     // This hash has collision probability len/p, since the polynomial is
     // degree and so can have at most len roots (values of a that make it zero).
-    const uint64_t a = poly_mersenne_a;
+    const uint64_t a = data->poly_mersenne_a;
 
     // We use the length as the first character.
     uint64_t h = len;
@@ -150,9 +155,9 @@ static void Poly_Mersenne( const void * in, const size_t len, const seed_t seed,
     // hash = a1 + a2 * h + a3 * h^2 + ... (mod p)
     if (K != 0) {
         uint64_t h0 = h;
-        h = poly_mersenne_random[0];
+        h = data->poly_mersenne_random[0];
         for (int i = 1; i <= std::min(K, POLY_MERSENNE_MAX_K); i++) {
-            h = mult_combine61(h, h0, poly_mersenne_random[i]);
+            h = mult_combine61(h, h0, data->poly_mersenne_random[i]);
         }
     }
 
@@ -175,7 +180,6 @@ REGISTER_HASH(poly_mersenne__deg1,
          FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
@@ -193,7 +197,6 @@ REGISTER_HASH(poly_mersenne__deg2,
    $.hash_flags =
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
@@ -213,7 +216,6 @@ REGISTER_HASH(poly_mersenne__deg3,
    $.hash_flags =
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
@@ -233,7 +235,6 @@ REGISTER_HASH(poly_mersenne__deg4,
    $.hash_flags =
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS         |// Implementation not yet thread-safe
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
