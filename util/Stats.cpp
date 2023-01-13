@@ -54,6 +54,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <math.h>
 
 #include "Stats.h"
@@ -61,28 +62,13 @@
 //-----------------------------------------------------------------------------
 
 double CalcMean( std::vector<double> & v ) {
-    const size_t sz   = v.size();
-    double       mean = 0;
-
-    for (size_t i = 0; i < sz; i++) {
-        mean += v[i];
-    }
-
-    mean /= double(sz);
-
-    return mean;
+    double sum = std::accumulate(v.begin(), v.end(), 0.0);
+    return sum / v.size();
 }
 
 double CalcMean( std::vector<double> & v, int a, int b ) {
-    double mean = 0;
-
-    for (int i = a; i <= b; i++) {
-        mean += v[i];
-    }
-
-    mean /= (b - a + 1);
-
-    return mean;
+    double sum = std::accumulate(v.begin() + a, v.begin() + b + 1, 0.0);
+    return sum / (b - a + 1);
 }
 
 double CalcStdv( std::vector<double> & v, int a, int b ) {
