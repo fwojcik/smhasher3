@@ -253,7 +253,7 @@ static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsi
         // 8 integer digits would match the 10.1 float specifier
         // (10 characters - 1 decimal point - 1 digit after the decimal),
         // but some hashes greatly exceed expected collision counts.
-        if (!finite(ratio)) {
+        if (!isfinite(ratio)) {
             printf(" - Expected %10.1f, actual %10i  (------) ", expected, collcount);
         } else if (ratio < 9.0) {
             printf(" - Expected %10.1f, actual %10i  (%5.3fx) ", expected, collcount, ratio);
@@ -485,7 +485,7 @@ static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, i
             maxCollDev = INFINITY;
         }
 
-        if (!finite(maxCollDev)) {
+        if (!isfinite(maxCollDev)) {
             printf("%.*s(------) ", spacelen, spaces);
         } else if (maxCollDev < 9.0) {
             printf("%.*s(%5.3fx) ", spacelen, spaces, maxCollDev);
