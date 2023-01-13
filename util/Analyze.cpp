@@ -528,7 +528,7 @@ static int MaxDistBits( const uint64_t nbH ) {
     int maxwidth = 24;
     // We need at least 5 keys per bin to reliably test distribution biases
     // down to 1%, so don't bother to test sparser distributions than that
-    while (double(nbH) / double(1 << maxwidth) < 5.0) {
+    while (nbH < (5 << maxwidth)) {
         --maxwidth;
     }
     return maxwidth;
