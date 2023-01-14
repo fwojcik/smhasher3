@@ -216,7 +216,6 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
         for (int align = 0; align <= maxvaryalign; align++) {
             std::vector<double> & timevec = times[std::make_pair(size, align)];
             if (timevec.empty()) { continue; }
-            std::sort(timevec.begin(), timevec.end());
 
             FilterOutliers(timevec);
 

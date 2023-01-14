@@ -146,7 +146,6 @@ static double HashMapSpeedTest( HashFn hash, const int hashbits, std::vector<std
     }
     hashmap.clear();
 
-    std::sort(times.begin(), times.end());
     FilterOutliers(times);
     double mean = CalcMean(times);
     double stdv = CalcStdv(times);
@@ -199,7 +198,6 @@ static double HashMapSpeedTest( HashFn hash, const int hashbits, std::vector<std
     phashmap.clear();
     fflush(NULL);
 
-    std::sort(times.begin(), times.end());
     FilterOutliers(times);
     double mean1 = CalcMean(times);
     double stdv1 = CalcStdv(times);
