@@ -42,19 +42,19 @@ static uint64_t pengyhash( const uint8_t * p, size_t size, uint64_t seed ) {
     for (; size >= 32; size -= 32, p += 32) {
         memcpy(b, p, 32);
 
-        s[1] = (s[0] += s[1] + GET_U64<bswap>((uint8_t *)&b[3], 0)) + (s[1] << 14 | s[1] >> 50);
-        s[3] = (s[2] += s[3] + GET_U64<bswap>((uint8_t *)&b[2], 0)) + (s[3] << 23 | s[3] >> 41);
-        s[3] = (s[0] += s[3] + GET_U64<bswap>((uint8_t *)&b[1], 0)) ^ (s[3] << 16 | s[3] >> 48);
-        s[1] = (s[2] += s[1] + GET_U64<bswap>((uint8_t *)&b[0], 0)) ^ (s[1] << 40 | s[1] >> 24);
+        s[1] = (s[0] += s[1] + GET_U64<bswap>((uint8_t *)&b[3], 0)) + ROTL64(s[1], 14);
+        s[3] = (s[2] += s[3] + GET_U64<bswap>((uint8_t *)&b[2], 0)) + ROTL64(s[3], 23);
+        s[3] = (s[0] += s[3] + GET_U64<bswap>((uint8_t *)&b[1], 0)) ^ ROTL64(s[3], 16);
+        s[1] = (s[2] += s[1] + GET_U64<bswap>((uint8_t *)&b[0], 0)) ^ ROTL64(s[1], 40);
     }
 
     memcpy(b, p, size);
 
     for (i = 0; i < 6; i++) {
-        s[1] = (s[0] += s[1] + GET_U64<bswap>((uint8_t *)&b[3], 0)) + (s[1] << 14 | s[1] >> 50) + seed;
-        s[3] = (s[2] += s[3] + GET_U64<bswap>((uint8_t *)&b[2], 0)) + (s[3] << 23 | s[3] >> 41);
-        s[3] = (s[0] += s[3] + GET_U64<bswap>((uint8_t *)&b[1], 0)) ^ (s[3] << 16 | s[3] >> 48);
-        s[1] = (s[2] += s[1] + GET_U64<bswap>((uint8_t *)&b[0], 0)) ^ (s[1] << 40 | s[1] >> 24);
+        s[1] = (s[0] += s[1] + GET_U64<bswap>((uint8_t *)&b[3], 0)) + ROTL64(s[1], 14) + seed;
+        s[3] = (s[2] += s[3] + GET_U64<bswap>((uint8_t *)&b[2], 0)) + ROTL64(s[3], 23);
+        s[3] = (s[0] += s[3] + GET_U64<bswap>((uint8_t *)&b[1], 0)) ^ ROTL64(s[3], 16);
+        s[1] = (s[2] += s[1] + GET_U64<bswap>((uint8_t *)&b[0], 0)) ^ ROTL64(s[1], 40);
     }
 
     return s[0] + s[1] + s[2] + s[3];
