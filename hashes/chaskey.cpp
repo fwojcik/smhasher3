@@ -15,14 +15,14 @@
 #include "Hashlib.h"
 
 //------------------------------------------------------------
-#define ROUND(v)                                          \
-    do {                                                  \
-        v[0] += v[1]; v[1]=ROTL32(v[1], 5);               \
-        v[1] ^= v[0]; v[0]=ROTL32(v[0],16);               \
-        v[2] += v[3]; v[3]=ROTL32(v[3], 8); v[3] ^= v[2]; \
-        v[0] += v[3]; v[3]=ROTL32(v[3],13); v[3] ^= v[0]; \
-        v[2] += v[1]; v[1]=ROTL32(v[1], 7);               \
-        v[1] ^= v[2]; v[2]=ROTL32(v[2],16);               \
+#define ROUND(v)                                             \
+    do {                                                     \
+        v[0] += v[1]; v[1] = ROTL32(v[1],  5);               \
+        v[1] ^= v[0]; v[0] = ROTL32(v[0], 16);               \
+        v[2] += v[3]; v[3] = ROTL32(v[3],  8); v[3] ^= v[2]; \
+        v[0] += v[3]; v[3] = ROTL32(v[3], 13); v[3] ^= v[0]; \
+        v[2] += v[1]; v[1] = ROTL32(v[1],  7);               \
+        v[1] ^= v[2]; v[2] = ROTL32(v[2], 16);               \
     } while(0)
 
 template <uint32_t rounds, uint32_t tagwords, bool bswap>
@@ -144,7 +144,7 @@ static uintptr_t seed_subkeys( uint64_t seed ) {
     ROUND(chaskeys.k);
 
     make_subkeys(chaskeys.k1, chaskeys.k2, chaskeys.k);
-    return (uintptr_t)(&chaskeys);
+    return (uintptr_t)&chaskeys;
 }
 
 template <uint32_t rounds, uint32_t tagwords, bool bswap>
