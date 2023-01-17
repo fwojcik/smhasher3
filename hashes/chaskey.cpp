@@ -25,17 +25,17 @@
         v[1] ^= v[2]; v[2] = ROTL32(v[2], 16);               \
     } while(0)
 
+typedef struct {
+    uint32_t  k[4];
+    uint32_t  k1[4];
+    uint32_t  k2[4];
+} keys_t;
+
 template <uint32_t rounds, uint32_t tagwords, bool bswap>
-static void chaskey_impl( uint8_t * tag, const uint8_t * m, const size_t mlen, const uint32_t k[4],
-        const uint32_t k1[4], const uint32_t k2[4] ) {
+static void chaskey_impl( uint8_t * tag, const uint8_t * m, const size_t mlen, const keys_t *k ) {
     const uint8_t * end = m + (((mlen - 1) >> 4) << 4); /* pointer to last message block */
 
-    uint32_t v[4];
-
-    v[0] = k[0];
-    v[1] = k[1];
-    v[2] = k[2];
-    v[3] = k[3];
+    uint32_t v[4] = { k->k[0], k->k[1], k->k[2], k->k[3] };
 
     if (mlen != 0) {
         for (; m != end; m += 16) {
@@ -55,10 +55,10 @@ static void chaskey_impl( uint8_t * tag, const uint8_t * m, const size_t mlen, c
     uint8_t          lb[16];
 
     if ((mlen != 0) && (remain == 0)) {
-        lastkey   = k1;
+        lastkey   = k->k1;
         lastblock = m;
     } else {
-        lastkey = k2;
+        lastkey = k->k2;
         memset(lb, 0, sizeof(lb));
         memcpy(lb, m, remain);
         lb[remain] = 0x01; /* padding bit */
@@ -100,18 +100,22 @@ static const volatile uint32_t C[2] = { 0x00, 0x87 };
         out[3] = (in[3] << 1) | (in[2] >> 31);  \
     } while(0)
 
-static void make_subkeys( uint32_t k1[4], uint32_t k2[4], const uint32_t k[4] ) {
-    TIMESTWO(k1, k );
-    TIMESTWO(k2, k1);
+static void make_subkeys( keys_t * keys ) {
+    TIMESTWO(keys->k1, keys->k );
+    TIMESTWO(keys->k2, keys->k1);
 }
 
 //------------------------------------------------------------
-typedef struct {
-    uint32_t  k[4];
-    uint32_t  k1[4];
-    uint32_t  k2[4];
-} keys_t;
 
+// Chaskey uses a 16-byte key, plus two more 16-byte subkeys that are
+// most easily precomputed.  To make this fit SMhasher's 64-bit seed
+// model, we do two things:
+// - Have a homegrown function to expand a 64-bit seed to a 128-bit
+//   chaskey key.
+// - Have a "seed function" which expands the seed into a thread-local
+//   structure and returns a pointer to that structure cast to a 64-bit
+//   integer.  The actual hash function then dereferences the "seed"
+//   it receives to find the key.
 static thread_local keys_t chaskeys;
 
 // Homegrown seeding for SMHasher3
@@ -143,7 +147,7 @@ static uintptr_t seed_subkeys( uint64_t seed ) {
     ROUND(chaskeys.k);
     ROUND(chaskeys.k);
 
-    make_subkeys(chaskeys.k1, chaskeys.k2, chaskeys.k);
+    make_subkeys(&chaskeys);
     return (uintptr_t)&chaskeys;
 }
 
@@ -151,7 +155,7 @@ template <uint32_t rounds, uint32_t tagwords, bool bswap>
 static void chaskey( const void * in, const size_t len, const seed_t seed, void * out ) {
     const keys_t * keys = (const keys_t *)(uintptr_t)seed;
 
-    chaskey_impl<rounds, tagwords, bswap>((uint8_t *)out, (const uint8_t *)in, len, keys->k, keys->k1, keys->k2);
+    chaskey_impl<rounds, tagwords, bswap>((uint8_t *)out, (const uint8_t *)in, len, keys);
 }
 
 //------------------------------------------------------------
