@@ -411,8 +411,8 @@ static inline struct split_accumulator split_accumulator_update( const struct sp
 
     fixup = add_overflow(lo0, lo1, &sum);
 
-    assert(hi0 < (1UL << 61));
-    assert(hi1 < (1UL << 61));
+    assert(hi0 < (UINT64_C(1) << 61));
+    assert(hi1 < (UINT64_C(1) << 61));
     /* hi0 and hi1 < 2**61, so this addition never overflows. */
     hi     = hi0 + hi1;
 
@@ -1059,7 +1059,7 @@ static bool value_is_repeated( const uint64_t * values, size_t n, uint64_t needl
 }
 
 static bool umash_params_prepare( struct umash_params * params ) {
-    static const uint64_t modulo = (1UL << 61) - 1;
+    static const uint64_t modulo = (UINT64_C(1) << 61) - 1;
     /*
      * The polynomial parameters have two redundant fields (for
      * the pre-squared multipliers).  Use them as our source of
@@ -1085,7 +1085,7 @@ static bool umash_params_prepare( struct umash_params * params ) {
              * Zero out bits and use rejection sampling to
              * guarantee uniformity.
              */
-            f &= (1UL << 61) - 1;
+            f &= (UINT64_C(1) << 61) - 1;
             if ((f != 0) && (f < modulo)) {
                 break;
             }
