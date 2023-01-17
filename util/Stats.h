@@ -67,7 +67,7 @@ int GetNLogNBound( unsigned nbH );
 double ScalePValue( double p_value, unsigned testcount );
 double ScalePValue2N( double p_value, int testbits );
 int GetLog2PValue( double p_value );
-double GetNormalPValue( const double mu, const double sd, const double variable );
+double GetStdNormalPValue( const double variable );
 double EstimatedBinomialPValue( const unsigned long nbH, const int nbBits, const int maxColl );
 double EstimateMaxCollisions( const unsigned long nbH, const int nbBits );
 double BoundedPoissonPValue( const double expected, const uint64_t collisions );

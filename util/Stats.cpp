@@ -981,14 +981,10 @@ int GetLog2PValue( double p_value ) {
 }
 
 /*
- * Given a mean and standard deviation, return (1.0 - p) for the given
- * random normal variable.
+ * Return (1.0 - p) for the given random standard normal variate.
  */
-double GetNormalPValue( const double mu, const double sd, const double variable ) {
-    double stdvar  = (variable - mu) / sd;
-    double p_value = erfc(stdvar / sqrt(2.0)) / 2.0;
-
-    return p_value;
+double GetStdNormalPValue( const double variable ) {
+    return erfc(variable * M_SQRT1_2) * 0.5;
 }
 
 /*
@@ -1047,7 +1043,7 @@ double EstimatedBinomialPValue( const unsigned long nbH, const int nbBits, const
     const double z2    = d2 * sqrt(num / denom);
 
     // (1.0 - p) for one hash bin
-    double p_value = GetNormalPValue(0.0, 1.0, z2);
+    double p_value = GetStdNormalPValue(z2);
     // fprintf(stderr, "Pr(Xi > %ld; %d, %d) ~= 1.0 - N(%f)\n", nbH, nbBits, maxColl, z2);
 
     // (1.0 - p) across all 2**nbBits hash bins
@@ -1265,7 +1261,7 @@ double ChiSqPValue( double chisq, uint64_t dof ) {
         //
         // Since we want this result in our usual "1.0 - p" format, and we
         // already have a function for 1 - Q(y), this is easy to compute.
-        return 2.0 * GetNormalPValue(0.0, 1.0, sqrt(chisq));
+        return 2.0 * GetStdNormalPValue(sqrt(chisq));
     }
 
     double ddof = (double)dof;

@@ -608,7 +608,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
     addVCodeResult(worstWidth      );
     addVCodeResult(worstStart      );
 
-    double p_value    = ScalePValue(GetNormalPValue(0, 1, worstN), tests);
+    double p_value    = ScalePValue(GetStdNormalPValue(worstN), tests);
     int    logp_value = GetLog2PValue(p_value);
     double mult       = normalizeScore(worstN, worstWidth, tests);
 
