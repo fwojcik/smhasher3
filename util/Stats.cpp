@@ -949,8 +949,8 @@ double ScalePValue( double p_value, unsigned testcount ) {
 /*
  * This is exactly the same as ScalePValue, but for 2**N tests.
  */
-double ScalePValue2N( double p_value, unsigned testbits ) {
-    return -expm1(log1p(-p_value) * exp2(testbits));
+double ScalePValue2N( double p_value, int testbits ) {
+    return -expm1(ldexp(log1p(-p_value), testbits));
 }
 
 /*
