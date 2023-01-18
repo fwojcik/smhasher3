@@ -991,17 +991,11 @@ double GetStdNormalPValue( const double variable ) {
  * A helper function for the Peizer and Pratt approximation below.
  */
 static double GFunc_PeizerPratt( const double x ) {
-    if (x < 0.0) {
-        return NAN;
+    if (x <= 0.0) {
+        return x == 0.0 ? 1.0 : NAN;
     }
-    if (x == 0.0) {
-        return 1.0;
-    }
-    if (x == 1.0) {
-        return 0.0;
-    }
-    if (x > 1.0) {
-        return -GFunc_PeizerPratt(1.0 / x);
+    if (x >= 1.0) {
+        return x == 1.0 ? 0.0 : -GFunc_PeizerPratt(1.0 / x);
     }
     return (1.0 - x * x + 2 * x * log(x)) / ((1.0 - x) * (1.0 - x));
 }
