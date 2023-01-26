@@ -179,12 +179,12 @@ bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra
 
     const seed_t seed = hinfo->Seed(g_seed, false, 2);
 
-    std::set<int> testBitsvec = { 24, 32, 40, 48, 56, 64, 80, 128, 160 };
-    if (hinfo->bits <= 64) {
+    std::set<int> testBitsvec = { 24, 32, 40, 48, 56, 64, 72, 80, 96, 128, 160 };
+    if (hinfo->bits <= 128) {
         testBitsvec.insert({ 512, 1024 });
     }
     if (extra) {
-        testBitsvec.insert({ 192, 224, 256, 320, 384, 448, 512, 1024, 1280 });
+        testBitsvec.insert({ 192, 224, 256, 320, 384, 448, 512, 1024, 1280, 1536 });
     }
 
     for (int testBits: testBitsvec) {
