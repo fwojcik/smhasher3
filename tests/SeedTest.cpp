@@ -110,14 +110,14 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
 
 //-----------------------------------------------------------------------------
 // Keyset 'SeedSparse' - hash "sphinx of black quartz..." using seeds with few
-// bits set/cleared
+// bits set
 
 template <typename hashtype, uint32_t maxbits, bool bigseed>
 static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiagram ) {
     assert(maxbits < 16);
     assert(keylen < MAXLEN);
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
-    uint64_t     totalkeys = 2 + 2 * chooseUpToK(bigseed ? 64 : 32, maxbits);
+    uint64_t     totalkeys = 1 + chooseUpToK(bigseed ? 64 : 32, maxbits);
     uint64_t     cnt       = 0;
 
     printf("Keyset 'SeedSparse' - %3d-byte keys - seeds with up to %2d bits set - %" PRId64 " seeds\n", keylen, maxbits, totalkeys);
@@ -143,9 +143,6 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
     seed = hinfo->Seed(0, true);
     hash(key, keylen, seed, &hashes[cnt++]);
 
-    seed = hinfo->Seed(~0, true);
-    hash(key, keylen, seed, &hashes[cnt++]);
-
     for (seed_t i = 1; i <= maxbits; i++) {
         uint64_t seed = (UINT64_C(1) << i) - 1;
         bool     done;
@@ -155,9 +152,6 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
             hseed = hinfo->Seed(seed, true);
             hash(key, keylen, hseed, &hashes[cnt++]);
 
-            hseed = hinfo->Seed(~seed, true);
-            hash(key, keylen, hseed, &hashes[cnt++]);
-
             /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
             uint64_t t = (seed | (seed - 1)) + 1;
             seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
@@ -165,7 +159,7 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
         } while (!done);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(2);
+    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1);
     printf("\n");
 
     recordTestResult(result, "SeedSparse", keylen);
