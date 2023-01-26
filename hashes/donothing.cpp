@@ -90,6 +90,20 @@ REGISTER_HASH(donothing_128,
    $.hashfn_bswap    = DoNothingHash
  );
 
+REGISTER_HASH(donothing_256,
+   $.desc       = "Do-Nothing function (measure call overhead)",
+   $.hash_flags =
+         FLAG_HASH_MOCK,
+   $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS     |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 256,
+   $.verification_LE = 0x0,
+   $.verification_BE = 0x0,
+   $.hashfn_native   = DoNothingHash,
+   $.hashfn_bswap    = DoNothingHash
+ );
+
 REGISTER_HASH(donothingOAAT_32,
    $.desc       = "Do-Nothing OAAT function (measure call+OAAT overhead)",
    $.hash_flags =
