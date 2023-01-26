@@ -217,7 +217,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
     delete [] key;
 
     //----------
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(corecount - 1).testDistribution(true);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(true).testDeltas(1);
     printf("\n");
 
     char buf[32];
@@ -313,14 +313,17 @@ bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
     // Random sets of 1..4 word-like characters
     result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1,  4, alnum, "alnum", verbose);
 
+    // Random sets of 5..8 word-like characters
+    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 5,  8, alnum, "alnum", verbose);
+
     // Random sets of 1..16 word-like characters
     result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1, 16, alnum, "alnum", verbose);
 
-    // Random sets of approx 4096 word-like characters, with small changes
-    for (auto blksz: { 4096 }) {
-        result &= WordsLongImpl<hashtype,  true>(hash, seed, 3000, 16, blksz - 16, blksz + 16, alnum, "alnum", verbose);
-        result &= WordsLongImpl<hashtype, false>(hash, seed, 3000, 16, blksz - 16, blksz + 16, alnum, "alnum", verbose);
+    // Random sets of 1..32 word-like characters
+    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1, 32, alnum, "alnum", verbose);
 
+    // Random sets of many word-like characters, with small changes
+    for (auto blksz: { 2048, 4096, 8192 }) {
         result &= WordsLongImpl<hashtype,  true>(hash, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", verbose);
         result &= WordsLongImpl<hashtype, false>(hash, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", verbose);
     }
