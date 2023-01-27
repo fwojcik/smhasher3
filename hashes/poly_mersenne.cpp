@@ -46,13 +46,7 @@
 //
 // If you plan on using this hash, it is STRONGLY recommended that you
 // test it with the RNG you plan on using to seed it.
-static uint64_t BSD_nextrand;
-
-static void BSD_srand( uint64_t seed ) {
-    BSD_nextrand = seed;
-}
-
-static uint32_t BSD_rand( void ) {
+static uint32_t BSD_rand( uint64_t * BSD_nextrandp ) {
     /*
      * Compute x = (7^5 * x) mod (2^31 - 1)
      * without overflowing 31 bits:
@@ -63,14 +57,14 @@ static uint32_t BSD_rand( void ) {
      */
     uint64_t hi, lo, x;
 
-    x  = (BSD_nextrand % 0x7ffffffe)      + 1;
+    x  = (*BSD_nextrandp % 0x7ffffffe) + 1;
     hi = x / 127773;
     lo = x % 127773;
-    x  = 16807         * lo        - 2836 * hi;
+    x  = 16807 * lo - 2836 * hi;
     if (x < 0) {
         x += 0x7fffffff;
     }
-    BSD_nextrand = --x;
+    *BSD_nextrandp = --x;
     return x;
 }
 
@@ -84,27 +78,27 @@ struct poly_mersenne_struct {
 };
 static thread_local struct poly_mersenne_struct poly_mersenne_data;
 
-static uint128_t rand_u128( void ) {
+static uint128_t rand_u128( uint64_t * BSD_nextrandp ) {
     // We don't know how many bits we get from rand(),
     // but it is at least 16, so we concattenate a couple.
-    uint128_t r = BSD_rand();
+    uint128_t r = BSD_rand(BSD_nextrandp);
 
     for (int i = 0; i < 7; i++) {
         r <<= 16;
-        r  ^= BSD_rand();
+        r  ^= BSD_rand(BSD_nextrandp);
     }
     return r;
 }
 
 static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
-    BSD_srand(seed);
+    uint64_t BSD_nextrand = (uint64_t)seed;
     // a has be at most 2^60, or the lazy modular reduction won't work.
-    poly_mersenne_data.poly_mersenne_a = rand_u128() % (MERSENNE_61 / 2);
-    poly_mersenne_data.poly_mersenne_b = rand_u128() % MERSENNE_61;
+    poly_mersenne_data.poly_mersenne_a = rand_u128(&BSD_nextrand) % (MERSENNE_61 / 2);
+    poly_mersenne_data.poly_mersenne_b = rand_u128(&BSD_nextrand) % MERSENNE_61;
     for (int i = 0; i < POLY_MERSENNE_MAX_K + 1; i++) {
         // The random values should be at most 2^61-2, or the lazy
         // modular reduction won't work.
-        poly_mersenne_data.poly_mersenne_random[i] = rand_u128() % MERSENNE_61;
+        poly_mersenne_data.poly_mersenne_random[i] = rand_u128(&BSD_nextrand) % MERSENNE_61;
     }
     return (seed_t)(uintptr_t)&poly_mersenne_data;
 }
