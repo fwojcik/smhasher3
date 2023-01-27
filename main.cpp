@@ -455,6 +455,27 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
+    // Bit Independence Criteria.
+
+    if (g_testBIC) {
+        result &= BicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Keyset 'Zeroes'
+
+    if (g_testZeroes) {
+        result &= ZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Keyset 'Cyclic' - keys of the form "abcdabcdabcd..."
+
+    if (g_testCyclic) {
+        result &= CyclicKeyTest<hashtype>(hInfo, g_drawDiagram);
+    }
+
+    //-----------------------------------------------------------------------------
     // Keyset 'Sparse' - keys with all bits 0 except a few
 
     if (g_testSparse) {
@@ -469,29 +490,6 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Keyset 'Window'
-
-    if (g_testWindow) {
-        result &= WindowedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Keyset 'Cyclic' - keys of the form "abcdabcdabcd..."
-
-    if (g_testCyclic) {
-        result &= CyclicKeyTest<hashtype>(hInfo, g_drawDiagram);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Keyset 'TwoBytes' - all keys up to N bytes containing two non-zero bytes
-    // With --extra this generates some huge keysets,
-    // 128-bit tests will take ~1.3 gigs of RAM.
-
-    if (g_testTwoBytes) {
-        result &= TwoBytesKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
     // Keyset 'Text'
 
     if (g_testText) {
@@ -499,17 +497,24 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Keyset 'Zeroes'
+    // Keyset 'TwoBytes' - all keys up to N bytes containing two non-zero bytes
 
-    if (g_testZeroes) {
-        result &= ZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
+    if (g_testTwoBytes) {
+        result &= TwoBytesKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
-    // Keyset 'Seed'
+    // Keyset 'PerlinNoise'
 
-    if (g_testSeed) {
-        result &= SeedTest<hashtype>(hInfo, g_drawDiagram);
+    if (g_testPerlinNoise) {
+        result &= PerlinNoiseTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Differential-distribution tests
+
+    if (g_testDiffDist) {
+        result &= DiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
@@ -534,10 +539,10 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Keyset 'SeedDiffDist'
+    // Keyset 'Seed'
 
-    if (g_testSeedDiffDist) {
-        result &= SeedDiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    if (g_testSeed) {
+        result &= SeedTest<hashtype>(hInfo, g_drawDiagram);
     }
 
     //-----------------------------------------------------------------------------
@@ -555,10 +560,17 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Keyset 'PerlinNoise'
+    // Keyset 'SeedDiffDist'
 
-    if (g_testPerlinNoise) {
-        result &= PerlinNoiseTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    if (g_testSeedDiffDist) {
+        result &= SeedDiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Keyset 'Window'
+
+    if (g_testWindow) {
+        result &= WindowedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
@@ -566,13 +578,6 @@ static bool test( const HashInfo * hInfo ) {
 
     if (g_testDiff) {
         result &= DiffTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Differential-distribution tests
-
-    if (g_testDiffDist) {
-        result &= DiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
@@ -589,13 +594,6 @@ static bool test( const HashInfo * hInfo ) {
 
     if (g_testPrng) {
         result &= PRNGTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Bit Independence Criteria.
-
-    if (g_testBIC) {
-        result &= BicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
