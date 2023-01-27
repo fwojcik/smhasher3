@@ -129,7 +129,7 @@ static bool TwoBytesTestLen( HashFn hash, const seed_t seed, int keylen, bool ve
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).testDistribution(extra);
     printf("\n");
 
-    recordTestResult(result, "TwoBytesLen", keylen);
+    recordTestResult(result, "TwoBytes", keylen);
 
     addVCodeResult(result);
 
@@ -205,7 +205,7 @@ static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, int maxlen, boo
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).testDistribution(extra);
     printf("\n");
 
-    recordTestResult(result, "TwoBytesUpToLen", maxlen);
+    recordTestResult(result, "TwoBytes", maxlen);
 
     addVCodeResult(result);
 
