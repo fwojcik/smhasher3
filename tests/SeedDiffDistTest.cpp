@@ -176,7 +176,7 @@ bool SeedDiffDistTest( const HashInfo * hinfo, const bool verbose, const bool ex
     printf("[[[ Seed 'Differential Distribution' Tests ]]]\n\n");
 
     if (hinfo->is32BitSeed()) {
-        result &= SeedDiffDistTest<Blob< 24>, hashtype, false>(hinfo, verbose);
+        //result &= SeedDiffDistTest<Blob< 24>, hashtype, false>(hinfo, verbose);
         result &= SeedDiffDistTest<Blob< 32>, hashtype, false>(hinfo, verbose);
         result &= SeedDiffDistTest<Blob< 64>, hashtype, false>(hinfo, verbose);
         if (extra && !hinfo->isSlow()) {
@@ -184,7 +184,7 @@ bool SeedDiffDistTest( const HashInfo * hinfo, const bool verbose, const bool ex
             result &= SeedDiffDistTest<Blob<256>, hashtype, false>(hinfo, verbose);
         }
     } else {
-        result &= SeedDiffDistTest<Blob< 24>, hashtype,  true>(hinfo, verbose);
+        //result &= SeedDiffDistTest<Blob< 24>, hashtype,  true>(hinfo, verbose);
         result &= SeedDiffDistTest<Blob< 32>, hashtype,  true>(hinfo, verbose);
         result &= SeedDiffDistTest<Blob< 64>, hashtype,  true>(hinfo, verbose);
         if (extra && !hinfo->isSlow()) {

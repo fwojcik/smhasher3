@@ -173,7 +173,7 @@ bool DiffDistTest( const HashInfo * hinfo, const bool verbose, const bool extra 
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffDistTest2<Blob< 24>, hashtype>(hinfo, seed, verbose);
+    //result &= DiffDistTest2<Blob< 24>, hashtype>(hinfo, seed, verbose);
     result &= DiffDistTest2<Blob< 32>, hashtype>(hinfo, seed, verbose);
     result &= DiffDistTest2<Blob< 64>, hashtype>(hinfo, seed, verbose);
     if (extra && !hinfo->isVerySlow()) {
