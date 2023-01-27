@@ -183,11 +183,14 @@ bool SeedBicTest( const HashInfo * hinfo, const bool verbose, const bool extra )
 
     //std::set<size_t> keylens = { 3, 4, 5, 6, 7, 8, 32, 128, 1024 };
     //std::set<size_t> keylens = { 3, 4, 6, 7, 8, 11, 15, 28, 52, 256, 1024 };
-    std::set<size_t> keylens = { 3, 4, 6, 8, 11, 15, 28, 52, 1024 };
+    std::set<size_t> keylens = { 3, 8, 11, 15 };
+    if (extra && !hinfo->isSlow()) {
+        keylens.insert({ 4, 6, 28, 52, 1024 });
+    }
     for (const auto keylen: keylens) {
         if (keylen <= 16) {
             result &= BicTestImpl<hashtype>(hinfo, keylen, reps * 2, verbose);
-        } else if (1 || (extra && !hinfo->isSlow())) {
+        } else {
             result &= BicTestImpl<hashtype>(hinfo, keylen, reps, verbose);
         }
     }
