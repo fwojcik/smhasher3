@@ -153,7 +153,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
     }
 
     if (!drawDiagram) {
-        printf("%3d failed, worst is key bit %3d\n", fails, worstkeybit, worstlogp);
+        printf("%3d failed, worst is key bit %3d%s\n", fails, worstkeybit, result ? "" : "                  !!!!!");
         bool ignored = TestHashList(worsthashes).testDistribution(true);
         printf("\n");
     }
