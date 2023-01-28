@@ -124,8 +124,9 @@ static void SeedBlockLenTest_Impl2( const HashInfo * hinfo, std::vector<hashtype
 template <typename hashtype, size_t blocklen>
 static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_min, size_t blockoffset_incr,
         size_t keylen, size_t seedmaxbits, size_t blockmaxbits ) {
-    const size_t blockoffset_max = keylen - blocklen;
-    if (blockoffset_max < (blockoffset_min + blockoffset_incr)) { return true; } // XXX-FIXME-XXX
+    assert((keylen - blocklen - blockoffset_min) >= blockoffset_incr);
+    const size_t blockoffset_max = blockoffset_min +
+        (((keylen - blocklen - blockoffset_min) / blockoffset_incr) * blockoffset_incr);
 
     // Compute the number of hashes that will be generated
     size_t testseeds = 0;
