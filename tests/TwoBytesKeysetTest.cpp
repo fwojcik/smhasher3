@@ -153,7 +153,7 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, int maxlen, s
         keycount += i * 255;
     }
 
-    printf("Keyset 'TwoBytes' - up-to-%d-byte keys - %d keys\n", maxlen, keycount);
+    printf("Keyset 'TwoBytes' - all [2, %d]-byte keys with 1 or 2 non-zero bytes - %d keys\n", maxlen, keycount);
 
     //----------
     // Add all keys with one non-zero byte
