@@ -108,7 +108,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 template <typename hashtype>
 static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
         const int reps, bool drawDiagram, bool drawdots ) {
-    Rand r( 48273 );
+    Rand r( 48273 + keybits );
 
     assert((keybits & 7) == 0);
 

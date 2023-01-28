@@ -64,7 +64,7 @@
 template <typename keytype, typename hashtype, bool ckuniq = (sizeof(keytype) < 6)>
 static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    Rand r( 857374 );
+    Rand r( 857374 + sizeof(keytype) );
 
     int       keybytes = sizeof(keytype);
     int       keybits  = keybytes * 8;

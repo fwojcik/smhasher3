@@ -64,7 +64,7 @@
 template <typename keytype, typename hashtype, bool bigseed, bool ckuniq = (sizeof(keytype) < 6)>
 static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    Rand r( 482813 );
+    Rand r( 482813 + sizeof(keytype) );
 
     int       seedbits = bigseed ? 64 : 32;
     int       keybits  = sizeof(keytype) * 8;

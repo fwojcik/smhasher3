@@ -131,7 +131,7 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
     std::unordered_set<std::string> words; // need to be unique, otherwise we report collisions
     std::vector<hashtype>           hashes;
     hashes.resize(keycount);
-    Rand r( 483723 );
+    Rand r( 483723 + 2944 * minlen + maxlen );
 
     char *      key = new char[std::min(maxlen + 1, 64)];
     std::string key_str;
@@ -190,7 +190,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
 
     std::vector<hashtype> hashes;
     hashes.resize(totalkeys);
-    Rand r( 425379 );
+    Rand r( 425379 + 94 * varyprefix + 604 * minlen + maxlen );
     size_t cnt = 0;
 
     for (long i = 0; i < keycount; i++) {

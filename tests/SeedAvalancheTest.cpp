@@ -112,7 +112,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
 template <typename hashtype, int seedbits>
 static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes, const int reps, bool drawDiagram, bool drawdots ) {
-    Rand r( 48273 );
+    Rand r( 48273 + keybytes );
 
     const int seedbytes = seedbits / 8;
 

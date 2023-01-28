@@ -250,7 +250,7 @@ bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra )
         return result;
     }
 
-    Rand         r( 477537 );
+    Rand r( 477537 );
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
     result &= HashMapImpl(hash, hinfo->bits, words, seed, trials, verbose);
 

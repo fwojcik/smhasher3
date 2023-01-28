@@ -69,7 +69,7 @@ template <typename hashtype, int cycleLen, bool ckuniq = (cycleLen < 6)>
 static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleReps, const int keycount, bool drawDiagram ) {
     printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n", cycleReps, cycleLen, keycount);
 
-    Rand r( 483723 );
+    Rand r( 483723 + 4883 * cycleReps + cycleLen );
 
     std::vector<hashtype> hashes;
     hashes.resize(keycount);

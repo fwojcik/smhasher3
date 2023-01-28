@@ -136,7 +136,9 @@ double stddev;
 
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
         const int align, const int varysize, const int varyalign ) {
-    Rand      r( seed );
+    static uint64_t count = 0;
+    Rand r( 444793 + (count++) );
+
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + varyalign) <= 257
     uintptr_t t1  = reinterpret_cast<uintptr_t>(buf);
 

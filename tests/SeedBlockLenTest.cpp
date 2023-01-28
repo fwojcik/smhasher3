@@ -49,7 +49,6 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
-#include "Random.h"
 #include "Stats.h" // For chooseUpToK
 #include "Analyze.h"
 #include "Instantiate.h"
