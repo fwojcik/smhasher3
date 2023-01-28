@@ -147,8 +147,6 @@ REGISTER_HASH(khashv_64,
         FLAG_IMPL_LICENSE_MIT       ,
     $.bits = 64,
     $.verification_LE = 0xA6B7E55B,
-    // Should be the same on BE systems. It just won't be vectorized with GCCs
-    // vectorization built-ins since that code has and ifdef on endianess.
     $.verification_BE = 0xA6B7E55B,
     $.seedfn          = khashv64_init_seed,
     $.hashfn_native   = khashv64_test,
