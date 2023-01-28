@@ -1,7 +1,78 @@
 [[_TOC_]]
 
-Explcit list of differences from base SMhasher
-==============================================
+Differences from beta1 to beta2
+===============================
+
+Testing changes
+---------------
+- Many tests now also analyze the deltas (XORs) between hash values.
+- Several test suites are now deprecated, and are no longer invoked by default.
+- Reporting on peak collision count for 12- and 8-bit values has been
+  disabled. Analysis shows that this added far more (reporting) noise than
+  signal (new problems found).
+- The BadSeeds test has been thoroughly reworked. It remains off by default.
+- Many tests had their specific parameters tweaked.
+- The BIC (Bit Independence Criteria) test now runs by default. It also can
+  take advantage of threading, if available.
+- The Sanity test now checks that changing the seed value changes the hash.
+- The Text test now includes more variants of "FooXXXXBar" and testing of
+  long strings with changes at either end.
+- The TwoBytes test now checks more lengths.
+- The DiffDist test now checks more lengths, and has had its reporting
+  changed to only report the total number of failing bits and gives details
+  on the single worst failing bit. All bits get a full report when
+  --verbose is given
+- The following new tests have been added:
+   - SeedAvalanche
+   - SeedBIC
+   - SeedBlockLen
+   - SeedBlockOffset
+   - SeedDiffDist
+   - SeedZeroes
+- Tweaked warning and failure p-value thresholds based on new number of tests.
+- Test suites have been reordered, to group similar tests together and to
+  try to have tests which are more likely to find unusual problems run
+  earlier than they did before.
+
+General hash changes
+--------------------
+- Added textual bad seed descriptions to hashes which have patterns of bad
+  seeds that are not simple lists of specific ones.
+- Added strings to hashes for describing which implementation was chosen at
+  compile-time.
+
+Specific hash changes
+---------------------
+- aquahash
+   - Added.
+- farsh
+   - Added a tweaked version which changes what seems to be a bug. It
+     appears that the author's intent was to include the hash length into
+     a calculation, but a value of 0 was always used instead.
+- khashv
+   - Added.
+- lookup3
+   - Added a seedfix function.
+- mx3
+   - Updated to v3.
+- murmurhash2
+   - Added a seedfix function for MurmurHash2-64.int32.
+- poly_mersenne
+   - Fixed to be thread-safe.
+- tabulation
+   - Fixed to be thread-safe.
+- xxh
+   - Made XXH32 and XXH64 hashes output in canonical endianness.
+
+Other changes
+-------------
+- Failures during platform detection now cause all the compiler errors to
+  be displayed, to allow for troubleshooting more easily.
+- Several GCC and CMake bugs are now worked around.
+
+
+Differences from base SMhasher to SMHasher3 beta1
+=================================================
 
 Specific enhancements
 ---------------------

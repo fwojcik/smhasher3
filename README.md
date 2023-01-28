@@ -252,8 +252,8 @@ There are some other things that SMHasher3 is explicitly NOT trying to do:
 Changes from base SMhasher
 --------------------------
 
-See `README.refactor.md` for a detailed list of the differences going from the forked
-copy of SMHasher to SMHasher3.
+See `Changelog.md` for a detailed list of the differences going from the
+forked copy of SMHasher to SMHasher3.
 
 Endianness support and terminology
 ----------------------------------
@@ -300,7 +300,7 @@ Hash verification codes
 In beta1 of SMHasher3, the algorithm for computing hash verification codes is
 unchanged from the base SMHasher. Most hashes' verification codes are also unchanged,
 but a number have changed for various reasons, and some have been added or removed;
-see `README.refactor.md` for specifics. This should help verify that the hash
+see `Changelog.md` for specifics. This should help verify that the hash
 implementations didn't change unexpectedly when they were ported.
 
 Since SMHasher3 supports 64-bit seeds and the current algorithm for computing
