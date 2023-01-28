@@ -131,7 +131,7 @@ bool WindowedKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
     constexpr int hashbits = sizeof(hashtype) * 8;
     constexpr int keybits  = (hashbits >= 64) ? 32 : 72;
 
-    printf("[[[ Keyset 'Window' Tests ]]]\n\n");
+    printf("[[[ Keyset 'Window' Tests (deprecated) ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 

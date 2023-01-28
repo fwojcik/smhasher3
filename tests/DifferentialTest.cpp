@@ -255,7 +255,7 @@ bool DiffTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     bool slowhash = hinfo->bits > 128 || hinfo->isSlow();
     int  reps     = hinfo->isMock() ? 2 : ((slowhash && !extra) ? 100 : 1000);
 
-    printf("[[[ Diff 'Differential' Tests ]]]\n\n");
+    printf("[[[ Diff 'Differential' Tests (deprecated) ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 

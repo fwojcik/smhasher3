@@ -90,7 +90,7 @@ bool PRNGTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     bool         result = true;
     std::vector<hashtype> hashes;
 
-    printf("[[[ Prng Tests ]]]\n\n");
+    printf("[[[ PRNG Tests (deprecated) ]]]\n\n");
 
     if (sizeof(hashtype) < 8) {
         printf("Skipping PRNG test; it is designed for hashes >= 64-bits\n\n");
