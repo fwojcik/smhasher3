@@ -108,6 +108,12 @@ function(findVariant prefix)
     endif()
   endforeach()
 
+  # If detection fails, then delete whatever happened to be the last
+  # variant that was tried, so it doesn't confuse the issue.
+  if(NOT WORKED)
+    file(REMOVE ${CMAKE_BINARY_DIR}/curvariant.h)
+  endif()
+
   if(${isfallback})
     if(NOT WORKED)
       message(STATUS "Compiler outputs for compilation attempts:")
