@@ -228,49 +228,54 @@ add_custom_target(SMHasher3Version ${CMAKE_COMMAND}
 )
 add_dependencies(SMHasher3 SMHasher3Version)
 
+# IPO/LTO is a giant pain, and does not seem to increase performance at
+# all (--extra runs 3s faster without it!). Disable it completely for now.
+
+if(FALSE)
 # Only do IPO/LTO if we are not on a dev branch
-if((CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 9)
-   AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-  include(CheckIPOSupported)
-  check_ipo_supported(RESULT ipo_supported OUTPUT error)
-endif()
-execute_process(
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    OUTPUT_VARIABLE GIT_BRANCHISH
-    RESULT_VARIABLE GIT_BRANCHISH_ERROR_CODE
-    COMMAND ${GIT_EXECUTABLE} describe --contains --always --all HEAD
-)
-if(NOT GIT_BRANCHISH_ERROR_CODE)
-  string(FIND "${GIT_BRANCHISH}" "dev" offset)
-  if("${offset}" EQUAL 0)
-    set(ipo_supported FALSE)
-    set(error "disabled on dev branch")
+  if((CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 9)
+     AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT ipo_supported OUTPUT error)
   endif()
-endif()
-if(ipo_supported)
-  message(STATUS "IPO / LTO enabled")
-  set_property(TARGET SMHasher3Tests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-  set_property(TARGET SMHasher3      PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-  # Workaround CMake bugs 17781, 23136, and 23640 at the least :-/
-  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-fno-fat-lto-objects")
-      message(STATUS "  Enabling LTO fat objects")
-      string(REGEX REPLACE "-fno-fat-lto-objects" "-ffat-lto-objects" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
-    endif()
-    # We get a warning forced on us even if we specify 1 explictly! Thanks, gcc!
-    if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-flto=")
-      message(STATUS "  Forcing 2 LTO processes")
-      string(REGEX REPLACE "-flto=[a-zA-Z0-9]+" "-flto=2" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
-    endif()
-  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-flto=")
-      message(STATUS "Forcing LTO with fat objects")
-      string(REGEX REPLACE "-flto=[a-zA-Z0-9]+" "-flto=full" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
+  execute_process(
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      OUTPUT_VARIABLE GIT_BRANCHISH
+      RESULT_VARIABLE GIT_BRANCHISH_ERROR_CODE
+      COMMAND ${GIT_EXECUTABLE} describe --contains --always --all HEAD
+  )
+  if(NOT GIT_BRANCHISH_ERROR_CODE)
+    string(FIND "${GIT_BRANCHISH}" "dev" offset)
+    if("${offset}" EQUAL 0)
+      set(ipo_supported FALSE)
+      set(error "disabled on dev branch")
     endif()
   endif()
-else()
-  message(STATUS "IPO / LTO not supported: <${error}>")
+  if(ipo_supported)
+    message(STATUS "IPO / LTO enabled")
+    set_property(TARGET SMHasher3Tests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET SMHasher3      PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    # Workaround CMake bugs 17781, 23136, and 23640 at the least :-/
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+      if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-fno-fat-lto-objects")
+        message(STATUS "  Enabling LTO fat objects")
+        string(REGEX REPLACE "-fno-fat-lto-objects" "-ffat-lto-objects" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
+      endif()
+      # We get a warning forced on us even if we specify 1 explictly! Thanks, gcc!
+      if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-flto=")
+        message(STATUS "  Forcing 2 LTO processes")
+        string(REGEX REPLACE "-flto=[a-zA-Z0-9]+" "-flto=2" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
+      endif()
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      if(CMAKE_CXX_COMPILE_OPTIONS_IPO MATCHES "-flto=")
+        message(STATUS "Forcing LTO with fat objects")
+        string(REGEX REPLACE "-flto=[a-zA-Z0-9]+" "-flto=full" CMAKE_CXX_COMPILE_OPTIONS_IPO "${CMAKE_CXX_COMPILE_OPTIONS_IPO}")
+      endif()
+    endif()
+  else()
+    message(STATUS "IPO / LTO not supported: <${error}>")
+  endif()
 endif()
 
 if(NOT (CMAKE_CROSSCOMPILING))
