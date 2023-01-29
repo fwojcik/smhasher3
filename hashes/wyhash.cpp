@@ -100,7 +100,7 @@ static inline uint64_t _wyhash64( const void * key, size_t len, uint64_t seed, c
     const uint8_t * p = (const uint8_t *)key;
     uint64_t        a, b;
 
-    seed ^= secrets[0];
+    seed ^= _wymix<strict>(seed ^ secrets[0], secrets[1]);
 
     if (likely(len <= 16)) {
         if (likely(len >= 4)) {
@@ -131,7 +131,10 @@ static inline uint64_t _wyhash64( const void * key, size_t len, uint64_t seed, c
         a = _wyr8<bswap>(p + i - 16);
         b = _wyr8<bswap>(p + i -  8);
     }
-    return _wymix<strict>(secrets[1] ^ len, _wymix<strict>(a ^ secrets[1], b ^ seed));
+    a ^= secrets[1];
+    b ^= seed;
+    _wymum<false, strict>(&a, &b);
+    return _wymix<strict>(a ^ secrets[0] ^ len, b ^ secrets[1]);
 }
 
 //-----------------------------------------------------------------------------
@@ -194,14 +197,14 @@ static bool wyhash64_selftest( void ) {
         const uint64_t  hash;
         const char *    key;
     } selftests[] = {
-        { UINT64_C  (0x42bc986dc5eec4d3), "" }                          ,
-        { UINT64_C  (0x84508dc903c31551), "a" }                         ,
-        { UINT64_C  (0x0bc54887cfc9ecb1), "abc" }                       ,
-        { UINT64_C  (0x6e2ff3298208a67c), "message digest" }            ,
-        { UINT64_C  (0x9a64e42e897195b9), "abcdefghijklmnopqrstuvwxyz" },
-        { UINT64_C  (0x9199383239c32554), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+        { UINT64_C  (0x0409638ee2bde459), "" }                          ,
+        { UINT64_C  (0xa8412d091b5fe0a9), "a" }                         ,
+        { UINT64_C  (0x32dd92e4b2915153), "abc" }                       ,
+        { UINT64_C  (0x8619124089a3a16b), "message digest" }            ,
+        { UINT64_C  (0x7a43afb61d7f5f40), "abcdefghijklmnopqrstuvwxyz" },
+        { UINT64_C  (0xff42329b90e50d58), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
         {
-            UINT64_C(0x7c1ccf6bba30f5a5),
+            UINT64_C(0xc39cab13b115aad3),
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
         },
     };
@@ -231,7 +234,7 @@ REGISTER_FAMILY(wyhash,
  );
 
 REGISTER_HASH(wyhash_32,
-   $.desc       = "wyhash v3, 32-bit native version",
+   $.desc       = "wyhash v4, 32-bit native version",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
@@ -247,7 +250,7 @@ REGISTER_HASH(wyhash_32,
  );
 
 REGISTER_HASH(wyhash,
-   $.desc       = "wyhash v3, 64-bit non-strict version",
+   $.desc       = "wyhash v4, 64-bit non-strict version",
    $.hash_flags =
      0,
    $.impl_flags =
@@ -255,34 +258,15 @@ REGISTER_HASH(wyhash,
          FLAG_IMPL_ROTATE           |
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
    $.bits = 64,
-   $.verification_LE = 0x67031D43,
-   $.verification_BE = 0x912E4607,
+   $.verification_LE = 0xBD5E840C,
+   $.verification_BE = 0xECC972E0,
    $.hashfn_native   = Wyhash64<false, false>,
    $.hashfn_bswap    = Wyhash64<true, false>,
-   $.initfn          = wyhash64_selftest,
-   $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { 0x14cc886e, 0x1bafff47, 0x1bf4ed84, 0x2148132e,
-                         0x23fb3e35, 0x24ef2633, 0x2539bc18, 0x25a1bb0d,
-                         0x262a8bf1, 0x26729067, 0x2ce09bd2, 0x2f9681cb,
-                         0x3512becb, 0x57ee3d83, 0x62f1d185, 0x63925623,
-                         0x88790193, 0x8ed1c7cd, 0x97b56a2f, 0x97f936c0,
-                         0x9ff2bf5b, 0xacd6a3cd, 0xad36b205, 0xadf37a7a,
-                         0xb0d29372, 0xb3ba3e90, 0xb78c7221, 0xc788df63,
-                         0xc79376cb, 0xc8b9521b, 0xde49208b, 0xdf47cf08,
-                         0xe5cba36b, 0xebf0610d,
-                         0xffffffff10b9f30b, 0xffffffff1540b15b,
-                         0xffffffff1c6d5d34, 0xffffffff25b4337c,
-                         0xffffffff27f2772b, 0xffffffff2fd1137d,
-                         0xffffffff3406d909, 0xffffffff36168e45,
-                         0xffffffff368f2ebb, 0xffffffff43b5dacd,
-                         0xffffffff523224a0, 0xffffffff66e6ac13,
-                         0xffffffff77593c5c, 0xffffffff89f101ce,
-                         0xffffffff99e6b56c, 0xffffffffa7f7cd0c,
-                         0xffffffffc9f7882d, 0xfffffffff9ee4f0b }
+   $.initfn          = wyhash64_selftest
  );
 
 REGISTER_HASH(wyhash__strict,
-   $.desc       = "wyhash v3, 64-bit strict version",
+   $.desc       = "wyhash v4, 64-bit strict version",
    $.hash_flags =
      0,
    $.impl_flags =
@@ -290,8 +274,8 @@ REGISTER_HASH(wyhash__strict,
          FLAG_IMPL_ROTATE           |
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
    $.bits = 64,
-   $.verification_LE = 0xA82DBAD7,
-   $.verification_BE = 0xDB7957D4,
+   $.verification_LE = 0x2F2F154C,
+   $.verification_BE = 0x54CAB3B3,
    $.hashfn_native   = Wyhash64<false, true>,
    $.hashfn_bswap    = Wyhash64<true, true>
  );
