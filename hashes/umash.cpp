@@ -88,6 +88,15 @@ static inline uint64_t add_mod_slow( uint64_t x, uint64_t y ) {
         return sum + fixup;
     }
 
+    /*
+     * Some compilers like to compile the likely branch above with
+     * conditional moves or predication.  Insert a compiler barrier
+     * in the slow path here to force a branch.
+     */
+  #if defined(HAVE_X86_64_ASM)
+    __asm__ ("" : "+r"(sum));
+  #endif
+
     return add_mod_slow_slow_path(sum, fixup);
 }
 
