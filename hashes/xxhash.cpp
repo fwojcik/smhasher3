@@ -1284,10 +1284,8 @@ static NEVER_INLINE XXH128_hash_t XXH3_hashLong_128b_internal( const void * REST
 // XXH3 and XXH3-128 top-level functions
 
 template <bool bswap>
-static uint64_t XXH3_64bits_withSeed( const void * input, size_t len, uint64_t seed ) {
-    const uint8_t * RESTRICT secret = (const uint8_t *)XXH3_kSecret;
-    size_t secretLen = sizeof(XXH3_kSecret);
-
+static uint64_t XXH3_64bits_withSecretandSeed( const void * input, size_t len, uint64_t seed,
+        const uint8_t * RESTRICT secret, const size_t secretLen ) {
     if (len <= 16) {
         return XXH3_len_0to16_64b<bswap>((const uint8_t *)input, len, secret, seed);
     }
@@ -1308,10 +1306,8 @@ static uint64_t XXH3_64bits_withSeed( const void * input, size_t len, uint64_t s
 }
 
 template <bool bswap>
-static XXH128_hash_t XXH3_128bits_withSeed( const void * input, size_t len, uint64_t seed ) {
-    const uint8_t * RESTRICT secret = (const uint8_t *)XXH3_kSecret;
-    size_t secretLen = sizeof(XXH3_kSecret);
-
+static XXH128_hash_t XXH3_128bits_withSecretandSeed( const void * input, size_t len, uint64_t seed,
+        const uint8_t * RESTRICT secret, const size_t secretLen ) {
     if (len <= 16) {
         return XXH3_len_0to16_128b<bswap>((const uint8_t *)input, len, secret, seed);
     }
@@ -1329,6 +1325,17 @@ static XXH128_hash_t XXH3_128bits_withSeed( const void * input, size_t len, uint
     alignas(XXH_SEC_ALIGN) uint8_t secretbuf[XXH3_SECRET_DEFAULT_SIZE];
     XXH3_initCustomSecret<bswap>(secretbuf, seed);
     return XXH3_hashLong_128b_internal<bswap>(input, len, secretbuf, sizeof(secretbuf));
+}
+
+
+template <bool bswap>
+static uint64_t XXH3_64bits_withSeed( const void * input, size_t len, uint64_t seed ) {
+    return XXH3_64bits_withSecretandSeed<bswap>(input, len, seed, (const uint8_t *)XXH3_kSecret, sizeof(XXH3_kSecret));
+}
+
+template <bool bswap>
+static XXH128_hash_t XXH3_128bits_withSeed( const void * input, size_t len, uint64_t seed ) {
+    return XXH3_128bits_withSecretandSeed<bswap>(input, len, seed, (const uint8_t *)XXH3_kSecret, sizeof(XXH3_kSecret));
 }
 
 #if defined(XXH3_POP_PRAGMA)
@@ -1376,6 +1383,89 @@ static void XXH3_64( const void * in, const size_t len, const seed_t seed, void 
 template <bool bswap>
 static void XXH3_128( const void * in, const size_t len, const seed_t seed, void * out ) {
     XXH128_hash_t h = XXH3_128bits_withSeed<bswap>(in, len, seed);
+
+    // Output in "canonical" BE format
+    if (isLE()) {
+        PUT_U64<true>(h.high64, (uint8_t *)out, 0);
+        PUT_U64<true>(h.low64 , (uint8_t *)out, 8);
+    } else {
+        PUT_U64<false>(h.high64, (uint8_t *)out, 0);
+        PUT_U64<false>(h.low64 , (uint8_t *)out, 8);
+    }
+}
+
+//------------------------------------------------------------
+struct xxh3_gensecret {
+    uint8_t secret[XXH3_SECRET_DEFAULT_SIZE];
+};
+
+alignas(XXH_SEC_ALIGN) static thread_local struct xxh3_gensecret gensecret;
+
+static uintptr_t xxh3_initsecret( const seed_t seed ) {
+    if (isLE()) {
+        XXH3_initCustomSecret<false>(gensecret.secret, (uint64_t)seed);
+    } else {
+        XXH3_initCustomSecret<true>(gensecret.secret, (uint64_t)seed);
+    }
+    return (seed_t)(uintptr_t)&gensecret;
+}
+
+static uintptr_t xxh3_generatesecret( const seed_t seed ) {
+    const uint64_t seed64 = (uint64_t)seed;
+    const uint64_t seedLE = COND_BSWAP(seed64, isBE());
+
+    size_t const nbSeg16 = sizeof(gensecret.secret) / 16;
+    uint8_t scrambler[16];
+    if (isLE()) {
+        XXH3_128<false>(&seedLE, sizeof(seedLE), 0, scrambler);
+    } else {
+        XXH3_128<true>(&seedLE, sizeof(seedLE), 0, scrambler);
+    }
+    for (size_t n = 0; n < nbSeg16; n++) {
+        const XXH128_hash_t h128 = isLE() ?
+            XXH3_128bits_withSeed<false>(scrambler, sizeof(scrambler), n) :
+            XXH3_128bits_withSeed<true>(scrambler, sizeof(scrambler), n);
+        if (isLE()) {
+            PUT_U64<false>(h128.low64  ^ seed64, gensecret.secret, n * 16);
+            PUT_U64<false>(h128.high64 ^ seed64, gensecret.secret, n * 16 + 8);
+        } else {
+            PUT_U64<true>(h128.low64  ^ seed64, gensecret.secret, n * 16);
+            PUT_U64<true>(h128.high64 ^ seed64, gensecret.secret, n * 16 + 8);
+        }
+    }
+    for (size_t i = 0; i < 8; i++) {
+        gensecret.secret[XXH3_SECRET_DEFAULT_SIZE - 16 + i] ^= scrambler[15 - i];
+        gensecret.secret[XXH3_SECRET_DEFAULT_SIZE -  8 + i] ^= scrambler[ 7 - i];
+    }
+
+    return (seed_t)(uintptr_t)&gensecret;
+}
+
+// These hash entry points both emulate XXH3_NNbits_withSecret(), and not
+// XXH3_NNbits_withSecretandSeed(). The latter, bizarrely, does not used
+// the supplied secret data with inputs lengths <= XXH3_MIDSIZE_MAX. The
+// former always uses a seed value of 0 explicitly, so that is done
+// here. This does sidestep certain destructive interferences in the
+// XXH3_initCustomSecret() case which would happen if the same seed value
+// was given, which is good.
+
+template <bool bswap>
+static void XXH3_64_reseed( const void * in, const size_t len, const seed_t seed, void * out ) {
+    const struct xxh3_gensecret * gs = (const struct xxh3_gensecret *)(uintptr_t)seed;
+    uint64_t h = XXH3_64bits_withSecretandSeed<bswap>(in, len, 0, gs->secret, XXH3_SECRET_DEFAULT_SIZE);
+
+    // Output in "canonical" BE format
+    if (isLE()) {
+        PUT_U64<true>(h, (uint8_t *)out, 0);
+    } else {
+        PUT_U64<false>(h, (uint8_t *)out, 0);
+    }
+}
+
+template <bool bswap>
+static void XXH3_128_reseed( const void * in, const size_t len, const seed_t seed, void * out ) {
+    const struct xxh3_gensecret * gs = (const struct xxh3_gensecret *)(uintptr_t)seed;
+    XXH128_hash_t h = XXH3_128bits_withSecretandSeed<bswap>(in, len, 0, gs->secret, XXH3_SECRET_DEFAULT_SIZE);
 
     // Output in "canonical" BE format
     if (isLE()) {
@@ -1455,6 +1545,44 @@ REGISTER_HASH(XXH3_64,
                          0xfffffffff958a6e5, 0xfffffffff958a7e5, 0xfffffffff958a8e5 }
  );
 
+REGISTER_HASH(XXH3_64__reinit,
+   $.desc       = "xxh3, 64-bit version with secret initialized per-seed",
+   $.impl       = xxh_vector_str[XXH_VECTOR],
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE        |
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY            |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 64,
+   $.verification_LE = 0x1D70522D,
+   $.verification_BE = 0x853C024D,
+   $.hashfn_native   = XXH3_64_reseed<false>,
+   $.hashfn_bswap    = XXH3_64_reseed<true>,
+   $.seedfn          = xxh3_initsecret
+ );
+
+REGISTER_HASH(XXH3_64__regen,
+   $.desc       = "xxh3, 64-bit version with secret regenerated per-seed",
+   $.impl       = xxh_vector_str[XXH_VECTOR],
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE        |
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY            |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 64,
+   $.verification_LE = 0xD9D35F29,
+   $.verification_BE = 0x6A66F3AD,
+   $.hashfn_native   = XXH3_64_reseed<false>,
+   $.hashfn_bswap    = XXH3_64_reseed<true>,
+   $.seedfn          = xxh3_generatesecret
+ );
+
 REGISTER_HASH(XXH3_128,
    $.desc       = "xxh3, 128-bit version",
    $.impl       = xxh_vector_str[XXH_VECTOR],
@@ -1471,4 +1599,42 @@ REGISTER_HASH(XXH3_128,
    $.verification_BE = 0x6C82FA25,
    $.hashfn_native   = XXH3_128<false>,
    $.hashfn_bswap    = XXH3_128<true>
+ );
+
+REGISTER_HASH(XXH3_128__reinit,
+   $.desc       = "xxh3, 128-bit version with secret initialized per-seed",
+   $.impl       = xxh_vector_str[XXH_VECTOR],
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE        |
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY            |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 128,
+   $.verification_LE = 0x73E0E58E,
+   $.verification_BE = 0xDF32C7F9,
+   $.hashfn_native   = XXH3_128_reseed<false>,
+   $.hashfn_bswap    = XXH3_128_reseed<true>,
+   $.seedfn          = xxh3_initsecret
+ );
+
+REGISTER_HASH(XXH3_128__regen,
+   $.desc       = "xxh3, 128-bit version with secret regenerated per-seed",
+   $.impl       = xxh_vector_str[XXH_VECTOR],
+   $.hash_flags =
+         FLAG_HASH_LOOKUP_TABLE        |
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE        |
+         FLAG_IMPL_MULTIPLY            |
+         FLAG_IMPL_ROTATE              |
+         FLAG_IMPL_LICENSE_BSD,
+   $.bits = 128,
+   $.verification_LE = 0xCB11C866,
+   $.verification_BE = 0x93EA1B6C,
+   $.hashfn_native   = XXH3_128_reseed<false>,
+   $.hashfn_bswap    = XXH3_128_reseed<true>,
+   $.seedfn          = xxh3_generatesecret
  );
