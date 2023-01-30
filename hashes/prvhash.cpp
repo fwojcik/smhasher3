@@ -1,7 +1,7 @@
 /*
  * PRVHASH - Pseudo-Random-Value Hash.
  * Copyright (C) 2022       Frank J. T. Wojcik
- * Copyright (c) 2020-2021 Aleksey Vaneev
+ * Copyright (c) 2020-2022 Aleksey Vaneev
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -38,35 +38,26 @@
  */
 template <bool bswap>
 static inline uint64_t prvhash_lpu64ec( const uint8_t * const Msg, const uint8_t * const MsgEnd, uint64_t fb ) {
-    const int l = (int)(MsgEnd - Msg);
+    const size_t MsgLen = MsgEnd - Msg;
+    const int    ml8    = (int)(MsgLen * 8);
 
-    fb <<= (l << 3);
-
-    if (l > 3) {
-        fb |= (uint64_t)GET_U32<bswap>(Msg, 0);
-        if (l > 4) {
-            fb |= (uint64_t)Msg[4] << 32;
-            if (l > 5) {
-                fb |= (uint64_t)Msg[5] << 40;
-                if (l > 6) {
-                    fb |= (uint64_t)Msg[6] << 48;
+    if (MsgLen < 4) {
+        if (MsgLen != 0) {
+            fb = fb << ml8 | (uint64_t)Msg[0];
+            if (MsgLen > 1) {
+                fb |= (uint64_t)Msg[1] << 8;
+                if (MsgLen > 2) {
+                    fb |= (uint64_t)Msg[2] << 16;
                 }
             }
         }
         return fb;
     }
 
-    if (l != 0) {
-        fb |= Msg[0];
-        if (l > 1) {
-            fb |= (uint64_t)Msg[1] << 8;
-            if (l > 2) {
-                fb |= (uint64_t)Msg[2] << 16;
-            }
-        }
-    }
+    const uint64_t mh = (uint64_t)GET_U32<bswap>(MsgEnd - 4, 0);
+    const uint64_t ml = (uint64_t)GET_U32<bswap>(Msg       , 0);
 
-    return fb;
+    return fb << ml8 | ml | (mh >> (64 - ml8)) << 32;
 }
 
 static inline uint64_t prvhash_core64( uint64_t & Seed, uint64_t & lcg, uint64_t & Hash ) {
@@ -119,19 +110,18 @@ static inline uint64_t prvhash64_64m( const void * const Msg0, const size_t MsgL
     }
 
     while (1) {
-        if (Msg < (MsgEnd - (sizeof(uint64_t) - 1))) {
-            const uint64_t msgw = GET_U64<bswap>(Msg, 0);
-
-            Seed ^= msgw;
-            lcg  ^= msgw;
-        } else if (Msg <= MsgEnd) {
-            const uint64_t msgw = prvhash_lpu64ec<bswap>(Msg, MsgEnd, fb);
-
-            Seed ^= msgw;
-            lcg  ^= msgw;
+        uint64_t msgw;
+        if (Msg > (MsgEnd - (sizeof(uint64_t)))) {
+            if (Msg > MsgEnd) {
+                break;
+            }
+            msgw = prvhash_lpu64ec<bswap>(Msg, MsgEnd, fb);
         } else {
-            break;
+            msgw = GET_U64<bswap>(Msg, 0);
         }
+
+        Seed ^= msgw;
+        lcg  ^= msgw;
 
         prvhash_core64(Seed, lcg, hc ? Hash : Hash2);
 
@@ -173,25 +163,25 @@ static inline uint64_t prvhash64_64m( const void * const Msg0, const size_t MsgL
  * (with a Seed0 of 0) to the official "prvhash64s_oneshot" function
  * with HashLen == 8 or 16, but returns an immediate result.
  */
-#define PRVHASH_INIT_COUNT 5                       // Common number of initialization rounds.
-#define PRH64S_PAR 4                               // PRVHASH parallelism
-#define PRH64S_LEN (sizeof(uint64_t) * PRH64S_PAR) // Intermediate block's length.
+#define PRVHASH_INIT_COUNT 5                        // Common number of initialization rounds.
+#define PRH64S_FUSE 4                               // PRVHASH fusing.
+#define PRH64S_LEN (sizeof(uint64_t) * PRH64S_FUSE) // Intermediate block's length.
 
 template <bool bswap, bool width128>
 static inline void prvhash64s_oneshot( const void * const Msg0, size_t MsgLen0,
         uint64_t Seed0, uint8_t * const HashOut ) {
-    uint64_t Seed[PRH64S_PAR];
-    uint64_t lcg[PRH64S_PAR];
+    uint64_t Seed[PRH64S_FUSE];
+    uint64_t lcg[PRH64S_FUSE];
     uint64_t Hash[2];
     bool     hc = true;
 
     memset(Hash, 0, sizeof(Hash));
-    for (int i = 0; i < PRH64S_PAR; i++) {
+    for (int i = 0; i < PRH64S_FUSE; i++) {
         Seed[i] = Seed0;
         lcg[i]  = 0;
     }
     for (int i = 0; i < PRVHASH_INIT_COUNT; i++) {
-        for (int j = 0; j <  PRH64S_PAR; j++) {
+        for (int j = 0; j < PRH64S_FUSE; j++) {
             prvhash_core64(Seed[j], lcg[j], Hash[0]);
         }
     }
@@ -200,17 +190,17 @@ static inline void prvhash64s_oneshot( const void * const Msg0, size_t MsgLen0,
     size_t          MsgLen = MsgLen0;
 
     while (MsgLen >= PRH64S_LEN) {
-        for (int j = 0; j <  PRH64S_PAR; j++) {
-            const uint64_t m = GET_U64<bswap>(Msg, 0);
+        for (int j = 0; j < PRH64S_FUSE; j++) {
+            const uint64_t m = GET_U64<bswap>(Msg, j * sizeof(uint64_t));
             Seed[j] ^= m;
             lcg[j]  ^= m;
             prvhash_core64(Seed[j], lcg[j], hc ? Hash[0] : Hash[1]);
-            Msg     += sizeof(uint64_t);
         }
+        Msg    += PRH64S_LEN;
+        MsgLen -= PRH64S_LEN;
         if (width128) {
             hc = !hc;
         }
-        MsgLen -= PRH64S_LEN;
     }
 
     uint8_t fb = (MsgLen0 == 0) ? 1 : (uint8_t)(1 << (*(Msg + MsgLen - 1) >> 7));
@@ -246,7 +236,7 @@ static inline void prvhash64s_oneshot( const void * const Msg0, size_t MsgLen0,
     ptr     = fbytes;
 
     while (MsgLen >= PRH64S_LEN) {
-        for (int j = 0; j <  PRH64S_PAR; j++) {
+        for (int j = 0; j < PRH64S_FUSE; j++) {
             const uint64_t m = GET_U64<bswap>(ptr, 0);
             ptr     += sizeof(uint64_t);
             Seed[j] ^= m;
@@ -260,9 +250,9 @@ static inline void prvhash64s_oneshot( const void * const Msg0, size_t MsgLen0,
     }
 
     const size_t fc = 8 + (!width128 ?
-                0 : (16 + (((((MsgLen0 + MsgExtra) < (16 * PRH64S_PAR)) && !hc)) ? 8 : 0)));
+                0 : (16 + (((((MsgLen0 + MsgExtra) < (16 * PRH64S_FUSE)) && !hc)) ? 8 : 0)));
     for (size_t k = 0; k <= fc; k += sizeof(uint64_t)) {
-        for (int j = 0; j <  PRH64S_PAR; j++) {
+        for (int j = 0; j < PRH64S_FUSE; j++) {
             prvhash_core64(Seed[j], lcg[j], hc ? Hash[0] : Hash[1]);
         }
         if (width128) {
@@ -274,7 +264,7 @@ static inline void prvhash64s_oneshot( const void * const Msg0, size_t MsgLen0,
         uint64_t res = 0;
         for (int i = 0; i < 4; i++) {
             uint64_t last;
-            for (int j = 0; j < PRH64S_PAR; j++) {
+            for (int j = 0; j < PRH64S_FUSE; j++) {
                 last = prvhash_core64(Seed[j], lcg[j], hc ? Hash[0] : Hash[1]);
             }
             res ^= last;
@@ -318,39 +308,41 @@ REGISTER_FAMILY(prvhash,
  );
 
 REGISTER_HASH(prvhash_64,
-   $.desc       = "prvhash64 v4.3 64-bit output",
+   $.desc       = "prvhash64 v4.3.1 64-bit output",
    $.hash_flags =
-         0,
+         FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE    |
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_SHIFT_VARIABLE  |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
    $.verification_LE = 0xD37C7E74,
-   $.verification_BE = 0xBAD02709,
+   $.verification_BE = 0xFEFB13E6,
    $.hashfn_native   = prvhash64<false>,
    $.hashfn_bswap    = prvhash64<true>
  );
 
 REGISTER_HASH(prvhash_128,
-   $.desc       = "prvhash64 v4.3 128-bit output",
+   $.desc       = "prvhash64 v4.3.1 128-bit output",
    $.hash_flags =
-         0,
+         FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE    |
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_SHIFT_VARIABLE  |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
    $.verification_LE = 0xB447480F,
-   $.verification_BE = 0xF93A26FC,
+   $.verification_BE = 0xF10CCBC1,
    $.hashfn_native   = prvhash128<false>,
    $.hashfn_bswap    = prvhash128<true>
  );
 
 REGISTER_HASH(prvhash_64__incr,
-   $.desc       = "prvhash64 v4.3 streaming mode 64-bit output",
+   $.desc       = "prvhash64 v4.3.1 streaming mode 64-bit output",
    $.hash_flags =
          0,
    $.impl_flags =
@@ -367,7 +359,7 @@ REGISTER_HASH(prvhash_64__incr,
  );
 
 REGISTER_HASH(prvhash_128__incr,
-   $.desc       = "prvhash64 v4.3 streaming mode 128-bit output",
+   $.desc       = "prvhash64 v4.3.1 streaming mode 128-bit output",
    $.hash_flags =
          0,
    $.impl_flags =
