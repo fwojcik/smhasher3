@@ -33,6 +33,7 @@
 template <bool bswap>
 static FORCE_INLINE void XXH3_accumulate_512_avx512( void * RESTRICT acc,
         const void * RESTRICT input, const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 63) == 0);
     __m512i * const xacc   = (__m512i *)acc;
     /* data_vec    = input[0]; */
     __m512i const data_vec = bswap ?
@@ -58,6 +59,7 @@ static FORCE_INLINE void XXH3_accumulate_512_avx512( void * RESTRICT acc,
 
 template <bool bswap>
 static FORCE_INLINE void XXH3_scrambleAcc_avx512( void * RESTRICT acc, const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 63) == 0);
     __m512i * const xacc    = (__m512i *)acc;
     const __m512i   prime32 = _mm512_set1_epi32((int)XXH_PRIME32_1);
 
@@ -86,6 +88,7 @@ static FORCE_INLINE void XXH3_scrambleAcc_avx512( void * RESTRICT acc, const voi
 // union-based type punning, which is otherwise Undefined Behavior
 template <bool bswap>
 static FORCE_INLINE void XXH3_initCustomSecret_avx512( void * RESTRICT customSecret, uint64_t seed64 ) {
+    XXH_ASSERT(((size_t)customSecret & 63) == 0);
     int const     nbRounds = XXH3_SECRET_DEFAULT_SIZE / sizeof(__m512i);
     __m512i const seed_pos = _mm512_set1_epi64((xxh_i64)seed64);
     __m512i const seed     = _mm512_mask_sub_epi64(seed_pos, 0xAA, _mm512_set1_epi8(0), seed_pos);
@@ -93,6 +96,8 @@ static FORCE_INLINE void XXH3_initCustomSecret_avx512( void * RESTRICT customSec
     const __m512i * const src  = (const __m512i *)((const void *)XXH3_kSecret);
     __m512i       * const dest = (__m512i *      )customSecret;
 
+    XXH_ASSERT(((size_t)src & 63) == 0); /* control alignment */
+    XXH_ASSERT(((size_t)dest & 63) == 0);
     for (int i = 0; i < nbRounds; ++i) {
         if (bswap) {
             dest[i] = mm512_bswap64(_mm512_add_epi64(mm512_bswap64(_mm512_load_si512(src + i)), seed));

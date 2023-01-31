@@ -33,6 +33,7 @@
 template <bool bswap>
 static FORCE_INLINE void XXH3_accumulate_512_sse2( void * RESTRICT acc, const void * RESTRICT input,
         const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 15) == 0);
     /* SSE2 is just a half-scale version of the AVX2 version. */
     __m128i       * const xacc    = (__m128i *      )acc;
     /*
@@ -71,6 +72,7 @@ static FORCE_INLINE void XXH3_accumulate_512_sse2( void * RESTRICT acc, const vo
 
 template <bool bswap>
 static FORCE_INLINE void XXH3_scrambleAcc_sse2( void * RESTRICT acc, const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 15) == 0);
     __m128i       * const xacc    = (__m128i *      )acc;
     /*
      * Unaligned. This is mainly for pointer arithmetic, and because
@@ -122,6 +124,8 @@ static FORCE_INLINE void XXH3_initCustomSecret_sse2( void * RESTRICT customSecre
 #if defined(__GNUC__) || defined(__clang__)
     XXH_COMPILER_GUARD(dst16);
 #endif
+    XXH_ASSERT(((size_t)src16 & 15) == 0); /* control alignment */
+    XXH_ASSERT(((size_t)dst16 & 15) == 0);
 
     for (int i = 0; i < nbRounds; ++i) {
         if (bswap) {

@@ -148,6 +148,7 @@ static FORCE_INLINE uint64x2_t XXH_vld1q_u64( void const * ptr ) {
 template <bool bswap>
 static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const void * RESTRICT input,
         const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 15) == 0);
     uint64x2_t    * const xacc    = (uint64x2_t *   )acc;
     /* We don't use a uint32x4_t pointer because it causes bus errors on ARMv7. */
     uint8_t const * const xinput  = (const uint8_t *)input;
@@ -256,6 +257,7 @@ static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const vo
 
 template <bool bswap>
 static FORCE_INLINE void XXH3_scrambleAcc_neon( void * RESTRICT acc, const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 15) == 0);
     uint64x2_t *    xacc    = (uint64x2_t *   )acc;
     uint8_t const * xsecret = (uint8_t const *)secret;
     uint32x2_t      prime   = vdup_n_u32(XXH_PRIME32_1);

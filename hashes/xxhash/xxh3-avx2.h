@@ -33,6 +33,7 @@
 template <bool bswap>
 static FORCE_INLINE void XXH3_accumulate_512_avx2( void * RESTRICT acc, const void * RESTRICT input,
         const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 31) == 0);
     __m256i       * const xacc    = (__m256i *      )acc;
     /*
      * Unaligned. This is mainly for pointer arithmetic, and because
@@ -70,6 +71,7 @@ static FORCE_INLINE void XXH3_accumulate_512_avx2( void * RESTRICT acc, const vo
 
 template <bool bswap>
 static FORCE_INLINE void XXH3_scrambleAcc_avx2( void * RESTRICT acc, const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 31) == 0);
     __m256i       * const xacc    = (__m256i *      )acc;
     /*
      * Unaligned. This is mainly for pointer arithmetic, and because
@@ -114,6 +116,8 @@ static FORCE_INLINE void XXH3_initCustomSecret_avx2( void * RESTRICT customSecre
 #if defined(__GNUC__) || defined(__clang__)
     XXH_COMPILER_GUARD(dest);
 #endif
+    XXH_ASSERT(((size_t)src & 31) == 0); /* control alignment */
+    XXH_ASSERT(((size_t)dest & 31) == 0);
 
     /* GCC -O2 need unroll loop manually */
     if (bswap) {

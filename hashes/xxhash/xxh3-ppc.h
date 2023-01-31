@@ -145,6 +145,7 @@ static FORCE_INLINE void XXH3_accumulate_512_vsx( void * RESTRICT acc, const voi
 
 template <bool bswap>
 static FORCE_INLINE void XXH3_scrambleAcc_vsx( void * RESTRICT acc, const void * RESTRICT secret ) {
+    XXH_ASSERT((((size_t)acc) & 15) == 0);
     xxh_u64x2       * const xacc    = (xxh_u64x2 *      )acc;
     const xxh_u64x2 * const xsecret = (const xxh_u64x2 *)secret;
     /* constants */
