@@ -57,8 +57,20 @@
 #if defined(HAVE_X86_64_ASM) || defined(HAVE_ARM_ASM) || \
     defined(HAVE_ARM64_ASM) || defined(HAVE_PPC_ASM)
   #define XXH_COMPILER_GUARD(var) __asm__ __volatile__ ("" : "+r" (var))
+  #if defined(__clang__)
+    #define XXH_COMPILER_GUARD_W(var) __asm__ __volatile__("" : "+w" (var))
+  #else
+    #define XXH_COMPILER_GUARD_W(var) ((void)0)
+  #endif
 #else
   #define XXH_COMPILER_GUARD(var) ((void)var)
+  #define XXH_COMPILER_GUARD_W(var) ((void)0)
+#endif
+
+#if defined(DEBUG)
+  #define XXH_ASSERT(x) assert(x)
+#else
+  #define XXH_ASSERT(x) assume(x)
 #endif
 
 //------------------------------------------------------------
@@ -617,24 +629,24 @@ static FORCE_INLINE uint64_t XXH3_mix16B( const uint8_t * RESTRICT input,
 template <bool bswap>
 static FORCE_INLINE uint64_t XXH3_len_17to128_64b( const uint8_t * RESTRICT input, size_t len,
         const uint8_t * RESTRICT secret, size_t secretSize, uint64_t seed ) {
-    uint64_t acc = len * XXH_PRIME64_1;
+    uint64_t acc = len * XXH_PRIME64_1, acc_end;
 
+    acc     += XXH3_mix16B<bswap>(input + 0       , secret +  0, seed);
+    acc_end  = XXH3_mix16B<bswap>(input + len - 16, secret + 16, seed);
     if (len > 32) {
+        acc     += XXH3_mix16B<bswap>(input + 16      , secret + 32, seed);
+        acc_end += XXH3_mix16B<bswap>(input + len - 32, secret + 48, seed);
         if (len > 64) {
+            acc     += XXH3_mix16B<bswap>(input + 32      , secret + 64, seed);
+            acc_end += XXH3_mix16B<bswap>(input + len - 48, secret + 80, seed);
             if (len > 96) {
-                acc += XXH3_mix16B<bswap>(input + 48      , secret +  96, seed);
-                acc += XXH3_mix16B<bswap>(input + len - 64, secret + 112, seed);
+                acc     += XXH3_mix16B<bswap>(input + 48      , secret +  96, seed);
+                acc_end += XXH3_mix16B<bswap>(input + len - 64, secret + 112, seed);
             }
-            acc += XXH3_mix16B<bswap>(input + 32      , secret + 64, seed);
-            acc += XXH3_mix16B<bswap>(input + len - 48, secret + 80, seed);
         }
-        acc += XXH3_mix16B<bswap>(input + 16      , secret + 32, seed);
-        acc += XXH3_mix16B<bswap>(input + len - 32, secret + 48, seed);
     }
-    acc += XXH3_mix16B<bswap>(input + 0       , secret +  0, seed);
-    acc += XXH3_mix16B<bswap>(input + len - 16, secret + 16, seed);
 
-    return XXH3_avalanche(acc);
+    return XXH3_avalanche(acc + acc_end);
 }
 
 // UGLY HACK:
@@ -661,11 +673,17 @@ static NEVER_INLINE uint64_t XXH3_len_129to240_64b( const uint8_t * RESTRICT inp
 #define XXH3_MIDSIZE_STARTOFFSET 3
 #define XXH3_MIDSIZE_LASTOFFSET  17
 
-    uint64_t  acc      = len * XXH_PRIME64_1;
-    int const nbRounds = (int)len / 16;
-    for (int i = 0; i < 8; i++) {
+    uint64_t acc = len * XXH_PRIME64_1;
+    uint64_t acc_end;
+    unsigned const nbRounds = (unsigned)len / 16;
+    XXH_ASSERT(128 < len && len <= XXH3_MIDSIZE_MAX);
+
+    for (unsigned i = 0; i < 8; i++) {
         acc += XXH3_mix16B<bswap>(input + (16 * i), secret + (16 * i), seed);
     }
+    /* last bytes */
+    acc_end = XXH3_mix16B<bswap>(input + len - 16, secret + XXH3_SECRET_SIZE_MIN - XXH3_MIDSIZE_LASTOFFSET, seed);
+    XXH_ASSERT(nbRounds >= 8);
     acc = XXH3_avalanche(acc);
 
 #if defined(__clang__) && (defined(__ARM_NEON) || defined(__ARM_NEON__))
@@ -673,11 +691,14 @@ static NEVER_INLINE uint64_t XXH3_len_129to240_64b( const uint8_t * RESTRICT inp
 #endif
 
     for (int i = 8; i < nbRounds; i++) {
-        acc += XXH3_mix16B<bswap>(input + (16 * i), secret + (16 * (i - 8)) + XXH3_MIDSIZE_STARTOFFSET, seed);
+        /*
+         * Prevents clang for unrolling the acc loop and interleaving with this one.
+         */
+        XXH_COMPILER_GUARD(acc);
+        acc_end += XXH3_mix16B<bswap>(input + (16 * i), secret + (16 * (i - 8)) + XXH3_MIDSIZE_STARTOFFSET, seed);
     }
     /* last bytes */
-    acc += XXH3_mix16B<bswap>(input + len - 16, secret + XXH3_SECRET_SIZE_MIN - XXH3_MIDSIZE_LASTOFFSET, seed);
-    return XXH3_avalanche(acc);
+    return XXH3_avalanche(acc + acc_end);
 }
 
 //------------------------------------------------------------
@@ -873,19 +894,30 @@ template <bool bswap>
 static NEVER_INLINE XXH128_hash_t XXH3_len_129to240_128b( const uint8_t * RESTRICT input, size_t len,
         const uint8_t * RESTRICT secret, size_t secretSize, uint64_t seed ) {
     XXH128_hash_t acc;
-    int const     nbRounds = (int)len / 32;
+    unsigned i;
 
     acc.low64  = len * XXH_PRIME64_1;
     acc.high64 = 0;
-    for (int i = 0; i < 4; i++) {
-        acc = XXH128_mix32B<bswap>(acc, input + (32 * i), input + (32 * i) + 16, secret + (32 * i), seed);
+    /*
+     * We set as `i` as offset + 32. We do this so that unchanged
+     * `len` can be used as upper bound. This reaches a sweet spot
+     * where both x86 and aarch64 get simple agen and good codegen
+     * for the loop.
+     */
+    for (i = 32; i < 160; i += 32) {
+        acc = XXH128_mix32B<bswap>(acc, input + i - 32, input + i - 16, secret + i - 32, seed);
     }
     acc.low64  = XXH3_avalanche(acc.low64 );
     acc.high64 = XXH3_avalanche(acc.high64);
 
-    for (int i = 4; i < nbRounds; i++) {
-        acc = XXH128_mix32B<bswap>(acc, input + (32 * i), input + (32 * i) + 16,
-                secret + XXH3_MIDSIZE_STARTOFFSET + (32 * (i - 4)), seed);
+    /*
+     * NB: `i <= len` will duplicate the last 32-bytes if
+     * len % 32 was zero. This is an unfortunate necessity to keep
+     * the hash result stable.
+     */
+    for (i=160; i <= len; i += 32) {
+        acc = XXH128_mix32B<bswap>(acc, input + i - 32, input + i - 16,
+                secret + XXH3_MIDSIZE_STARTOFFSET + i - 160, seed);
     }
 
     /* last bytes */
@@ -898,7 +930,7 @@ static NEVER_INLINE XXH128_hash_t XXH3_len_129to240_128b( const uint8_t * RESTRI
                   (acc.high64 * XXH_PRIME64_4) +
                   ((len - seed) * XXH_PRIME64_2);
     h128.low64  = XXH3_avalanche(h128.low64);
-    h128.high64 = (uint64_t)0 - XXH3_avalanche(h128.high64);
+    h128.high64 = UINT64_C(0) - XXH3_avalanche(h128.high64);
     return h128;
 }
 

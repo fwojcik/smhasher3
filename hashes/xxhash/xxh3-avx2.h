@@ -57,7 +57,7 @@ static FORCE_INLINE void XXH3_accumulate_512_avx2( void * RESTRICT acc, const vo
         /* data_key    = data_vec ^ key_vec; */
         __m256i const data_key    = _mm256_xor_si256(data_vec, key_vec);
         /* data_key_lo = data_key >> 32; */
-        __m256i const data_key_lo = _mm256_shuffle_epi32(data_key, _MM_SHUFFLE(0, 3, 0, 1));
+        __m256i const data_key_lo = _mm256_srli_epi64(data_key, 32);
         /* product     = (data_key & 0xffffffff) * (data_key_lo & 0xffffffff); */
         __m256i const product     = _mm256_mul_epu32(data_key, data_key_lo);
         /* xacc[i] += swap(data_vec); */
@@ -90,7 +90,7 @@ static FORCE_INLINE void XXH3_scrambleAcc_avx2( void * RESTRICT acc, const void 
         __m256i const data_key = _mm256_xor_si256(data_vec, key_vec);
 
         /* xacc[i] *= XXH_PRIME32_1; */
-        __m256i const data_key_hi = _mm256_shuffle_epi32(data_key, _MM_SHUFFLE(0, 3, 0, 1));
+        __m256i const data_key_hi = _mm256_srli_epi64(data_key, 32);
         __m256i const prod_lo     = _mm256_mul_epu32(data_key   , prime32);
         __m256i const prod_hi     = _mm256_mul_epu32(data_key_hi, prime32);
         xacc[i] = _mm256_add_epi64(prod_lo, _mm256_slli_epi64(prod_hi, 32));
@@ -117,18 +117,18 @@ static FORCE_INLINE void XXH3_initCustomSecret_avx2( void * RESTRICT customSecre
 
     /* GCC -O2 need unroll loop manually */
     if (bswap) {
-        dest[0] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src + 0)), seed));
-        dest[1] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src + 1)), seed));
-        dest[2] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src + 2)), seed));
-        dest[3] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src + 3)), seed));
-        dest[4] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src + 4)), seed));
-        dest[5] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_stream_load_si256(src + 5)), seed));
+        dest[0] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_load_si256(src + 0)), seed));
+        dest[1] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_load_si256(src + 1)), seed));
+        dest[2] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_load_si256(src + 2)), seed));
+        dest[3] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_load_si256(src + 3)), seed));
+        dest[4] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_load_si256(src + 4)), seed));
+        dest[5] = mm256_bswap64(_mm256_add_epi64(mm256_bswap64(_mm256_load_si256(src + 5)), seed));
     } else {
-        dest[0] = _mm256_add_epi64(_mm256_stream_load_si256(src + 0), seed);
-        dest[1] = _mm256_add_epi64(_mm256_stream_load_si256(src + 1), seed);
-        dest[2] = _mm256_add_epi64(_mm256_stream_load_si256(src + 2), seed);
-        dest[3] = _mm256_add_epi64(_mm256_stream_load_si256(src + 3), seed);
-        dest[4] = _mm256_add_epi64(_mm256_stream_load_si256(src + 4), seed);
-        dest[5] = _mm256_add_epi64(_mm256_stream_load_si256(src + 5), seed);
+        dest[0] = _mm256_add_epi64(_mm256_load_si256(src + 0), seed);
+        dest[1] = _mm256_add_epi64(_mm256_load_si256(src + 1), seed);
+        dest[2] = _mm256_add_epi64(_mm256_load_si256(src + 2), seed);
+        dest[3] = _mm256_add_epi64(_mm256_load_si256(src + 3), seed);
+        dest[4] = _mm256_add_epi64(_mm256_load_si256(src + 4), seed);
+        dest[5] = _mm256_add_epi64(_mm256_load_si256(src + 5), seed);
     }
 }

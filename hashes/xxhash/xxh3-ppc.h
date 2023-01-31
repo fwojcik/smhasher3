@@ -140,6 +140,7 @@ static FORCE_INLINE void XXH3_accumulate_512_vsx( void * RESTRICT acc, const voi
         /* xacc[i] = acc_vec; */
         vec_xst((xxh_u32x4)acc_vec, 0, xacc + 4 * i);
     }
+    __sync_synchronize();
 }
 
 template <bool bswap>
