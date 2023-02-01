@@ -16,7 +16,7 @@ Gitlab issue that is created on your behalf.
 In all cases, the most important things to include with any sort of problem
 report are:
 - A description of the existing behavior, preferably with an example copy/pasted into
-  the report
+  the report, especially if compiler error/warning messages are involved
 - A description of the behavior you would like to see
 - The output of `SMHasher3 --version`
 - Your contact information
@@ -59,8 +59,9 @@ codebase _and_ the Testlib side at the same time. Every kind of code submission 
 only alter one or the other (or neither). For more clarity on which files comprise
 which side, see the "Code organization" section in `README.md`.
 
-Bug fixes and small enhancements can use a branch off of the `main` branch. Larger
-code submissions are encouraged to use a branch off of the `dev` branch.
+Bug fixes and small enhancements can be based directly off of the `main`
+branch. Larger code submissions are encouraged to use a branch of their own
+off of the `main` branch.
 
 Each commit in any pull-request should reflect a single logical change. In general,
 err on the side of too many commits and not too few. This means that you should
@@ -73,11 +74,11 @@ You can use the same branch to submit multiple bug fixes and features as long as
   followed by small features, and then by larger features)
 - ensure that each commit clearly describes what it does
 - ensure that each commit will still compile correctly
-This will also make rebasing onto a later `dev` branch head easier for everyone.
+This will also make rebasing onto a later branch head easier for everyone.
 
 The Most Important Rule must still be followed, though. If your feature submission
 adds something to Hashlib which is then acted upon in Testlib, then you must submit
-two different requests with each as a separate branch.
+two different requests.
 
 All built source code must be available in the SMHasher3 source tree. Git submodules
 are not allowed. Hash implementations that live in external libraries are not allowed.
@@ -92,7 +93,7 @@ settings that only exist in my private branch (until I polish them up for submis
 to that project), so you will get errors about them which should be ignorable.
 
 Since that would be something of a large ask, it is definitely not a requirement for
-submitting code. However, please follow the following basic code style tenets:
+submitting code. However, please follow the following basic code style tenets if possible:
 
 - Use the One True Brace Style (1TBS)[https://en.wikipedia.org/wiki/Indent_style#Variant:\_1TBS\_\(OTBS\)]
 - Use spaces for indentation, not tabs, and use 4 spaces per indent level
@@ -112,6 +113,9 @@ submitting code. However, please follow the following basic code style tenets:
 - Align things when it makes obvious sense to do so
 - Preprocessor directives should indent 2 spaces per level
 - Preprocessor directives should use `#if defined()` in preference to `#ifdef`
+
+I won't reject a submission for not following this, but I will most likely
+reformat the submitted code shortly after inclusion.
 
 I want to have consistent rules for things like casing of variable and function names
 and similar, but I haven't done that yet. Maybe someday.
@@ -151,6 +155,29 @@ By making a contribution to this project, I certify that:
 
 If you cannot agree to that, then you should not send the contribution to SMHasher3.
 
+Changes to Hashlib
+==================
+
+Changes to existing files in Hashlib must conform to the licensing terms in
+those files. New files in Hashlib must have some GPL3-compatible license,
+such as BSD, MIT, CC0, zlib, GPL3, or similar (see
+[https://www.gnu.org/licenses/license-list.html] for more information on
+licence compatibility with GPL3). You will also need to include the license
+text at the top of the file, and mark the license used in the hash's
+metadata. If an enum for your license does not already exist, you will need
+to add one to `include/common/Hashinfo.h`.
+
+If you are submitting a new hash, then at least one version of its implementations
+must work portably (implemented only standard C++-11, no intrinsics, no ASM). It may
+make use of SMHasher3's `Mathmult` or `AES` functions, as they already have portable
+versions internally. Hashes don't have to have _only_ portable implementations.
+
+If you can, it would be appreciated if you made some effort at handling
+endian issues in Hashlib submissions. I will handle testing on different
+platforms, but failures there may delay new hashes from being added.
+
+Make sure to follow the guidelines in `hashes/README.md` for naming new hashes.
+
 Changes to Testlib
 ==================
 
@@ -185,26 +212,3 @@ making it work with a larger variety of compilers is desirable. Adding new
 implementations of primitives which are faster or more useful also seems good, and
 these changes should probably follow the existing patterns and use the existing CMake
 functions. Changes to that CMake infrastructure can also make sense.
-
-Changes to Hashlib
-==================
-
-Changes to existing files in Hashlib must conform to the licensing terms in those
-files. Changes to new files in Hashlib must have some GPL3-compatible license, such
-as BSD, MIT, CC0, zlib, GPL3, or similar (see
-[https://www.gnu.org/licenses/license-list.html] for more information on licence
-compatibility with GPL3). You will also need to include the license text at the top
-of the file, and mark the license used in the hash's metadata. If an enum for your
-license does not already exist, you will need to add one to
-`include/common/Hashinfo.h`.
-
-If you are submitting a new hash, then at least one version of its implementations
-must work portably (implemented only standard C++-11, no intrinsics, no ASM). It may
-make use of SMHasher3's `Mathmult` or `AES` functions, as they already have portable
-versions internally. Hashes don't have to have _only_ portable implementations.
-
-Please at least make an effort at handling endian issues in Hashlib submissions. I
-will handle testing on different platforms, but failures there may delay new hashes
-from being added.
-
-Make sure to follow the guidelines in `hashes/README.md` for naming new hashes.

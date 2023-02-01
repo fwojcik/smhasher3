@@ -22,7 +22,7 @@ compiler. But you should be able to use them without fear of syntax errors.
 - `unreachable()` tells the compiler that control flow will never reach the current
   point. If it does ever reach that point, then that can be treated as Undefined
   Behavior, and the compiler is allowed to do _anything_ in that case.
-- `prefectch(ptr)` hints to the compiler or CPU that memory at `ptr` should e loaded
+- `prefetch(ptr)` hints to the compiler or CPU that memory at `ptr` should be loaded
   into cache. If supported, the hint is that the data will be used for reading, and
   that access will be maximally temporal (likely to be accessed again).
 - `FORCE_INLINE` preceeding a function definition hints to the compiler that the
@@ -51,8 +51,8 @@ The reason that nearly all hashes in SMHasher use the `GET_U`* and `PUT_U`* func
 for transferring data to and from memory is because that is the only way to guarantee
 that they will all work on all platforms, regardless of memory alignment or platform
 restrictions, and will not invoke Undefined Behavior. It also allows people to easily
-find the places where a hash implementations interfaces with "the outside world", and
-enforcing uniformity of memory access is also the most fair way to compare
+find the places where a hash implementations interfaces with "the outside world".
+Finally, enforcing uniformity of memory access is also the most fair way to compare
 performance across hashes.
 
 Memory transfer routines are one thing that varies very widely across hashes, and
@@ -62,8 +62,9 @@ function, it is possible to replace the implementations and still verify that al
 hashes work, and this will still produce valid performance comparisons across
 whatever hashes you are interested in.
 
-If you want to test out a different implementation for your uses, you can just alter
-it in `platform/Platform.h.in` and recompile SMHasher3.
+If you want to test out a different, perhaps less-portable, implementation for your
+uses, you can just alter it in `platform/Platform.h.in` and recompile. Then you can
+easily compare that performance change across _all_ the hashes in SMHasher3.
 
 Alternate implementations may become an explicit configuration-time option for
 SMHasher3 in the future.
@@ -105,12 +106,12 @@ return a valid seed value to use. If the given seed value is acceptable, then it
 should be returned unchanged. If it isn't, then any valid seed value can be returned
 instead.
 
-SMHasher3 also supplies 2 utility functions to handle some common cases. Setting
-`$.seedfixfn = excludeZeroSeed` will replace a seed of `0` with `1` and leave all
-other seeds unchanged. Setting it to `excludeBadseeds` instead will replace any seeds
-that are in the hash's set of `$.badseeds` with that seed plus one. It does handle
-the case where there are multiple consecutive bad seeds. For example, if `3` and `4`
-are both bad seeds, then `excludeBadseeds` will return `5` if given a seed of `3`.
+SMHasher3 also supplies a utility function to handle a common case. Setting
+`$.seedfixfn` to `excludeBadseeds` will replace any seeds that are in the
+hash's set of `$.badseeds` with that seed plus one. It does handle the case
+where there are multiple consecutive bad seeds. For example, if `3` and `4`
+are both bad seeds, then `excludeBadseeds` will return `5` if given a seed
+of `3`.
 
 Note that some SMHasher3 tests deliberately will not call this function when seeding,
 so your hash may sometimes still be given seeds that would be excluded by it.

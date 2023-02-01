@@ -1,6 +1,7 @@
-This document covers things that only become required when you are done developing
-your hash or when you are implementing an existing hash. It starts with a crash
-course on templates, which you can easily skip if you are already familiar with them.
+This document covers things that generally only become needed when you are
+done or almost done developing your hash, or when you are implementing an
+existing hash. It starts with a crash course on templates, which you can
+easily skip if you are already familiar with them.
 
 [[_TOC_]]
 
@@ -25,7 +26,7 @@ paths. Using templates solves both potential problems at once.
 Intro tutorials on C++ templating very often tend to focus on the fact that
 templating can happen on types, that you can use it to have the same implementation
 that will work for different numeric or object types. As a systems programmer, that
-feature never seemed especially compelling when presented that way. However,
+feature never seemed especially compelling to me when presented that way. However,
 templating can also be used on values! And that is generally how SMHasher3 uses it.
 
 In C and C++, you could have a simple function that looks like:
@@ -100,7 +101,7 @@ uint64_t sum2 = wordsum<true>(ptr, 128);
 Now `wordsum` will be compiled twice, once with `bswap == true` and once with `bswap
 == false`. For each of those, the compiler will almost certainly optimize out the
 `if()` statement since its conditional will be a constant, making both
-`wordsum<false>` and `wordsum<true>` will be just as fast as if they were coded as
+`wordsum<false>` and `wordsum<true>` be just as fast as if they were coded as
 two separate functions. But this pattern keeps it easy to see that they only differ
 in one way: whether or not the input words are byteswapped. And now if `wordsum` is
 modified, perhaps to become a more sophisticated data mixing function, then both
@@ -115,12 +116,13 @@ parameters must be known at compile-time (the `constexpr` keyword is often used 
 this). There is no C++-compiler being shipped inside your program's binary, so there
 is no way to do something like:
 ```cpp
+const int incr = foo();
 newnumber = adder<incr>(number);
 ```
 
 The closest you can get is something like:
 ```cpp
-int wrapper(int value, int input) {
+int wrapper(const int value, int input) {
      if (value == 2) { return adder<2>(input); }
      if (value == 11) { return adder<11>(input); }
      ....
@@ -193,6 +195,8 @@ comma. The list of those metadata keys is:
 - `seedfn`, the hash's per-seed initialization function _(optional)_
 - `seedfixfn`, the hash's function to filter out unusable seeds _(optional)_
 - `badseeds`, a `std::set` of known "bad" seeds _(optional)_
+- `badseeddesc`, a C string which uses English text to describe a pattern
+  of "bad" seeds _(optional)_
 
 Put all together, this looks something like:
 ```
@@ -331,7 +335,8 @@ omitted from all of these):
   under-specified (P)RNG (like `rand()`) as part of the hash.
 - `ENDIAN_INDEPENDENT` means that the hash output bytes are defined to be the same
   across platforms with differing integer byte-orderings. This usually applies to
-  cryptographic hashes, and usually not to others.
+  cryptographic hashes, and usually not to others, but there are definitely some
+  non-cryptographic hashes that specify a correct output byte-ordering.  
 - `FLOATING_POINT` means that the hash is defined to use floating-point operations.
 
 The list of `impl_flags` and their meanings (the `FLAG_IMPL_` prefix is omitted from
@@ -379,6 +384,7 @@ all of these):
   BSD license" (aka "3-clause BSD license") or the "FreeBSD license" (aka "2-clause
   BSD license").
 - `LICENSE_MIT` means that the implementation is distributed under the MIT license.
+- `LICENSE_APACHE2` means that the implementation is distributed under the Apache-2.0 license.
 - `LICENSE_ZLIB` means that the implementation is distributed under the Zlib license.
 - `LICENSE_GPL3` means that the implementation is distributed under the GPL3 license.
 
@@ -414,8 +420,8 @@ Want your hash distributed with SMHasher3?
 ------------------------------------------
 
 If you would like your hash implementation(s) to be distributed with the SMHasher3
-project, you will need to follow the guidelines in `CONTRIBUTING.md`. Nothing there
-is required to simply use SMHasher3 to test and develop a hash.
+project, you should try to follow the guidelines in `CONTRIBUTING.md`. Nothing there
+is needed to simply use SMHasher3 to test and develop a hash.
 
 Worrying about endianness issues
 ================================
@@ -620,7 +626,8 @@ Some important things to note:
   that it needed to handle byteswapping
 - Because we are choosing to use templates, this means `wackyhash_full_block` became
   a template function
-- Even data loaded through intrinsics needed to be byteswapped
+- Integers that were populated from memory via intrinsics still needed to be
+  byteswapped
 - Because `wackyhash_word` only takes a `uint64_t` it does not need to handle data
   conversion, and was not turned into a template function
 - Data loaded from a table of integers that our implementation populated does not
@@ -673,7 +680,7 @@ so cannot be used in `constexpr` expressions.
 More complex endianness scenarios
 ---------------------------------
 
-Here are some cases where trickier bytewswapping requirements might sneak in:
+Here are some cases where trickier bytewswapping approaches might sneak in:
 
 - Hashes which use fancy ways to read the tail of the input which can be a less than
   a "block" of data. The original code might look like:
@@ -694,12 +701,20 @@ Here are some cases where trickier bytewswapping requirements might sneak in:
       lastblk = GET_U64<bswap>(inptr, 0) >> (64 - (len * 8));
   }
   ```
-  Other approaches are possible. See `hashes/fnv.cpp`, `hashes/komihash.cpp`, or
-  `hashes/t1ha.cpp` for examples of varying extremity.
+  Other approaches are possible. See `hashes/fnv.cpp` or `hashes/t1ha.cpp`
+  for other examples of varying extremity.
 
-  If you test your hash with `--test=Sanity --endian=nonnative` and you start getting
-  new failures due to "flipped bit NNN, got identical output" or "non-key byte
-  altered hash", then this issue is a prime candidate for investigation.
+  If you test your hash with `--test=Sanity --endian=nonnative` and you
+  start getting new failures due to "flipped bit NNN, got identical output"
+  or "non-key byte altered hash", then this issue is a prime candidate for
+  investigation.
+
+  If your hash is ENDIAN_INDEPENDENT, then you should be fine ignoring this
+  issue, since the implementation with "incorrect" endianness will never be
+  called. That said, some user might be interested in how your hash
+  function performs in an environment with the "wrong" endianness without
+  needing to spend cycles byteswapping data, and if this issue is left
+  unaddressed then they will not be able to test that.
 
 - A hash that specifies that its output must always be given in a specific
   byte-ordering. That would need code which might look like:
