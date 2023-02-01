@@ -1469,28 +1469,19 @@ static uintptr_t xxh3_initsecret( const seed_t seed ) {
     return (seed_t)(uintptr_t)&gensecret;
 }
 
-static uintptr_t xxh3_generatesecret( const seed_t seed ) {
+template <bool bswap>
+static uintptr_t xxh3_generatesecret_impl( const seed_t seed ) {
     const uint64_t seed64 = (uint64_t)seed;
-    const uint64_t seedLE = COND_BSWAP(seed64, isBE());
+    const uint64_t seedLE = COND_BSWAP(seed64, bswap);
+
+    uint8_t scrambler[16];
+    XXH3_128<bswap>(&seedLE, sizeof(seedLE), 0, scrambler);
 
     size_t const nbSeg16 = sizeof(gensecret.secret) / 16;
-    uint8_t scrambler[16];
-    if (isLE()) {
-        XXH3_128<false>(&seedLE, sizeof(seedLE), 0, scrambler);
-    } else {
-        XXH3_128<true>(&seedLE, sizeof(seedLE), 0, scrambler);
-    }
     for (size_t n = 0; n < nbSeg16; n++) {
-        const XXH128_hash_t h128 = isLE() ?
-            XXH3_128bits_withSeed<false>(scrambler, sizeof(scrambler), n) :
-            XXH3_128bits_withSeed<true>(scrambler, sizeof(scrambler), n);
-        if (isLE()) {
-            PUT_U64<false>(h128.low64  ^ seed64, gensecret.secret, n * 16);
-            PUT_U64<false>(h128.high64 ^ seed64, gensecret.secret, n * 16 + 8);
-        } else {
-            PUT_U64<true>(h128.low64  ^ seed64, gensecret.secret, n * 16);
-            PUT_U64<true>(h128.high64 ^ seed64, gensecret.secret, n * 16 + 8);
-        }
+        const XXH128_hash_t h128 = XXH3_128bits_withSeed<bswap>(scrambler, sizeof(scrambler), n);
+        PUT_U64<bswap>(h128.low64  ^ seed64, gensecret.secret, n * 16);
+        PUT_U64<bswap>(h128.high64 ^ seed64, gensecret.secret, n * 16 + 8);
     }
     for (size_t i = 0; i < 8; i++) {
         gensecret.secret[XXH3_SECRET_DEFAULT_SIZE - 16 + i] ^= scrambler[15 - i];
@@ -1498,6 +1489,14 @@ static uintptr_t xxh3_generatesecret( const seed_t seed ) {
     }
 
     return (seed_t)(uintptr_t)&gensecret;
+}
+
+static uintptr_t xxh3_generatesecret( const seed_t seed ) {
+    if (isLE()) {
+        return xxh3_generatesecret_impl<false>(seed);
+    } else {
+        return xxh3_generatesecret_impl<true>(seed);
+    }
 }
 
 // These hash entry points both emulate XXH3_NNbits_withSecret(), and not
