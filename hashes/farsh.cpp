@@ -280,8 +280,8 @@ REGISTER_HASH(FARSH_32__tweaked,
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
-   $.verification_LE = 0,
-   $.verification_BE = 0,
+   $.verification_LE = 0x866BC8B2,
+   $.verification_BE = 0x96B4B444,
    $.hashfn_native   = farsh< true, false, 1>,
    $.hashfn_bswap    = farsh< true, true, 1>
  );
@@ -312,8 +312,8 @@ REGISTER_HASH(FARSH_64__tweaked,
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
-   $.verification_LE = 0,
-   $.verification_BE = 0,
+   $.verification_LE = 0x0EB4FFC9,
+   $.verification_BE = 0xEC8F46D4,
    $.hashfn_native   = farsh< true, false, 2>,
    $.hashfn_bswap    = farsh< true, true, 2>
  );
@@ -346,8 +346,8 @@ REGISTER_HASH(FARSH_128__tweaked,
          FLAG_IMPL_SLOW            |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0,
-   $.verification_BE = 0,
+   $.verification_LE = 0x302E1139,
+   $.verification_BE = 0x7006F129,
    $.hashfn_native   = farsh< true, false, 4>,
    $.hashfn_bswap    = farsh< true, true, 4>
  );
@@ -380,8 +380,8 @@ REGISTER_HASH(FARSH_256__tweaked,
          FLAG_IMPL_VERY_SLOW       |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 256,
-   $.verification_LE = 0,
-   $.verification_BE = 0,
+   $.verification_LE = 0x7A9B846A,
+   $.verification_BE = 0x1CC7641F,
    $.hashfn_native   = farsh< true, false, 8>,
    $.hashfn_bswap    = farsh< true, true, 8>
  );
