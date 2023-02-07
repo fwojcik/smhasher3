@@ -11,7 +11,6 @@ Testing changes
   disabled. Analysis shows that this added far more (reporting) noise than
   signal (new problems found).
 - The BadSeeds test has been thoroughly reworked. It remains off by default.
-- Many tests had their specific parameters tweaked.
 - The BIC (Bit Independence Criteria) test now runs by default. It also can
   take advantage of threading, if available.
 - The Sanity test now checks that changing the seed value changes the hash.
@@ -22,6 +21,7 @@ Testing changes
   changed to only report the total number of failing bits and gives details
   on the single worst failing bit. All bits get a full report when
   --verbose is given
+- Many other tests had their specific parameters tweaked.
 - The following new tests have been added:
    - SeedAvalanche
    - SeedBIC

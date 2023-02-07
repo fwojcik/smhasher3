@@ -26,6 +26,7 @@ contained in this repository.
 
 The major differences from rurban's fork are:
 - Fix several critical bugs
+- Several new tests and test methods added
 - Significant performance increases
 - Report on p-values for almost all tests
 - Better statistical foundations for some tests
@@ -51,8 +52,7 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2022-07-31, SMHasher3 is at its beta1 release. There is also planned a beta2 at
-the least before final release.
+As of 2023-02-10, SMHasher3 is at its beta2 release.
 
 This code has compiled and run successfully on Linux x64, arm, and powerpc using gcc
 and clang. Importantly, I do not have the ability to test on Mac or Windows
@@ -180,7 +180,7 @@ Performance
 A number of significant performance improvements have been made over the base
 SMHasher code. Here are some runtime comparisons on my system (AMD Ryzen 9 3950X, 1
 or 4 isolated CPUs, all with boost disabled and pinned to 3500 MHz for timing
-consistency, gcc 9.3, Slackware 14.2):
+consistency, gcc 9.3, Slackware 14.2, SMHasher3 beta1, smhasher-rurban b116571):
 
 | Test Name   | SMHasher  | SMHasher3 | Delta | SMHasher  | SMHasher3 | Delta |
 |:------------|----------:|----------:|:-----:|----------:|----------:|:-----:|
@@ -215,8 +215,17 @@ threaded in SMHasher, but it takes more wall clock time than the unthreaded vers
 regardless, which I have no good hypothesis about. Both of these results are
 repeatable and consistent, though, so I am keeping them in the table.
 
-**By far**, the most important code which I have not yet been able to optimize is the
-histogram code in `TestDistribution()` in `util/Analyze.cpp`.
+After beta1, the test methodology in SMHasher3 diverges quite a lot from
+SMHasher, and so direct performance comparisons are less meaningful. But to
+give one data point, on the above system a complete run of SMHasher3 beta2
+on a fast hash function (wyhash) with --extra but without BadSeed testing
+takes 1578 seconds and finds 40 failing tests, while smhasher-rurban takes
+2860 seconds and finds 2 failing tests.
+
+The next biggest opportunity for perfomance gains is to add threading
+support to several tests. **By far**, the most important code which I have
+not yet been able to optimize is the histogram code in `TestDistribution()`
+in `util/Analyze.cpp`.
 
 Goals and non-goals
 -------------------
@@ -297,7 +306,7 @@ me know if you find something confusing.
 Hash verification codes
 -----------------------
 
-In beta1 of SMHasher3, the algorithm for computing hash verification codes is
+In beta2 of SMHasher3, the algorithm for computing hash verification codes is
 unchanged from the base SMHasher. Most hashes' verification codes are also unchanged,
 but a number have changed for various reasons, and some have been added or removed;
 see `Changelog.md` for specifics. This should help verify that the hash
@@ -305,7 +314,7 @@ implementations didn't change unexpectedly when they were ported.
 
 Since SMHasher3 supports 64-bit seeds and the current algorithm for computing
 verification codes does not exercise even all of the low 32 seed bits, I expect that
-the algorithm will change in the near-ish future.
+the algorithm will change in the near future.
 
 A stand-alone vanilla C99 program for computing hash verification codes outside of
 SMHasher3 is in `misc/hashverify.c`.
