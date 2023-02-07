@@ -102,7 +102,7 @@ double CalcStdv( std::vector<double> & v, int a, int b ) {
 }
 
 double CalcStdv( std::vector<double> & v ) {
-    return CalcStdv(v, 0, v.size());
+    return CalcStdv(v, 0, v.size() - 1);
 }
 
 // Return true if the largest value in v[0,len) is more than three
@@ -148,7 +148,9 @@ void FilterOutliers( std::vector<double> & v ) {
         }
     }
 
-    v.resize(len);
+    if (len) {
+        v.resize(len);
+    }
 }
 
 #if 0
