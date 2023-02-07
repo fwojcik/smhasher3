@@ -57,6 +57,7 @@
 
 #include <string>
 #include <functional>
+#include <map>
 
 constexpr int BULK_RUNS    = 16;
 constexpr int BULK_TRIALS  = 19200;
@@ -64,6 +65,9 @@ constexpr int BULK_TRIALS  = 19200;
 
 constexpr int TINY_TRIALS  = 200;   // Timings per hash for small (<128b) keys
 constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
+
+// std::max() isn't constexpr in C++11
+constexpr int MAX_TRIALS   = (BULK_TRIALS > TINY_TRIALS) ? BULK_TRIALS : TINY_TRIALS;
 
 //-----------------------------------------------------------------------------
 // This is functionally a speed test, and so will not inform VCodes,
@@ -140,56 +144,49 @@ NEVER_INLINE static uint64_t timehash_small( HashFn hash, const seed_t seed, uin
 
 //-----------------------------------------------------------------------------
 double stddev;
+double rawtimes[MAX_TRIALS];
+std::vector<int> sizes(MAX_TRIALS);
+std::vector<int> alignments(MAX_TRIALS);
+std::map<std::pair<int, int>, std::vector<double>> times;
 
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
-        const int align, const int varysize, const int varyalign ) {
+        const int align, const int maxvarysize, const int maxvaryalign ) {
     static uint64_t callcount = 0;
     Rand r( 444793 + (callcount++) );
 
-    uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + varyalign) <= 257
+    uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
     uintptr_t t1  = reinterpret_cast<uintptr_t>(buf);
 
     r.rand_p(buf, blocksize + 512);
     t1  = (t1 + 255) & UINT64_C(0xFFFFFFFFFFFFFF00);
     t1 += align;
 
-    uint8_t * block = reinterpret_cast<uint8_t *>(t1);
-
-    std::vector<int> sizes;
-    if (varysize > 0) {
-        sizes.reserve(trials);
+    if (maxvarysize > 0) {
         for (int i = 0; i < trials; i++) {
-            sizes.push_back(blocksize - varysize + (i % (varysize + 1)));
+            sizes.push_back(blocksize - maxvarysize + (i % (maxvarysize + 1)));
         }
         for (int i = trials - 1; i > 0; i--) {
             std::swap(sizes[i], sizes[r.rand_range(i + 1)]);
         }
+    } else {
+        sizes.insert(sizes.begin(), trials, blocksize);
     }
 
-    std::vector<int> alignments;
-    if (varyalign > 0) {
-        alignments.reserve(trials);
+    if (maxvaryalign > 0) {
         for (int i = 0; i < trials; i++) {
-            alignments.push_back((i + 1) % (varyalign + 1));
+            alignments.push_back((i + 1) % (maxvaryalign + 1));
         }
         for (int i = trials - 1; i > 0; i--) {
             std::swap(alignments[i], alignments[r.rand_range(i + 1)]);
         }
+    } else {
+        alignments.insert(alignments.begin(), trials, 0);
     }
 
     //----------
-
-    std::vector<double> times;
-    times.reserve(trials);
-
-    int testsize = blocksize;
     for (int itrial = 0; itrial < trials; itrial++) {
-        if (varysize > 0) {
-            testsize = sizes[itrial];
-        }
-        if (varyalign > 0) {
-            block = reinterpret_cast<uint8_t *>(t1 + alignments[itrial]);
-        }
+        int testsize = sizes[itrial];
+        uint8_t * block = reinterpret_cast<uint8_t *>(t1 + alignments[itrial]);
 
 
         double t;
@@ -199,19 +196,43 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
             t = (double)timehash(hash      , seed, block, testsize) / (double)2.0;
         }
 
-        if (t > 0) { times.push_back(t); }
+        rawtimes[itrial] = t;
     }
 
     delete [] buf;
 
     //----------
+    for (int itrial = 0; itrial < trials; itrial++) {
+        times[std::make_pair(sizes[itrial], alignments[itrial])].push_back(rawtimes[itrial]);
+    }
 
-    std::sort(times.begin(), times.end());
+    //----------
+    double avgtotal = 0.0;
+    double stddevtotal = 0.0;
+    unsigned count = 0;
+    unsigned sbmcount = 0;
 
-    FilterOutliers(times);
-    stddev = CalcStdv(times);
+    std::map<int, int> summary;
+    for (int size = blocksize - maxvarysize; size <= blocksize; size++) {
+        for (int align = 0; align <= maxvaryalign; align++) {
+            std::vector<double> & timevec = times[std::make_pair(size, align)];
+            if (timevec.empty()) { continue; }
+            std::sort(timevec.begin(), timevec.end());
 
-    return CalcMean(times);
+            FilterOutliers(timevec);
+
+            avgtotal    += CalcMean(timevec, 0, timevec.size() / 2);
+            stddevtotal += CalcStdv(timevec);
+            count++;
+        }
+    }
+
+    sizes.clear();
+    alignments.clear();
+    times.clear();
+
+    stddev = stddevtotal / count;
+    return avgtotal / count;
 }
 
 //-----------------------------------------------------------------------------
