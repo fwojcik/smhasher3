@@ -58,6 +58,8 @@
 #include <string>
 #include <functional>
 
+//constexpr int BULK_SAMPLES = 2;
+
 constexpr int BULK_TRIALS  = 2999;  // Timings per hash for large (>=128b) keys
 constexpr int TINY_TRIALS  = 200;   // Timings per hash for small (<128b) keys
 constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
@@ -71,13 +73,17 @@ constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
 // as possible, but that's hard to do portably. We'll try and get as close as
 // possible by marking the function as NEVER_INLINE (to keep the optimizer from
 // moving it) and marking the timing variables as "volatile register".
-NEVER_INLINE static int64_t timehash( HashFn hash, const seed_t seed, const void * const key, int len ) {
+//
+// Calling the hash function twice seems to improve timing measurement stability
+// without affecting branch prediction too much.
+NEVER_INLINE static int64_t timehash( HashFn hash, const seed_t seed, void * const key, int len ) {
     volatile int64_t begin, end;
     uint32_t         temp[16];
 
     begin = timer_start();
 
-    hash(key, len, seed, temp);
+    hash(key, len, seed, key);
+    hash(key, len, seed, key);
 
     end = timer_end();
 
@@ -189,7 +195,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
         if (testsize < 128) {
             t = (double)timehash_small(hash, seed, block, testsize) / (double)TINY_SAMPLES;
         } else {
-            t = (double)timehash(hash      , seed, block, testsize);
+            t = (double)timehash(hash      , seed, block, testsize) / (double)2.0;
         }
 
         if (t > 0) { times.push_back(t); }
