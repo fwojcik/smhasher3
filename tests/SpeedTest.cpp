@@ -330,13 +330,13 @@ bool SpeedTest( const HashInfo * hinfo ) {
 
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
+    TinySpeedTest(hinfo, 31, seed, true, true);
+    printf("\n");
+
     BulkSpeedTest(hinfo, seed, true, false);
     printf("\n");
 
     BulkSpeedTest(hinfo, seed, true, true);
-    printf("\n");
-
-    TinySpeedTest(hinfo, 31, seed, true, true);
     printf("\n");
 
     return result;
