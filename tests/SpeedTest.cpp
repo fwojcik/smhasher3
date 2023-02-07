@@ -235,7 +235,8 @@ static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
         double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
-        printf("Alignment  %2d - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n", align, bestbpc, bestbps);
+        printf("Alignment  %2d - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz (%10.6f stdv%8.4f%%)\n",
+                align, bestbpc, bestbps, stddev, 100.0 * stddev / cycles);
         sumbpc += bestbpc;
     }
 
@@ -249,7 +250,8 @@ static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
         double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
-        printf("Alignment rnd - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n", bestbpc, bestbps);
+        printf("Alignment rnd - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz (%10.6f stdv%8.4f%%)\n",
+                bestbpc, bestbps, stddev, 100.0 * stddev / cycles);
     }
 
     fflush(NULL);
@@ -278,7 +280,8 @@ static double TinySpeedTest( HashFn hash, int maxkeysize, seed_t seed, bool verb
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (include_vary) {
         double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0);
-        if (verbose) { printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv)\n", cycles, stddev); }
+        if (verbose) { printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
+                    cycles, stddev, 100.0 * stddev / cycles); }
     }
 
     return sum;
