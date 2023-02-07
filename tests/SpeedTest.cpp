@@ -142,12 +142,13 @@ double stddev;
 
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
         const int align, const int varysize, const int varyalign ) {
-    static uint64_t count = 0;
-    Rand r( 444793 + (count++) );
+    static uint64_t callcount = 0;
+    Rand r( 444793 + (callcount++) );
 
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + varyalign) <= 257
     uintptr_t t1  = reinterpret_cast<uintptr_t>(buf);
 
+    r.rand_p(buf, blocksize + 512);
     t1  = (t1 + 255) & UINT64_C(0xFFFFFFFFFFFFFF00);
     t1 += align;
 
@@ -189,7 +190,6 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
             block = reinterpret_cast<uint8_t *>(t1 + alignments[itrial]);
         }
 
-        r.rand_p(block, testsize);
 
         double t;
         if (testsize < 128) {
