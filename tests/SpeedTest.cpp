@@ -238,6 +238,11 @@ static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_
         printf("Alignment  %2d - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n", align, bestbpc, bestbps);
         sumbpc += bestbpc;
     }
+
+    sumbpc = sumbpc / 8.0;
+    printf("Average       - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n", sumbpc, (sumbpc * 3000000000.0 / 1048576.0));
+
+    // Deliberately not counted in the Average stat, so the two can be directly compared
     if (vary_align) {
         double cycles  = SpeedTest(hash, seed, BULK_TRIALS, blocksize, 0, maxvary, 7);
 
@@ -245,11 +250,8 @@ static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_
 
         double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
         printf("Alignment rnd - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n", bestbpc, bestbps);
-        // Deliberately not counted in the Average stat, so the two can be directly compared
     }
 
-    sumbpc = sumbpc / 8.0;
-    printf("Average       - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n", sumbpc, (sumbpc * 3000000000.0 / 1048576.0));
     fflush(NULL);
 }
 
@@ -269,14 +271,15 @@ static double TinySpeedTest( HashFn hash, int maxkeysize, seed_t seed, bool verb
         }
         sum += cycles;
     }
-    if (include_vary) {
-        double cycles = SpeedTest(hash, seed, TINY_TRIALS * 8, maxkeysize, 0, maxkeysize - 1, 0);
-        if (verbose) { printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv)\n", cycles, stddev); }
-        // Deliberately not counted in the Average stat, so the two can be directly compared
-    }
 
     sum = sum / (double)maxkeysize;
     printf("Average        - %8.2f cycles/hash\n", sum);
+
+    // Deliberately not counted in the Average stat, so the two can be directly compared
+    if (include_vary) {
+        double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0);
+        if (verbose) { printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv)\n", cycles, stddev); }
+    }
 
     return sum;
 }
