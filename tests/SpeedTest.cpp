@@ -238,9 +238,12 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
 //-----------------------------------------------------------------------------
 // 256k blocks seem to give the best results.
 
-static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_size ) {
+static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align, bool vary_size ) {
     const int blocksize = 256 * 1024;
     const int maxvary   = vary_size ? 127 : 0;
+    const int runcount  = hinfo->isVerySlow() ? BULK_RUNS   / 16 : (hinfo->isSlow() ? BULK_RUNS   / 4 : BULK_RUNS);
+    const int trials    = hinfo->isVerySlow() ? BULK_TRIALS / 16 : (hinfo->isSlow() ? BULK_TRIALS / 4 : BULK_TRIALS);
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
 
     if (vary_size) {
         printf("Bulk speed test - [%d, %d]-byte keys\n", blocksize - maxvary, blocksize);
@@ -249,14 +252,14 @@ static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_
     }
     double sumbpc = 0.0;
 
-    volatile double warmup_cycles = SpeedTest(hash, seed, BULK_TRIALS, blocksize, 0, 0, 0);
+    volatile double warmup_cycles = SpeedTest(hash, seed, trials, blocksize, 0, 0, 0);
 
     for (int align = 7; align >= 0; align--) {
         double cycles  = 0;
-        for (int i = 0; i < BULK_RUNS; i++) {
-            cycles += SpeedTest(hash, seed, BULK_TRIALS, blocksize, align, maxvary, 0);
+        for (int i = 0; i < runcount; i++) {
+            cycles += SpeedTest(hash, seed, trials, blocksize, align, maxvary, 0);
         }
-        cycles /= (double)BULK_RUNS;
+        cycles /= (double)runcount;
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
@@ -272,10 +275,10 @@ static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (vary_align) {
         double cycles  = 0;
-        for (int i = 0; i < BULK_RUNS; i++) {
-            cycles += SpeedTest(hash, seed, BULK_TRIALS, blocksize, 0, maxvary, 7);
+        for (int i = 0; i < runcount; i++) {
+            cycles += SpeedTest(hash, seed, trials, blocksize, 0, maxvary, 7);
         }
-        cycles /= (double)BULK_RUNS;
+        cycles /= (double)runcount;
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
@@ -289,7 +292,8 @@ static void BulkSpeedTest( HashFn hash, seed_t seed, bool vary_align, bool vary_
 
 //-----------------------------------------------------------------------------
 
-static double TinySpeedTest( HashFn hash, int maxkeysize, seed_t seed, bool verbose, bool include_vary ) {
+static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed, bool verbose, bool include_vary ) {
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
     double sum = 0.0;
 
     printf("Small key speed test - [1, %2d]-byte keys\n", maxkeysize);
@@ -319,7 +323,6 @@ static double TinySpeedTest( HashFn hash, int maxkeysize, seed_t seed, bool verb
 
 //-----------------------------------------------------------------------------
 bool SpeedTest( const HashInfo * hinfo ) {
-    const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
     Rand         r( 633692 );
 
@@ -327,13 +330,13 @@ bool SpeedTest( const HashInfo * hinfo ) {
 
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
-    BulkSpeedTest(hash, seed, true, false);
+    BulkSpeedTest(hinfo, seed, true, false);
     printf("\n");
 
-    BulkSpeedTest(hash, seed, true, true);
+    BulkSpeedTest(hinfo, seed, true, true);
     printf("\n");
 
-    TinySpeedTest(hash, 31, seed, true, true);
+    TinySpeedTest(hinfo, 31, seed, true, true);
     printf("\n");
 
     return result;
