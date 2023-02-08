@@ -64,8 +64,8 @@ static void pearson_hash_256( uint8_t * out, const uint8_t * in, size_t len, uin
     }
 
     // store output
-    _mm_store_si128((__m128i *)out     , high_hash);
-    _mm_store_si128((__m128i *)&out[16], hash     );
+    _mm_storeu_si128((__m128i *)out     , high_hash);
+    _mm_storeu_si128((__m128i *)&out[16], hash     );
 }
 
 static void pearson_hash_128( uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in ) {
@@ -95,7 +95,7 @@ static void pearson_hash_128( uint8_t * out, const uint8_t * in, size_t len, uin
         hash = _mm_aesenclast_si128(hash, ZERO);
     }
     // store output
-    _mm_store_si128((__m128i *)out, hash);
+    _mm_storeu_si128((__m128i *)out, hash);
 }
 
 static void pearson_hash_64( uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in ) {
