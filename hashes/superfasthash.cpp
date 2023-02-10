@@ -100,7 +100,8 @@ REGISTER_HASH(SuperFastHash,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_CANONICAL_LE        |
-         FLAG_IMPL_LICENSE_GPL3,
+         FLAG_IMPL_LICENSE_GPL3        |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0xCFA52B38,
    $.verification_BE = 0xDF0823CA,

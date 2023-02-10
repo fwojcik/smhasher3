@@ -102,7 +102,8 @@ REGISTER_HASH(Pearson_64,
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
          FLAG_IMPL_SLOW                    |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 64,
    $.verification_LE = 0x12E4C8CD,
    $.verification_BE = 0x12E4C8CD,
@@ -119,7 +120,8 @@ REGISTER_HASH(Pearson_128,
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
          FLAG_IMPL_SLOW                    |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 128,
    $.verification_LE = 0xDC5048A3,
    $.verification_BE = 0xDC5048A3,
@@ -136,7 +138,8 @@ REGISTER_HASH(Pearson_256,
          FLAG_HASH_LOOKUP_TABLE,
    $.impl_flags =
          FLAG_IMPL_SLOW                    |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 256,
    $.verification_LE = 0xA9B1DE02,
    $.verification_BE = 0xA9B1DE02,

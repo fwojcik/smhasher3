@@ -176,7 +176,8 @@ REGISTER_HASH(poly_mersenne__deg1,
    $.impl_flags =
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
-         FLAG_IMPL_LICENSE_BSD,
+         FLAG_IMPL_LICENSE_BSD          |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0x50526DA4,
    $.verification_BE = 0xBB8CF709,
@@ -193,7 +194,8 @@ REGISTER_HASH(poly_mersenne__deg2,
    $.impl_flags =
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
-         FLAG_IMPL_LICENSE_BSD,
+         FLAG_IMPL_LICENSE_BSD          |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0xCDDDA91B,
    $.verification_BE = 0x9507D811,
@@ -212,7 +214,8 @@ REGISTER_HASH(poly_mersenne__deg3,
    $.impl_flags =
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
-         FLAG_IMPL_LICENSE_BSD,
+         FLAG_IMPL_LICENSE_BSD          |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0x7D822707,
    $.verification_BE = 0x7273EB0A,
@@ -231,7 +234,8 @@ REGISTER_HASH(poly_mersenne__deg4,
    $.impl_flags =
          FLAG_IMPL_128BIT               |
          FLAG_IMPL_MULTIPLY_64_128      |
-         FLAG_IMPL_LICENSE_BSD,
+         FLAG_IMPL_LICENSE_BSD          |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0xBF0273E6,
    $.verification_BE = 0xAA526413,

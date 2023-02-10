@@ -2761,7 +2761,8 @@ REGISTER_HASH(PMP_Multilinear_32,
    $.impl_flags =
          FLAG_IMPL_TYPE_PUNNING |
          FLAG_IMPL_MULTIPLY     |
-         FLAG_IMPL_LICENSE_BSD,
+         FLAG_IMPL_LICENSE_BSD  |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0xF3199670,
    $.verification_BE = 0xF602E963,

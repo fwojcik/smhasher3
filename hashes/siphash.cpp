@@ -435,7 +435,7 @@ REGISTER_HASH(SipHash_2_4,
          FLAG_HASH_XL_SEED      |
          FLAG_HASH_CRYPTOGRAPHIC,
    $.impl_flags =
-         FLAG_IMPL_SLOW         |
+         FLAG_IMPL_VERY_SLOW    |
          FLAG_IMPL_TYPE_PUNNING |
          FLAG_IMPL_ROTATE       |
          FLAG_IMPL_LICENSE_MIT,
@@ -445,6 +445,7 @@ REGISTER_HASH(SipHash_2_4,
    $.hashfn_native   = SipHash_2_4<false>,
    $.hashfn_bswap    = SipHash_2_4<true>
  );
+
 REGISTER_HASH(SipHash_1_3,
    $.desc       = "SipHash 1-3",
    $.impl       = SIP_IMPL_STR,
@@ -469,7 +470,8 @@ REGISTER_HASH(HalfSipHash,
          FLAG_HASH_CRYPTOGRAPHIC,
    $.impl_flags =
          FLAG_IMPL_ROTATE       |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT  |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0xD2BE7FD8,
    $.verification_BE = 0xEC8BC9AF,

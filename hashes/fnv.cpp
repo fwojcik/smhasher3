@@ -280,7 +280,8 @@ REGISTER_HASH(FNV_1a_32,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY     |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT  |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0xE3CBBE91,
    $.verification_BE = 0x656F95A0,
@@ -294,7 +295,8 @@ REGISTER_HASH(FNV_1a_64,
          FLAG_HASH_NO_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64 |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT    |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 64,
    $.verification_LE = 0x103455FC,
    $.verification_BE = 0x4B032B63,

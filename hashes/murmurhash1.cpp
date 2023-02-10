@@ -88,7 +88,8 @@ REGISTER_HASH(MurmurHash1,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY         |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT      |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0x9EA7D056,
    $.verification_BE = 0x4B34A47A,

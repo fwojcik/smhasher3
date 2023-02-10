@@ -156,7 +156,8 @@ REGISTER_HASH(perl_djb2,
    $.hash_flags      =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags      =
-         FLAG_IMPL_LICENSE_GPL3,
+         FLAG_IMPL_LICENSE_GPL3   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits            = 32,
    $.verification_LE = 0x4962CBAB,
    $.verification_BE = 0xCBC1BFB3,
@@ -169,7 +170,8 @@ REGISTER_HASH(perl_sdbm,
    $.hash_flags      =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags      =
-         FLAG_IMPL_LICENSE_GPL3,
+         FLAG_IMPL_LICENSE_GPL3   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits            = 32,
    $.verification_LE = 0xD973311D,
    $.verification_BE = 0xA3228EF6,
@@ -182,7 +184,8 @@ REGISTER_HASH(perl_jenkins,
    $.hash_flags      =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags      =
-         FLAG_IMPL_LICENSE_GPL3,
+         FLAG_IMPL_LICENSE_GPL3   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits            = 32,
    $.verification_LE = 0xE3ED0E54,
    $.verification_BE = 0xA83E99BF,
@@ -196,7 +199,8 @@ REGISTER_HASH(perl_jenkins_old,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS   |
-         FLAG_IMPL_LICENSE_GPL3,
+         FLAG_IMPL_LICENSE_GPL3   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0xEE05869B,
    $.verification_BE = 0x691105C0,
@@ -209,7 +213,8 @@ REGISTER_HASH(perl_jenkins_hard,
    $.hash_flags =
          0,
    $.impl_flags =
-         FLAG_IMPL_LICENSE_GPL3,
+         FLAG_IMPL_LICENSE_GPL3   |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0x1C216B25,
    $.verification_BE = 0x3B326068,

@@ -55,7 +55,8 @@ REGISTER_HASH(x17,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY     |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT  |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0x8128E14C,
    $.verification_BE = 0x9AD0FE22,

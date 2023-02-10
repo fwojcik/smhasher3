@@ -294,7 +294,8 @@ REGISTER_HASH(hasshe2,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS           |
          FLAG_IMPL_MULTIPLY               |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 256,
    $.verification_LE = 0x68CBC5F1,
    $.verification_BE = 0x562ECEB4,
@@ -310,7 +311,8 @@ REGISTER_HASH(hasshe2__tweaked,
          FLAG_HASH_NO_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY               |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 256,
    $.verification_LE = 0xBAF6B1BF,
    $.verification_BE = 0x35A87D75,

@@ -208,7 +208,8 @@ REGISTER_HASH(PearsonBlock_64,
    $.impl_flags =
          FLAG_IMPL_CANONICAL_LE           |
          FLAG_IMPL_MULTIPLY_64_64         |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 64,
    $.verification_LE = 0x14C3D184,
    $.verification_BE = 0x162C2D8A,
@@ -223,7 +224,8 @@ REGISTER_HASH(PearsonBlock_128,
    $.impl_flags =
          FLAG_IMPL_CANONICAL_LE           |
          FLAG_IMPL_MULTIPLY_64_64         |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 128,
    $.verification_LE = 0x6BEFE6EA,
    $.verification_BE = 0x00D61079,
@@ -238,7 +240,8 @@ REGISTER_HASH(PearsonBlock_256,
    $.impl_flags =
          FLAG_IMPL_CANONICAL_LE           |
          FLAG_IMPL_MULTIPLY_64_64         |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 256,
    $.verification_LE = 0x999B3C19,
    $.verification_BE = 0x92D43B4F,

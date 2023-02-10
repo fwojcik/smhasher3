@@ -102,7 +102,8 @@ REGISTER_HASH(lookup3__32,
          0,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0x3D83917A,
    $.verification_BE = 0x18E6AA76,
@@ -116,7 +117,8 @@ REGISTER_HASH(lookup3,
          0,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 64,
    $.verification_LE = 0x6AE8AB7C,
    $.verification_BE = 0x074EBE4E,

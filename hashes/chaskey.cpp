@@ -269,7 +269,8 @@ REGISTER_HASH(chaskey_12__32,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0x672570CB,
    $.verification_BE = 0x22B350D2,
@@ -289,7 +290,8 @@ REGISTER_HASH(chaskey_12__64,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 64,
    $.verification_LE = 0x919290D6,
    $.verification_BE = 0x5D0E8285,
@@ -309,7 +311,8 @@ REGISTER_HASH(chaskey_12,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 128,
    $.verification_LE = 0x1E983B23,
    $.verification_BE = 0xB042962B,
@@ -329,7 +332,8 @@ REGISTER_HASH(chaskey_8__32,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0xA984B318,
    $.verification_BE = 0x23FE2699,
@@ -349,7 +353,8 @@ REGISTER_HASH(chaskey_8__64,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 64,
    $.verification_LE = 0x4DA0DD3A,
    $.verification_BE = 0x87A85CD2,
@@ -369,7 +374,8 @@ REGISTER_HASH(chaskey_8,
    $.impl_flags =
          FLAG_IMPL_ROTATE                 |
          FLAG_IMPL_CANONICAL_LE           |
-         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
+         FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
+         FLAG_IMPL_SLOW,
    $.bits = 128,
    $.verification_LE = 0x48B645E4,
    $.verification_BE = 0xB84D00F9,

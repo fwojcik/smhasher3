@@ -89,7 +89,8 @@ REGISTER_HASH(badhash,
          FLAG_HASH_SMALL_SEED       ,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS     |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT      |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0xAB432E23,
    $.verification_BE = 0x241F49BE,

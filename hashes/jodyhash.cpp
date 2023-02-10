@@ -135,7 +135,8 @@ REGISTER_HASH(jodyhash_32,
    $.impl_flags =
          FLAG_IMPL_READ_PAST_EOB  |
          FLAG_IMPL_ROTATE         |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT    |
+         FLAG_IMPL_SLOW,
    $.bits = 32,
    $.verification_LE = 0xFB47D60D,
    $.verification_BE = 0xB94C9789,

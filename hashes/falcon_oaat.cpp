@@ -102,7 +102,8 @@ REGISTER_HASH(GoodOAAT,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_ROTATE       |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT  |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0x7B14EEE5,
    $.verification_BE = 0x1A834495,
@@ -116,7 +117,8 @@ REGISTER_HASH(MicroOAAT,
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_ROTATE       |
-         FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_LICENSE_MIT  |
+         FLAG_IMPL_VERY_SLOW,
    $.bits = 32,
    $.verification_LE = 0x16F1BA97,
    $.verification_BE = 0xDE58061B,

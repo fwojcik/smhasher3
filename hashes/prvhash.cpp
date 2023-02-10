@@ -312,6 +312,7 @@ REGISTER_HASH(prvhash_64,
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
+         FLAG_IMPL_SLOW            |
          FLAG_IMPL_CANONICAL_LE    |
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
@@ -329,6 +330,7 @@ REGISTER_HASH(prvhash_128,
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
+         FLAG_IMPL_SLOW            |
          FLAG_IMPL_CANONICAL_LE    |
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
