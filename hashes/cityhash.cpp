@@ -577,7 +577,7 @@ static void CityHashCrc256ShortWithSeed( const uint8_t * s, size_t len, uint64_t
 
     memcpy(buf, s, len);
     memset(buf + len, 0, 240 - len);
-    CityHashCrc256Long<bswap>(buf, 240, seed ^ ~static_cast<uint64_t>(len), result);
+    CityHashCrc256Long<bswap>(buf, 240, HashLen16(seed, ~static_cast<uint64_t>(len)), result);
 }
 
 // Unofficial
@@ -889,8 +889,8 @@ REGISTER_HASH(CityHashCrc_256,
          FLAG_IMPL_SLOW            |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 256,
-   $.verification_LE = 0x4A282558,
-   $.verification_BE = 0xB95D3E15,
+   $.verification_LE = 0x1193B94A,
+   $.verification_BE = 0x2FC3BEA9,
    $.hashfn_native   = CityCrc256<false>,
    $.hashfn_bswap    = CityCrc256<true>
  );
