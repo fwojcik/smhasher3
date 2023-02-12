@@ -44,6 +44,8 @@
 #include "Platform.h"
 #include "VCode.h"
 
+#include <cstdlib>
+
 //-----------------------------------------------------------------------------
 // Full CRC32c implementation
 // This is based on Mark Adler's implementation.
