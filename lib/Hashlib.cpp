@@ -73,7 +73,7 @@ unsigned register_hash( const HashInfo * hinfo ) {
             printf("ERROR: Flags marked as IMPL_CANONICAL_BOTH, but LE verification code %08x\n",
                     hinfo->verification_LE);
             printf("       does not match BE code %08x for hash %s\n",
-                    hinfo->verification_LE, hinfo->name);
+                    hinfo->verification_BE, hinfo->name);
             exit(1);
         }
         if (hinfo->hashfn_native != hinfo->hashfn_bswap) {
