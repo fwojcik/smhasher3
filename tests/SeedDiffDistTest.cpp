@@ -88,12 +88,12 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
     bool result = true;
 
     if (!drawDiagram) {
-        printf("Testing %3d-byte keys, %2d-bit seeds, %d reps", sizeof(keytype), seedbits, keycount);
+        printf("Testing %3zd-byte keys, %2d-bit seeds, %d reps", sizeof(keytype), seedbits, keycount);
     }
 
     for (int seedbit = 0; seedbit < seedbits; seedbit++) {
         if (drawDiagram) {
-            printf("Testing seed bit %d / %d - %3d-byte keys - %d keys\n", seedbit, seedbits, sizeof(keytype), keycount);
+            printf("Testing seed bit %d / %d - %3zd-byte keys - %d keys\n", seedbit, seedbits, sizeof(keytype), keycount);
         }
 
         for (int i = 0; i < keycount; i++) {

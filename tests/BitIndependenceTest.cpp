@@ -185,7 +185,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     const size_t hashbits     = hashbytes * 8;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
-    printf("Testing %4d-byte keys, %7d reps  ", keybytes, reps);
+    printf("Testing %4zd-byte keys, %7zd reps  ", keybytes, reps);
 
     // The andcount array needs 1 element as a buffer due to how
     // HistogramHashBits accesses memory prior to the cursor.

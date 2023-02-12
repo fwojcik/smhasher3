@@ -144,14 +144,14 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
     // Print out a test header
     char pbuf[32];
     if (blockoffset_incr == 1) {
-        snprintf(pbuf, sizeof(pbuf), "[%d..%d]",
+        snprintf(pbuf, sizeof(pbuf), "[%zd..%zd]",
                 blockoffset_min, blockoffset_max);
     } else {
-        snprintf(pbuf, sizeof(pbuf), "[%d..%d, by %ds]",
+        snprintf(pbuf, sizeof(pbuf), "[%zd..%zd, by %zds]",
                 blockoffset_min, blockoffset_max, blockoffset_incr);
     }
 
-    printf("Keyset 'SeedBlockLen' - %2d-byte keys with block at offsets %s - %" PRId64 " hashes\n",
+    printf("Keyset 'SeedBlockLen' - %2zd-byte keys with block at offsets %s - %" PRId64 " hashes\n",
             keylen, pbuf, totaltests);
 
     if ((totaltests < 10000) || (totaltests > 110000000)) { printf("Skipping\n\n"); return true; }
@@ -196,7 +196,7 @@ bool SeedBlockLenTest( const HashInfo * hinfo, const bool verbose, const bool ex
 
     printf("[[[ Seed BlockLength Tests ]]]\n\n");
 
-    printf("Seeds have up to %d bits set, %d-byte blocks have up to %d bits set\n\n",
+    printf("Seeds have up to %zd bits set, %zd-byte blocks have up to %zd bits set\n\n",
             seedbits, blocklen, blockbits);
 
     bool result = true;

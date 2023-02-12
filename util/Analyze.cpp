@@ -1078,7 +1078,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     const double cramer_v    = sqrt(maxChiSq / testcount);
 
     recordLog2PValue(logp_value);
-    printf("max %6.4f at bit %4d -> out (%3d,%3d)  (^%2d)", cramer_v,
+    printf("max %6.4f at bit %4zd -> out (%3zd,%3zd)  (^%2d)", cramer_v,
             maxKeybit, maxOutbitA, maxOutbitB, logp_value);
 
     if (p_value < FAILURE_PBOUND) {
@@ -1100,7 +1100,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
         size_t xyoffset = 0;
         for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
             for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
-                printf("Output bits (%3d,%3d) - ", out1, out2);
+                printf("Output bits (%3zd,%3zd) - ", out1, out2);
                 for (int keybit = 0; keybit < keybits; keybit++) {
                     const uint32_t * pop_cursor = &popcount[keybit * hashbits               ];
                     const uint32_t * and_cursor = &andcount[keybit * hashbitpairs + xyoffset];

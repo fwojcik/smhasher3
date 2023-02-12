@@ -130,7 +130,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
     size_t totaltests = testseeds * testblocks * testkeys;
 
     // Print out a test header
-    printf("Keyset 'SeedBlockOffset' - [%d..%d]-byte keys with block at offset %d - %" PRId64 " hashes\n",
+    printf("Keyset 'SeedBlockOffset' - [%zd..%zd]-byte keys with block at offset %zd - %" PRId64 " hashes\n",
             keylen_min, keylen_max, blockoffset, totaltests);
 
     if ((totaltests < 10000) || (totaltests > 110000000)) { printf("Skipping\n\n"); return true; }
@@ -169,7 +169,7 @@ bool SeedBlockOffsetTest( const HashInfo * hinfo, const bool verbose, const bool
 
     printf("[[[ Seed BlockOffset Tests ]]]\n\n");
 
-    printf("Seeds have up to %d bits set, %d-byte blocks have up to %d bits set\n\n",
+    printf("Seeds have up to %zd bits set, %zd-byte blocks have up to %zd bits set\n\n",
             seedbits, blocklen, blockbits);
 
     bool result = true;

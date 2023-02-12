@@ -67,7 +67,7 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
     uint64_t     seeds     = 2 * chooseUpToK(bigseed ? 64 : 32, maxbits);
     uint64_t     totalkeys = seeds * keycount;
 
-    printf("Keyset 'SeedZeroes' - up to %d-byte keys, seeds with up to %d set bits - %d seeds - %d hashes\n", keycount, maxbits, seeds, totalkeys);
+    printf("Keyset 'SeedZeroes' - up to %zd-byte keys, seeds with up to %zd set bits - %zd seeds - %zd hashes\n", keycount, maxbits, seeds, totalkeys);
 
     uint8_t * nullblock = new uint8_t[keycount];
     memset(nullblock, 0, keycount);
