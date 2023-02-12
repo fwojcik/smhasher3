@@ -298,6 +298,8 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
 
     printf("Small key speed test - [1, %2d]-byte keys\n", maxkeysize);
 
+    volatile double warmup_cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, 0, 0);
+
     for (int i = 1; i <= maxkeysize; i++) {
         volatile int j      = i;
         double       cycles = SpeedTest(hash, seed, TINY_TRIALS, j, 0, 0, 0);
