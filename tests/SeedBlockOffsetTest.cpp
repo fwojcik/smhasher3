@@ -69,11 +69,6 @@ static uint8_t * SeedBlockOffsetTest_Impl3( const HashFn hash, uint8_t * hashptr
     for (size_t keylen = keylen_min; keylen <= keylen_max; keylen++) {
         hash(buf, keylen, seed, hashptr);
         hashptr += sizeof(hashtype);
-        if (0) {
-            ExtBlob xb(buf, keylen);
-            printf("Seed %016lx ", seed);
-            xb.printhex();
-        }
     }
 
     return hashptr;
@@ -150,10 +145,6 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
     } else {
         SeedBlockOffsetTest_Impl2<hashtype, blocklen, true>(hinfo, hashes,
                 keylen_min, keylen_max, blockoffset, seedmaxbits, blockmaxbits);
-    }
-
-    if (hashes.size() != totaltests) {
-        printf("MISMATCH: %ld * %ld * %ld == %ld != %ld\n", testseeds, testblocks, testkeys, totaltests, hashes.size());
     }
 
     bool result = TestHashList(hashes).drawDiagram(false);

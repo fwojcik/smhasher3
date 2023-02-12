@@ -73,11 +73,6 @@ static uint8_t * SeedBlockLenTest_Impl3( const HashFn hash, uint8_t * hashptr, s
         uint8_t * key  = blockbase - blockoffset;
         hash(key, keylen, seed, hashptr);
         hashptr += sizeof(hashtype);
-        if (0) {
-            ExtBlob xb(key, keylen);
-            printf("Seed %016lx ", seed);
-            xb.printhex();
-        }
     }
 
     return hashptr;
