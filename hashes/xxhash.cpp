@@ -1610,6 +1610,7 @@ REGISTER_HASH(XXH3_64__reinit,
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_CANONICAL_LE        |
          FLAG_IMPL_MULTIPLY            |
          FLAG_IMPL_ROTATE              |
@@ -1666,6 +1667,7 @@ REGISTER_HASH(XXH3_128__reinit,
          FLAG_HASH_LOOKUP_TABLE        |
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS        |
          FLAG_IMPL_CANONICAL_LE        |
          FLAG_IMPL_MULTIPLY            |
          FLAG_IMPL_ROTATE              |
