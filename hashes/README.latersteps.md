@@ -336,16 +336,19 @@ omitted from all of these):
 - `ENDIAN_INDEPENDENT` means that the hash output bytes are defined to be the same
   across platforms with differing integer byte-orderings. This usually applies to
   cryptographic hashes, and usually not to others, but there are definitely some
-  non-cryptographic hashes that specify a correct output byte-ordering.  
+  non-cryptographic hashes that specify a correct output byte-ordering.
 - `FLOATING_POINT` means that the hash is defined to use floating-point operations.
 
 The list of `impl_flags` and their meanings (the `FLAG_IMPL_` prefix is omitted from
 all of these):
 - `SANITY_FAILS` means that this implementation fails one or more Sanity tests
-- `SLOW` means that the hash takes around 150 cycles/hash or more for the
-  `Average` result for the "Small key speed test", but is not `VERY_SLOW`.
-- `VERY_SLOW` means that the hash takes around 400 cycles/hash or more for the
-  `Average` result for the "Small key speed test".
+- `SLOW` means that the hash either a) takes 160 cycles/hash or more for the
+  `Average` result for the "Small key speed test", or b) hashes less than 1.0
+  byte/cycle for the `Average` result for either "Bulk speed test", or c) both,
+  but is not classified as `VERY_SLOW`.
+- `VERY_SLOW` means that the hash either a) takes 400 cycles/hash or more for the
+  `Average` result for the "Small key speed test", or b) hashes less than 0.333
+  byte/cycle for the `Average` result for either "Bulk speed test", or c) both.
 - `READ_PAST_EOB` means the hash may read past the bounds of the designated input
   buffer. Note that this does NOT imply that the hash value is affected by bytes
   outside those specified.
@@ -391,8 +394,7 @@ all of these):
 "Slow" and "very slow" hashes have some test suites shorted to try to keep runtime
 tolerable. Their thresholds are somewhat arbitrary and x86-specific, and might be
 updated in time. They were chosen based off of a histogram of hash speeds, and were
-the values around the two largest obvious gaps. I was also not super-strict in
-following the cutoff values when assigning flags.
+the values around the two largest obvious gaps.
 
 The particular choices of which mathematical features to call out were made according
 to those which can be more expensive (sometimes **much** more expensive) on CPUs
@@ -419,9 +421,10 @@ discussion below on `FLAG_HASH_ENDIAN_INDEPENDENT` should be considered carefull
 Want your hash distributed with SMHasher3?
 ------------------------------------------
 
-If you would like your hash implementation(s) to be distributed with the SMHasher3
-project, you should try to follow the guidelines in `CONTRIBUTING.md`. Nothing there
-is needed to simply use SMHasher3 to test and develop a hash.
+If you would like your hash implementation(s) to be distributed with the
+SMHasher3 project, please try to follow the guidelines in `CONTRIBUTING.md`
+to the extent that you can. Nothing there is needed to simply use SMHasher3
+to test and develop a hash.
 
 Worrying about endianness issues
 ================================
@@ -524,15 +527,16 @@ Some exceptions to all of this are covered later.
 Augmenting your hash to handle endianness
 -----------------------------------------
 
+If you've been using following the previous advice and using the `GET_U`* and
+`PUT_U`* functions to convert between data in memory and integer variables, and just
+using them in native-endianness mode, then about 90% of this task will be very
+straightforward.
+
 (If you see some confusing things in the code snippets in this section then you can
 probably ignore them; details on all of them can be found in
 `hashes/README.advancedtopics.md`)
 
-If you've been using following the previous advice and using the `GET_U`* and
-`PUT_U`* functions to convert between data in memory and integer variables, and just
-using them in native-endianness mode, then about 90% of this task will be very
-straightforward. Let's say you finished coding `WackyHash64` and your code looks
-something like this:
+Let's say you finished coding `WackyHash64` and your code looks something like this:
 ```cpp
 static uint64_t wackyhash_full_block( const uint8_t * data, const myhash_seedtable_t * table ) {
 ......
@@ -577,7 +581,9 @@ static void WackyHash64( const void * in, const size_t len, const seed_t seed, v
 The next thing to do is to just find all of the places where you put `false` in the
 `GET_U`* and `PUT_U`* function template parameters and put in the `bswap` template
 parameter from your top-level function. You might have to carry that parameter
-through your other intermediate functions, though. Doing that looks like:
+through your other intermediate functions, though.
+
+Doing that looks like:
 ```cpp
 template <bool bswap>
 static uint64_t wackyhash_full_block( const uint8_t * data, const myhash_seedtable_t * table ) {
@@ -682,8 +688,9 @@ More complex endianness scenarios
 
 Here are some cases where trickier bytewswapping approaches might sneak in:
 
-- Hashes which use fancy ways to read the tail of the input which can be a less than
-  a "block" of data. The original code might look like:
+- Hashes which are not ENDIAN_INDEPENDENT and which use fancy ways to read
+  the tail of the input which can be a less than a "block" of data. The
+  original code might look like:
   ```cpp
   // Reads the last 1-7 bytes.
   // This deliberately reads beyond the end of the input buffer.
@@ -710,8 +717,8 @@ Here are some cases where trickier bytewswapping approaches might sneak in:
   investigation.
 
   If your hash is ENDIAN_INDEPENDENT, then you should be fine ignoring this
-  issue, since the implementation with "incorrect" endianness will never be
-  called. That said, some user might be interested in how your hash
+  issue, since the implementation with "incorrect" endianness will basically
+  never be called. That said, some user might be interested in how your hash
   function performs in an environment with the "wrong" endianness without
   needing to spend cycles byteswapping data, and if this issue is left
   unaddressed then they will not be able to test that.
