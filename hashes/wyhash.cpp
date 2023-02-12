@@ -73,7 +73,7 @@ static inline void _wymum( uint64_t * A, uint64_t * B ) {
         if (strict) {
             *A ^= _wyrot(hl) ^ hh; *B ^= _wyrot(lh) ^ ll;
         } else {
-            *A = _wyrot(hl)  ^ hh; *B  = _wyrot(lh) ^ ll;
+            *A  = _wyrot(hl) ^ hh; *B  = _wyrot(lh) ^ ll;
         }
     } else {
         uint64_t rlo, rhi;
@@ -81,7 +81,7 @@ static inline void _wymum( uint64_t * A, uint64_t * B ) {
         if (strict) {
             *A ^= rlo; *B ^= rhi;
         } else {
-            *A = rlo;  *B  = rhi;
+            *A  = rlo; *B  = rhi;
         }
     }
 }
@@ -197,12 +197,12 @@ static bool wyhash64_selftest( void ) {
         const uint64_t  hash;
         const char *    key;
     } selftests[] = {
-        { UINT64_C  (0x0409638ee2bde459), "" }                          ,
-        { UINT64_C  (0xa8412d091b5fe0a9), "a" }                         ,
-        { UINT64_C  (0x32dd92e4b2915153), "abc" }                       ,
-        { UINT64_C  (0x8619124089a3a16b), "message digest" }            ,
-        { UINT64_C  (0x7a43afb61d7f5f40), "abcdefghijklmnopqrstuvwxyz" },
-        { UINT64_C  (0xff42329b90e50d58), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+        { UINT64_C(0x0409638ee2bde459), "" }                          ,
+        { UINT64_C(0xa8412d091b5fe0a9), "a" }                         ,
+        { UINT64_C(0x32dd92e4b2915153), "abc" }                       ,
+        { UINT64_C(0x8619124089a3a16b), "message digest" }            ,
+        { UINT64_C(0x7a43afb61d7f5f40), "abcdefghijklmnopqrstuvwxyz" },
+        { UINT64_C(0xff42329b90e50d58), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
         {
             UINT64_C(0xc39cab13b115aad3),
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890"

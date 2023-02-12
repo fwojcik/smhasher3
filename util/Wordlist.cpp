@@ -75,7 +75,7 @@ std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
     if (verbose) {
         unsigned cnt = (double)wordvec.size() / (addSingleCap ? 3.0 : 2.0);
         printf("Read %d words from internal list, ", cnt);
-        printf("avg len: %0.3f\n\n", (double)(sum)/(double)(cnt));
+        printf("avg len: %0.3f\n\n", (double)(sum) / (double)(cnt));
     }
 
     return wordvec;

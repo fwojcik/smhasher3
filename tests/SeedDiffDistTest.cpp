@@ -93,7 +93,8 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
 
     for (int seedbit = 0; seedbit < seedbits; seedbit++) {
         if (drawDiagram) {
-            printf("Testing seed bit %d / %d - %3zd-byte keys - %d keys\n", seedbit, seedbits, sizeof(keytype), keycount);
+            printf("Testing seed bit %d / %d - %3zd-byte keys - %d keys\n",
+                    seedbit, seedbits, sizeof(keytype), keycount);
         }
 
         for (int i = 0; i < keycount; i++) {
@@ -139,7 +140,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
                 worstlogp = -1;
             }
             if (((fails == 0) || !thisresult) && (worstlogp < curlogp)) {
-                worstlogp = curlogp;
+                worstlogp    = curlogp;
                 worstseedbit = seedbit;
                 worsthashes  = hashes;
             }
@@ -171,22 +172,22 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
 
 template <typename hashtype>
 bool SeedDiffDistTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    bool         result = true;
+    bool result = true;
 
     printf("[[[ Seed 'Differential Distribution' Tests ]]]\n\n");
 
     if (hinfo->is32BitSeed()) {
-        //result &= SeedDiffDistTest<Blob< 24>, hashtype, false>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob< 32>, hashtype, false>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob< 64>, hashtype, false>(hinfo, verbose);
+        // result &= SeedDiffDistTest<Blob< 24>, hashtype, false>(hinfo, verbose);
+        result &= SeedDiffDistTest<Blob<32>, hashtype, false>(hinfo, verbose);
+        result &= SeedDiffDistTest<Blob<64>, hashtype, false>(hinfo, verbose);
         if (extra && !hinfo->isSlow()) {
             result &= SeedDiffDistTest<Blob<160>, hashtype, false>(hinfo, verbose);
             result &= SeedDiffDistTest<Blob<256>, hashtype, false>(hinfo, verbose);
         }
     } else {
-        //result &= SeedDiffDistTest<Blob< 24>, hashtype,  true>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob< 32>, hashtype,  true>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob< 64>, hashtype,  true>(hinfo, verbose);
+        // result &= SeedDiffDistTest<Blob< 24>, hashtype,  true>(hinfo, verbose);
+        result &= SeedDiffDistTest<Blob<32>, hashtype,  true>(hinfo, verbose);
+        result &= SeedDiffDistTest<Blob<64>, hashtype,  true>(hinfo, verbose);
         if (extra && !hinfo->isSlow()) {
             result &= SeedDiffDistTest<Blob<160>, hashtype,  true>(hinfo, verbose);
             result &= SeedDiffDistTest<Blob<256>, hashtype,  true>(hinfo, verbose);

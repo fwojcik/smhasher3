@@ -86,7 +86,7 @@ REGISTER_HASH(badhash,
    $.desc       = "very simple XOR shift",
    $.hash_flags =
          FLAG_HASH_MOCK             |
-         FLAG_HASH_SMALL_SEED       ,
+         FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_SANITY_FAILS     |
          FLAG_IMPL_LICENSE_MIT      |
@@ -105,7 +105,7 @@ REGISTER_HASH(sum8hash,
    $.desc       = "sum all 8-bit bytes",
    $.hash_flags =
          FLAG_HASH_MOCK             |
-         FLAG_HASH_SMALL_SEED       ,
+         FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_LICENSE_MIT      |
          FLAG_IMPL_SANITY_FAILS,
@@ -123,7 +123,7 @@ REGISTER_HASH(sum32hash,
    $.desc       = "sum all 32-bit words",
    $.hash_flags =
          FLAG_HASH_MOCK             |
-         FLAG_HASH_SMALL_SEED       ,
+         FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_LICENSE_MIT      |
          FLAG_IMPL_SANITY_FAILS     |

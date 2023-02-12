@@ -160,7 +160,7 @@ bool SparseKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra
         result &= SparseKeyImpl<48, hashtype>(hash, seed, 7, true, verbose);
         result &= SparseKeyImpl<56, hashtype>(hash, seed, 6, true, verbose);
         result &= SparseKeyImpl<64, hashtype>(hash, seed, 6, true, verbose);
-   }
+    }
 
     result &= SparseKeyImpl<72, hashtype>(hash, seed, 5, true, verbose);
     if (extra) {

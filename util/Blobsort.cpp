@@ -239,8 +239,9 @@ bool test_blobsort_type( void ) {
     size_t timetotal = 0;
     size_t timesum;
     std::vector<int> testnums;
+
     if (TEST_ITER > 1) {
-        testnums = { 4,6,8,9,10,15,16,19 };
+        testnums = { 4, 6, 8, 9, 10, 15, 16, 19 };
     } else {
         for (int i = 0; i < SORT_TESTS; i++) {
             testnums.push_back(i);
@@ -253,18 +254,20 @@ bool test_blobsort_type( void ) {
             blobfill<blobtype, TEST_SIZE>(blobs, i, j);
             size_t timeBegin = monotonic_clock();
             blobsort(blobs.begin(), blobs.end());
-            size_t timeEnd = monotonic_clock();
+            size_t timeEnd   = monotonic_clock();
             timesum += timeEnd - timeBegin;
-            passed &= blobverify(blobs);
+            passed  &= blobverify(blobs);
         }
         if (TEST_ITER > 1) {
             timetotal += timesum;
-            printf("%3lu bits, test %2d [%-50s]\t\t %5.2f s\n", sizeof(blobtype)*8, i, teststr[i], (double)timesum / (double)NSEC_PER_SEC);
+            printf("%3lu bits, test %2d [%-50s]\t\t %5.2f s\n", sizeof(blobtype) * 8,
+                    i, teststr[i], (double)timesum / (double)NSEC_PER_SEC);
         }
         // printf("After test %d: %s\n", i, passed ? "ok" : "no");
     }
     if (TEST_ITER > 1) {
-        printf("%3lu bits, %-60s\t\t%6.2f s\n\n", sizeof(blobtype)*8, "SUM TOTAL", (double)timetotal / (double)NSEC_PER_SEC);
+        printf("%3lu bits, %-60s\t\t%6.2f s\n\n", sizeof(blobtype) * 8, "SUM TOTAL",
+                (double)timetotal / (double)NSEC_PER_SEC);
     }
 
     return passed;
@@ -281,7 +284,7 @@ typedef bool (* SortTestFn)( void );
 
 template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename... T>
 std::vector<SortTestFn> PACKEXPANDER() {
-    return {&test_blobsort_type<TEST_SIZE, TEST_ITER, T>...};
+    return { &test_blobsort_type<TEST_SIZE, TEST_ITER, T>... };
 }
 
 auto SortTestFns  = PACKEXPANDER<  100000,  1, HASHTYPELIST>();
@@ -289,6 +292,7 @@ auto SortBenchFns = PACKEXPANDER<10000000, 10, HASHTYPELIST>();
 
 void BlobsortTest( void ) {
     bool result = true;
+
     for (SortTestFn testFn: SortTestFns) {
         result &= testFn();
     }
@@ -302,6 +306,7 @@ void BlobsortTest( void ) {
 
 void BlobsortBenchmark( void ) {
     bool result = true;
+
     for (SortTestFn testFn: SortBenchFns) {
         result &= testFn();
     }

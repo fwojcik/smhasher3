@@ -106,7 +106,7 @@ static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits, boo
         // to distribute well, and it generates a _lot_ of testing. Also
         // don't test high/low bits, so as to not clutter the screen.
         bool thisresult = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra).
-            testHighBits(false).testLowBits(false);
+                testHighBits(false).testLowBits(false);
 
         recordTestResult(thisresult, "Windowed", j);
 
@@ -122,8 +122,8 @@ static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits, boo
 
 template <typename hashtype>
 bool WindowedKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    const HashFn hash          = hinfo->hashFn(g_hashEndian);
-    bool         result        = true;
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    bool         result = true;
     // This value is now adjusted to generate at least 0.5 collisions per window,
     // except for 64++bit where it unrealistic. There use smaller but more keys,
     // to get a higher collision percentage.

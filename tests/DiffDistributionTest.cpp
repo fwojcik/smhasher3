@@ -136,7 +136,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
                 worstlogp = -1;
             }
             if (((fails == 0) || !thisresult) && (worstlogp < curlogp)) {
-                worstlogp = curlogp;
+                worstlogp   = curlogp;
                 worstkeybit = keybit;
                 worsthashes = hashes;
             }
@@ -167,15 +167,15 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
 
 template <typename hashtype>
 bool DiffDistTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    bool         result = true;
+    bool result = true;
 
     printf("[[[ DiffDist 'Differential Distribution' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    //result &= DiffDistTest2<Blob< 24>, hashtype>(hinfo, seed, verbose);
-    result &= DiffDistTest2<Blob< 32>, hashtype>(hinfo, seed, verbose);
-    result &= DiffDistTest2<Blob< 64>, hashtype>(hinfo, seed, verbose);
+    // result &= DiffDistTest2<Blob< 24>, hashtype>(hinfo, seed, verbose);
+    result &= DiffDistTest2<Blob<32>, hashtype>(hinfo, seed, verbose);
+    result &= DiffDistTest2<Blob<64>, hashtype>(hinfo, seed, verbose);
     if (extra && !hinfo->isVerySlow()) {
         result &= DiffDistTest2<Blob<160>, hashtype>(hinfo, seed, verbose);
         result &= DiffDistTest2<Blob<256>, hashtype>(hinfo, seed, verbose);

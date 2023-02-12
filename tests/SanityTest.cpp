@@ -115,10 +115,10 @@ bool SanityTest1( const HashInfo * hinfo, bool verbose ) {
     const int    hashbytes = hinfo->bits / 8;
     const seed_t seed      = hinfo->Seed(0, true);
 
-    const int    reps      = 10;
-    const int    keymax    = 256;
-    const int    pad       = 16 * 3;
-    const int    buflen    = keymax + pad;
+    const int reps         = 10;
+    const int keymax       = 256;
+    const int pad          = 16 * 3;
+    const int buflen       = keymax + pad;
 
     uint8_t * buffer1      = new uint8_t[buflen];
     uint8_t * buffer2      = new uint8_t[buflen];
@@ -219,12 +219,12 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
-          seed_t seed      = hinfo->Seed(0, true); // not const!
+    seed_t       seed      = hinfo->Seed(0, true); // not const!
 
-    const int    reps      = 5;
-    const int    keymax    = 128;
-    const int    pad       = 16;// Max alignment offset tested
-    const int    buflen    = keymax + pad * 3;
+    const int reps         = 5;
+    const int keymax       = 128;
+    const int pad          = 16; // Max alignment offset tested
+    const int buflen       = keymax + pad * 3;
 
     // XXX Check alignment!?!
     uint8_t * buffer1 = new uint8_t[buflen   ];
@@ -285,7 +285,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
                     }
                 } else if ((bit >= 32) && hinfo->is32BitSeed()) {
                     maybeprintf(" flipped seed bit %d for hash marked as 32-bit seed,\n"
-                                "                             got different output:", bit);
+                            "                             got different output:", bit);
                     result = false;
                     goto end_sanity;
                 }
@@ -646,12 +646,12 @@ bool SanityTest( const HashInfo * hinfo, bool oneline, bool verbose ) {
     }
 
     // Subtests are verbose unless oneline mode is enabled
-    verbose = !oneline;
+    verbose       = !oneline;
 
-    result &= SanityTest1(hinfo, verbose);
-    result &= SanityTest2(hinfo, verbose);
-    result &= AppendedZeroesTest(hinfo, verbose);
-    result &= PrependedZeroesTest(hinfo, verbose);
+    result       &= SanityTest1(hinfo, verbose);
+    result       &= SanityTest2(hinfo, verbose);
+    result       &= AppendedZeroesTest(hinfo, verbose);
+    result       &= PrependedZeroesTest(hinfo, verbose);
     threadresult &= ThreadingTest(hinfo, false, verbose);
     threadresult &= ThreadingTest(hinfo, true , verbose);
 

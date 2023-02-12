@@ -52,8 +52,8 @@ static inline uint64_t kh_lpu64ec_l3( const uint8_t * const Msg, const size_t Ms
         return (UINT64_C(1) << ((Msg3[2] >> 7) - ml8)) | (m >> (24 + ml8));
     }
 
-    const uint64_t mh  = GET_U32<bswap>(Msg + MsgLen - 4, 0);
-    const uint64_t ml  = GET_U32<bswap>(Msg             , 0);
+    const uint64_t mh = GET_U32<bswap>(Msg + MsgLen - 4, 0);
+    const uint64_t ml = GET_U32<bswap>(Msg             , 0);
 
     return (UINT64_C(1) << ((int)(mh >> 31) - ml8)) | ml | ((mh >> (64 + ml8)) << 32);
 }
@@ -74,7 +74,7 @@ static inline uint64_t kh_lpu64ec_nz( const uint8_t * const Msg, const size_t Ms
 
     if (MsgLen < 4) {
         const uint8_t mf = Msg[MsgLen - 1];
-              uint64_t m = Msg[0];
+        uint64_t      m  = Msg[0];
 
         if (MsgLen > 1) {
             m |= (uint64_t)Msg[1] << 8;
@@ -87,8 +87,8 @@ static inline uint64_t kh_lpu64ec_nz( const uint8_t * const Msg, const size_t Ms
         return (UINT64_C(1) << ((mf >> 7) - ml8)) | m;
     }
 
-    const uint64_t mh  = (uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0);
-    const uint64_t ml  = (uint64_t)GET_U32<bswap>(Msg             , 0);
+    const uint64_t mh = (uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0);
+    const uint64_t ml = (uint64_t)GET_U32<bswap>(Msg             , 0);
 
     return (UINT64_C(1) << ((mh >> 31) - ml8)) | ml | (mh >> (64 + ml8)) << 32;
 }
@@ -175,7 +175,7 @@ static inline uint64_t komihash_epi( const uint8_t * Msg, size_t MsgLen, uint64_
 
     if (MsgLen > 7) {
         r2h = Seed5 ^ kh_lpu64ec_l4<bswap>(Msg + 8, MsgLen - 8);
-        r1h = Seed1 ^ GET_U64      <bswap>(Msg, 0);
+        r1h = Seed1 ^ GET_U64      <bswap>(Msg    , 0);
     } else {
         r1h = Seed1 ^ kh_lpu64ec_l4<bswap>(Msg, MsgLen);
         r2h = Seed5;
@@ -185,7 +185,6 @@ static inline uint64_t komihash_epi( const uint8_t * Msg, size_t MsgLen, uint64_
 
     return Seed1;
 }
-
 
 /*
  * @param Msg0 The message to produce a hash from. The alignment of this
@@ -256,7 +255,7 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
 
         if (MsgLen > 23) {
             r2h = Seed5 ^ kh_lpu64ec_l4<bswap>(Msg + 24, MsgLen - 24);
-            r1h = Seed1 ^ GET_U64      <bswap>(Msg, 16);
+            r1h = Seed1 ^ GET_U64      <bswap>(Msg     , 16);
         } else {
             r1h = Seed1 ^ kh_lpu64ec_l4<bswap>(Msg + 16, MsgLen - 16);
             r2h = Seed5;

@@ -61,11 +61,11 @@
 #define INPUT_LEN_MAX 256
 
 template <typename hashtype>
-static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const HashInfo * hinfo,
-        bool extra, bool verbose ) {
-    assert(0 < Ybits && Ybits < 31  );
-    assert(0 < Xbits && Xbits < 31  );
-    assert(Xbits + Ybits < 31       );
+static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
+        const HashInfo * hinfo, bool extra, bool verbose ) {
+    assert(0 < Ybits  &&  Ybits < 31);
+    assert(0 < Xbits  &&  Xbits < 31);
+    assert(    Xbits   +  Ybits < 31);
     assert(inputLen * 8 > Xbits     ); // enough space to run the test
     assert(inputLen <= INPUT_LEN_MAX);
 
@@ -108,7 +108,7 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step, const Has
 
 template <typename hashtype>
 bool PerlinNoiseTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    bool result           = true;
+    bool result = true;
 
     printf("[[[ Keyset 'PerlinNoise' Tests ]]]\n\n");
 

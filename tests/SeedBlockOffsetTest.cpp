@@ -60,9 +60,10 @@
 
 // Level 3: Generate the keys
 template <typename hashtype, size_t blocklen>
-static uint8_t * SeedBlockOffsetTest_Impl3( const HashFn hash, uint8_t * hashptr, size_t keylen_min, size_t keylen_max,
-        size_t blockoffset, const seed_t seed, uint64_t numblock) {
+static uint8_t * SeedBlockOffsetTest_Impl3( const HashFn hash, uint8_t * hashptr, size_t keylen_min,
+        size_t keylen_max, size_t blockoffset, const seed_t seed, uint64_t numblock ) {
     uint8_t buf[keylen_max];
+
     memset(buf, 0, sizeof(buf));
     memcpy(buf + blockoffset, &numblock, blocklen);
 
@@ -76,11 +77,11 @@ static uint8_t * SeedBlockOffsetTest_Impl3( const HashFn hash, uint8_t * hashptr
 
 // Level 2: Iterate over the seed and block values
 template <typename hashtype, size_t blocklen, bool bigseed>
-static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hashtype> & hashes, size_t keylen_min, size_t keylen_max,
-        size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    uint8_t * hashptr = (uint8_t *)&hashes[0];
-    uint64_t numseed, numblock;
+static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hashtype> & hashes, size_t keylen_min,
+        size_t keylen_max, size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits ) {
+    const HashFn hash    = hinfo->hashFn(g_hashEndian);
+    uint8_t *    hashptr = (uint8_t *)&hashes[0];
+    uint64_t     numseed, numblock;
 
     for (size_t seedbits = 1; seedbits <= seedmaxbits; seedbits++) {
         bool seeddone;
@@ -97,14 +98,14 @@ static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hasht
 
                     /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
                     uint64_t t = (numblock | (numblock - 1)) + 1;
-                    numblock = t | ((((t & -t) / (numblock & -numblock)) >> 1) - 1);
+                    numblock  = t | ((((t & -t) / (numblock & -numblock)) >> 1) - 1);
                     blockdone = (blocklen == 8) ? (numblock == ~0) : ((numblock >> 32) != 0);
                 } while (!blockdone);
             }
 
             /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
             uint64_t t = (numseed | (numseed - 1)) + 1;
-            numseed = t | ((((t & -t) / (numseed & -numseed)) >> 1) - 1);
+            numseed  = t | ((((t & -t) / (numseed & -numseed)) >> 1) - 1);
             seeddone = bigseed ? (numseed == ~0) : ((numseed >> 32) != 0);
         } while (!seeddone);
     }
@@ -116,6 +117,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
         size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits ) {
     // Compute the number of hashes that will be generated
     size_t testseeds = 0;
+
     for (size_t seedbits = 1; seedbits <= seedmaxbits; seedbits++) {
         testseeds += chooseK(hinfo->is32BitSeed() ? 32 : 64, seedbits);
     }
@@ -125,7 +127,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
         testblocks += chooseK(blocklen * 8, blockbits);
     }
 
-    size_t testkeys = keylen_max - keylen_min + 1;
+    size_t testkeys   = keylen_max - keylen_min + 1;
 
     size_t totaltests = testseeds * testblocks * testkeys;
 
@@ -136,15 +138,15 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
     if ((totaltests < 10000) || (totaltests > 110000000)) { printf("Skipping\n\n"); return true; }
 
     // Reserve memory for the hashes
-    std::vector<hashtype> hashes(totaltests);
+    std::vector<hashtype> hashes( totaltests );
 
     // Generate the hashes, test them, and record the results
     if (hinfo->is32BitSeed()) {
-        SeedBlockOffsetTest_Impl2<hashtype, blocklen, false>(hinfo, hashes,
-                keylen_min, keylen_max, blockoffset, seedmaxbits, blockmaxbits);
+        SeedBlockOffsetTest_Impl2<hashtype, blocklen, false>(hinfo, hashes, keylen_min,
+                keylen_max, blockoffset, seedmaxbits, blockmaxbits);
     } else {
-        SeedBlockOffsetTest_Impl2<hashtype, blocklen, true>(hinfo, hashes,
-                keylen_min, keylen_max, blockoffset, seedmaxbits, blockmaxbits);
+        SeedBlockOffsetTest_Impl2<hashtype, blocklen, true>(hinfo, hashes, keylen_min,
+                keylen_max, blockoffset, seedmaxbits, blockmaxbits);
     }
 
     bool result = TestHashList(hashes).drawDiagram(false);
@@ -157,7 +159,6 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
     return result;
 }
 
-
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
@@ -165,7 +166,7 @@ bool SeedBlockOffsetTest( const HashInfo * hinfo, const bool verbose, const bool
     constexpr size_t seedbits  = 2;
     constexpr size_t blockbits = 2;
     constexpr size_t blocklen  = 4;
-    const     size_t maxoffset = extra ? 9 : 5;
+    const size_t     maxoffset = extra ? 9 : 5;
 
     printf("[[[ Seed BlockOffset Tests ]]]\n\n");
 
@@ -177,8 +178,8 @@ bool SeedBlockOffsetTest( const HashInfo * hinfo, const bool verbose, const bool
     for (size_t blockoffset = 0; blockoffset <= maxoffset; blockoffset++) {
         const size_t minkeylen = blocklen + blockoffset;
         const size_t maxkeylen = 31;
-        result &= SeedBlockOffsetTest_Impl1<hashtype, blocklen>(hinfo,
-                minkeylen, maxkeylen, blockoffset, seedbits, blockbits);
+        result &= SeedBlockOffsetTest_Impl1<hashtype, blocklen>(hinfo, minkeylen,
+                maxkeylen, blockoffset, seedbits, blockbits);
     }
 
     printf("%s\n", result ? "" : g_failstr);

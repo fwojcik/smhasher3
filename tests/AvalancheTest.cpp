@@ -75,7 +75,7 @@ typedef int a_int;
 template <typename hashtype>
 static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uint32_t> & bins, const int keybytes,
         const uint8_t * keys, a_int & irepp, const int reps, const bool verbose ) {
-    const int keybits   = keybytes * 8;
+    const int keybits = keybytes * 8;
 
     uint8_t  buf[keybytes];
     hashtype A, B;

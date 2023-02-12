@@ -230,8 +230,8 @@ bool BicTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
 
     const seed_t seed = hinfo->Seed(g_seed, false, 3);
 
-    //std::set<size_t> keylens = { 3, 6, 11, 15, 16, 18, 31, 52, 80, 200 };
-    //std::set<size_t> keylens = { 3, 6, 11, 15, 16, 18, 28, 31, 52, 67, 80, 200 };
+    // std::set<size_t> keylens = { 3, 6, 11, 15, 16, 18, 31, 52, 80, 200 };
+    // std::set<size_t> keylens = { 3, 6, 11, 15, 16, 18, 28, 31, 52, 67, 80, 200 };
     std::set<size_t> keylens = { 3, 8, 11, 15 };
     if (extra && !hinfo->isSlow()) {
         keylens.insert({ 4, 6, 28, 52 });

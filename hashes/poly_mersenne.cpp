@@ -36,6 +36,7 @@
 #include "Mathmult.h"
 
 #if defined(HAVE_INT128)
+
 // This code originally used the system's srand()/rand() functions
 // from libc. This made the hash unstable across platforms. To rectify
 // this, FreeBSD's implementation is included here, with a 64-bit
@@ -72,9 +73,9 @@ const static uint64_t MERSENNE_61         = (1ull << 61) - 1;
 const static uint32_t POLY_MERSENNE_MAX_K = 4;
 
 struct poly_mersenne_struct {
-    uint64_t       poly_mersenne_random[POLY_MERSENNE_MAX_K + 1];
-    uint64_t       poly_mersenne_a;
-    uint64_t       poly_mersenne_b;
+    uint64_t  poly_mersenne_random[POLY_MERSENNE_MAX_K + 1];
+    uint64_t  poly_mersenne_a;
+    uint64_t  poly_mersenne_b;
 };
 static thread_local struct poly_mersenne_struct poly_mersenne_data;
 
@@ -92,6 +93,7 @@ static uint128_t rand_u128( uint64_t * BSD_nextrandp ) {
 
 static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
     uint64_t BSD_nextrand = (uint64_t)seed;
+
     // a has be at most 2^60, or the lazy modular reduction won't work.
     poly_mersenne_data.poly_mersenne_a = rand_u128(&BSD_nextrand) % (MERSENNE_61 / 2);
     poly_mersenne_data.poly_mersenne_b = rand_u128(&BSD_nextrand) % MERSENNE_61;

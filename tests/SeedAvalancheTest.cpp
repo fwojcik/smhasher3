@@ -75,12 +75,12 @@ typedef int a_int;
 template <typename hashtype, int seedbytes>
 static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins, const int keybytes,
         const uint8_t * inputs, a_int & irepp, const int reps, const bool verbose ) {
-    const HashFn    hash = hinfo->hashFn(g_hashEndian);
+    const HashFn hash    = hinfo->hashFn(g_hashEndian);
     const int    keybits = keybytes * 8;
 
-    hashtype  A, B;
-    int       irep;
-    uint64_t  iseed = 0;
+    hashtype A, B;
+    int      irep;
+    uint64_t iseed = 0;
 
     while ((irep = irepp++) < reps) {
         if (verbose) {
@@ -97,7 +97,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
         for (int iBit = 0; iBit < 8 * seedbytes; iBit++) {
             iseed ^= UINT64_C(1) << iBit;
-            hseed = hinfo->Seed(iseed, false);
+            hseed  = hinfo->Seed(iseed, false);
             hash(bufptr, keybytes, hseed, &B);
             iseed ^= UINT64_C(1) << iBit;
 
@@ -111,7 +111,8 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 //-----------------------------------------------------------------------------
 
 template <typename hashtype, int seedbits>
-static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes, const int reps, bool drawDiagram, bool drawdots ) {
+static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
+        const int reps, bool drawDiagram, bool drawdots ) {
     Rand r( 48273 + keybytes );
 
     const int seedbytes = seedbits / 8;
@@ -171,8 +172,8 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes, const
 
 template <typename hashtype>
 bool SeedAvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    bool             result   = true;
-    bool             drawdots = true; // .......... progress dots
+    bool result   = true;
+    bool drawdots = true; // .......... progress dots
 
     printf("[[[ Seed Avalanche Tests ]]]\n\n");
 

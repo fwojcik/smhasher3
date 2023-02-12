@@ -76,8 +76,8 @@ static void CombinationKeygenRecurse( uint8_t * key, int len, int maxlen, const 
 }
 
 template <typename hashtype>
-static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen, const uint8_t * blocks, uint32_t blockcount,
-        uint32_t blocksz, const char * testdesc, bool verbose ) {
+static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen, const uint8_t * blocks,
+        uint32_t blockcount, uint32_t blocksz, const char * testdesc, bool verbose ) {
     printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - ", testdesc, maxlen, blockcount);
 
     //----------
@@ -390,7 +390,7 @@ bool PermutedKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
         bool curresult = true;
         int  maxlen    = test.maxlen > 0 ? test.maxlen : default_maxlen;
 
-        if (!extra && test.szBlock >= 16) { continue; }
+        if (!extra && (test.szBlock >= 16)) { continue; }
 
         assert(test.blocks.size() == test.nrBlocks * test.szBlock);
         curresult &= CombinationKeyTest<hashtype>(hash, seed, maxlen, &(test.blocks[0]),

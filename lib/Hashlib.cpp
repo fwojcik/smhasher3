@@ -178,11 +178,11 @@ const HashInfo * findHash( const char * name ) {
 void listHashes( bool nameonly ) {
     if (!nameonly) {
         printf("Hashnames can be supplied using any case letters.\n\n");
-        printf("%-25s %4s  %10s  %6s  %-60s\n", "Name", "Bits", "Impl   ", "Type ", "Description");
+        printf("%-25s %4s  %10s  %6s  %-60s\n", "Name", "Bits", "Impl   "   , "Type " , "Description");
         printf("%-25s %4s  %10s  %6s  %-60s\n", "----", "----", "----------", "------", "-----------");
     }
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
-    uint64_t prev_flags = FLAG_HASH_MOCK;
+    uint64_t       prev_flags = FLAG_HASH_MOCK;
     for (const HashInfo * h: defaultSort(hashMap())) {
         if (!nameonly) {
             if ((h->hash_flags & mask_flags) != prev_flags) {
@@ -256,8 +256,8 @@ bool verifyHash( const HashInfo * hinfo, enum HashInfo::endianness endian, bool 
 
 bool verifyAllHashes( bool verbose ) {
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
-    uint64_t prev_flags = FLAG_HASH_MOCK;
-    bool result = true;
+    uint64_t       prev_flags = FLAG_HASH_MOCK;
+    bool           result     = true;
 
     for (const HashInfo * h: defaultSort(hashMap())) {
         if (verbose && ((h->hash_flags & mask_flags) != prev_flags)) {
@@ -277,8 +277,8 @@ bool verifyAllHashes( bool verbose ) {
         } else {
             // Always verify little-endian first, just for consistency
             // for humans looking at the results.
-            result &= verifyHash(h, HashInfo::ENDIAN_LITTLE    , verbose);
-            result &= verifyHash(h, HashInfo::ENDIAN_BIG       , verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_LITTLE, verbose);
+            result &= verifyHash(h, HashInfo::ENDIAN_BIG   , verbose);
         }
     }
     printf("\n");

@@ -29,8 +29,8 @@
 
 template <typename hashT, bool bswap>
 static void fibonacci( const void * in, const size_t len, const seed_t seed, void * out ) {
-    hashT               h    = (hashT)seed;
-    const hashT *       dw   = (const hashT *)in;
+    hashT         h          = (hashT)seed;
+    const hashT * dw         = (const hashT *)in;
     const hashT * const endw = &dw[len / sizeof(hashT)];
     const uint64_t      C    = UINT64_C(11400714819323198485);
     hashT w;

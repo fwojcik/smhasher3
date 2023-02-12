@@ -92,7 +92,7 @@ static void BicTestBatch( const HashInfo * hinfo, size_t reps, a_int & iseedbit,
         for (size_t seedbit = startseedbit; seedbit < stopseedbit; seedbit++) {
             uint32_t * pop_cursor_base = &popcount0[seedbit * hashbits    ];
             uint32_t * and_cursor_base = &andcount0[seedbit * hashbitpairs];
-            uint8_t  *      key_cursor = &keys[0];
+            uint8_t *  key_cursor      = &keys[0];
 
             progressdots(seedbit, 0, seedbits - 1, 10);
 
@@ -107,11 +107,11 @@ static void BicTestBatch( const HashInfo * hinfo, size_t reps, a_int & iseedbit,
                 seed_t     hseed;
 
                 r.rand_p(&iseed, sizeof(iseed));
-                hseed = hinfo->Seed(iseed, false, 3);
+                hseed  = hinfo->Seed(iseed, false, 3);
                 hash(key, keybytes, hseed, &h1);
 
                 iseed ^= UINT64_C(1) << seedbit;
-                hseed = hinfo->Seed(iseed, false, 3);
+                hseed  = hinfo->Seed(iseed, false, 3);
                 hash(key, keybytes, hseed, &h2);
 
                 key_cursor += keybytes;
@@ -178,13 +178,13 @@ static bool BicTestImpl( const HashInfo * hinfo, const size_t keybytes, const si
 
 template <typename hashtype>
 bool SeedBicTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    size_t       reps   = (hinfo->bits > 128 || hinfo->isVerySlow()) ? 100000 : 600000;
-    bool         result = true;
+    size_t reps   = (hinfo->bits > 128 || hinfo->isVerySlow()) ? 100000 : 600000;
+    bool   result = true;
 
     printf("[[[ Seed 'Bit Independence Criteria' Tests ]]]\n\n");
 
-    //std::set<size_t> keylens = { 3, 4, 5, 6, 7, 8, 32, 128, 1024 };
-    //std::set<size_t> keylens = { 3, 4, 6, 7, 8, 11, 15, 28, 52, 256, 1024 };
+    // std::set<size_t> keylens = { 3, 4, 5, 6, 7, 8, 32, 128, 1024 };
+    // std::set<size_t> keylens = { 3, 4, 6, 7, 8, 11, 15, 28, 52, 256, 1024 };
     std::set<size_t> keylens = { 3, 8, 11, 15 };
     if (extra && !hinfo->isSlow()) {
         keylens.insert({ 4, 6, 28, 52, 1024 });

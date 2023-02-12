@@ -366,7 +366,7 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte,
     const size_t lengthinc  = (lengthbyte + sizeof(uint64_t) - 1) / sizeof(uint64_t); // # of words, including partial
                                                                                       // ones
 
-    const __m128i * rs64   = (__m128i *       )random;
+    const __m128i * rs64    = (__m128i *)random;
     const __m128i   seed128 = lazyLengthHash(((const uint64_t *)(rs64 + m128neededperblock + 2))[1], seed);
 
     // to preserve alignment on cache lines for main loop, we pick random bits at the end

@@ -269,9 +269,9 @@ static bool WordsDictImpl( HashFn hash, const seed_t seed, bool verbose ) {
 
 template <typename hashtype>
 bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
-    const HashFn hash   = hinfo->hashFn(g_hashEndian);
-    const seed_t seed   = hinfo->Seed(g_seed);
-    const char * alnum  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+    const HashFn hash  = hinfo->hashFn(g_hashEndian);
+    const seed_t seed  = hinfo->Seed(g_seed);
+    const char * alnum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
 
     printf("[[[ Keyset 'Text' Tests ]]]\n\n");
 

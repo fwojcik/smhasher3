@@ -64,10 +64,10 @@
 //-----------------------------------------------------------------------------
 // Find bad seeds, and test against the known secrets/bad seeds.
 
-const std::set<int>        testlens     = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
-const std::vector<uint8_t> testbytes    = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
-const unsigned             numtestbytes = testbytes.size();
-const unsigned             numtestlens  = testlens.size();
+const std::set<int>        testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
+const std::vector<uint8_t> testbytes = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
+const unsigned numtestbytes = testbytes.size();
+const unsigned numtestlens  = testlens.size();
 
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
@@ -82,11 +82,11 @@ template <typename hashtype>
 static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, const uint32_t start,
         const uint32_t endlow, bool & result, bool & newresult ) {
     const std::set<seed_t> & seeds = hinfo->badseeds;
-    const HashFn   hash = hinfo->hashFn(g_hashEndian);
-    const seed_t   last = hi | endlow;
-    const hashtype zero = { 0 };
-    std::vector<hashtype> hashes( numtestbytes * numtestlens );
-    std::set<hashtype>    collisions;
+    const HashFn             hash  = hinfo->hashFn(g_hashEndian);
+    const seed_t             last  = hi | endlow;
+    const hashtype           zero  = { 0 };
+    std::vector<hashtype>    hashes( numtestbytes * numtestlens );
+    std::set<hashtype>       collisions;
 
     const char * progress_fmt =
             (last <= UINT64_C(0xffffffff)) ?

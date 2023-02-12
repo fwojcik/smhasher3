@@ -88,6 +88,7 @@ static uint64_t tab_rand64( uint64_t * BSD_nextrandp ) {
 
 static inline uint128_t tab_rand128( uint64_t * BSD_nextrandp ) {
     uint128_t r;
+
     r = tab_rand64(BSD_nextrandp);
     r = tab_rand64(BSD_nextrandp) | (r << 64);
     return r;
@@ -102,18 +103,19 @@ const static int      CHAR_SIZE     = 8;
 const static int      BLOCK_SIZE_32 = 1 << 8;
 
 struct seed32_struct {
-    uint64_t multiply_shift_random_64[BLOCK_SIZE_32];
-    uint32_t multiply_shift_a_64;
-    uint64_t multiply_shift_b_64;
-    int32_t  tabulation_32[32 / CHAR_SIZE][1 << CHAR_SIZE];
-    uint64_t seed;
+    uint64_t  multiply_shift_random_64[BLOCK_SIZE_32];
+    uint32_t  multiply_shift_a_64;
+    uint64_t  multiply_shift_b_64;
+    int32_t   tabulation_32[32 / CHAR_SIZE][1 << CHAR_SIZE];
+    uint64_t  seed;
 };
 
 static thread_local seed32_struct seed32;
 
 static uintptr_t tabulation32_seed( const seed_t seed ) {
-    bool have_broken_rand = false;
-    uint64_t BSD_nextrand = (uint64_t)seed;
+    bool     have_broken_rand = false;
+    uint64_t BSD_nextrand     = (uint64_t)seed;
+
     seed32.seed = (uint64_t)seed;
     // the lazy mersenne combination requires 30 bits values in the polynomial.
     seed32.multiply_shift_a_64 = tab_rand64(&BSD_nextrand) & ((UINT64_C(1) << 30) - 1);
@@ -150,10 +152,10 @@ static inline uint32_t combine31( uint32_t h, uint32_t x, uint32_t a ) {
 
 template <bool bswap>
 static void tabulation32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    const uint8_t *       buf     = (const uint8_t *)in;
-    const seed32_struct * seed32  = (const seed32_struct *)(uintptr_t)seed;
-    size_t          len_words_32  = len / 4;
-    size_t          len_blocks_32 = len_words_32 / BLOCK_SIZE_32;
+    const uint8_t *       buf    = (const uint8_t *)in;
+    const seed32_struct * seed32 = (const seed32_struct *)(uintptr_t)seed;
+    size_t len_words_32          = len / 4;
+    size_t len_blocks_32         = len_words_32 / BLOCK_SIZE_32;
 
     uint32_t h = len ^ (uint32_t)seed32->seed;
 
@@ -196,18 +198,19 @@ const static uint64_t TAB_MERSENNE_61 = (UINT64_C(1) << 61) - 1;
 const static int TAB_BLOCK_SIZE = 1 << 8;
 
 struct seed64_struct {
-    uint128_t tab_multiply_shift_random[TAB_BLOCK_SIZE];
-    uint128_t tab_multiply_shift_a;
-    uint128_t tab_multiply_shift_b;
-    int64_t   tabulation[64 / CHAR_SIZE][1 << CHAR_SIZE];
-    uint64_t  seed;
+    uint128_t  tab_multiply_shift_random[TAB_BLOCK_SIZE];
+    uint128_t  tab_multiply_shift_a;
+    uint128_t  tab_multiply_shift_b;
+    int64_t    tabulation[64 / CHAR_SIZE][1 << CHAR_SIZE];
+    uint64_t   seed;
 };
 
 static thread_local seed64_struct seed64;
 
 static uintptr_t tabulation64_seed( const seed_t seed ) {
-    bool have_broken_rand = false;
-    uint64_t BSD_nextrand = (uint64_t)seed;
+    bool     have_broken_rand = false;
+    uint64_t BSD_nextrand     = (uint64_t)seed;
+
     seed64.seed = (uint64_t)seed;
     // the lazy mersenne combination requires 60 bits values in the polynomial.
     // rurban: added checks for bad seeds
@@ -239,7 +242,7 @@ static uintptr_t tabulation64_seed( const seed_t seed ) {
     for (int i = 0; i < 64 / CHAR_SIZE; i++) {
         for (int j = 0; j < 1 << CHAR_SIZE; j++) {
             seed64.tabulation[i][j] = have_broken_rand ?
-                seed64.tab_multiply_shift_random[i] : tab_rand128(&BSD_nextrand);
+                        seed64.tab_multiply_shift_random[i] : tab_rand128(&BSD_nextrand);
         }
     }
     return (seed_t)(uintptr_t)&seed64;

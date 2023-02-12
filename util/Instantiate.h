@@ -23,7 +23,7 @@
 #if defined(__cplusplus) && (__cplusplus >= 201402L)
 // C++14 allows auto variables to determine function return types
 #define INSTANTIATE(FN, TYPELIST)                          \
-    template < typename ... Types>                         \
+    template < typename... Types>                          \
     auto FN ## _instantiator() {                           \
         static auto instances =                            \
             std::tuple_cat(std::make_tuple(FN<Types>)...); \
@@ -32,12 +32,12 @@
     template auto FN ## _instantiator<TYPELIST>();
 #else
 // C++11 doesn't, so YOU get a void*, and YOU get a void*,....
-#define INSTANTIATE(FN, TYPELIST)                          \
-    template < typename ... Types>                         \
-    void * FN ## _instantiator() {                         \
-        static auto instances =                            \
-            std::make_tuple(((void *)(FN<Types>))...);     \
-        return (void *)(&instances);                       \
-    }                                                      \
+#define INSTANTIATE(FN, TYPELIST)                      \
+    template < typename... Types>                      \
+    void * FN ## _instantiator() {                     \
+        static auto instances =                        \
+            std::make_tuple(((void *)(FN<Types>))...); \
+        return (void *)(&instances);                   \
+    }                                                  \
     template void * FN ## _instantiator<TYPELIST>();
 #endif

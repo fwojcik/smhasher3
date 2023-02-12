@@ -425,13 +425,13 @@ static void rmd_compress( rmd_ctx * ctx, const uint8_t * buf ) {
 
     /* combine results */
     if (hashwidth == 128) {
-        ddd += cc + ctx->state[1];            /* final result for MDbuf[0] */
+        ddd += cc + ctx->state[1]; /* final result for MDbuf[0] */
         ctx->state[1] = ctx->state[2] + dd + aaa;
         ctx->state[2] = ctx->state[3] + aa + bbb;
         ctx->state[3] = ctx->state[0] + bb + ccc;
         ctx->state[0] = ddd;
     } else if (hashwidth == 160) {
-        ddd += cc + ctx->state[1];            /* final result for MDbuf[0] */
+        ddd += cc + ctx->state[1]; /* final result for MDbuf[0] */
         ctx->state[1] = ctx->state[2] + dd + eee;
         ctx->state[2] = ctx->state[3] + ee + aaa;
         ctx->state[3] = ctx->state[4] + aa + bbb;

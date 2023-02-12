@@ -95,15 +95,16 @@ static void plot( double n ) {
 // (number of excess "heads" or "tails") over all those trials was the
 // specified worstbiascnt.
 
-bool ReportBias( const uint32_t * counts, const int coinflips, const int trials, const int hashbits, const bool drawDiagram ) {
-    const int expected = coinflips / 2;
-    int worstbias      = 0;
-    int worstbiasN     = 0;
+bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
+        const int hashbits, const bool drawDiagram ) {
+    const int expected   = coinflips / 2;
+    int       worstbias  = 0;
+    int       worstbiasN = 0;
 
     for (int i = 0; i < trials; i++) {
         int bias = abs((int)counts[i] - expected);
         if (worstbias < bias) {
-            worstbias = bias;
+            worstbias  = bias;
             worstbiasN = i;
         }
         double rt = (double)bias / (double)coinflips;
@@ -116,7 +117,7 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
     // avalanche results instead of the hash values. Not ideal, but the
     // "real" way is just too expensive.
     addVCodeOutput(counts, trials * sizeof(counts[0]));
-    addVCodeResult(worstbias);
+    addVCodeResult(worstbias );
     addVCodeResult(worstbiasN);
 
     // p1value is using two-tailed Chernoff Bound
@@ -131,14 +132,15 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
     recordLog2PValue(logp_value);
     if (drawDiagram) {
         if (p_value > 0.00001) {
-            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%8.6f) (^%2d)",
-                    pctdigits, pct, worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
+            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%8.6f) (^%2d)", pctdigits, pct,
+                    worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
         } else {
-            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%.2e) (^%2d)",
-                    pctdigits, pct, worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
+            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%.2e) (^%2d)", pctdigits, pct,
+                    worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
         }
     } else {
-        printf("max is %5.*f%% at bit %4d -> out %3d (^%2d)", pctdigits, pct, worstbiasKeybit, worstbiasHashbit, logp_value);
+        printf("max is %5.*f%% at bit %4d -> out %3d (^%2d)", pctdigits,
+                pct, worstbiasKeybit, worstbiasHashbit, logp_value);
     }
 
     if (p_value < FAILURE_PBOUND) {
@@ -422,13 +424,14 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t co
 //-----------------------------------------------------------------------------
 //
 
-static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits,
-        int maxBits, int * logpp, bool highbits, bool verbose, bool drawDiagram ) {
+static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxBits,
+        int * logpp, bool highbits, bool verbose, bool drawDiagram ) {
     if ((maxBits <= 1) || (minBits > maxBits)) { return true; }
 
     int spacelen = 80;
     if (verbose) {
-        spacelen -= printf("Testing all collisions (%s %2i..%2i bits) - ", highbits ? "high" : "low ", minBits, maxBits);
+        spacelen -=
+                printf("Testing all collisions (%s %2i..%2i bits) - ", highbits ? "high" : "low ", minBits, maxBits);
     }
 
     double maxCollDev     = 0.0;
@@ -657,8 +660,8 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
 // comparing them to a list of i.i.d. random numbers across the full
 // origBits range.
 
-static void ComputeCollBitBounds( std::set<int> & nbBitsvec, int origBits,
-        uint64_t nbH, int & minBits, int & maxBits, int & threshBits ) {
+static void ComputeCollBitBounds( std::set<int> & nbBitsvec, int origBits, uint64_t nbH,
+        int & minBits, int & maxBits, int & threshBits ) {
     const int nlognBits = GetNLogNBound(nbH);
 
     minBits    = origBits + 1;
@@ -718,12 +721,11 @@ static int FindMaxBits_TargetCollisionNb( uint64_t nbHashes, int minCollisions, 
 // TestHashListWrapper in Analyze.h.
 
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, int * logpSumPtr,
-        bool drawDiagram, bool testCollision, bool testMaxColl, bool testDist,
-        bool testHighBits, bool testLowBits, bool verbose ) {
-    uint64_t const nbH = hashes.size();
-    bool result = true;
-    int  curlogp;
+bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, int * logpSumPtr, bool drawDiagram,
+        bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
+    uint64_t const nbH    = hashes.size();
+    bool           result = true;
+    int            curlogp;
 
     // If testDeltaNum is 1, then compute the difference between each hash
     // and its successor, and test that list of deltas. If it is greater
@@ -736,6 +738,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
     // the bottom of this function.
     std::vector<hashtype> hashdeltas_1;
     std::vector<hashtype> hashdeltas_N;
+
     if (testDeltaNum >= 1) {
         hashdeltas_1.reserve(nbH);
 
@@ -797,7 +800,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
          * appropriate "expected" statistic.
          */
         if (testMaxColl) {
-            nbBitsvec.insert({12, 8});
+            nbBitsvec.insert({ 12, 8 });
         }
 
         /*
@@ -851,7 +854,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
 
         if (testHighBits || testLowBits) {
             std::set<int> combinedBitsvec;
-            combinedBitsvec.insert(nbBitsvec.begin(), nbBitsvec.end());
+            combinedBitsvec.insert(nbBitsvec.begin()  , nbBitsvec.end()  );
             combinedBitsvec.insert(testBitsvec.begin(), testBitsvec.end());
             ComputeCollBitBounds(combinedBitsvec, hashbits, nbH, minBits, maxBits, threshBits);
         }
@@ -902,15 +905,15 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
                 }
                 bool maxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
                 if (testHighBits) {
-                    result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits],
-                            nbBits, &curlogp, maxcoll, true, true, verbose, drawDiagram);
+                    result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits], nbBits,
+                            &curlogp, maxcoll, true, true, verbose, drawDiagram);
                     if (logpSumPtr != NULL) {
                         *logpSumPtr += curlogp;
                     }
                 }
                 if (testLowBits) {
-                    result &= ReportCollisions(nbH, collcounts_rev[nbBits - minBits],
-                            nbBits, &curlogp, maxcoll, false, true, verbose, drawDiagram);
+                    result &= ReportCollisions(nbH, collcounts_rev[nbBits - minBits], nbBits,
+                            &curlogp, maxcoll, false, true, verbose, drawDiagram);
                     if (logpSumPtr != NULL) {
                         *logpSumPtr += curlogp;
                     }
@@ -949,14 +952,14 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
         if (verbose) {
             printf("---Analyzing hash deltas\n");
         }
-        result &= TestHashListImpl(hashdeltas_1, 0, logpSumPtr, drawDiagram,
-                testCollision, testMaxColl, testDist, testHighBits, testLowBits, verbose);
+        result &= TestHashListImpl(hashdeltas_1, 0, logpSumPtr, drawDiagram, testCollision,
+                testMaxColl, testDist, testHighBits, testLowBits, verbose);
         if (testDeltaNum >= 2) {
             if (verbose) {
                 printf("---Analyzing additional hash deltas\n");
             }
-            result &= TestHashListImpl(hashdeltas_N, 0, logpSumPtr, drawDiagram,
-                    testCollision, testMaxColl, testDist, testHighBits, testLowBits, verbose);
+            result &= TestHashListImpl(hashdeltas_N, 0, logpSumPtr, drawDiagram, testCollision,
+                    testMaxColl, testDist, testHighBits, testLowBits, verbose);
         }
     }
 
@@ -1044,7 +1047,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
 
         for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
             const uint32_t * pop_cursor = pop_cursor_base++;
-            uint32_t popcount_y = *pop_cursor++;
+            uint32_t         popcount_y = *pop_cursor++;
 
             for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
                 uint32_t boxes[4];
@@ -1078,8 +1081,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     const double cramer_v    = sqrt(maxChiSq / testcount);
 
     recordLog2PValue(logp_value);
-    printf("max %6.4f at bit %4zd -> out (%3zd,%3zd)  (^%2d)", cramer_v,
-            maxKeybit, maxOutbitA, maxOutbitB, logp_value);
+    printf("max %6.4f at bit %4zd -> out (%3zd,%3zd)  (^%2d)", cramer_v, maxKeybit, maxOutbitA, maxOutbitB, logp_value);
 
     if (p_value < FAILURE_PBOUND) {
         printf(" !!!!!\n");

@@ -99,7 +99,7 @@ template <bool bswap>
 static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
 #if defined(HAVE_AVX2)
   #define FARSH_IMPL_STR "avx2"
-    __m256i         sum = _mm256_setzero_si256();
+    __m256i         sum   = _mm256_setzero_si256();
     const __m256i * xdata = (const __m256i *)data;
     const __m256i * xkey  = (const __m256i *)key;
 
@@ -112,8 +112,8 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
                                                                             // dk4*dk5, dk6*dk7}
         sum = _mm256_add_epi64(sum, res);
     }
-    sum    = _mm256_add_epi64(sum, _mm256_shuffle_epi32(sum, 3 * 4 + 2));       // return sum of four 64-bit values in
-                                                                                // the sum
+    sum = _mm256_add_epi64(sum, _mm256_shuffle_epi32(sum, 3 * 4 + 2)); // return sum of four 64-bit values in
+                                                                       // the sum
     __m128i sum128 = _mm_add_epi64(_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum, 1));
     return _mm_cvtsi128_si64(sum128);
 #elif defined(HAVE_SSE_2)
@@ -232,7 +232,8 @@ static void farsh_keyed_n( const void * data, size_t bytes, const void * key, in
     uint32_t * hash_ptr = (uint32_t *)hash;
 
     for (int i = 0; i < n; i++) {
-        hash_ptr[i] = COND_BSWAP(farsh_keyed<tweaked, bswap>(data, bytes, (const uint8_t *)key + i * FARSH_EXTRA_KEY_SIZE, seed), bswap);
+        hash_ptr[i] = COND_BSWAP(farsh_keyed<tweaked, bswap>(data, bytes,
+                (const uint8_t *)key + i * FARSH_EXTRA_KEY_SIZE, seed), bswap);
     }
 }
 
@@ -282,8 +283,8 @@ REGISTER_HASH(FARSH_32__tweaked,
    $.bits = 32,
    $.verification_LE = 0x866BC8B2,
    $.verification_BE = 0x96B4B444,
-   $.hashfn_native   = farsh< true, false, 1>,
-   $.hashfn_bswap    = farsh< true, true, 1>
+   $.hashfn_native   = farsh<true, false, 1>,
+   $.hashfn_bswap    = farsh<true, true, 1>
  );
 
 REGISTER_HASH(FARSH_64,
@@ -314,8 +315,8 @@ REGISTER_HASH(FARSH_64__tweaked,
    $.bits = 64,
    $.verification_LE = 0x0EB4FFC9,
    $.verification_BE = 0xEC8F46D4,
-   $.hashfn_native   = farsh< true, false, 2>,
-   $.hashfn_bswap    = farsh< true, true, 2>
+   $.hashfn_native   = farsh<true, false, 2>,
+   $.hashfn_bswap    = farsh<true, true, 2>
  );
 
 REGISTER_HASH(FARSH_128,
@@ -348,8 +349,8 @@ REGISTER_HASH(FARSH_128__tweaked,
    $.bits = 128,
    $.verification_LE = 0x302E1139,
    $.verification_BE = 0x7006F129,
-   $.hashfn_native   = farsh< true, false, 4>,
-   $.hashfn_bswap    = farsh< true, true, 4>
+   $.hashfn_native   = farsh<true, false, 4>,
+   $.hashfn_bswap    = farsh<true, true, 4>
  );
 
 REGISTER_HASH(FARSH_256,
@@ -382,6 +383,6 @@ REGISTER_HASH(FARSH_256__tweaked,
    $.bits = 256,
    $.verification_LE = 0x7A9B846A,
    $.verification_BE = 0x1CC7641F,
-   $.hashfn_native   = farsh< true, false, 8>,
-   $.hashfn_bswap    = farsh< true, true, 8>
+   $.hashfn_native   = farsh<true, false, 8>,
+   $.hashfn_bswap    = farsh<true, true, 8>
  );

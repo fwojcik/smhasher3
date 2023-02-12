@@ -190,7 +190,7 @@ static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) 
      * This is especially detrimental to algorithms relying on linear operations, such as multiplications.
      *
      * This scenario is relevant if the hash is used as a prng and generates values from a linearly increasing counter
-     *as a seed.
+     * as a seed.
      * It is not relevant for scenarios employing the hash as a prng
      * with the more classical method of using the previous random number as a seed for the next one.
      * This scenario has no relevance for classical usages of hash algorithms,

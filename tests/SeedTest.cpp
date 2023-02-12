@@ -63,7 +63,7 @@
 
 template <typename hashtype, uint32_t seedbits, bool bigseed>
 static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiagram ) {
-    assert(seedbits <= 31);
+    assert(seedbits <= 31 );
     assert(keylen < MAXLEN);
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    totalkeys = 1 << seedbits;
@@ -114,16 +114,17 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
 
 template <typename hashtype, uint32_t maxbits, bool bigseed>
 static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiagram ) {
-    assert(maxbits < 16);
+    assert(maxbits < 16   );
     assert(keylen < MAXLEN);
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     uint64_t     totalkeys = 1 + chooseUpToK(bigseed ? 64 : 32, maxbits);
     uint64_t     cnt       = 0;
 
-    printf("Keyset 'SeedSparse' - %3d-byte keys - seeds with up to %2d bits set - %" PRId64 " seeds\n", keylen, maxbits, totalkeys);
+    printf("Keyset 'SeedSparse' - %3d-byte keys - seeds with up to %2d bits set - %" PRId64 " seeds\n",
+            keylen, maxbits, totalkeys);
 
-    const char text[64] = "Sphinx of black quartz, judge my vow";
-    const int  textlen = (int)strlen(text);
+    const char text[64]    = "Sphinx of black quartz, judge my vow";
+    const int  textlen     = (int)strlen(text);
     char       key[MAXLEN] = { 0 };
     for (int i = 0; i < keylen / textlen; i++) {
         memcpy(&key[i * textlen], text, textlen);

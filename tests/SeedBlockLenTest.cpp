@@ -60,17 +60,17 @@
 
 // Level 3: Generate the keys
 template <typename hashtype, size_t blocklen>
-static uint8_t * SeedBlockLenTest_Impl3( const HashFn hash, uint8_t * hashptr, size_t keylen,
-        size_t blockoffset_min, size_t blockoffset_incr, size_t blockoffset_max,
-        const seed_t seed, uint64_t numblock) {
+static uint8_t * SeedBlockLenTest_Impl3( const HashFn hash, uint8_t * hashptr, size_t keylen, size_t blockoffset_min,
+        size_t blockoffset_incr, size_t blockoffset_max, const seed_t seed, uint64_t numblock ) {
     uint8_t buf[blockoffset_max - blockoffset_min + keylen];
+
     memset(buf, 0, sizeof(buf));
 
     uint8_t * const blockbase = buf + blockoffset_max;
     memcpy(blockbase, &numblock, blocklen);
 
     for (size_t blockoffset = blockoffset_min; blockoffset <= blockoffset_max; blockoffset += blockoffset_incr) {
-        uint8_t * key  = blockbase - blockoffset;
+        uint8_t * key = blockbase - blockoffset;
         hash(key, keylen, seed, hashptr);
         hashptr += sizeof(hashtype);
     }
@@ -80,12 +80,12 @@ static uint8_t * SeedBlockLenTest_Impl3( const HashFn hash, uint8_t * hashptr, s
 
 // Level 2: Iterate over the seed and block values
 template <typename hashtype, size_t blocklen, bool bigseed>
-static void SeedBlockLenTest_Impl2( const HashInfo * hinfo, std::vector<hashtype> & hashes, size_t keylen,
-        size_t blockoffset_min, size_t blockoffset_incr, size_t blockoffset_max,
-        size_t seedmaxbits, size_t blockmaxbits) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-    uint8_t * hashptr = (uint8_t *)&hashes[0];
-    uint64_t numseed, numblock;
+static void SeedBlockLenTest_Impl2( const HashInfo * hinfo, std::vector<hashtype> & hashes,
+        size_t keylen, size_t blockoffset_min, size_t blockoffset_incr, size_t blockoffset_max,
+        size_t seedmaxbits, size_t blockmaxbits ) {
+    const HashFn hash    = hinfo->hashFn(g_hashEndian);
+    uint8_t *    hashptr = (uint8_t *)&hashes[0];
+    uint64_t     numseed, numblock;
 
     for (size_t seedbits = 1; seedbits <= seedmaxbits; seedbits++) {
         bool seeddone;
@@ -97,19 +97,19 @@ static void SeedBlockLenTest_Impl2( const HashInfo * hinfo, std::vector<hashtype
                 bool blockdone;
                 numblock = (UINT64_C(1) << blockbits) - 1;
                 do {
-                    hashptr = SeedBlockLenTest_Impl3<hashtype, blocklen>(hash, hashptr, keylen,
-                            blockoffset_min, blockoffset_incr, blockoffset_max, seed, numblock);
+                    hashptr = SeedBlockLenTest_Impl3<hashtype, blocklen>(hash, hashptr, keylen, blockoffset_min,
+                            blockoffset_incr, blockoffset_max, seed, numblock);
 
                     /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
                     uint64_t t = (numblock | (numblock - 1)) + 1;
-                    numblock = t | ((((t & -t) / (numblock & -numblock)) >> 1) - 1);
+                    numblock  = t | ((((t & -t) / (numblock & -numblock)) >> 1) - 1);
                     blockdone = (blocklen == 8) ? (numblock == ~0) : ((numblock >> 32) != 0);
                 } while (!blockdone);
             }
 
             /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
             uint64_t t = (numseed | (numseed - 1)) + 1;
-            numseed = t | ((((t & -t) / (numseed & -numseed)) >> 1) - 1);
+            numseed  = t | ((((t & -t) / (numseed & -numseed)) >> 1) - 1);
             seeddone = bigseed ? (numseed == ~0) : ((numseed >> 32) != 0);
         } while (!seeddone);
     }
@@ -121,7 +121,7 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
         size_t keylen, size_t seedmaxbits, size_t blockmaxbits ) {
     assert((keylen - blocklen - blockoffset_min) >= blockoffset_incr);
     const size_t blockoffset_max = blockoffset_min +
-        (((keylen - blocklen - blockoffset_min) / blockoffset_incr) * blockoffset_incr);
+            (((keylen - blocklen - blockoffset_min) / blockoffset_incr) * blockoffset_incr);
 
     // Compute the number of hashes that will be generated
     size_t testseeds = 0;
@@ -144,11 +144,9 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
     // Print out a test header
     char pbuf[32];
     if (blockoffset_incr == 1) {
-        snprintf(pbuf, sizeof(pbuf), "[%zd..%zd]",
-                blockoffset_min, blockoffset_max);
+        snprintf(pbuf, sizeof(pbuf), "[%zd..%zd]", blockoffset_min, blockoffset_max);
     } else {
-        snprintf(pbuf, sizeof(pbuf), "[%zd..%zd, by %zds]",
-                blockoffset_min, blockoffset_max, blockoffset_incr);
+        snprintf(pbuf, sizeof(pbuf), "[%zd..%zd, by %zds]", blockoffset_min, blockoffset_max, blockoffset_incr);
     }
 
     printf("Keyset 'SeedBlockLen' - %2zd-byte keys with block at offsets %s - %" PRId64 " hashes\n",
@@ -157,15 +155,15 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
     if ((totaltests < 10000) || (totaltests > 110000000)) { printf("Skipping\n\n"); return true; }
 
     // Reserve memory for the hashes
-    std::vector<hashtype> hashes(totaltests);
+    std::vector<hashtype> hashes( totaltests );
 
     // Generate the hashes, test them, and record the results
     if (hinfo->is32BitSeed()) {
-         SeedBlockLenTest_Impl2<hashtype, blocklen, false>(hinfo, hashes, keylen,
-                blockoffset_min, blockoffset_incr, blockoffset_max, seedmaxbits, blockmaxbits);
+        SeedBlockLenTest_Impl2<hashtype, blocklen, false>(hinfo, hashes, keylen, blockoffset_min,
+                blockoffset_incr, blockoffset_max, seedmaxbits, blockmaxbits);
     } else {
-        SeedBlockLenTest_Impl2<hashtype, blocklen, true>(hinfo, hashes, keylen,
-                blockoffset_min, blockoffset_incr, blockoffset_max, seedmaxbits, blockmaxbits);
+        SeedBlockLenTest_Impl2<hashtype, blocklen, true>(hinfo, hashes, keylen, blockoffset_min,
+                blockoffset_incr, blockoffset_max, seedmaxbits, blockmaxbits);
     }
 
     bool result = TestHashList(hashes).drawDiagram(false);
@@ -188,7 +186,7 @@ bool SeedBlockLenTest( const HashInfo * hinfo, const bool verbose, const bool ex
     constexpr size_t minoffset  = 0;
     constexpr size_t incroffset = blocklen;
     constexpr size_t minkey     = blocklen + incroffset;
-    const     size_t maxkey     = extra ? 39 : 31;
+    const size_t     maxkey     = extra ? 39 : 31;
 
     assert((blocklen == 4) || (blocklen == 8));
     assert(incroffset >= blocklen);

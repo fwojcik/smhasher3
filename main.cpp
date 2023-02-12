@@ -316,7 +316,7 @@ static bool HashSelfTest( const HashInfo * hinfo ) {
 
 static void HashSanityTestAll( bool verbose ) {
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
-    uint64_t prev_flags = FLAG_HASH_MOCK;
+    uint64_t       prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ SanityAll Tests ]]]\n\n");
@@ -341,7 +341,7 @@ static void HashSanityTestAll( bool verbose ) {
 
 static void HashSpeedTestAll( bool verbose ) {
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
-    uint64_t prev_flags = FLAG_HASH_MOCK;
+    uint64_t       prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ Short Speed Tests ]]]\n\n");

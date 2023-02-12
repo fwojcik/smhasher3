@@ -173,7 +173,7 @@ static FORCE_INLINE size_t chunk_state_fill_buf( blake3_chunk_state * self, cons
     if (take > input_len) {
         take = input_len;
     }
-    uint8_t * dest = self->buf + ((size_t)self->buf_len);
+    uint8_t * dest = self->buf     + ((size_t)self->buf_len);
     memcpy(dest, input, take);
     self->buf_len += (uint8_t)take;
     return take;

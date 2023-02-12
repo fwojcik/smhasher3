@@ -59,15 +59,15 @@
 #include <functional>
 #include <map>
 
-constexpr int BULK_RUNS    = 16;
-constexpr int BULK_TRIALS  = 9600;
-//constexpr int BULK_SAMPLES = 2;
+constexpr int BULK_RUNS   = 16;
+constexpr int BULK_TRIALS = 9600;
+// constexpr int BULK_SAMPLES = 2;
 
 constexpr int TINY_TRIALS  = 200;   // Timings per hash for small (<128b) keys
 constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
 
 // std::max() isn't constexpr in C++11
-constexpr int MAX_TRIALS   = (BULK_TRIALS > TINY_TRIALS) ? BULK_TRIALS : TINY_TRIALS;
+constexpr int MAX_TRIALS = (BULK_TRIALS > TINY_TRIALS) ? BULK_TRIALS : TINY_TRIALS;
 
 //-----------------------------------------------------------------------------
 // This is functionally a speed test, and so will not inform VCodes,
@@ -145,14 +145,14 @@ NEVER_INLINE static uint64_t timehash_small( HashFn hash, const seed_t seed, uin
 //-----------------------------------------------------------------------------
 double stddev;
 double rawtimes[MAX_TRIALS];
-std::vector<int> sizes(MAX_TRIALS);
-std::vector<int> alignments(MAX_TRIALS);
+std::vector<int> sizes( MAX_TRIALS );
+std::vector<int> alignments( MAX_TRIALS );
 std::map<std::pair<int, int>, std::vector<double>> times;
 
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
         const int align, const int maxvarysize, const int maxvaryalign ) {
     static uint64_t callcount = 0;
-    Rand r( 444793 + (callcount++) );
+    Rand r( 444793 + (callcount++));
 
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
     uintptr_t t1  = reinterpret_cast<uintptr_t>(buf);
@@ -185,9 +185,8 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
 
     //----------
     for (int itrial = 0; itrial < trials; itrial++) {
-        int testsize = sizes[itrial];
-        uint8_t * block = reinterpret_cast<uint8_t *>(t1 + alignments[itrial]);
-
+        int       testsize = sizes[itrial];
+        uint8_t * block    = reinterpret_cast<uint8_t *>(t1 + alignments[itrial]);
 
         double t;
         if (testsize < 128) {
@@ -207,10 +206,10 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     }
 
     //----------
-    double avgtotal = 0.0;
-    double stddevtotal = 0.0;
-    unsigned count = 0;
-    unsigned sbmcount = 0;
+    double   avgtotal    = 0.0;
+    double   stddevtotal = 0.0;
+    unsigned count       = 0;
+    unsigned sbmcount    = 0;
 
     std::map<int, int> summary;
     for (int size = blocksize - maxvarysize; size <= blocksize; size++) {
@@ -239,11 +238,11 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
 // 256k blocks seem to give the best results.
 
 static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align, bool vary_size ) {
-    const int blocksize = 256 * 1024;
-    const int maxvary   = vary_size ? 127 : 0;
-    const int runcount  = hinfo->isVerySlow() ? BULK_RUNS   / 16 : (hinfo->isSlow() ? BULK_RUNS   / 4 : BULK_RUNS);
-    const int trials    = hinfo->isVerySlow() ? BULK_TRIALS / 16 : (hinfo->isSlow() ? BULK_TRIALS / 4 : BULK_TRIALS);
-    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    const int    blocksize = 256 * 1024;
+    const int    maxvary   = vary_size ? 127 : 0;
+    const int    runcount  = hinfo->isVerySlow() ? BULK_RUNS   / 16 : (hinfo->isSlow() ? BULK_RUNS   / 4 : BULK_RUNS  );
+    const int    trials    = hinfo->isVerySlow() ? BULK_TRIALS / 16 : (hinfo->isSlow() ? BULK_TRIALS / 4 : BULK_TRIALS);
+    const HashFn hash      = hinfo->hashFn(g_hashEndian);
 
     if (vary_size) {
         printf("Bulk speed test - [%d, %d]-byte keys\n", blocksize - maxvary, blocksize);
@@ -255,7 +254,7 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
     volatile double warmup_cycles = SpeedTest(hash, seed, trials, blocksize, 0, 0, 0);
 
     for (int align = 7; align >= 0; align--) {
-        double cycles  = 0;
+        double cycles = 0;
         for (int i = 0; i < runcount; i++) {
             cycles += SpeedTest(hash, seed, trials, blocksize, align, maxvary, 0);
         }
@@ -274,7 +273,7 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
 
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (vary_align) {
-        double cycles  = 0;
+        double cycles = 0;
         for (int i = 0; i < runcount; i++) {
             cycles += SpeedTest(hash, seed, trials, blocksize, 0, maxvary, 7);
         }
@@ -294,7 +293,7 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
 
 static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed, bool verbose, bool include_vary ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    double sum = 0.0;
+    double       sum  = 0.0;
 
     printf("Small key speed test - [1, %2d]-byte keys\n", maxkeysize);
 
@@ -316,8 +315,9 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (include_vary) {
         double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0);
-        if (verbose) { printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
-                    cycles, stddev, 100.0 * stddev / cycles); }
+        if (verbose) {
+            printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n", cycles, stddev, 100.0 * stddev / cycles);
+        }
     }
 
     return sum;
@@ -325,8 +325,8 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
 
 //-----------------------------------------------------------------------------
 bool SpeedTest( const HashInfo * hinfo ) {
-    bool         result = true;
-    Rand         r( 633692 );
+    bool result = true;
+    Rand r( 633692 );
 
     printf("[[[ Speed Tests ]]]\n\n");
 

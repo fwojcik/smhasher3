@@ -33,6 +33,7 @@
 // setting a high bit in the seed.
 seed_t lookup3_seedfix( const HashInfo * hinfo, const seed_t seed ) {
     uint64_t seed64 = (uint64_t)seed;
+
     if (seed64 >= 0xffffffff) {
         seed64 |= (seed64 | 1) << 32;
     }
@@ -41,7 +42,7 @@ seed_t lookup3_seedfix( const HashInfo * hinfo, const seed_t seed ) {
 
 template <bool hash64, bool bswap>
 static void hashlittle( const uint8_t * key, size_t length, uint64_t seed64, uint8_t * out ) {
-    uint32_t a, b, c;                                      /* internal state */
+    uint32_t a, b, c; /* internal state */
 
     /* Set up the internal state */
     a  = b = c = 0xdeadbeef + ((uint32_t)length) + ((uint32_t)seed64);

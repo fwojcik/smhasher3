@@ -50,7 +50,8 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-bool ReportBias( const uint32_t * counts, const int coinflips, const int trials, const int hashbits, const bool drawDiagram );
+bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
+        const int hashbits, const bool drawDiagram );
 
 bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
         size_t hashbits, size_t testcount, bool drawDiagram );
@@ -65,9 +66,8 @@ void PrintCollisions( std::set<hashtype> & collisions );
 //-----------------------------------------------------------------------------
 // This is not intended to be used directly; see below
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, int * logpSumPtr,
-        bool drawDiagram, bool testCollision, bool testMaxColl, bool testDist,
-        bool testHighBits, bool testLowBits, bool verbose );
+bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, int * logpSumPtr, bool drawDiagram,
+        bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
 
 // This provides a user-friendly wrapper to TestHashListImpl<>() by using
 // the Named Parameter Idiom.
@@ -81,15 +81,15 @@ template <typename hashtype>
 class TestHashListWrapper {
   private:
     std::vector<hashtype> & hashes_;
-    unsigned deltaNum_;
-    int * logpSumPtr_;
-    bool  testCollisions_;
-    bool  testMaxCollisions_;
-    bool  testDistribution_;
-    bool  testHighBits_;
-    bool  testLowBits_;
-    bool  verbose_;
-    bool  drawDiagram_;
+    unsigned  deltaNum_;
+    int *     logpSumPtr_;
+    bool      testCollisions_;
+    bool      testMaxCollisions_;
+    bool      testDistribution_;
+    bool      testHighBits_;
+    bool      testLowBits_;
+    bool      verbose_;
+    bool      drawDiagram_;
 
   public:
     inline TestHashListWrapper( std::vector<hashtype> & hashes ) :

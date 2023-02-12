@@ -223,10 +223,10 @@ bool TwoBytesKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
     const seed_t seed = hinfo->Seed(g_seed);
 
     if (hinfo->isVerySlow()) {
-        result &= TwoBytesTestUpToLen<hashtype>(hash, seed,  8, verbose, true);
+        result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 8, verbose, true);
     } else {
         result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 20, verbose, extra);
-        result &= TwoBytesTestLen<hashtype>(hash, seed, 32, verbose, extra);
+        result &= TwoBytesTestLen    <hashtype>(hash, seed, 32, verbose, extra);
         if (!hinfo->isSlow()) {
             result &= TwoBytesTestLen<hashtype>(hash, seed, 48, verbose, extra);
         }
