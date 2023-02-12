@@ -106,7 +106,9 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
 // starts with the given startbit of the hash value. Cursor must point to the
 // histogram array entry corresponding to that starting bit. The size of the hash is
 // assumed to be divisible by 32 bits. Returns a pointer to the first histogram entry
-// beyond those for the given hash value.
+// beyond those for the given hash value. While this reads from and writes to memory
+// before the cursor pointer, it will always write back the bytes unchanged. But callers
+// must ensure that memory is valid to read+write.
 
 template <typename hashtype>
 static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cursor, size_t startbit ) {

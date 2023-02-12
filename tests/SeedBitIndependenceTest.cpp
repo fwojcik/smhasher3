@@ -143,12 +143,14 @@ static bool BicTestImpl( const HashInfo * hinfo, const size_t keybytes, const si
 
     printf("Testing %4d-byte keys, %7d reps  ", keybytes, reps);
 
-    std::vector<uint32_t> popcount( seedbits * hashbits    , 0 );
-    std::vector<uint32_t> andcount( seedbits * hashbitpairs, 0 );
+    // The andcount array needs 1 element as a buffer due to how
+    // HistogramHashBits accesses memory prior to the cursor.
+    std::vector<uint32_t> popcount( seedbits * hashbits        , 0 );
+    std::vector<uint32_t> andcount( seedbits * hashbitpairs + 1, 0 );
     a_int iseedbit( 0 );
 
     if (g_NCPU == 1) {
-        BicTestBatch<hashtype>(hinfo, reps, iseedbit, seedbits, keybytes, &popcount[0], &andcount[0]);
+        BicTestBatch<hashtype>(hinfo, reps, iseedbit, seedbits, keybytes, &popcount[0], &andcount[1]);
     } else {
 #if defined(HAVE_THREADS)
         // Giving each thread a batch size of 2 seedbits is consistently best on my box
@@ -156,7 +158,7 @@ static bool BicTestImpl( const HashInfo * hinfo, const size_t keybytes, const si
         for (int i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 BicTestBatch<hashtype>, hinfo, reps, std::ref(iseedbit),
-                2, keybytes, &popcount[0], &andcount[0]
+                2, keybytes, &popcount[0], &andcount[1]
             };
         }
         for (int i = 0; i < g_NCPU; i++) {
@@ -165,7 +167,7 @@ static bool BicTestImpl( const HashInfo * hinfo, const size_t keybytes, const si
 #endif
     }
 
-    bool result = ReportChiSqIndep(&popcount[0], &andcount[0], seedbits, hashbits, reps, verbose);
+    bool result = ReportChiSqIndep(&popcount[0], &andcount[1], seedbits, hashbits, reps, verbose);
 
     recordTestResult(result, "SeedBIC", keybytes);
 
