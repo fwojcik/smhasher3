@@ -956,6 +956,12 @@ static NEVER_INLINE XXH128_hash_t XXH3_len_129to240_128b( const uint8_t * RESTRI
 // XXH3 and XXH3-128 long keys
 // Platform-specific vectorized variants
 
+template <bool bswap>
+static FORCE_INLINE void XXH3_scalarRound( void * RESTRICT acc, void const * RESTRICT input,
+        void const * RESTRICT secret, size_t lane );
+template <bool bswap>
+static FORCE_INLINE void XXH3_scalarScrambleRound( void * RESTRICT acc, void const * RESTRICT secret, size_t lane );
+
 #define XXH_SCALAR 0
 #define XXH_SSE2   1
 #define XXH_AVX2   2
