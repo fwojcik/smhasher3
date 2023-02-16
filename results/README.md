@@ -10,95 +10,73 @@ Hashes that currently pass all tests, sorted by average short input speed.
 
 | Hash name | output width | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
 |:----------|-------------:|-----------:|-------------------------:|------------------------:|
-| [wyhash.strict](wyhash.strict.txt) | 64 | 204 |  37.29 |   5.74|
-| [komihash](komihash.txt) | 64 | 204 |  38.86 |   6.45|
-| [t1ha0.aesB](t1ha0.aesB.txt) | 64 | 204 |  46.79 |  19.62|
-| [t1ha2-64](t1ha2-64.txt) | 64 | 204 |  46.85 |   4.56|
-| [TinySipHash](TinySipHash.txt) | 64 | 204 |  47.70 |   1.50|
-| [mum1.inexact.unroll2](mum1.inexact.unroll2.txt) | 64 | 204 |  52.68 |   1.26|
-| [mum1.inexact.unroll4](mum1.inexact.unroll4.txt) | 64 | 204 |  52.81 |   1.86|
-| [mum1.inexact.unroll3](mum1.inexact.unroll3.txt) | 64 | 204 |  53.38 |   1.26|
-| [mir.inexact](mir.inexact.txt) | 64 | 204 |  54.69 |   1.33|
-| [mx3.v1](mx3.v1.txt) | 64 | 204 |  55.87 |   3.15|
-| [prvhash-64](prvhash-64.txt) | 64 | 204 |  56.33 |   0.93|
-| [mum1.inexact.unroll1](mum1.inexact.unroll1.txt) | 64 | 204 |  56.76 |   1.19|
-| [mx3.v3](mx3.v3.txt) | 64 | 221 |  56.96 |   3.98|
-| [mx3.v2](mx3.v2.txt) | 64 | 204 |  57.45 |   3.18|
-| [FarmHash-32.NT](FarmHash-32.NT.txt) | 32 | 243 |  57.46 |   7.74|
-| [XXH-64](XXH-64.txt) | 64 | 221 |  58.76 |   3.99|
-| [CityMurmur.seed3](CityMurmur.seed3.txt) | 128 | 205 |  63.03 |   2.53|
-| [CityMurmur.seed2](CityMurmur.seed2.txt) | 128 | 205 |  63.06 |   2.53|
-| [CityMurmur.seed1](CityMurmur.seed1.txt) | 128 | 205 |  63.10 |   2.53|
-| [FarmHash-128.CM.seed1](FarmHash-128.CM.seed1.txt) | 128 | 205 |  63.20 |   2.66|
-| [FarmHash-128.CM.seed2](FarmHash-128.CM.seed2.txt) | 128 | 205 |  63.42 |   2.63|
-| [FarmHash-128.CM.seed3](FarmHash-128.CM.seed3.txt) | 128 | 205 |  63.91 |   2.66|
-| [SpookyHash1-32](SpookyHash1-32.txt) | 32 | 243 |  64.72 |   4.38|
-| [SpookyHash1-64](SpookyHash1-64.txt) | 64 | 204 |  64.72 |   4.38|
-| [SpookyHash2-64](SpookyHash2-64.txt) | 64 | 204 |  66.38 |   4.38|
-| [SpookyHash2-32](SpookyHash2-32.txt) | 32 | 243 |  66.39 |   4.38|
-| [SpookyHash1-128](SpookyHash1-128.txt) | 128 | 205 |  69.38 |   4.38|
-| [SpookyHash2-128](SpookyHash2-128.txt) | 128 | 205 |  70.64 |   4.38|
-| [MeowHash](MeowHash.txt) | 128 | 205 |  77.01 |  11.79|
-| [MeowHash.32](MeowHash.32.txt) | 32 | 243 |  77.01 |  11.79|
-| [MeowHash.64](MeowHash.64.txt) | 64 | 204 |  77.01 |  11.79|
-| [khashv-64](khashv-64.txt) | 64 | 221 |  77.56 |   2.17|
-| [khashv-32](khashv-32.txt) | 32 | 260 |  79.94 |   2.17|
-| [prvhash-128](prvhash-128.txt) | 128 | 205 |  86.09 |   0.93|
-| [HalfSipHash](HalfSipHash.txt) | 32 | 243 |  87.19 |   0.34|
-| [GoodOAAT](GoodOAAT.txt) | 32 | 243 |  90.33 |   0.24|
-| [chaskey-8.32](chaskey-8.32.txt) | 32 | 243 | 100.00 |   0.37|
-| [chaskey-8.64](chaskey-8.64.txt) | 64 | 204 | 101.05 |   0.37|
-| [PearsonBlock-64](PearsonBlock-64.txt) | 64 | 204 | 108.34 |   0.57|
-| [hasshe2.tweaked](hasshe2.tweaked.txt) | 256 | 205 | 111.40 |   0.76|
-| [PearsonBlock-128](PearsonBlock-128.txt) | 128 | 205 | 117.34 |   0.53|
-| [chaskey-8](chaskey-8.txt) | 128 | 205 | 127.81 |   0.38|
-| [chaskey-12.32](chaskey-12.32.txt) | 32 | 243 | 129.10 |   0.25|
-| [HalftimeHash-512](HalftimeHash-512.txt) | 64 | 204 | 131.12 |   9.32|
-| [PearsonBlock-256](PearsonBlock-256.txt) | 256 | 205 | 146.42 |   0.46|
-| [SipHash-1-3](SipHash-1-3.txt) | 64 | 204 | 165.15 |   0.38|
-| [prvhash-64.incr](prvhash-64.incr.txt) | 64 | 204 | 189.92 |   2.36|
-| [CityHashCrc-256](CityHashCrc-256.txt) | 256 | 205 | 191.87 |   5.31|
-| [Discohash.old](Discohash.old.txt) | 64 | 204 | 217.33 |   1.34|
-| [SipHash-2-4](SipHash-2-4.txt) | 64 | 204 | 224.07 |   0.19|
-| [ascon-XOFa-32](ascon-XOFa-32.txt) | 32 | 243 | 396.40 |   0.07|
-| [ascon-XOFa-64](ascon-XOFa-64.txt) | 64 | 204 | 408.23 |   0.07|
-| [SHA-2-224.64](SHA-2-224.64.txt) | 64 | 204 | 415.13 |   0.45|
-| [SHA-2-256.64](SHA-2-256.64.txt) | 64 | 204 | 415.63 |   0.45|
-| [SHA-2-224](SHA-2-224.txt) | 224 | 205 | \*\* 420.04 |   0.45|
-| [SHA-2-256](SHA-2-256.txt) | 256 | 205 | \*\* 436.61 |   0.45|
-| [blake3](blake3.txt) | 256 | 205 | 483.81 |   0.35|
-| [ascon-XOF-32](ascon-XOF-32.txt) | 32 | 243 | 492.70 |   0.05|
-| [ascon-XOF-64](ascon-XOF-64.txt) | 64 | 204 | 493.33 |   0.05|
-| [SHA-1.64](SHA-1.64.txt) | 64 | 204 | \*\* 503.67 |   0.47|
-| [RIPEMD-128](RIPEMD-128.txt) | 128 | 205 | 506.47 |   0.15|
-| [SHA-1](SHA-1.txt) | 128 | 205 | \*\* 507.04 |   0.47|
-| [SHA-1.32](SHA-1.32.txt) | 32 | 243 | \*\* 511.44 |   0.47|
-| [ascon-XOFa-128](ascon-XOFa-128.txt) | 128 | 205 | \*\* 514.68 |   0.07|
-| [MD5.32](MD5.32.txt) | 32 | 243 | 545.52 |   0.14|
-| [MD5](MD5.txt) | 128 | 205 | 549.97 |   0.14|
-| [MD5.64](MD5.64.txt) | 64 | 204 | 550.33 |   0.14|
-| [RIPEMD-256](RIPEMD-256.txt) | 256 | 205 | 593.60 |   0.12|
-| [ascon-XOFa-160](ascon-XOFa-160.txt) | 160 | 205 | \*\* 642.23 |   0.07|
-| [blake2s-256.64](blake2s-256.64.txt) | 64 | 204 | 660.79 |   0.11|
-| [blake2s-256](blake2s-256.txt) | 256 | 205 | 661.34 |   0.11|
-| [blake2s-128](blake2s-128.txt) | 128 | 205 | 662.11 |   0.11|
-| [blake2s-160](blake2s-160.txt) | 160 | 205 | 662.24 |   0.11|
-| [blake2s-224](blake2s-224.txt) | 224 | 205 | 667.02 |   0.11|
-| [ascon-XOF-128](ascon-XOF-128.txt) | 128 | 205 | 679.13 |   0.05|
-| [RIPEMD-160](RIPEMD-160.txt) | 160 | 205 | \*\* 760.60 |   0.09|
-| [ascon-XOFa-256](ascon-XOFa-256.txt) | 256 | 205 | 768.95 |   0.07|
-| [ascon-XOFa-224](ascon-XOFa-224.txt) | 224 | 205 | 788.13 |   0.07|
-| [blake2b-256.64](blake2b-256.64.txt) | 64 | 204 | 793.01 |   0.18|
-| [blake2b-160](blake2b-160.txt) | 160 | 205 | 794.98 |   0.18|
-| [blake2b-128](blake2b-128.txt) | 128 | 205 | 796.59 |   0.18|
-| [blake2b-256](blake2b-256.txt) | 256 | 205 | 822.07 |   0.18|
-| [blake2b-224](blake2b-224.txt) | 224 | 205 | 824.04 |   0.18|
-| [ascon-XOF-160](ascon-XOF-160.txt) | 160 | 205 | 845.54 |   0.05|
-| [beamsplitter](beamsplitter.txt) | 64 | 204 | 971.12 |   0.21|
-| [ascon-XOF-224](ascon-XOF-224.txt) | 224 | 205 | 1027.89 |   0.05|
-| [ascon-XOF-256](ascon-XOF-256.txt) | 256 | 205 | 1038.11 |   0.05|
-| [SHA-3-256.64](SHA-3-256.64.txt) | 64 | 204 | 3025.25 |   0.04|
-| [SHA-3](SHA-3.txt) | 256 | 205 | 3036.27 |   0.04|
+| [komihash](komihash.txt) | 64 | 246 |  38.95 |   6.33|
+| [khashv-32](khashv-32.txt) | 32 | 246 |  61.47 |   2.97|
+| [SpookyHash1-32](SpookyHash1-32.txt) | 32 | 246 |  64.86 |   4.40|
+| [SpookyHash2-32](SpookyHash2-32.txt) | 32 | 246 |  66.29 |   4.40|
+| [MeowHash.64](MeowHash.64.txt) | 64 | 246 |  67.49 |  12.37|
+| [MeowHash](MeowHash.txt) | 128 | 246 |  67.54 |  12.39|
+| [MeowHash.32](MeowHash.32.txt) | 32 | 246 |  67.54 |  12.19|
+| [CityMurmur.seed1](CityMurmur.seed1.txt) | 128 | 246 |  74.37 |   2.61|
+| [CityMurmur.seed3](CityMurmur.seed3.txt) | 128 | 246 |  74.47 |   2.61|
+| [FarmHash-128.CM.seed1](FarmHash-128.CM.seed1.txt) | 128 | 246 |  74.66 |   2.61|
+| [FarmHash-128.CM.seed3](FarmHash-128.CM.seed3.txt) | 128 | 246 |  75.51 |   2.61|
+| [HalfSipHash](HalfSipHash.txt) | 32 | 234 |  88.16 |   0.35|
+| [GoodOAAT](GoodOAAT.txt) | 32 | 231 |  92.52 |   0.24|
+| [chaskey-8.32](chaskey-8.32.txt) | 32 | 234 |  99.88 |   0.37|
+| [chaskey-8.64](chaskey-8.64.txt) | 64 | 234 | 100.13 |   0.37|
+| [hasshe2.tweaked](hasshe2.tweaked.txt) | 256 | 234 | 103.42 |   0.92|
+| [PearsonBlock-64](PearsonBlock-64.txt) | 64 | 234 | 107.19 |   0.57|
+| [chaskey-8](chaskey-8.txt) | 128 | 234 | 108.51 |   0.37|
+| [PearsonBlock-128](PearsonBlock-128.txt) | 128 | 234 | 115.47 |   0.53|
+| [SipHash-1-3](SipHash-1-3.txt) | 64 | 234 | 116.26 |   0.60|
+| [chaskey-12.32](chaskey-12.32.txt) | 32 | 231 | 130.10 |   0.25|
+| [chaskey-12.64](chaskey-12.64.txt) | 64 | 231 | 130.89 |   0.25|
+| [chaskey-12](chaskey-12.txt) | 128 | 231 | 139.40 |   0.25|
+| [SipHash-2-4](SipHash-2-4.txt) | 64 | 231 | 158.75 |   0.31|
+| [PearsonBlock-256](PearsonBlock-256.txt) | 256 | 234 | 174.63 |   0.33|
+| [CityHashCrc-256](CityHashCrc-256.txt) | 256 | 234 | 190.61 |   5.31|
+| [prvhash-64.incr](prvhash-64.incr.txt) | 64 | 234 | 193.47 |   2.29|
+| [Discohash.old](Discohash.old.txt) | 64 | 234 | 214.09 |   1.34|
+| [prvhash-128.incr](prvhash-128.incr.txt) | 128 | 234 | 285.55 |   2.16|
+| [blake3](blake3.txt) | 256 | 231 | 322.69 |   0.42|
+| [SHA-2-224](SHA-2-224.txt) | 224 | 231 | 331.53 |   0.45|
+| [ascon-XOFa-32](ascon-XOFa-32.txt) | 32 | 231 | 394.70 |   0.08|
+| [ascon-XOFa-64](ascon-XOFa-64.txt) | 64 | 231 | 395.24 |   0.08|
+| [SHA-2-224.64](SHA-2-224.64.txt) | 64 | 231 | 412.19 |   0.45|
+| [SHA-2-256.64](SHA-2-256.64.txt) | 64 | 231 | 412.19 |   0.45|
+| [SHA-2-256](SHA-2-256.txt) | 256 | 231 | 433.54 |   0.45|
+| [blake2s-256.64](blake2s-256.64.txt) | 64 | 231 | 433.76 |   0.17|
+| [blake2s-256](blake2s-256.txt) | 256 | 231 | 436.21 |   0.17|
+| [blake2s-160](blake2s-160.txt) | 160 | 231 | 436.46 |   0.17|
+| [blake2s-128](blake2s-128.txt) | 128 | 231 | 436.60 |   0.17|
+| [blake2s-224](blake2s-224.txt) | 224 | 231 | 456.21 |   0.17|
+| [ascon-XOF-32](ascon-XOF-32.txt) | 32 | 231 | 484.17 |   0.05|
+| [ascon-XOF-64](ascon-XOF-64.txt) | 64 | 231 | 485.32 |   0.05|
+| [RIPEMD-128](RIPEMD-128.txt) | 128 | 231 | 491.35 |   0.15|
+| [SHA-1](SHA-1.txt) | 128 | 231 | 497.21 |   0.48|
+| [SHA-1.64](SHA-1.64.txt) | 64 | 231 | 497.24 |   0.48|
+| [SHA-1.32](SHA-1.32.txt) | 32 | 231 | 498.21 |   0.48|
+| [ascon-XOFa-128](ascon-XOFa-128.txt) | 128 | 231 | 502.37 |   0.08|
+| [MD5](MD5.txt) | 128 | 231 | 526.20 |   0.14|
+| [MD5.64](MD5.64.txt) | 64 | 231 | 527.14 |   0.14|
+| [MD5.32](MD5.32.txt) | 32 | 231 | 527.19 |   0.14|
+| [RIPEMD-256](RIPEMD-256.txt) | 256 | 231 | 570.34 |   0.13|
+| [blake2b-256](blake2b-256.txt) | 256 | 231 | 587.26 |   0.26|
+| [blake2b-256.64](blake2b-256.64.txt) | 64 | 231 | 589.66 |   0.26|
+| [blake2b-128](blake2b-128.txt) | 128 | 231 | 590.91 |   0.26|
+| [blake2b-160](blake2b-160.txt) | 160 | 231 | 590.96 |   0.26|
+| [blake2b-224](blake2b-224.txt) | 224 | 231 | 610.41 |   0.26|
+| [ascon-XOFa-160](ascon-XOFa-160.txt) | 160 | 231 | 625.61 |   0.08|
+| [ascon-XOF-128](ascon-XOF-128.txt) | 128 | 231 | 643.79 |   0.05|
+| [RIPEMD-160](RIPEMD-160.txt) | 160 | 231 | 719.77 |   0.10|
+| [ascon-XOFa-224](ascon-XOFa-224.txt) | 224 | 231 | 740.28 |   0.08|
+| [ascon-XOFa-256](ascon-XOFa-256.txt) | 256 | 231 | 740.39 |   0.08|
+| [ascon-XOF-160](ascon-XOF-160.txt) | 160 | 231 | 812.58 |   0.05|
+| [ascon-XOF-224](ascon-XOF-224.txt) | 224 | 231 | 981.78 |   0.05|
+| [ascon-XOF-256](ascon-XOF-256.txt) | 256 | 231 | 983.90 |   0.05|
+| [SHA-3](SHA-3.txt) | 256 | 231 | 2980.59 |   0.05|
+| [SHA-3-256.64](SHA-3-256.64.txt) | 64 | 231 | 2984.17 |   0.05|
 
 
 Failing hashes
@@ -108,128 +86,324 @@ Hashes that pass Sanity tests, but fail others, sorted by failing tests and then
 
 | Hash name | output width | tests failed | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
 |:----------|-------------:|-------------:|-----------:|-------------------------:|------------------------:|
-| [mum3.exact.unroll2](mum3.exact.unroll2.txt) | 64 | 1 | 204 |  33.24 |   5.06|
-| [mum3.exact.unroll4](mum3.exact.unroll4.txt) | 64 | 1 | 204 |  33.39 |   5.69|
-| [mum3.exact.unroll3](mum3.exact.unroll3.txt) | 64 | 1 | 204 |  33.76 |   5.39|
-| [wyhash](wyhash.txt) | 64 | 1 | 204 |  34.77 |   6.93|
-| [mum3.exact.unroll1](mum3.exact.unroll1.txt) | 64 | 1 | 204 |  35.44 |   2.56|
-| [wyhash-32](wyhash-32.txt) | 32 | 1 | 243 |  36.91 |   1.33|
-| [mum1.exact.unroll4](mum1.exact.unroll4.txt) | 64 | 1 | 204 |  39.99 |   3.77|
-| [mum1.exact.unroll2](mum1.exact.unroll2.txt) | 64 | 1 | 204 |  40.28 |   4.04|
-| [mum1.exact.unroll1](mum1.exact.unroll1.txt) | 64 | 1 | 204 |  42.79 |   2.56|
-| [mir.exact](mir.exact.txt) | 64 | 1 | 204 |  43.94 |   2.05|
-| [t1ha0.aesA](t1ha0.aesA.txt) | 64 | 1 | 204 |  46.74 |   7.90|
-| [fasthash-32](fasthash-32.txt) | 32 | 1 | 243 |  47.39 |   2.00|
-| [UMASH-64.reseed](UMASH-64.reseed.txt) | 64 | 1 | 204 |  49.13 |   5.93|
-| [FarmHash-64.TE](FarmHash-64.TE.txt) | 64 | 1 | 204 |  57.46 |   7.74|
-| [CityHash-64](CityHash-64.txt) | 64 | 1 | 204 |  57.72 |   4.79|
-| [FarmHash-64.UO](FarmHash-64.UO.txt) | 64 | 1 | 204 |  58.09 |   5.23|
-| [FarmHash-64.NA](FarmHash-64.NA.txt) | 64 | 1 | 204 |  58.28 |   4.88|
-| [MetroHash-128](MetroHash-128.txt) | 128 | 1 | 205 |  58.97 |   5.22|
-| [t1ha2-128](t1ha2-128.txt) | 128 | 1 | 205 |  63.01 |   4.86|
-| [pengyhash](pengyhash.txt) | 64 | 1 | 204 |  74.44 |   4.54|
-| [CLhash.bitmix](CLhash.bitmix.txt) | 64 | 1 | 204 |  74.51 |   7.31|
-| [VHASH.32](VHASH.32.txt) | 32 | 1 | 243 | 101.37 |   4.95|
-| [HalftimeHash-128](HalftimeHash-128.txt) | 64 | 1 | 204 | 102.37 |   6.76|
-| [HalftimeHash-64](HalftimeHash-64.txt) | 64 | 1 | 204 | 103.42 |   2.11|
-| [HalftimeHash-256](HalftimeHash-256.txt) | 64 | 1 | 204 | 107.31 |  11.59|
-| [chaskey-12.64](chaskey-12.64.txt) | 64 | 1 | 204 | 131.48 |   0.25|
-| [chaskey-12](chaskey-12.txt) | 128 | 1 | 205 | 157.93 |   0.25|
-| [XXH3-64](XXH3-64.txt) | 64 | 2 | 204 |  36.45 |  12.31|
-| [mum1.exact.unroll3](mum1.exact.unroll3.txt) | 64 | 2 | 204 |  40.42 |   4.04|
-| [fasthash-64](fasthash-64.txt) | 64 | 2 | 204 |  45.63 |   2.00|
-| [XXH3-128](XXH3-128.txt) | 128 | 2 | 205 |  45.92 |  12.31|
-| [MetroHash-64.var2](MetroHash-64.var2.txt) | 64 | 2 | 204 |  48.67 |   4.96|
-| [MetroHash-128.var1](MetroHash-128.var1.txt) | 128 | 2 | 205 |  59.51 |   5.05|
-| [UMASH-128.reseed](UMASH-128.reseed.txt) | 128 | 2 | 205 |  61.38 |   3.70|
-| [CityHash-128.seed2](CityHash-128.seed2.txt) | 128 | 2 | 205 |  62.94 |   4.49|
-| [CityHash-128.seed3](CityHash-128.seed3.txt) | 128 | 2 | 205 |  62.96 |   4.49|
-| [CityHash-128.seed1](CityHash-128.seed1.txt) | 128 | 2 | 205 |  63.07 |   4.49|
-| [CityHashCrc-128.seed3](CityHashCrc-128.seed3.txt) | 128 | 2 | 205 |  63.10 |   5.31|
-| [CityHashCrc-128.seed1](CityHashCrc-128.seed1.txt) | 128 | 2 | 205 |  63.14 |   5.31|
-| [CityHashCrc-128.seed2](CityHashCrc-128.seed2.txt) | 128 | 2 | 205 |  63.16 |   5.31|
-| [FarmHash-128.CC.seed1](FarmHash-128.CC.seed1.txt) | 128 | 2 | 205 |  63.35 |   4.82|
-| [FarmHash-128.CC.seed2](FarmHash-128.CC.seed2.txt) | 128 | 2 | 205 |  63.70 |   4.68|
-| [FarmHash-128.CC.seed3](FarmHash-128.CC.seed3.txt) | 128 | 2 | 205 |  63.93 |   4.68|
-| [prvhash-128.incr](prvhash-128.incr.txt) | 128 | 2 | 205 | 284.73 |   1.98|
-| [floppsyhash](floppsyhash.txt) | 64 | 2 | 204 | \*\* 744.99 |   0.05|
-| [MetroHash-64](MetroHash-64.txt) | 64 | 3 | 204 |  48.56 |   5.08|
-| [MurmurHash3-128](MurmurHash3-128.txt) | 128 | 3 | 205 |  49.42 |   2.17|
-| [MurmurHash3-32](MurmurHash3-32.txt) | 32 | 3 | 243 |  50.61 |   0.99|
-| [seahash](seahash.txt) | 64 | 3 | 204 |  61.49 |   2.71|
-| [VHASH](VHASH.txt) | 64 | 4 | 204 | 101.48 |   4.96|
-| [floppsyhash.old](floppsyhash.old.txt) | 64 | 4 | 204 | \*\* 711.12 |   0.04|
-| [mum2.inexact.unroll1](mum2.inexact.unroll1.txt) | 64 | 6 | 204 |  48.18 |   1.19|
-| [UMASH-64](UMASH-64.txt) | 64 | 6 | 204 |  48.19 |   5.93|
-| [FarmHash-32.SA](FarmHash-32.SA.txt) | 32 | 6 | 243 |  48.49 |   4.48|
-| [t1ha0](t1ha0.txt) | 64 | 6 | 204 |  51.57 |   2.40|
-| [MetroHashCrc-128.var1](MetroHashCrc-128.var1.txt) | 128 | 6 | 205 |  64.88 |   7.80|
-| [MetroHashCrc-128.var2](MetroHashCrc-128.var2.txt) | 128 | 6 | 205 |  64.90 |   7.80|
-| [falkhash1](falkhash1.txt) | 128 | 6 | 205 |  89.05 |  18.82|
-| [mum2.exact.unroll1](mum2.exact.unroll1.txt) | 64 | 7 | 204 |  38.59 |   2.62|
-| [mum2.inexact.unroll2](mum2.inexact.unroll2.txt) | 64 | 7 | 204 |  44.06 |   1.26|
-| [MetroHash-128.var2](MetroHash-128.var2.txt) | 128 | 7 | 205 |  59.01 |   5.05|
-| [UMASH-128](UMASH-128.txt) | 128 | 7 | 205 |  61.49 |   3.70|
-| [falkhash2](falkhash2.txt) | 128 | 7 | 205 |  93.08 |  16.86|
-| [mum2.exact.unroll2](mum2.exact.unroll2.txt) | 64 | 8 | 204 |  36.95 |   4.04|
-| [MetroHash-64.var1](MetroHash-64.var1.txt) | 64 | 8 | 204 |  48.52 |   4.96|
-| [FarmHash-32.SU](FarmHash-32.SU.txt) | 32 | 8 | 243 |  48.77 |   5.27|
-| [mum2.exact.unroll3](mum2.exact.unroll3.txt) | 64 | 9 | 204 |  36.30 |   4.05|
-| [mum2.inexact.unroll3](mum2.inexact.unroll3.txt) | 64 | 9 | 204 |  44.36 |   1.26|
-| [NMHASH](NMHASH.txt) | 32 | 9 | 243 |  71.39 |   7.37|
-| [NMHASHX](NMHASHX.txt) | 32 | 10 | 243 |  45.71 |   7.38|
-| [FarmHash-32.CC](FarmHash-32.CC.txt) | 32 | 10 | 243 |  48.89 |   1.89|
-| [FarmHash-32.MK](FarmHash-32.MK.txt) | 32 | 10 | 243 |  49.42 |   1.64|
-| [t1ha1](t1ha1.txt) | 64 | 11 | 204 |  36.37 |   4.48|
-| [mum2.exact.unroll4](mum2.exact.unroll4.txt) | 64 | 11 | 204 |  36.39 |   3.76|
-| [mum2.inexact.unroll4](mum2.inexact.unroll4.txt) | 64 | 11 | 204 |  44.09 |   1.86|
-| [Discohash](Discohash.txt) | 64 | 11 | 204 | 236.19 |   1.34|
-| [CityHash-32](CityHash-32.txt) | 32 | 14 | 243 |  52.14 |   1.85|
-| [MetroHashCrc-64.var1](MetroHashCrc-64.var1.txt) | 64 | 14 | 204 |  52.33 |   7.80|
-| [t1ha2-64.incr](t1ha2-64.incr.txt) | 64 | 20 | 204 |  84.74 |   4.58|
-| [MetroHashCrc-64.var2](MetroHashCrc-64.var2.txt) | 64 | 22 | 204 |  52.23 |   7.80|
-| [t1ha2-128.incr](t1ha2-128.incr.txt) | 128 | 23 | 205 | 103.10 |   4.58|
-| [MurmurHash2a](MurmurHash2a.txt) | 32 | 24 | 243 |  49.78 |   1.00|
-| [PMP-Multilinear-64](PMP-Multilinear-64.txt) | 64 | 29 | 204 |  56.93 |   4.15|
-| [lookup3.32](lookup3.32.txt) | 32 | 37 | 243 |  42.28 |   0.80|
-| [MurmurHash2-32](MurmurHash2-32.txt) | 32 | 48 | 243 |  44.98 |   1.00|
-| [MurmurHash2-64](MurmurHash2-64.txt) | 64 | 51 | 204 |  46.05 |   2.00|
-| [Discohash-128.old](Discohash-128.old.txt) | 128 | 51 | 205 | 217.37 |   1.34|
-| [Discohash-128](Discohash-128.txt) | 128 | 51 | 205 | 227.40 |   1.34|
-| [perl-jenkins-hard](perl-jenkins-hard.txt) | 32 | 55 | 243 | 121.01 |   0.20|
-| [Crap8](Crap8.txt) | 32 | 57 | 243 |  39.84 |   1.00|
-| [MurmurHash1](MurmurHash1.txt) | 32 | 79 | 243 |  52.37 |   0.67|
-| [mum3.inexact.unroll2](mum3.inexact.unroll2.txt) | 64 | 82 | 204 |  39.69 |   1.75|
-| [mum3.inexact.unroll3](mum3.inexact.unroll3.txt) | 64 | 82 | 204 |  40.93 |   1.91|
-| [mum3.inexact.unroll4](mum3.inexact.unroll4.txt) | 64 | 82 | 204 |  41.59 |   1.97|
-| [mum3.inexact.unroll1](mum3.inexact.unroll1.txt) | 64 | 82 | 204 |  44.75 |   1.40|
-| [XXH-32](XXH-32.txt) | 32 | 85 | 260 |  50.42 |   2.00|
-| [perl-jenkins](perl-jenkins.txt) | 32 | 85 | 243 | 101.00 |   0.20|
-| [MurmurHash2-64.int32](MurmurHash2-64.int32.txt) | 64 | 97 | 204 |  47.62 |   1.33|
-| [lookup3](lookup3.txt) | 64 | 101 | 204 |  42.42 |   0.80|
-| [PMP-Multilinear-32](PMP-Multilinear-32.txt) | 32 | 116 | 243 |  46.96 |   0.84|
-| [MurmurHash3-128.int32](MurmurHash3-128.int32.txt) | 128 | 118 | 205 |  53.02 |   1.61|
-| [CLhash](CLhash.txt) | 64 | 144 | 204 |  58.37 |   6.24|
-| [Pearson-128](Pearson-128.txt) | 128 | 179 | 205 | 158.07 |   0.11|
-| [Pearson-256](Pearson-256.txt) | 256 | 182 | 205 | 162.06 |   0.11|
-| [Pearson-64](Pearson-64.txt) | 64 | 182 | 204 | 162.10 |   0.11|
-| [multiply-shift](multiply-shift.txt) | 64 | 187 | 204 |  30.03 |   1.96|
-| [pair-multiply-shift](pair-multiply-shift.txt) | 64 | 187 | 204 |  31.36 |   1.82|
-| [FNV-1a-64](FNV-1a-64.txt) | 64 | 193 | 204 |  79.01 |   0.25|
-| [Fletcher-64](Fletcher-64.txt) | 64 | 195 | 204 |  39.20 |   2.00|
-| [FNV-YoshimitsuTRIAD](FNV-YoshimitsuTRIAD.txt) | 32 | 200 | 243 |  32.25 |   5.12|
-| [FNV-1a-32](FNV-1a-32.txt) | 32 | 206 | 243 |  79.03 |   0.25|
-| [pair-multiply-shift-32](pair-multiply-shift-32.txt) | 32 | 207 | 243 |  29.00 |   2.65|
-| [multiply-shift-32](multiply-shift-32.txt) | 32 | 215 | 243 |  24.04 |   2.16|
-| [CRC-32C](CRC-32C.txt) | 32 | 222 | 243 |  36.74 |   7.63|
-| [MicroOAAT](MicroOAAT.txt) | 32 | 226 | 243 |  82.49 |   0.24|
-| [jodyhash-32](jodyhash-32.txt) | 32 | 230 | 243 |  46.01 |   0.57|
-| [SuperFastHash](SuperFastHash.txt) | 32 | 232 | 243 |  54.05 |   0.67|
-| [perl-sdbm](perl-sdbm.txt) | 32 | 233 | 243 |  76.00 |   0.25|
-| [Fletcher-32](Fletcher-32.txt) | 32 | 235 | 243 |  39.50 |   0.97|
-| [perl-djb2](perl-djb2.txt) | 32 | 237 | 243 |  62.08 |   0.33|
-| [x17](x17.txt) | 32 | 238 | 243 |  78.10 |   0.25|
+| [t1ha2-128](t1ha2-128.txt) | 128 | 1 | 246 |  67.84 |   4.89|
+| [wyhash-32](wyhash-32.txt) | 32 | 2 | 246 |  37.00 |   1.33|
+| [FarmHash-128.CC.seed1](FarmHash-128.CC.seed1.txt) | 128 | 2 | 246 |  74.26 |   4.84|
+| [CityHash-128.seed1](CityHash-128.seed1.txt) | 128 | 2 | 246 |  74.43 |   4.84|
+| [CityHash-128.seed3](CityHash-128.seed3.txt) | 128 | 2 | 246 |  74.48 |   4.85|
+| [FarmHash-128.CC.seed3](FarmHash-128.CC.seed3.txt) | 128 | 2 | 246 |  75.91 |   4.84|
+| [t1ha2-64](t1ha2-64.txt) | 64 | 3 | 246 |  47.13 |   4.62|
+| [SpookyHash2-64](SpookyHash2-64.txt) | 64 | 3 | 246 |  66.29 |   4.40|
+| [beamsplitter](beamsplitter.txt) | 64 | 4 | 231 | 924.46 |   0.18|
+| [t1ha0.aesA](t1ha0.aesA.txt) | 64 | 5 | 246 |  47.09 |   9.09|
+| [t1ha0.aesB](t1ha0.aesB.txt) | 64 | 5 | 246 |  47.25 |  21.35|
+| [khashv-64](khashv-64.txt) | 64 | 5 | 246 |  59.44 |   2.97|
+| [SpookyHash1-64](SpookyHash1-64.txt) | 64 | 5 | 246 |  64.85 |   4.40|
+| [pengyhash](pengyhash.txt) | 64 | 5 | 246 |  76.64 |   4.62|
+| [falkhash2](falkhash2.txt) | 128 | 6 | 246 |  91.90 |  18.40|
+| [FarmHash-32.NT](FarmHash-32.NT.txt) | 32 | 7 | 246 |  57.82 |   7.78|
+| [CityHashCrc-128.seed1](CityHashCrc-128.seed1.txt) | 128 | 7 | 246 |  74.75 |   5.30|
+| [CityHashCrc-128.seed3](CityHashCrc-128.seed3.txt) | 128 | 7 | 246 |  74.78 |   5.31|
+| [FarmHash-128.CM.seed2](FarmHash-128.CM.seed2.txt) | 128 | 8 | 246 |  74.65 |   2.61|
+| [CityMurmur.seed2](CityMurmur.seed2.txt) | 128 | 8 | 246 |  74.68 |   2.61|
+| [XXH-64](XXH-64.txt) | 64 | 9 | 246 |  58.73 |   3.99|
+| [FarmHash-128.CC.seed2](FarmHash-128.CC.seed2.txt) | 128 | 10 | 246 |  74.27 |   4.82|
+| [CityHash-128.seed2](CityHash-128.seed2.txt) | 128 | 10 | 246 |  74.65 |   4.84|
+| [falkhash1](falkhash1.txt) | 128 | 10 | 246 |  89.89 |  19.82|
+| [wyhash](wyhash.txt) | 64 | 11 | 246 |  35.31 |   6.97|
+| [wyhash.strict](wyhash.strict.txt) | 64 | 11 | 246 |  37.12 |   5.77|
+| [TinySipHash](TinySipHash.txt) | 64 | 13 | 246 |  47.75 |   1.50|
+| [SpookyHash2-128](SpookyHash2-128.txt) | 128 | 13 | 246 |  70.56 |   4.40|
+| [SpookyHash1-128](SpookyHash1-128.txt) | 128 | 14 | 246 |  69.29 |   4.40|
+| [CityHashCrc-128.seed2](CityHashCrc-128.seed2.txt) | 128 | 14 | 246 |  74.79 |   5.31|
+| [XXH3-64.regen](XXH3-64.regen.txt) | 64 | 15 | 246 |  36.23 |  12.76|
+| [mum1.inexact.unroll2](mum1.inexact.unroll2.txt) | 64 | 16 | 246 |  52.58 |   1.20|
+| [XXH3-128.regen](XXH3-128.regen.txt) | 128 | 16 | 246 |  64.31 |  12.68|
+| [floppsyhash](floppsyhash.txt) | 64 | 16 | 231 | 739.99 |   0.05|
+| [mum1.inexact.unroll3](mum1.inexact.unroll3.txt) | 64 | 17 | 246 |  52.95 |   1.31|
+| [mum1.inexact.unroll4](mum1.inexact.unroll4.txt) | 64 | 17 | 246 |  53.05 |   1.86|
+| [mir.inexact](mir.inexact.txt) | 64 | 17 | 246 |  54.62 |   1.33|
+| [mum1.inexact.unroll1](mum1.inexact.unroll1.txt) | 64 | 17 | 246 |  56.40 |   1.14|
+| [MetroHash-128](MetroHash-128.txt) | 128 | 17 | 246 |  59.09 |   5.09|
+| [mum1.exact.unroll4](mum1.exact.unroll4.txt) | 64 | 18 | 246 |  40.22 |   3.93|
+| [mum1.exact.unroll3](mum1.exact.unroll3.txt) | 64 | 18 | 246 |  40.54 |   4.34|
+| [mum1.exact.unroll2](mum1.exact.unroll2.txt) | 64 | 18 | 246 |  40.58 |   4.25|
+| [mum1.exact.unroll1](mum1.exact.unroll1.txt) | 64 | 18 | 246 |  42.57 |   2.58|
+| [mir.exact](mir.exact.txt) | 64 | 18 | 246 |  43.89 |   2.13|
+| [t1ha0](t1ha0.txt) | 64 | 18 | 246 |  51.38 |   2.42|
+| [t1ha2-64.incr](t1ha2-64.incr.txt) | 64 | 18 | 246 |  85.48 |   4.86|
+| [FARSH-32.tweaked](FARSH-32.tweaked.txt) | 32 | 19 | 246 |  69.96 |  16.02|
+| [MetroHash-128.var1](MetroHash-128.var1.txt) | 128 | 20 | 246 |  59.10 |   5.08|
+| [FARSH-64.tweaked](FARSH-64.tweaked.txt) | 64 | 20 | 246 | 122.28 |   7.87|
+| [Discohash](Discohash.txt) | 64 | 21 | 234 | 233.56 |   1.34|
+| [FARSH-256.tweaked](FARSH-256.tweaked.txt) | 256 | 21 | 231 | 482.11 |   1.89|
+| [MetroHash-128.var2](MetroHash-128.var2.txt) | 128 | 22 | 246 |  59.10 |   5.09|
+| [CLhash.bitmix](CLhash.bitmix.txt) | 64 | 22 | 246 |  66.69 |   7.34|
+| [prvhash-128](prvhash-128.txt) | 128 | 23 | 234 |  82.48 |   0.88|
+| [t1ha2-128.incr](t1ha2-128.incr.txt) | 128 | 23 | 246 | 110.10 |   4.86|
+| [FARSH-128.tweaked](FARSH-128.tweaked.txt) | 128 | 24 | 234 | 241.10 |   3.94|
+| [mum3.exact.unroll1](mum3.exact.unroll1.txt) | 64 | 25 | 246 |  35.57 |   2.62|
+| [XXH3-64](XXH3-64.txt) | 64 | 28 | 246 |  36.10 |  12.76|
+| [MetroHash-64](MetroHash-64.txt) | 64 | 29 | 246 |  48.41 |   5.02|
+| [MetroHash-64.var2](MetroHash-64.var2.txt) | 64 | 29 | 246 |  48.50 |   5.01|
+| [prvhash-64](prvhash-64.txt) | 64 | 29 | 234 |  56.56 |   0.92|
+| [mum3.exact.unroll2](mum3.exact.unroll2.txt) | 64 | 33 | 246 |  33.21 |   4.97|
+| [MetroHash-64.var1](MetroHash-64.var1.txt) | 64 | 33 | 246 |  48.54 |   4.98|
+| [tabulation-64](tabulation-64.txt) | 64 | 34 | 246 |  43.29 |   3.08|
+| [mum3.exact.unroll3](mum3.exact.unroll3.txt) | 64 | 36 | 246 |  33.43 |   6.11|
+| [mum3.exact.unroll4](mum3.exact.unroll4.txt) | 64 | 36 | 246 |  33.51 |   5.84|
+| [UMASH-64.reseed](UMASH-64.reseed.txt) | 64 | 36 | 246 |  46.93 |   6.08|
+| [mx3.v3](mx3.v3.txt) | 64 | 36 | 246 |  55.41 |   3.76|
+| [mx3.v2](mx3.v2.txt) | 64 | 36 | 246 |  57.61 |   3.21|
+| [XXH3-128](XXH3-128.txt) | 128 | 36 | 246 |  64.28 |  12.73|
+| [HalftimeHash-64](HalftimeHash-64.txt) | 64 | 36 | 246 |  89.95 |   2.02|
+| [UMASH-128.reseed](UMASH-128.reseed.txt) | 128 | 37 | 246 |  50.78 |   3.87|
+| [FarmHash-64.UO](FarmHash-64.UO.txt) | 64 | 39 | 246 |  57.65 |   5.11|
+| [FarmHash-64.TE](FarmHash-64.TE.txt) | 64 | 39 | 246 |  57.93 |   7.77|
+| [FarmHash-32.MK](FarmHash-32.MK.txt) | 32 | 42 | 246 |  48.82 |   1.54|
+| [mum2.inexact.unroll1](mum2.inexact.unroll1.txt) | 64 | 44 | 246 |  48.77 |   1.14|
+| [mum2.exact.unroll1](mum2.exact.unroll1.txt) | 64 | 45 | 246 |  38.60 |   2.59|
+| [mx3.v1](mx3.v1.txt) | 64 | 45 | 246 |  55.51 |   3.21|
+| [seahash](seahash.txt) | 64 | 45 | 246 |  61.14 |   2.66|
+| [MetroHashCrc-64.var1](MetroHashCrc-64.var1.txt) | 64 | 46 | 246 |  52.47 |   7.97|
+| [MetroHashCrc-64.var2](MetroHashCrc-64.var2.txt) | 64 | 47 | 246 |  52.48 |   7.87|
+| [CityHash-64](CityHash-64.txt) | 64 | 47 | 246 |  57.71 |   4.81|
+| [FarmHash-64.NA](FarmHash-64.NA.txt) | 64 | 48 | 246 |  57.60 |   4.68|
+| [MetroHashCrc-128.var2](MetroHashCrc-128.var2.txt) | 128 | 49 | 246 |  64.58 |   7.97|
+| [MetroHashCrc-128.var1](MetroHashCrc-128.var1.txt) | 128 | 49 | 246 |  64.59 |   7.97|
+| [FarmHash-32.SA](FarmHash-32.SA.txt) | 32 | 50 | 246 |  48.80 |   4.99|
+| [HalftimeHash-256](HalftimeHash-256.txt) | 64 | 50 | 246 | 104.19 |  11.37|
+| [FarmHash-32.SU](FarmHash-32.SU.txt) | 32 | 51 | 246 |  48.84 |   5.99|
+| [FarmHash-32.CC](FarmHash-32.CC.txt) | 32 | 51 | 246 |  49.00 |   1.91|
+| [HalftimeHash-128](HalftimeHash-128.txt) | 64 | 52 | 246 | 101.23 |   6.79|
+| [VHASH.32](VHASH.32.txt) | 32 | 54 | 246 |  97.42 |   5.12|
+| [AquaHash](AquaHash.txt) | 128 | 55 | 246 |  40.29 |  15.95|
+| [VHASH](VHASH.txt) | 64 | 59 | 246 |  97.42 |   5.12|
+| [fasthash-32](fasthash-32.txt) | 32 | 60 | 246 |  47.47 |   2.00|
+| [HalftimeHash-512](HalftimeHash-512.txt) | 64 | 60 | 246 | 121.74 |   9.46|
+| [mum2.inexact.unroll2](mum2.inexact.unroll2.txt) | 64 | 61 | 246 |  44.34 |   1.26|
+| [mum2.exact.unroll2](mum2.exact.unroll2.txt) | 64 | 62 | 246 |  36.75 |   4.26|
+| [t1ha1](t1ha1.txt) | 64 | 64 | 246 |  36.96 |   4.57|
+| [poly-mersenne.deg3](poly-mersenne.deg3.txt) | 32 | 64 | 234 |  76.62 |   0.50|
+| [poly-mersenne.deg4](poly-mersenne.deg4.txt) | 32 | 64 | 234 |  85.95 |   0.50|
+| [mum2.exact.unroll3](mum2.exact.unroll3.txt) | 64 | 70 | 246 |  36.74 |   4.34|
+| [mum2.inexact.unroll3](mum2.inexact.unroll3.txt) | 64 | 70 | 246 |  44.51 |   1.31|
+| [NMHASH](NMHASH.txt) | 32 | 75 | 246 |  58.79 |   7.69|
+| [mum2.exact.unroll4](mum2.exact.unroll4.txt) | 64 | 77 | 246 |  36.07 |   3.93|
+| [mum2.inexact.unroll4](mum2.inexact.unroll4.txt) | 64 | 77 | 246 |  44.74 |   1.86|
+| [poly-mersenne.deg2](poly-mersenne.deg2.txt) | 32 | 80 | 234 |  67.65 |   0.50|
+| [PMP-Multilinear-64](PMP-Multilinear-64.txt) | 64 | 82 | 246 |  55.94 |   4.27|
+| [MurmurHash3-32](MurmurHash3-32.txt) | 32 | 83 | 246 |  50.88 |   1.00|
+| [XXH-32](XXH-32.txt) | 32 | 84 | 246 |  50.55 |   2.00|
+| [MurmurHash3-128](MurmurHash3-128.txt) | 128 | 87 | 246 |  53.65 |   2.36|
+| [lookup3.32](lookup3.32.txt) | 32 | 90 | 234 |  42.19 |   0.81|
+| [CityHash-32](CityHash-32.txt) | 32 | 90 | 246 |  49.98 |   1.90|
+| [floppsyhash.old](floppsyhash.old.txt) | 64 | 93 | 231 | 744.88 |   0.04|
+| [mum3.inexact.unroll1](mum3.inexact.unroll1.txt) | 64 | 97 | 246 |  44.65 |   1.39|
+| [NMHASHX](NMHASHX.txt) | 32 | 98 | 246 |  45.72 |   7.69|
+| [Discohash-128.old](Discohash-128.old.txt) | 128 | 98 | 234 | 215.60 |   1.34|
+| [fasthash-64](fasthash-64.txt) | 64 | 99 | 246 |  45.75 |   2.00|
+| [MurmurHash3-128.int32](MurmurHash3-128.int32.txt) | 128 | 99 | 246 |  52.88 |   1.63|
+| [MurmurHash2-64](MurmurHash2-64.txt) | 64 | 100 | 246 |  46.07 |   2.00|
+| [Discohash-128](Discohash-128.txt) | 128 | 100 | 234 | 231.75 |   1.34|
+| [MurmurHash1](MurmurHash1.txt) | 32 | 114 | 234 |  52.33 |   0.67|
+| [mum3.inexact.unroll2](mum3.inexact.unroll2.txt) | 64 | 115 | 246 |  39.83 |   1.81|
+| [mum3.inexact.unroll3](mum3.inexact.unroll3.txt) | 64 | 125 | 246 |  40.01 |   2.02|
+| [UMASH-64](UMASH-64.txt) | 64 | 126 | 246 |  48.27 |   6.08|
+| [UMASH-128](UMASH-128.txt) | 128 | 127 | 246 |  50.72 |   3.87|
+| [lookup3](lookup3.txt) | 64 | 129 | 234 |  42.12 |   0.81|
+| [mum3.inexact.unroll4](mum3.inexact.unroll4.txt) | 64 | 130 | 246 |  41.13 |   1.98|
+| [perl-jenkins-hard](perl-jenkins-hard.txt) | 32 | 134 | 231 | 121.01 |   0.20|
+| [MurmurHash2a](MurmurHash2a.txt) | 32 | 147 | 246 |  49.79 |   1.00|
+| [tabulation-32](tabulation-32.txt) | 32 | 155 | 246 |  34.07 |   2.20|
+| [Crap8](Crap8.txt) | 32 | 158 | 246 |  40.06 |   1.00|
+| [perl-jenkins](perl-jenkins.txt) | 32 | 160 | 231 | 101.00 |   0.20|
+| [PMP-Multilinear-32](PMP-Multilinear-32.txt) | 32 | 167 | 234 |  46.94 |   0.85|
+| [MurmurHash2-32](MurmurHash2-32.txt) | 32 | 171 | 246 |  45.03 |   1.00|
+| [MicroOAAT](MicroOAAT.txt) | 32 | 191 | 231 |  82.41 |   0.24|
+| [CLhash](CLhash.txt) | 64 | 194 | 246 |  50.93 |   7.33|
+| [poly-mersenne.deg1](poly-mersenne.deg1.txt) | 32 | 194 | 234 |  59.34 |   0.50|
+| [MurmurHash2-64.int32](MurmurHash2-64.int32.txt) | 64 | 203 | 246 |  50.66 |   1.33|
+| [jodyhash-32](jodyhash-32.txt) | 32 | 216 | 234 |  46.09 |   0.57|
+| [SuperFastHash](SuperFastHash.txt) | 32 | 217 | 234 |  51.14 |   0.78|
+| [Pearson-256](Pearson-256.txt) | 256 | 217 | 231 | 132.38 |   0.14|
+| [Pearson-128](Pearson-128.txt) | 128 | 218 | 231 | 127.02 |   0.14|
+| [Pearson-64](Pearson-64.txt) | 64 | 218 | 231 | 131.08 |   0.14|
+| [pair-multiply-shift-32](pair-multiply-shift-32.txt) | 32 | 221 | 246 |  29.06 |   2.21|
+| [FNV-1a-32](FNV-1a-32.txt) | 32 | 224 | 231 |  79.01 |   0.25|
+| [pair-multiply-shift](pair-multiply-shift.txt) | 64 | 225 | 246 |  31.72 |   1.87|
+| [multiply-shift-32](multiply-shift-32.txt) | 32 | 226 | 246 |  24.76 |   1.51|
+| [multiply-shift](multiply-shift.txt) | 64 | 226 | 246 |  30.72 |   1.75|
+| [perl-djb2](perl-djb2.txt) | 32 | 226 | 231 |  61.02 |   0.33|
+| [perl-sdbm](perl-sdbm.txt) | 32 | 226 | 231 |  76.02 |   0.25|
+| [FNV-1a-64](FNV-1a-64.txt) | 64 | 226 | 231 |  79.00 |   0.25|
+| [x17](x17.txt) | 32 | 226 | 231 |  79.07 |   0.25|
+| [FNV-YoshimitsuTRIAD](FNV-YoshimitsuTRIAD.txt) | 32 | 227 | 246 |  32.18 |   5.26|
+| [CRC-32C](CRC-32C.txt) | 32 | 231 | 246 |  36.78 |   7.63|
+| [Fletcher-32](Fletcher-32.txt) | 32 | 235 | 246 |  39.05 |   1.40|
+| [Fletcher-64](Fletcher-64.txt) | 64 | 238 | 246 |  39.27 |   2.84|
 
+
+Hashes that pass Sanity tests, but fail others, sorted by average short input speed and then failing tests.
+
+| Hash name | output width | tests failed | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
+|:----------|-------------:|-------------:|-----------:|-------------------------:|------------------------:|
+| [multiply-shift-32](multiply-shift-32.txt) | 32 | 226 | 246 |  24.76 |   1.51|
+| [pair-multiply-shift-32](pair-multiply-shift-32.txt) | 32 | 221 | 246 |  29.06 |   2.21|
+| [multiply-shift](multiply-shift.txt) | 64 | 226 | 246 |  30.72 |   1.75|
+| [pair-multiply-shift](pair-multiply-shift.txt) | 64 | 225 | 246 |  31.72 |   1.87|
+| [FNV-YoshimitsuTRIAD](FNV-YoshimitsuTRIAD.txt) | 32 | 227 | 246 |  32.18 |   5.26|
+| [mum3.exact.unroll2](mum3.exact.unroll2.txt) | 64 | 33 | 246 |  33.21 |   4.97|
+| [mum3.exact.unroll3](mum3.exact.unroll3.txt) | 64 | 36 | 246 |  33.43 |   6.11|
+| [mum3.exact.unroll4](mum3.exact.unroll4.txt) | 64 | 36 | 246 |  33.51 |   5.84|
+| [tabulation-32](tabulation-32.txt) | 32 | 155 | 246 |  34.07 |   2.20|
+| [wyhash](wyhash.txt) | 64 | 11 | 246 |  35.31 |   6.97|
+| [mum3.exact.unroll1](mum3.exact.unroll1.txt) | 64 | 25 | 246 |  35.57 |   2.62|
+| [mum2.exact.unroll4](mum2.exact.unroll4.txt) | 64 | 77 | 246 |  36.07 |   3.93|
+| [XXH3-64](XXH3-64.txt) | 64 | 28 | 246 |  36.10 |  12.76|
+| [XXH3-64.regen](XXH3-64.regen.txt) | 64 | 15 | 246 |  36.23 |  12.76|
+| [mum2.exact.unroll3](mum2.exact.unroll3.txt) | 64 | 70 | 246 |  36.74 |   4.34|
+| [mum2.exact.unroll2](mum2.exact.unroll2.txt) | 64 | 62 | 246 |  36.75 |   4.26|
+| [CRC-32C](CRC-32C.txt) | 32 | 231 | 246 |  36.78 |   7.63|
+| [t1ha1](t1ha1.txt) | 64 | 64 | 246 |  36.96 |   4.57|
+| [wyhash-32](wyhash-32.txt) | 32 | 2 | 246 |  37.00 |   1.33|
+| [wyhash.strict](wyhash.strict.txt) | 64 | 11 | 246 |  37.12 |   5.77|
+| [mum2.exact.unroll1](mum2.exact.unroll1.txt) | 64 | 45 | 246 |  38.60 |   2.59|
+| [Fletcher-32](Fletcher-32.txt) | 32 | 235 | 246 |  39.05 |   1.40|
+| [Fletcher-64](Fletcher-64.txt) | 64 | 238 | 246 |  39.27 |   2.84|
+| [mum3.inexact.unroll2](mum3.inexact.unroll2.txt) | 64 | 115 | 246 |  39.83 |   1.81|
+| [mum3.inexact.unroll3](mum3.inexact.unroll3.txt) | 64 | 125 | 246 |  40.01 |   2.02|
+| [Crap8](Crap8.txt) | 32 | 158 | 246 |  40.06 |   1.00|
+| [mum1.exact.unroll4](mum1.exact.unroll4.txt) | 64 | 18 | 246 |  40.22 |   3.93|
+| [AquaHash](AquaHash.txt) | 128 | 55 | 246 |  40.29 |  15.95|
+| [mum1.exact.unroll3](mum1.exact.unroll3.txt) | 64 | 18 | 246 |  40.54 |   4.34|
+| [mum1.exact.unroll2](mum1.exact.unroll2.txt) | 64 | 18 | 246 |  40.58 |   4.25|
+| [mum3.inexact.unroll4](mum3.inexact.unroll4.txt) | 64 | 130 | 246 |  41.13 |   1.98|
+| [lookup3](lookup3.txt) | 64 | 129 | 234 |  42.12 |   0.81|
+| [lookup3.32](lookup3.32.txt) | 32 | 90 | 234 |  42.19 |   0.81|
+| [mum1.exact.unroll1](mum1.exact.unroll1.txt) | 64 | 18 | 246 |  42.57 |   2.58|
+| [tabulation-64](tabulation-64.txt) | 64 | 34 | 246 |  43.29 |   3.08|
+| [mir.exact](mir.exact.txt) | 64 | 18 | 246 |  43.89 |   2.13|
+| [mum2.inexact.unroll2](mum2.inexact.unroll2.txt) | 64 | 61 | 246 |  44.34 |   1.26|
+| [mum2.inexact.unroll3](mum2.inexact.unroll3.txt) | 64 | 70 | 246 |  44.51 |   1.31|
+| [mum3.inexact.unroll1](mum3.inexact.unroll1.txt) | 64 | 97 | 246 |  44.65 |   1.39|
+| [mum2.inexact.unroll4](mum2.inexact.unroll4.txt) | 64 | 77 | 246 |  44.74 |   1.86|
+| [MurmurHash2-32](MurmurHash2-32.txt) | 32 | 171 | 246 |  45.03 |   1.00|
+| [NMHASHX](NMHASHX.txt) | 32 | 98 | 246 |  45.72 |   7.69|
+| [fasthash-64](fasthash-64.txt) | 64 | 99 | 246 |  45.75 |   2.00|
+| [MurmurHash2-64](MurmurHash2-64.txt) | 64 | 100 | 246 |  46.07 |   2.00|
+| [jodyhash-32](jodyhash-32.txt) | 32 | 216 | 234 |  46.09 |   0.57|
+| [UMASH-64.reseed](UMASH-64.reseed.txt) | 64 | 36 | 246 |  46.93 |   6.08|
+| [PMP-Multilinear-32](PMP-Multilinear-32.txt) | 32 | 167 | 234 |  46.94 |   0.85|
+| [t1ha0.aesA](t1ha0.aesA.txt) | 64 | 5 | 246 |  47.09 |   9.09|
+| [t1ha2-64](t1ha2-64.txt) | 64 | 3 | 246 |  47.13 |   4.62|
+| [t1ha0.aesB](t1ha0.aesB.txt) | 64 | 5 | 246 |  47.25 |  21.35|
+| [fasthash-32](fasthash-32.txt) | 32 | 60 | 246 |  47.47 |   2.00|
+| [TinySipHash](TinySipHash.txt) | 64 | 13 | 246 |  47.75 |   1.50|
+| [UMASH-64](UMASH-64.txt) | 64 | 126 | 246 |  48.27 |   6.08|
+| [MetroHash-64](MetroHash-64.txt) | 64 | 29 | 246 |  48.41 |   5.02|
+| [MetroHash-64.var2](MetroHash-64.var2.txt) | 64 | 29 | 246 |  48.50 |   5.01|
+| [MetroHash-64.var1](MetroHash-64.var1.txt) | 64 | 33 | 246 |  48.54 |   4.98|
+| [mum2.inexact.unroll1](mum2.inexact.unroll1.txt) | 64 | 44 | 246 |  48.77 |   1.14|
+| [FarmHash-32.SA](FarmHash-32.SA.txt) | 32 | 50 | 246 |  48.80 |   4.99|
+| [FarmHash-32.MK](FarmHash-32.MK.txt) | 32 | 42 | 246 |  48.82 |   1.54|
+| [FarmHash-32.SU](FarmHash-32.SU.txt) | 32 | 51 | 246 |  48.84 |   5.99|
+| [FarmHash-32.CC](FarmHash-32.CC.txt) | 32 | 51 | 246 |  49.00 |   1.91|
+| [MurmurHash2a](MurmurHash2a.txt) | 32 | 147 | 246 |  49.79 |   1.00|
+| [CityHash-32](CityHash-32.txt) | 32 | 90 | 246 |  49.98 |   1.90|
+| [XXH-32](XXH-32.txt) | 32 | 84 | 246 |  50.55 |   2.00|
+| [MurmurHash2-64.int32](MurmurHash2-64.int32.txt) | 64 | 203 | 246 |  50.66 |   1.33|
+| [UMASH-128](UMASH-128.txt) | 128 | 127 | 246 |  50.72 |   3.87|
+| [UMASH-128.reseed](UMASH-128.reseed.txt) | 128 | 37 | 246 |  50.78 |   3.87|
+| [MurmurHash3-32](MurmurHash3-32.txt) | 32 | 83 | 246 |  50.88 |   1.00|
+| [CLhash](CLhash.txt) | 64 | 194 | 246 |  50.93 |   7.33|
+| [SuperFastHash](SuperFastHash.txt) | 32 | 217 | 234 |  51.14 |   0.78|
+| [t1ha0](t1ha0.txt) | 64 | 18 | 246 |  51.38 |   2.42|
+| [MurmurHash1](MurmurHash1.txt) | 32 | 114 | 234 |  52.33 |   0.67|
+| [MetroHashCrc-64.var1](MetroHashCrc-64.var1.txt) | 64 | 46 | 246 |  52.47 |   7.97|
+| [MetroHashCrc-64.var2](MetroHashCrc-64.var2.txt) | 64 | 47 | 246 |  52.48 |   7.87|
+| [mum1.inexact.unroll2](mum1.inexact.unroll2.txt) | 64 | 16 | 246 |  52.58 |   1.20|
+| [MurmurHash3-128.int32](MurmurHash3-128.int32.txt) | 128 | 99 | 246 |  52.88 |   1.63|
+| [mum1.inexact.unroll3](mum1.inexact.unroll3.txt) | 64 | 17 | 246 |  52.95 |   1.31|
+| [mum1.inexact.unroll4](mum1.inexact.unroll4.txt) | 64 | 17 | 246 |  53.05 |   1.86|
+| [MurmurHash3-128](MurmurHash3-128.txt) | 128 | 87 | 246 |  53.65 |   2.36|
+| [mir.inexact](mir.inexact.txt) | 64 | 17 | 246 |  54.62 |   1.33|
+| [mx3.v3](mx3.v3.txt) | 64 | 36 | 246 |  55.41 |   3.76|
+| [mx3.v1](mx3.v1.txt) | 64 | 45 | 246 |  55.51 |   3.21|
+| [PMP-Multilinear-64](PMP-Multilinear-64.txt) | 64 | 82 | 246 |  55.94 |   4.27|
+| [mum1.inexact.unroll1](mum1.inexact.unroll1.txt) | 64 | 17 | 246 |  56.40 |   1.14|
+| [prvhash-64](prvhash-64.txt) | 64 | 29 | 234 |  56.56 |   0.92|
+| [FarmHash-64.NA](FarmHash-64.NA.txt) | 64 | 48 | 246 |  57.60 |   4.68|
+| [mx3.v2](mx3.v2.txt) | 64 | 36 | 246 |  57.61 |   3.21|
+| [FarmHash-64.UO](FarmHash-64.UO.txt) | 64 | 39 | 246 |  57.65 |   5.11|
+| [CityHash-64](CityHash-64.txt) | 64 | 47 | 246 |  57.71 |   4.81|
+| [FarmHash-32.NT](FarmHash-32.NT.txt) | 32 | 7 | 246 |  57.82 |   7.78|
+| [FarmHash-64.TE](FarmHash-64.TE.txt) | 64 | 39 | 246 |  57.93 |   7.77|
+| [XXH-64](XXH-64.txt) | 64 | 9 | 246 |  58.73 |   3.99|
+| [NMHASH](NMHASH.txt) | 32 | 75 | 246 |  58.79 |   7.69|
+| [MetroHash-128](MetroHash-128.txt) | 128 | 17 | 246 |  59.09 |   5.09|
+| [MetroHash-128.var1](MetroHash-128.var1.txt) | 128 | 20 | 246 |  59.10 |   5.08|
+| [MetroHash-128.var2](MetroHash-128.var2.txt) | 128 | 22 | 246 |  59.10 |   5.09|
+| [poly-mersenne.deg1](poly-mersenne.deg1.txt) | 32 | 194 | 234 |  59.34 |   0.50|
+| [khashv-64](khashv-64.txt) | 64 | 5 | 246 |  59.44 |   2.97|
+| [perl-djb2](perl-djb2.txt) | 32 | 226 | 231 |  61.02 |   0.33|
+| [seahash](seahash.txt) | 64 | 45 | 246 |  61.14 |   2.66|
+| [XXH3-128](XXH3-128.txt) | 128 | 36 | 246 |  64.28 |  12.73|
+| [XXH3-128.regen](XXH3-128.regen.txt) | 128 | 16 | 246 |  64.31 |  12.68|
+| [MetroHashCrc-128.var2](MetroHashCrc-128.var2.txt) | 128 | 49 | 246 |  64.58 |   7.97|
+| [MetroHashCrc-128.var1](MetroHashCrc-128.var1.txt) | 128 | 49 | 246 |  64.59 |   7.97|
+| [SpookyHash1-64](SpookyHash1-64.txt) | 64 | 5 | 246 |  64.85 |   4.40|
+| [SpookyHash2-64](SpookyHash2-64.txt) | 64 | 3 | 246 |  66.29 |   4.40|
+| [CLhash.bitmix](CLhash.bitmix.txt) | 64 | 22 | 246 |  66.69 |   7.34|
+| [poly-mersenne.deg2](poly-mersenne.deg2.txt) | 32 | 80 | 234 |  67.65 |   0.50|
+| [t1ha2-128](t1ha2-128.txt) | 128 | 1 | 246 |  67.84 |   4.89|
+| [SpookyHash1-128](SpookyHash1-128.txt) | 128 | 14 | 246 |  69.29 |   4.40|
+| [FARSH-32.tweaked](FARSH-32.tweaked.txt) | 32 | 19 | 246 |  69.96 |  16.02|
+| [SpookyHash2-128](SpookyHash2-128.txt) | 128 | 13 | 246 |  70.56 |   4.40|
+| [FarmHash-128.CC.seed1](FarmHash-128.CC.seed1.txt) | 128 | 2 | 246 |  74.26 |   4.84|
+| [FarmHash-128.CC.seed2](FarmHash-128.CC.seed2.txt) | 128 | 10 | 246 |  74.27 |   4.82|
+| [CityHash-128.seed1](CityHash-128.seed1.txt) | 128 | 2 | 246 |  74.43 |   4.84|
+| [CityHash-128.seed3](CityHash-128.seed3.txt) | 128 | 2 | 246 |  74.48 |   4.85|
+| [FarmHash-128.CM.seed2](FarmHash-128.CM.seed2.txt) | 128 | 8 | 246 |  74.65 |   2.61|
+| [CityHash-128.seed2](CityHash-128.seed2.txt) | 128 | 10 | 246 |  74.65 |   4.84|
+| [CityMurmur.seed2](CityMurmur.seed2.txt) | 128 | 8 | 246 |  74.68 |   2.61|
+| [CityHashCrc-128.seed1](CityHashCrc-128.seed1.txt) | 128 | 7 | 246 |  74.75 |   5.30|
+| [CityHashCrc-128.seed3](CityHashCrc-128.seed3.txt) | 128 | 7 | 246 |  74.78 |   5.31|
+| [CityHashCrc-128.seed2](CityHashCrc-128.seed2.txt) | 128 | 14 | 246 |  74.79 |   5.31|
+| [FarmHash-128.CC.seed3](FarmHash-128.CC.seed3.txt) | 128 | 2 | 246 |  75.91 |   4.84|
+| [perl-sdbm](perl-sdbm.txt) | 32 | 226 | 231 |  76.02 |   0.25|
+| [poly-mersenne.deg3](poly-mersenne.deg3.txt) | 32 | 64 | 234 |  76.62 |   0.50|
+| [pengyhash](pengyhash.txt) | 64 | 5 | 246 |  76.64 |   4.62|
+| [FNV-1a-64](FNV-1a-64.txt) | 64 | 226 | 231 |  79.00 |   0.25|
+| [FNV-1a-32](FNV-1a-32.txt) | 32 | 224 | 231 |  79.01 |   0.25|
+| [x17](x17.txt) | 32 | 226 | 231 |  79.07 |   0.25|
+| [MicroOAAT](MicroOAAT.txt) | 32 | 191 | 231 |  82.41 |   0.24|
+| [prvhash-128](prvhash-128.txt) | 128 | 23 | 234 |  82.48 |   0.88|
+| [t1ha2-64.incr](t1ha2-64.incr.txt) | 64 | 18 | 246 |  85.48 |   4.86|
+| [poly-mersenne.deg4](poly-mersenne.deg4.txt) | 32 | 64 | 234 |  85.95 |   0.50|
+| [falkhash1](falkhash1.txt) | 128 | 10 | 246 |  89.89 |  19.82|
+| [HalftimeHash-64](HalftimeHash-64.txt) | 64 | 36 | 246 |  89.95 |   2.02|
+| [falkhash2](falkhash2.txt) | 128 | 6 | 246 |  91.90 |  18.40|
+| [VHASH.32](VHASH.32.txt) | 32 | 54 | 246 |  97.42 |   5.12|
+| [VHASH](VHASH.txt) | 64 | 59 | 246 |  97.42 |   5.12|
+| [perl-jenkins](perl-jenkins.txt) | 32 | 160 | 231 | 101.00 |   0.20|
+| [HalftimeHash-128](HalftimeHash-128.txt) | 64 | 52 | 246 | 101.23 |   6.79|
+| [HalftimeHash-256](HalftimeHash-256.txt) | 64 | 50 | 246 | 104.19 |  11.37|
+| [t1ha2-128.incr](t1ha2-128.incr.txt) | 128 | 23 | 246 | 110.10 |   4.86|
+| [perl-jenkins-hard](perl-jenkins-hard.txt) | 32 | 134 | 231 | 121.01 |   0.20|
+| [HalftimeHash-512](HalftimeHash-512.txt) | 64 | 60 | 246 | 121.74 |   9.46|
+| [FARSH-64.tweaked](FARSH-64.tweaked.txt) | 64 | 20 | 246 | 122.28 |   7.87|
+| [Pearson-128](Pearson-128.txt) | 128 | 218 | 231 | 127.02 |   0.14|
+| [Pearson-64](Pearson-64.txt) | 64 | 218 | 231 | 131.08 |   0.14|
+| [Pearson-256](Pearson-256.txt) | 256 | 217 | 231 | 132.38 |   0.14|
+| [Discohash-128.old](Discohash-128.old.txt) | 128 | 98 | 234 | 215.60 |   1.34|
+| [Discohash-128](Discohash-128.txt) | 128 | 100 | 234 | 231.75 |   1.34|
+| [Discohash](Discohash.txt) | 64 | 21 | 234 | 233.56 |   1.34|
+| [FARSH-128.tweaked](FARSH-128.tweaked.txt) | 128 | 24 | 234 | 241.10 |   3.94|
+| [FARSH-256.tweaked](FARSH-256.tweaked.txt) | 256 | 21 | 231 | 482.11 |   1.89|
+| [floppsyhash](floppsyhash.txt) | 64 | 16 | 231 | 739.99 |   0.05|
+| [floppsyhash.old](floppsyhash.old.txt) | 64 | 93 | 231 | 744.88 |   0.04|
+| [beamsplitter](beamsplitter.txt) | 64 | 4 | 231 | 924.46 |   0.18|
 
 Unusable hashes
 ---------------
@@ -238,52 +412,49 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 
 | Hash name | output width | tests failed | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
 |:----------|-------------:|-------------:|-----------:|-------------------------:|------------------------:|
-| [tabulation-64](tabulation-64.txt) | 64 | 1 | 204 |  43.77 |   3.00|
-| [aesrng-32](aesrng-32.txt) | 32 | 2 | 243 |  \*\* 17.49 | 2509.84|
-| [aesrng-64](aesrng-64.txt) | 64 | 2 | 204 |  \*\* 19.48 | 2507.47|
-| [aesrng-128](aesrng-128.txt) | 128 | 2 | 205 |  \*\* 22.88 | 2168.29|
-| [aesrng-160](aesrng-160.txt) | 160 | 2 | 205 |  \*\* 27.94 | 2102.37|
-| [aesrng-224](aesrng-224.txt) | 224 | 2 | 205 |  35.78 | 1993.52|
-| [aesrng-256](aesrng-256.txt) | 256 | 2 | 205 |  35.78 | 1996.32|
-| [poly-mersenne.deg3](poly-mersenne.deg3.txt) | 32 | 2 | 243 |  78.62 |   0.50|
-| [poly-mersenne.deg4](poly-mersenne.deg4.txt) | 32 | 2 | 243 |  87.79 |   0.50|
-| [hasshe2](hasshe2.txt) | 256 | 15 | 205 | 111.30 |   0.76|
-| [FARSH-32](FARSH-32.txt) | 32 | 17 | 243 |  68.65 |  15.29|
-| [FARSH-64](FARSH-64.txt) | 64 | 17 | 204 | 117.03 |   7.78|
-| [FARSH-256](FARSH-256.txt) | 256 | 17 | 205 | \*\* 456.72 |   1.97|
-| [aesnihash](aesnihash.txt) | 64 | 18 | 204 |  68.18 |   1.45|
-| [FARSH-128](FARSH-128.txt) | 128 | 18 | 205 | 236.21 |   3.87|
-| [poly-mersenne.deg2](poly-mersenne.deg2.txt) | 32 | 19 | 243 |  69.52 |   0.50|
-| [CrapWow-64](CrapWow-64.txt) | 64 | 53 | 204 |  36.29 |   4.59|
-| [CrapWow](CrapWow.txt) | 32 | 58 | 243 |  31.95 |   2.31|
-| [khash-64](khash-64.txt) | 64 | 64 | 204 |  48.04 |   1.55|
-| [MurmurOAAT](MurmurOAAT.txt) | 32 | 75 | 243 | 111.01 |   0.17|
-| [tabulation-32](tabulation-32.txt) | 32 | 109 | 243 |  34.59 |   2.20|
-| [perl-jenkins-old](perl-jenkins-old.txt) | 32 | 112 | 243 | 101.02 |   0.20|
-| [FNV-PippipYurii](FNV-PippipYurii.txt) | 32 | 153 | 243 |  37.49 |   2.00|
-| [khash-32](khash-32.txt) | 32 | 153 | 243 |  55.53 |   1.39|
-| [jodyhash-64](jodyhash-64.txt) | 64 | 192 | 204 |  39.22 |   1.14|
-| [FNV-1a-64.wordwise](FNV-1a-64.wordwise.txt) | 64 | 196 | 204 |  40.83 |   2.00|
-| [fletcher2.64](fletcher2.64.txt) | 64 | 198 | 204 |  27.25 |   4.88|
-| [fletcher4](fletcher4.txt) | 256 | 199 | 205 |  33.99 |   1.91|
-| [fibonacci-64](fibonacci-64.txt) | 64 | 200 | 204 |  28.56 |   9.35|
-| [fletcher2](fletcher2.txt) | 128 | 200 | 205 |  30.27 |   4.88|
-| [o1hash](o1hash.txt) | 64 | 201 | 204 |  20.83 | 3744.01|
-| [fletcher4.64](fletcher4.64.txt) | 64 | 201 | 204 |  27.46 |   1.91|
-| [donothing-64](donothing-64.txt) | 64 | 203 | 204 |   5.00 | 3744.01|
-| [donothingOAAT-64](donothingOAAT-64.txt) | 64 | 203 | 204 |  40.34 |   0.87|
-| [donothing-128](donothing-128.txt) | 128 | 204 | 205 |   5.00 | 3744.01|
-| [donothingOAAT-128](donothingOAAT-128.txt) | 128 | 204 | 205 |  40.12 |   0.88|
-| [FNV-Totenschiff](FNV-Totenschiff.txt) | 32 | 207 | 243 |  35.97 |   2.00|
-| [poly-mersenne.deg1](poly-mersenne.deg1.txt) | 32 | 217 | 243 |  61.02 |   0.49|
-| [FNV-1a-32.wordwise](FNV-1a-32.wordwise.txt) | 32 | 233 | 243 |  35.68 |   1.00|
-| [badhash](badhash.txt) | 32 | 233 | 243 |  \*\* 81.04 |   0.23|
-| [fibonacci-32](fibonacci-32.txt) | 32 | 239 | 243 |  23.69 |  15.17|
-| [sum32hash](sum32hash.txt) | 32 | 240 | 243 |  20.80 |  25.11|
-| [sum8hash](sum8hash.txt) | 32 | 240 | 243 |  30.04 |   3.35|
-| [donothing-32](donothing-32.txt) | 32 | 242 | 243 |   5.00 | 3744.01|
-| [donothingOAAT-32](donothingOAAT-32.txt) | 32 | 242 | 243 |  39.98 |   0.88|
+| [aesrng-32](aesrng-32.txt) | 32 | 2 | 246 |  73.00 | 2545.07|
+| [aesrng-64](aesrng-64.txt) | 64 | 2 | 246 |  73.00 | 2544.91|
+| [aesrng-128](aesrng-128.txt) | 128 | 2 | 246 |  86.52 | 2138.61|
+| [aesrng-160](aesrng-160.txt) | 160 | 2 | 246 | 108.94 | 1861.73|
+| [aesrng-224](aesrng-224.txt) | 224 | 2 | 246 | 155.00 | 1369.81|
+| [aesrng-256](aesrng-256.txt) | 256 | 2 | 246 | 155.00 | 1368.08|
+| [FARSH-32](FARSH-32.txt) | 32 | 28 | 246 |  70.48 |  14.11|
+| [hasshe2](hasshe2.txt) | 256 | 29 | 234 | 102.94 |   0.92|
+| [FARSH-256](FARSH-256.txt) | 256 | 29 | 231 | 486.19 |   1.75|
+| [FARSH-64](FARSH-64.txt) | 64 | 30 | 246 | 122.73 |   6.98|
+| [FARSH-128](FARSH-128.txt) | 128 | 34 | 234 | 242.60 |   3.50|
+| [XXH3-64.reinit](XXH3-64.reinit.txt) | 64 | 52 | 246 |  36.22 |  12.69|
+| [XXH3-128.reinit](XXH3-128.reinit.txt) | 128 | 53 | 246 |  64.30 |  12.74|
+| [aesnihash](aesnihash.txt) | 64 | 64 | 246 |  64.05 |   1.78|
+| [CrapWow-64](CrapWow-64.txt) | 64 | 137 | 246 |  36.80 |   4.84|
+| [khash-64](khash-64.txt) | 64 | 141 | 246 |  47.92 |   1.56|
+| [MurmurOAAT](MurmurOAAT.txt) | 32 | 162 | 231 | 111.00 |   0.17|
+| [CrapWow](CrapWow.txt) | 32 | 164 | 246 |  31.21 |   2.58|
+| [perl-jenkins-old](perl-jenkins-old.txt) | 32 | 170 | 231 | 101.00 |   0.20|
+| [khash-32](khash-32.txt) | 32 | 179 | 246 |  59.04 |   1.39|
+| [FNV-PippipYurii](FNV-PippipYurii.txt) | 32 | 193 | 246 |  37.60 |   2.00|
+| [FNV-Totenschiff](FNV-Totenschiff.txt) | 32 | 202 | 246 |  36.06 |   2.00|
+| [badhash](badhash.txt) | 32 | 222 | 231 |  80.84 |   0.24|
+| [jodyhash-64](jodyhash-64.txt) | 64 | 227 | 246 |  39.00 |   1.14|
+| [FNV-1a-64.wordwise](FNV-1a-64.wordwise.txt) | 64 | 236 | 246 |  40.86 |   2.00|
+| [FNV-1a-32.wordwise](FNV-1a-32.wordwise.txt) | 32 | 238 | 246 |  35.68 |   1.00|
+| [fletcher2.64](fletcher2.64.txt) | 64 | 240 | 246 |  27.26 |   4.93|
+| [fletcher2](fletcher2.txt) | 128 | 240 | 246 |  30.10 |   4.92|
+| [fibonacci-64](fibonacci-64.txt) | 64 | 242 | 246 |  28.55 |   9.51|
+| [sum32hash](sum32hash.txt) | 32 | 243 | 246 |  20.56 |  26.64|
+| [fibonacci-32](fibonacci-32.txt) | 32 | 243 | 246 |  30.96 |  15.94|
+| [fletcher4](fletcher4.txt) | 256 | 243 | 246 |  34.16 |   1.91|
+| [sum8hash](sum8hash.txt) | 32 | 243 | 246 |  35.65 |   3.35|
+| [o1hash](o1hash.txt) | 64 | 244 | 246 |  20.95 | 7470.65|
+| [fletcher4.64](fletcher4.64.txt) | 64 | 244 | 246 |  27.14 |   1.91|
+| [donothing-128](donothing-128.txt) | 128 | 245 | 246 |   5.00 | 7486.64|
+| [donothing-256](donothing-256.txt) | 256 | 245 | 246 |   5.00 | 7486.52|
+| [donothing-32](donothing-32.txt) | 32 | 245 | 246 |   5.00 | 7486.53|
+| [donothing-64](donothing-64.txt) | 64 | 245 | 246 |   5.00 | 7487.48|
+| [donothingOAAT-64](donothingOAAT-64.txt) | 64 | 245 | 246 |  44.81 |   3.39|
+| [donothingOAAT-32](donothingOAAT-32.txt) | 32 | 245 | 246 |  45.23 |   3.39|
+| [donothingOAAT-128](donothingOAAT-128.txt) | 128 | 245 | 246 |  45.24 |   3.39|
 
-All results were generated using: SMHasher3 beta1-9080935e or SMHasher3 beta1-28-eb8e7ac0 or SMHasher3 beta1-34-8eb3bacb
+All results were generated using: SMHasher3 beta2-1c3798dc
 
 [\*\*]: this result had >= 1% std. deviation in >=25% of tests, and so may not be reliable

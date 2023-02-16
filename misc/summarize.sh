@@ -82,7 +82,7 @@ EOF
 
 awk -F'\t' '$3=="pass" && $4!="pass" {print}' ${TMPDIR}/joined.t |
     cut -f 1,2,5-                                                |
-    sort -s -g -k 3                                              |
+    sort -s -g -k 3 -k 5                                         |
     tr '\t' '|'                                                  |
     sed 's/|/ | /g'                                              |
     sed 's/^/| /'                                                |
@@ -90,6 +90,22 @@ awk -F'\t' '$3=="pass" && $4!="pass" {print}' ${TMPDIR}/joined.t |
 
 cat <<EOF
 
+
+Hashes that pass Sanity tests, but fail others, sorted by average short input speed and then failing tests.
+
+| Hash name | output width | tests failed | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
+|:----------|-------------:|-------------:|-----------:|-------------------------:|------------------------:|
+EOF
+
+awk -F'\t' '$3=="pass" && $4!="pass" {print}' ${TMPDIR}/joined.t |
+    cut -f 1,2,5-                                                |
+    sort -s -g -k 5 -k 3                                         |
+    tr '\t' '|'                                                  |
+    sed 's/|/ | /g'                                              |
+    sed 's/^/| /'                                                |
+    sed 's/$/|/'
+
+cat <<EOF
 
 Unusable hashes
 ---------------
