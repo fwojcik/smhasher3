@@ -63,7 +63,7 @@ constexpr int BULK_RUNS   = 16;
 constexpr int BULK_TRIALS = 9600;
 // constexpr int BULK_SAMPLES = 2;
 
-constexpr int TINY_TRIALS  = 200;   // Timings per hash for small (<128b) keys
+constexpr int TINY_TRIALS  = 600;   // Timings per hash for small (<128b) keys
 constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
 
 // std::max() isn't constexpr in C++11
