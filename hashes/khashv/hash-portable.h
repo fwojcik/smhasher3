@@ -103,16 +103,20 @@ static KHASH_FINLINE void khashv_rotr_5_bytes_scalar( khashvBlock * in ) {
     khashv_bswap_be_block_scalar(in);
 }
 
-static KHASH_FINLINE void khashv_rotr_9_bytes_scalar( khashvBlock * in ) {
+static KHASH_FINLINE void khashv_shuffle_bytes_scalar(khashvBlock* in) {
+    static const uint8_t shuffle[16] = {
+        0x7, 0xe, 0x9, 0x0, 0xc, 0xf, 0xd, 0x8,
+        0x5, 0xb, 0x6, 0x3, 0x4, 0x2, 0xa, 0x1
+    };
     khashv_bswap_be_block_scalar(in);
     khashvBlock tmp1;
     khashvBlock tmp2;
     // Avoid aliasing issues by using memcpy between these union values.
-    memcpy(tmp1.bytes, in->words , 16);
-    for (int i = 0; i < 16; i++) {
-        tmp2.bytes[i] = tmp1.bytes[(i + 9) & 0xf];
+    memcpy(tmp1.bytes, in->words, 16);
+    for(int i = 0; i < 16; i++) {
+        tmp2.bytes[i] = tmp1.bytes[shuffle[i]];
     }
-    memcpy(in->words , tmp2.bytes, 16);
+    memcpy(in->words, tmp2.bytes, 16);
     khashv_bswap_be_block_scalar(in);
 }
 
@@ -198,6 +202,10 @@ static KHASH_FINLINE void khashv_mix_words_scalar( khashvBlock * in ) {
     unsigned    rots[4] = { 5, 7, 11, 17 };
     khashvBlock tmp     = { 0 };
 
+    tmp = *in;
+    khashv_shr_3_block_scalar(&tmp);
+    khashv_xor_block_scalar(in, &tmp);
+
     for (int i = 0; i < 4; i++) {
         unsigned rot = rots[i];
         tmp = *in;
@@ -240,10 +248,9 @@ static void khashv_hash_scalar( khashvBlock * hash, const uint8_t * data, size_t
         khashv_rotr_5_bytes_scalar(&tmp_h);
         khashv_add_block_scalar(&tmp_h, &tmp_1);
 
-        tmp_2 = tmp_h;
-        khashv_shr_3_block_scalar(&tmp_2);
-        khashv_rotr_9_bytes_scalar(&tmp_h);
-        khashv_add_block_scalar(&tmp_h, &tmp_2);
+        tmp_1 = tmp_h;
+        khashv_shuffle_bytes_scalar(&tmp_1);
+        khashv_add_block_scalar(&tmp_h, &tmp_1);
 
         data += 16;
     }
@@ -268,10 +275,9 @@ static void khashv_hash_scalar( khashvBlock * hash, const uint8_t * data, size_t
         khashv_rotr_5_bytes_scalar(&tmp_h);
         khashv_add_block_scalar(&tmp_h, &tmp_1);
 
-        tmp_2 = tmp_h;
-        khashv_shr_3_block_scalar(&tmp_2);
-        khashv_rotr_9_bytes_scalar(&tmp_h);
-        khashv_add_block_scalar(&tmp_h, &tmp_2);
+        tmp_1 = tmp_h;
+        khashv_shuffle_bytes_scalar(&tmp_1);
+        khashv_add_block_scalar(&tmp_h, &tmp_1);
     }
     khashv_mix_words_scalar(&tmp_h);
     *hash = tmp_h;

@@ -74,19 +74,18 @@ static KHASH_FINLINE kv4ui khashv_rotr_5_bytes_gcc( kv4ui input ) {
     return input;
 }
 
-static KHASH_FINLINE kv4ui khashv_rotr_9_bytes_gcc( kv4ui input ) {
-    const kv16ui rotrLE = {
-        0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x0,
-        0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
+static KHASH_FINLINE kv4ui khashv_shuffle_bytes_gcc(kv4ui input) {
+    const kv16ui shuffLE = {
+        0x7, 0xe, 0x9, 0x0, 0xc, 0xf, 0xd, 0x8,
+        0x5, 0xb, 0x6, 0x3, 0x4, 0x2, 0xa, 0x1
     };
-    const kv16ui rotrBE = {
-        0xf, 0x8, 0x9, 0xa, 0x3, 0xc, 0xd, 0xe,
-        0x7, 0x0, 0x1, 0x2, 0xb, 0x4, 0x5, 0x6,
+    const kv16ui shuffBE = {
+        0x3, 0xa, 0xd, 0x4, 0xb, 0xe, 0xc, 0xf,
+        0x0, 0x5, 0x8, 0x6, 0x2, 0x9, 0x1, 0x7,
     };
     kv16ui tmp;
-
     memcpy(&tmp, &input, 16);
-    tmp = KHASH_SHUFFLE(tmp, khashv_is_little_endian() ? rotrLE : rotrBE);
+    tmp = KHASH_SHUFFLE(tmp, khashv_is_little_endian() ? shuffLE : shuffBE);
     memcpy(&input, &tmp, 16);
     return input;
 }
@@ -118,7 +117,8 @@ static KHASH_FINLINE kv4ui khashv_replace_gcc( kv4ui input ) {
 
 static KHASH_FINLINE kv4ui khashv_mix_words_gcc( kv4ui val ) {
     const unsigned rots[4] = { 5, 7, 11, 17 };
-
+    kv4ui tmp = val >> 3;
+    val ^= tmp;
     for (int i = 0; i < 4; i++) {
         unsigned rot = rots[i];
         kv4ui tmp = val;
@@ -143,9 +143,8 @@ static KHASH_FINLINE kv4ui khashv_hash_block_gcc( kv4ui hash, kv4ui input ) {
     tmp_2  = khashv_rotr_5_bytes_gcc(tmp_2);
     hash   = tmp_1 + tmp_2;
 
-    tmp_2  = hash >> 3;
-    tmp_1  = khashv_rotr_9_bytes_gcc(hash);
-    hash   = tmp_1 + tmp_2;
+    tmp_1  = khashv_shuffle_bytes_gcc(hash);
+    hash   = hash + tmp_1;
     return hash;
 }
 

@@ -128,8 +128,8 @@ REGISTER_HASH(khashv_32,
         FLAG_IMPL_CANONICAL_BOTH    |
         FLAG_IMPL_LICENSE_MIT       ,
    $.bits = 32,
-   $.verification_LE = 0xB69DF8EB,
-   $.verification_BE = 0xB69DF8EB,
+   $.verification_LE = 0x2FBC65F8,
+   $.verification_BE = 0x2FBC65F8,
    $.seedfn          = khashv32_init_seed,
    $.hashfn_native   = khashv32_test,
    $.hashfn_bswap    = khashv32_test
@@ -146,8 +146,8 @@ REGISTER_HASH(khashv_64,
         FLAG_IMPL_CANONICAL_BOTH    |
         FLAG_IMPL_LICENSE_MIT       ,
     $.bits = 64,
-    $.verification_LE = 0xA6B7E55B,
-    $.verification_BE = 0xA6B7E55B,
+    $.verification_LE = 0x8598BACD,
+    $.verification_BE = 0x8598BACD,
     $.seedfn          = khashv64_init_seed,
     $.hashfn_native   = khashv64_test,
     $.hashfn_bswap    = khashv64_test

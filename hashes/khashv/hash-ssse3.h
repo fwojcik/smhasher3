@@ -39,6 +39,9 @@ static KHASH_FINLINE __m128i khashv_mix_words_vector( __m128i val ) {
     __m128i tmp1;
     __m128i tmp2;
 
+    tmp1 = _mm_srli_epi32(val, 3);
+    val  = _mm_xor_si128(tmp1, val);
+
     tmp1 = _mm_alignr_epi8(val, val, 5);
     tmp1 = _mm_add_epi32(val, tmp1);
 #if defined(HAVE_AVX512_VL)
@@ -210,21 +213,15 @@ static KHASH_FINLINE __m128i khashv_part_load_vector( const uint8_t * data, size
 #endif
              break;
     case 16:
-             tmp  = _mm_loadu_si64(data);
-#if defined(HAVE_SSE_4_1)
-             tmp  = _mm_insert_epi64(tmp, *(uint64_t *)(data + 8), 1);
-#else
-             tmp2 = _mm_loadu_si64(data + 8);
-             tmp  = _mm_unpacklo_epi64(tmp, tmp2);
-#endif
-             break;
+        tmp = _mm_loadu_si128((__m128i*)data);
+        break;
     }
     return tmp;
 }
 
 static const uint8_t khashv_shuff[16] = {
-    0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x00,
-    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x7, 0xe, 0x9, 0x0, 0xc, 0xf, 0xd, 0x8,
+    0x5, 0xb, 0x6, 0x3, 0x4, 0x2, 0xa, 0x1
 };
 
 static KHASH_FINLINE __m128i khashv_hash_vector( __m128i hash, const uint8_t * data, size_t data_len ) {
@@ -261,9 +258,8 @@ static KHASH_FINLINE __m128i khashv_hash_vector( __m128i hash, const uint8_t * d
         tmp_2 = _mm_alignr_epi8(tmp_2, tmp_2, 5);
         hash  = _mm_add_epi32(tmp_2, tmp_1);
 
-        tmp_2 = _mm_srli_epi32(hash, 3);
         tmp_1 = _mm_shuffle_epi8(hash, shuff);
-        hash  = _mm_add_epi32(tmp_2, tmp_1);
+        hash  = _mm_add_epi32(hash, tmp_1);
 
         data += 16;
     }
@@ -284,9 +280,8 @@ static KHASH_FINLINE __m128i khashv_hash_vector( __m128i hash, const uint8_t * d
         tmp_2 = _mm_alignr_epi8(tmp_2, tmp_2, 5);
         hash  = _mm_add_epi32(tmp_2, tmp_1);
 
-        tmp_2 = _mm_srli_epi32(hash, 3);
         tmp_1 = _mm_shuffle_epi8(hash, shuff);
-        hash  = _mm_add_epi32(tmp_2, tmp_1);
+        hash  = _mm_add_epi32(hash, tmp_1);
     }
     hash = khashv_mix_words_vector(hash);
     return hash;
