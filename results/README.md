@@ -11,7 +11,8 @@ Hashes that currently pass all tests, sorted by average short input speed.
 | Hash name | output width | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
 |:----------|-------------:|-----------:|-------------------------:|------------------------:|
 | [komihash](komihash.txt) | 64 | 246 |  38.95 |   6.33|
-| [khashv-32](khashv-32.txt) | 32 | 246 |  61.47 |   2.97|
+| [khashv-64](khashv-64.txt) | 64 | 246 |  62.19 |   3.20|
+| [khashv-32](khashv-32.txt) | 32 | 246 |  63.31 |   3.20|
 | [SpookyHash1-32](SpookyHash1-32.txt) | 32 | 246 |  64.86 |   4.40|
 | [SpookyHash2-32](SpookyHash2-32.txt) | 32 | 246 |  66.29 |   4.40|
 | [MeowHash.64](MeowHash.64.txt) | 64 | 246 |  67.49 |  12.37|
@@ -97,7 +98,6 @@ Hashes that pass Sanity tests, but fail others, sorted by failing tests and then
 | [beamsplitter](beamsplitter.txt) | 64 | 4 | 231 | 924.46 |   0.18|
 | [t1ha0.aesA](t1ha0.aesA.txt) | 64 | 5 | 246 |  47.09 |   9.09|
 | [t1ha0.aesB](t1ha0.aesB.txt) | 64 | 5 | 246 |  47.25 |  21.35|
-| [khashv-64](khashv-64.txt) | 64 | 5 | 246 |  59.44 |   2.97|
 | [SpookyHash1-64](SpookyHash1-64.txt) | 64 | 5 | 246 |  64.85 |   4.40|
 | [pengyhash](pengyhash.txt) | 64 | 5 | 246 |  76.64 |   4.62|
 | [falkhash2](falkhash2.txt) | 128 | 6 | 246 |  91.90 |  18.40|
@@ -345,7 +345,6 @@ Hashes that pass Sanity tests, but fail others, sorted by average short input sp
 | [MetroHash-128.var1](MetroHash-128.var1.txt) | 128 | 20 | 246 |  59.10 |   5.08|
 | [MetroHash-128.var2](MetroHash-128.var2.txt) | 128 | 22 | 246 |  59.10 |   5.09|
 | [poly-mersenne.deg1](poly-mersenne.deg1.txt) | 32 | 194 | 234 |  59.34 |   0.50|
-| [khashv-64](khashv-64.txt) | 64 | 5 | 246 |  59.44 |   2.97|
 | [perl-djb2](perl-djb2.txt) | 32 | 226 | 231 |  61.02 |   0.33|
 | [seahash](seahash.txt) | 64 | 45 | 246 |  61.14 |   2.66|
 | [XXH3-128](XXH3-128.txt) | 128 | 36 | 246 |  64.28 |  12.73|
@@ -455,6 +454,6 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 | [donothingOAAT-32](donothingOAAT-32.txt) | 32 | 245 | 246 |  45.23 |   3.39|
 | [donothingOAAT-128](donothingOAAT-128.txt) | 128 | 245 | 246 |  45.24 |   3.39|
 
-All results were generated using: SMHasher3 beta2-1c3798dc
+All results were generated using: SMHasher3 beta2-1c3798dc or beta2-3-196d29e7
 
 [\*\*]: this result had >= 1% std. deviation in >=25% of tests, and so may not be reliable
