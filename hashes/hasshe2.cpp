@@ -115,9 +115,11 @@ static void combine_and_mix( uint64_t state[4], const uint64_t input[2] ) {
 
 template <bool orig, bool bswap>
 static void hasshe2_portable( const uint8_t * input_buf, size_t n_bytes, uint64_t seed, void * output_state ) {
+    // Put 2 copies of the lower 32 bits of the input length into orig_bytes
+    const uint64_t orig_bytes = (n_bytes & 0xffffffff) | ((uint64_t)n_bytes << 32);
+
     uint64_t state[4];
     uint64_t input[2];
-    uint64_t seed2 = orig ? seed : (seed + (uint64_t)n_bytes);
 
     /*
      * Initialize internal state to something random.  (Alternatively,
@@ -129,7 +131,7 @@ static void hasshe2_portable( const uint8_t * input_buf, size_t n_bytes, uint64_
     state[0]  = coeffs[ 8] + (((uint64_t)coeffs[ 9]) << 32);
     state[1]  = coeffs[10] + (((uint64_t)coeffs[11]) << 32);
     state[0] ^= seed;
-    state[1] ^= seed2;
+    state[1] ^= seed;
     state[2]  = state[0];
     state[3]  = state[1];
 
@@ -162,8 +164,8 @@ static void hasshe2_portable( const uint8_t * input_buf, size_t n_bytes, uint64_
      * replace it with the constant rnd_data, and do one combine and mix
      * phase more.
      */
-    input[0] = state[0];
-    input[1] = state[1];
+    input[0] = state[0] ^ (orig ? 0 : orig_bytes);
+    input[1] = state[1] ^ (orig ? 0 : orig_bytes);
     state[0] = coeffs[ 8] + (((uint64_t)coeffs[ 9]) << 32);
     state[1] = coeffs[10] + (((uint64_t)coeffs[11]) << 32);
     combine_and_mix(state, input);
@@ -215,12 +217,13 @@ static void hasshe2_portable( const uint8_t * input_buf, size_t n_bytes, uint64_
 
 template <bool orig, bool bswap>
 static void hasshe2_sse2( const uint8_t * input_buf, size_t n_bytes, uint64_t seed, void * output_state ) {
-    __m128i coeffs_1, coeffs_2, rnd_data, seed_xmm, input, state_1, state_2;
+    __m128i coeffs_1, coeffs_2, rnd_data, seed_xmm, len_xmm, input, state_1, state_2;
 
     coeffs_1 = _mm_load_si128((__m128i *)coeffs      );
     coeffs_2 = _mm_load_si128((__m128i *)(coeffs + 4));
     rnd_data = _mm_load_si128((__m128i *)(coeffs + 8));
-    seed_xmm = _mm_set_epi64x(orig ? seed : (seed + n_bytes), seed);
+    seed_xmm = _mm_set_epi64x(seed, seed);
+    len_xmm  = _mm_set_epi32(n_bytes, n_bytes, n_bytes, n_bytes);
 
     /*
      * Initialize internal state to something random.  (Alternatively,
@@ -257,7 +260,7 @@ static void hasshe2_sse2( const uint8_t * input_buf, size_t n_bytes, uint64_t se
      * replace it with the constant rnd_data, and do one combine and mix
      * phase more.
      */
-    input   = state_1;
+    input   = orig ? state_1  : _mm_xor_si128(state_1 , len_xmm);
     state_1 = rnd_data;
 
     COMBINE_AND_MIX(coeffs_1, coeffs_2, state_1, state_2, input);
@@ -305,7 +308,7 @@ REGISTER_HASH(hasshe2,
  );
 
 REGISTER_HASH(hasshe2__tweaked,
-   $.desc       = "hasshe2 (SSE2-oriented hash, tweaked to add len into IV)",
+   $.desc       = "hasshe2 (SSE2-oriented hash, tweaked to mix len into hash)",
    $.impl       = HASSHE2_IMPL_STR,
    $.hash_flags =
          FLAG_HASH_NO_SEED,
@@ -314,8 +317,8 @@ REGISTER_HASH(hasshe2__tweaked,
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN  |
          FLAG_IMPL_SLOW,
    $.bits = 256,
-   $.verification_LE = 0xBAF6B1BF,
-   $.verification_BE = 0x35A87D75,
+   $.verification_LE = 0x7FE1B096,
+   $.verification_BE = 0x917658B8,
    $.hashfn_native   = Hasshe2<false, false>,
    $.hashfn_bswap    = Hasshe2<false, true>
  );
