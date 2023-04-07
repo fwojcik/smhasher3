@@ -256,7 +256,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
                 addVCodeOutput(hash2, hashbytes);
 
                 if (unlikely(memcmp(hash1, hash2, hashbytes) == 0)) {
-                    maybeprintf(" flipped bit %d, got identical output:", bit);
+                    maybeprintf(" flipped bit %d/%d, got identical output:", bit, len*8);
                     result = false;
                     goto end_sanity;
                 }
@@ -337,7 +337,9 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
                         *ptr ^= 0xFF;
                         hash(key2, len, seed, hash3);
                         if (memcmp(hash2, hash3, hashbytes) != 0) {
-                            maybeprintf(" changing single non-key byte altered hash: ");
+                            maybeprintf(" changing single non-key byte (%s%d) altered hash: ",
+                                    ptr < key2_start ? "head -" : "tail +",
+                                    ptr < key2_start ? key2_start - ptr : ptr - key2_end + 1);
                             result = false;
                             goto end_sanity;
                         }
