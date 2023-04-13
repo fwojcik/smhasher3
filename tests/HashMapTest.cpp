@@ -74,10 +74,13 @@ typedef phmap::flat_hash_map<std::string, int,
 
 //-----------------------------------------------------------------------------
 
-static double HashMapSpeedTest( HashFn hash, const int hashbits, std::vector<std::string> words,
-        const seed_t seed, const int trials, bool verbose ) {
-    // using phmap::flat_node_hash_map;
+static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string> words,
+        const int trials, bool verbose ) {
     Rand r( 82762 );
+
+    const HashFn hash     = hinfo->hashFn(g_hashEndian);
+    const int    hashbits = hinfo->bits;
+    const seed_t seed     = hinfo->Seed(g_seed ^ r.rand_u64());
 
     std_hashmap hashmap( words.size(), [=]( const std::string & key ) {
             // 256 needed for hasshe2, but only size_t used
@@ -211,12 +214,12 @@ static double HashMapSpeedTest( HashFn hash, const int hashbits, std::vector<std
 
 //-----------------------------------------------------------------------------
 
-static bool HashMapImpl( HashFn hash, const int hashbits, std::vector<std::string> words,
-        const seed_t seed, const int trials, bool verbose ) {
+static bool HashMapImpl( const HashInfo * hinfo, std::vector<std::string> words,
+        const int trials, bool verbose ) {
     double mean = 0.0;
 
     try {
-        mean = HashMapSpeedTest(hash, hashbits, words, seed, trials, verbose);
+        mean = HashMapSpeedTest(hinfo, words, trials, verbose);
     } catch (...) {
         printf(" aborted !!!!\n");
     }
@@ -232,7 +235,6 @@ static bool HashMapImpl( HashFn hash, const int hashbits, std::vector<std::strin
 //-----------------------------------------------------------------------------
 
 bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    const HashFn hash   = hinfo->hashFn(g_hashEndian);
     const int    trials = (hinfo->isVerySlow() && !extra) ? 5 : 50;
     bool         result = true;
 
@@ -249,9 +251,7 @@ bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra )
         return result;
     }
 
-    Rand r( 477537 );
-    const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
-    result &= HashMapImpl(hash, hinfo->bits, words, seed, trials, verbose);
+    result &= HashMapImpl(hinfo, words, trials, verbose);
 
     printf("\n%s\n", result ? "" : g_failstr);
 
