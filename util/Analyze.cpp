@@ -127,7 +127,7 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
     double p_value    = ScalePValue(p1value, trials);
     int    logp_value = GetLog2PValue(p_value);
     double pct        = (ratio <= (5e-7)) ? 0.0 : ratio * 200.0;
-    int    pctdigits  = (pct >= 100.0) ? 1 : (pct >= 10.0) ? 2 : 3;
+    int    pctdigits  = (pct >= 99.995) ? 1 : (pct >= 9.995) ? 2 : 3;
     bool   result     = true;
 
     recordLog2PValue(logp_value);
