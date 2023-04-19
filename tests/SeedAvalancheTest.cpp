@@ -85,7 +85,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
     while ((irep = irepp++) < reps) {
         if (verbose) {
-            progressdots(irep, 0, reps - 1, 10);
+            progressdots(irep, 0, reps - 1, 18);
         }
 
         const uint8_t * bufptr = &inputs[(keybytes + seedbytes) * irep];
@@ -122,7 +122,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
 
     const int arraysize = seedbits * hashbits;
 
-    printf("Testing %4d-byte keys, %6d reps.......", keybytes, reps);
+    printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
 
     std::vector<uint8_t> inputs( reps * (keybytes + seedbytes) );
     r.rand_p(&inputs[0], reps * (keybytes + seedbytes));

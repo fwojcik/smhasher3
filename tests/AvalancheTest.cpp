@@ -84,7 +84,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 
     while ((irep = irepp++) < reps) {
         if (verbose) {
-            progressdots(irep, 0, reps - 1, 10);
+            progressdots(irep, 0, reps - 1, 18);
         }
 
         ExtBlob K( buf, &keys[keybytes * irep], keybytes );
@@ -119,7 +119,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     const int arraysize = keybits * hashbits;
 
-    printf("Testing %3d-byte keys, %6d reps........", keybytes, reps);
+    printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
 
     std::vector<uint8_t> keys( reps * keybytes );
     for (int i = 0; i < reps; i++) {
