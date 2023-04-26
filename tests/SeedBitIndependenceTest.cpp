@@ -133,11 +133,17 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
 
     Rand r( 4557191 + keybytes );
 
+    RandSeq rsK = r.get_seq(SEQ_DIST_1, keybytes);
+
     std::vector<uint8_t> keys( reps * keybytes );
-    std::vector<uint8_t> seeds( reps * seedbytes );
-    r.rand_n(&keys[0], reps * keybytes);
-    r.rand_n(&seeds[0], reps * seedbytes);
+    rsK.write(&keys[0], 0, reps);
     addVCodeInput(&keys[0], reps * keybytes);
+
+    enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, seedbytes) ? SEQ_DIST_2 : SEQ_DIST_3;
+    RandSeq rsS = r.get_seq(seqtype, seedbytes);
+
+    std::vector<uint8_t> seeds( reps * seedbytes );
+    rsS.write(&seeds[0], 0, reps);
     addVCodeInput(&seeds[0], reps * seedbytes);
 
     a_int irep( 0 );

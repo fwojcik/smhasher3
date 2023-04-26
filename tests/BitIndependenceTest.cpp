@@ -181,8 +181,11 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
 
     Rand r( 1798473 + keybytes );
 
+    enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
+    RandSeq rs = r.get_seq(seqtype, keybytes);
+
     std::vector<uint8_t> keys( reps * keybytes );
-    r.rand_n(&keys[0], reps * keybytes);
+    rs.write(&keys[0], 0, reps);
     addVCodeInput(&keys[0], reps * keybytes);
 
     a_int irep( 0 );
