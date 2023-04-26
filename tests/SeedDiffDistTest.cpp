@@ -55,21 +55,19 @@
 
 #include "SeedDiffDistTest.h"
 
-#include <unordered_set>
-
 //-----------------------------------------------------------------------------
 // Simpler differential-distribution test - for all 1-bit differentials,
 // generate random key pairs and run full distribution/collision tests on the
 // hash differentials
 
-template <typename keytype, typename hashtype, bool bigseed, bool ckuniq = (keytype::len < 6)>
-static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
+template <typename hashtype, bool bigseed>
+static bool SeedDiffDistTest( const HashInfo * hinfo, int keybits, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    Rand r( 482813 + keytype::len );
 
-    int       seedbits = bigseed ? 64 : 32;
-    const int keycount = 512 * 1024 * (ckuniq ? 2 : 3);
-    keytype   k;
+    int       seedbytes = bigseed ? 8 : 4;
+    int       seedbits  = seedbytes * 8;
+    int       keybytes  = keybits / 8;
+    const int keycount  = 512 * 1024 * 3;
 
     std::vector<hashtype> worsthashes;
     int worstlogp    = -1;
@@ -77,54 +75,51 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
     int fails        =  0;
 
     std::vector<hashtype> hashes( keycount );
+    std::vector<uint8_t>  keys( keycount * keybytes );
+    std::vector<uint8_t>  seeds( keycount * seedbytes );
     hashtype h1, h2;
 
-    std::unordered_set<uint64_t> seenkeys;
-    uint64_t curkey = 0;
-
-    std::unordered_set<uint64_t> seenseeds;
-    uint64_t curseed = 0;
+    Rand r( 482813 + keybytes );
 
     bool result = true;
 
     if (!drawDiagram) {
-        printf("Testing %3zd-byte keys, %2d-bit seeds, %d reps", keytype::len, seedbits, keycount);
+        printf("Testing %3d-byte keys, %2d-bit seeds, %d reps", keybytes, seedbits, keycount);
     }
 
     for (int seedbit = 0; seedbit < seedbits; seedbit++) {
         if (drawDiagram) {
-            printf("Testing seed bit %d / %d - %3zd-byte keys - %d keys\n",
-                    seedbit, seedbits, keytype::len, keycount);
+            printf("Testing seed bit %d / %d - %3d-byte keys - %d keys\n",
+                    seedbit, seedbits, keybytes, keycount);
         }
 
+        r.substream(seedbit);
+
+        RandSeq rsK = r.get_seq(SEQ_DIST_1, keybytes);
+        rsK.write(&keys[0], 0, keycount);
+        addVCodeInput(&keys[0], keycount * keybytes);
+
+        RandSeq rsS = r.get_seq(SEQ_DIST_2, seedbytes);
+        rsS.write(&seeds[0], 0, keycount);
+
+        const uint8_t * keyptr = &keys[0];
+        const uint8_t * seedptr = &seeds[0];
+        uint64_t curseed = 0;
         for (int i = 0; i < keycount; i++) {
-            r.rand_n(&k, k.len);
+            memcpy(&curseed, seedptr, seedbytes);
 
-            if (ckuniq) {
-                memcpy(&curkey, &k, k.len);
-                if (seenkeys.count(curkey) > 0) { // not unique
-                    i--;
-                    continue;
-                }
-                seenkeys.insert(curkey);
-            }
-
-            r.rand_n(&curseed, bigseed ? 8 : 4);
-            if (!bigseed) {
-                if (seenseeds.count(curseed) > 0) { // not unique
-                    i--;
-                    continue;
-                }
-                seenseeds.insert(curseed);
-            }
-
-            seed_t hseed1 = hinfo->Seed(curseed, false);
-            hash(&k, k.len, hseed1, &h1);
-            seed_t hseed2 = hinfo->Seed(curseed ^ (UINT64_C(1) << seedbit), false);
-            hash(&k, k.len, hseed2, &h2);
-
-            addVCodeInput(&k, k.len);
             addVCodeInput(curseed);
+            seed_t hseed1 = hinfo->Seed(curseed, false);
+            hash(keyptr, keybytes, hseed1, &h1);
+
+            curseed ^= (UINT64_C(1) << seedbit);
+
+            addVCodeInput(curseed);
+            seed_t hseed2 = hinfo->Seed(curseed, false);
+            hash(keyptr, keybytes, hseed2, &h2);
+
+            keyptr += keybytes;
+            seedptr += seedbytes;
 
             hashes[i] = h1 ^ h2;
         }
@@ -152,9 +147,6 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
         addVCodeResult(thisresult);
 
         result &= thisresult;
-
-        seenkeys.clear();
-        seenseeds.clear();
     }
 
     if (!drawDiagram) {
@@ -164,7 +156,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
         printf("\n");
     }
 
-    recordTestResult(result, "SeedDiffDist", keytype::len);
+    recordTestResult(result, "SeedDiffDist", keybytes);
 
     return result;
 }
@@ -178,20 +170,20 @@ bool SeedDiffDistTest( const HashInfo * hinfo, const bool verbose, const bool ex
     printf("[[[ Seed 'Differential Distribution' Tests ]]]\n\n");
 
     if (hinfo->is32BitSeed()) {
-        // result &= SeedDiffDistTest<Blob< 24>, hashtype, false>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob<32>, hashtype, false>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob<64>, hashtype, false>(hinfo, verbose);
+        result &= SeedDiffDistTest<hashtype, false>(hinfo, 24, verbose);
+        result &= SeedDiffDistTest<hashtype, false>(hinfo, 32, verbose);
+        result &= SeedDiffDistTest<hashtype, false>(hinfo, 64, verbose);
         if (extra && !hinfo->isSlow()) {
-            result &= SeedDiffDistTest<Blob<160>, hashtype, false>(hinfo, verbose);
-            result &= SeedDiffDistTest<Blob<256>, hashtype, false>(hinfo, verbose);
+            result &= SeedDiffDistTest<hashtype, false>(hinfo, 160, verbose);
+            result &= SeedDiffDistTest<hashtype, false>(hinfo, 256, verbose);
         }
     } else {
-        // result &= SeedDiffDistTest<Blob< 24>, hashtype,  true>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob<32>, hashtype,  true>(hinfo, verbose);
-        result &= SeedDiffDistTest<Blob<64>, hashtype,  true>(hinfo, verbose);
+        result &= SeedDiffDistTest<hashtype,  true>(hinfo, 24, verbose);
+        result &= SeedDiffDistTest<hashtype,  true>(hinfo, 32, verbose);
+        result &= SeedDiffDistTest<hashtype,  true>(hinfo, 64, verbose);
         if (extra && !hinfo->isSlow()) {
-            result &= SeedDiffDistTest<Blob<160>, hashtype,  true>(hinfo, verbose);
-            result &= SeedDiffDistTest<Blob<256>, hashtype,  true>(hinfo, verbose);
+            result &= SeedDiffDistTest<hashtype,  true>(hinfo, 160, verbose);
+            result &= SeedDiffDistTest<hashtype,  true>(hinfo, 256, verbose);
         }
     }
     printf("%s\n", result ? "" : g_failstr);

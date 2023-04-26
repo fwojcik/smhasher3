@@ -57,46 +57,34 @@
 
 #include "CyclicKeysetTest.h"
 
-#include <unordered_set>
-
 //-----------------------------------------------------------------------------
 // Keyset 'Cyclic' - generate keys that consist solely of N repetitions of M
 // bytes.
 //
 // (This keyset type is designed to make MurmurHash2 fail)
 
-template <typename hashtype, int cycleLen, bool ckuniq = (cycleLen < 6)>
+template <typename hashtype, int cycleLen>
 static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleReps, const int keycount, bool drawDiagram ) {
     printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n", cycleReps, cycleLen, keycount);
 
-    Rand r( 483723 + 4883 * cycleReps + cycleLen );
+    Rand r( 483723 + cycleLen, cycleReps );
 
     std::vector<hashtype> hashes;
     hashes.resize(keycount);
 
-    int keyLen      = cycleLen * cycleReps;
+    std::vector<uint8_t> cycles( cycleLen * keycount );
+    RandSeq rs = r.get_seq(SEQ_DIST_1, cycleLen);
+    rs.write(&cycles[0], 0, keycount);
 
-    uint8_t * cycle = new uint8_t[cycleLen];
-    uint8_t * key   = new uint8_t[keyLen  ];
-
-    std::unordered_set<uint64_t> seen; // need to be unique, otherwise we report collisions
-    uint64_t curcycle = 0;
+    int       keyLen = cycleLen * cycleReps;
+    uint8_t * cycle  = new uint8_t[cycleLen];
+    uint8_t * key    = new uint8_t[keyLen  ];
 
     //----------
 
     for (int i = 0; i < keycount; i++) {
-        r.rand_n(cycle, cycleLen);
-        if (ckuniq) {
-            memcpy(&curcycle, cycle, cycleLen);
-            if (seen.count(curcycle) > 0) { // not unique
-                i--;
-                continue;
-            }
-            seen.insert(curcycle);
-        }
-
         for (int j = 0; j < cycleReps; j++) {
-            memcpy(&key[j * cycleLen], cycle, cycleLen);
+            memcpy(&key[j * cycleLen], &cycles[i * cycleLen], cycleLen);
         }
 
         hash(key, keyLen, seed, &hashes[i]);

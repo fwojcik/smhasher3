@@ -55,22 +55,17 @@
 
 #include "DiffDistributionTest.h"
 
-#include <unordered_set>
-
 //-----------------------------------------------------------------------------
 // Simpler differential-distribution test - for all 1-bit differentials,
 // generate random key pairs and run full distribution/collision tests on the
 // hash differentials
 
-template <typename keytype, typename hashtype, bool ckuniq = (keytype::len < 6)>
-static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawDiagram ) {
+template <typename hashtype>
+static bool DiffDistTest2( const HashInfo * hinfo, int keybits, const seed_t seed, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    Rand r( 857374 + keytype::len );
 
-    int       keybytes = keytype::len;
-    int       keybits  = keytype::bitlen;
-    const int keycount = 512 * 1024 * (ckuniq ? 2 : (hinfo->bits <= 64) ? 3 : 4);
-    keytype   k;
+    int       keybytes = keybits / 8;
+    const int keycount = 512 * 1024 * ((hinfo->bits <= 64) ? 3 : 4);
 
     std::vector<hashtype> worsthashes;
     int worstlogp   = -1;
@@ -80,8 +75,9 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
     std::vector<hashtype> hashes( keycount );
     hashtype h1, h2;
 
-    std::unordered_set<uint64_t> seen; // need to be unique, otherwise we report collisions
-    uint64_t curkey = 0;
+    std::vector<uint8_t> keys( keycount * keybytes );
+
+    Rand r( 857374 + keybytes );
 
     bool result = true;
 
@@ -94,34 +90,18 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
             printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
         }
 
+        r.substream(keybit);
+        RandSeq rs = r.get_seq(SEQ_DIST_2, keybytes);
+        rs.write(&keys[0], 0, keycount);
+
         for (int i = 0; i < keycount; i++) {
-            r.rand_n(&k, k.len);
-
-            if (ckuniq) {
-                memcpy(&curkey, &k, k.len);
-                if (seen.count(curkey) > 0) { // not unique
-                    i--;
-                    continue;
-                }
-                seen.insert(curkey);
-            }
-
-            hash(&k, k.len, seed, &h1);
-            addVCodeInput(&k, k.len);
+            ExtBlob k( &keys[i * keybytes], keybytes );
+            hash(k, keybytes, seed, &h1);
+            addVCodeInput(k, keybytes);
 
             k.flipbit(keybit);
-
-            if (ckuniq) {
-                memcpy(&curkey, &k, k.len);
-                if (seen.count(curkey) > 0) { // not unique
-                    i--;
-                    continue;
-                }
-                seen.insert(curkey);
-            }
-
-            hash(&k, k.len, seed, &h2);
-            addVCodeInput(&k, k.len);
+            hash(k, keybytes, seed, &h2);
+            addVCodeInput(k, keybytes);
 
             hashes[i] = h1 ^ h2;
         }
@@ -149,8 +129,6 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
         addVCodeResult(thisresult);
 
         result &= thisresult;
-
-        seen.clear();
     }
 
     if (!drawDiagram) {
@@ -175,14 +153,13 @@ bool DiffDistTest( const HashInfo * hinfo, const bool verbose, const bool extra 
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    // result &= DiffDistTest2<Blob< 24>, hashtype>(hinfo, seed, verbose);
-    result &= DiffDistTest2<Blob<32>, hashtype>(hinfo, seed, verbose);
-    result &= DiffDistTest2<Blob<64>, hashtype>(hinfo, seed, verbose);
+    result &= DiffDistTest2<hashtype>(hinfo, 24, seed, verbose);
+    result &= DiffDistTest2<hashtype>(hinfo, 32, seed, verbose);
+    result &= DiffDistTest2<hashtype>(hinfo, 64, seed, verbose);
     if (extra && !hinfo->isVerySlow()) {
-        result &= DiffDistTest2<Blob<160>, hashtype>(hinfo, seed, verbose);
-        result &= DiffDistTest2<Blob<256>, hashtype>(hinfo, seed, verbose);
+        result &= DiffDistTest2<hashtype>(hinfo, 160, seed, verbose);
+        result &= DiffDistTest2<hashtype>(hinfo, 256, seed, verbose);
     }
-
     printf("%s\n", result ? "" : g_failstr);
 
     return result;
