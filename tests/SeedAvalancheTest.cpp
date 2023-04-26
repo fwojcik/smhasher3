@@ -75,7 +75,7 @@ typedef int a_int;
 
 template <typename hashtype, int seedbytes>
 static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins, const int keybytes,
-        const uint8_t * inputs, a_int & irepp, const int reps, const bool verbose ) {
+        const uint8_t * keys, const uint8_t * seeds, a_int & irepp, const int reps, const bool verbose ) {
     const HashFn hash    = hinfo->hashFn(g_hashEndian);
 
     hashtype A, B;
@@ -87,18 +87,18 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
             progressdots(irep, 0, reps - 1, 18);
         }
 
-        const uint8_t * bufptr = &inputs[(keybytes + seedbytes) * irep];
-        memcpy(&iseed, bufptr + keybytes, seedbytes);
+        const uint8_t * keyptr = &keys[keybytes * irep];
+        memcpy(&iseed, &seeds[seedbytes * irep], seedbytes);
         seed_t hseed = hinfo->Seed(iseed, false);
 
-        hash(bufptr, keybytes, hseed, &A);
+        hash(keyptr, keybytes, hseed, &A);
 
         uint32_t * cursor = &bins[0];
 
         for (int iBit = 0; iBit < 8 * seedbytes; iBit++) {
             iseed ^= UINT64_C(1) << iBit;
             hseed  = hinfo->Seed(iseed, false);
-            hash(bufptr, keybytes, hseed, &B);
+            hash(keyptr, keybytes, hseed, &B);
             iseed ^= UINT64_C(1) << iBit;
 
             B ^= A;
@@ -121,11 +121,18 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
 
     const int arraysize = seedbits * hashbits;
 
+    enum RandSeqType seqtype = (uint64_t)reps > r.seq_maxelem(SEQ_DIST_3, seedbytes) ? SEQ_DIST_2 : SEQ_DIST_3;
+    RandSeq rs = r.get_seq(seqtype, seedbytes);
+
     printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
 
-    std::vector<uint8_t> inputs( reps * (keybytes + seedbytes) );
-    r.rand_n(&inputs[0], reps * (keybytes + seedbytes));
-    addVCodeInput(&inputs[0], reps * (keybytes + seedbytes));
+    std::vector<uint8_t> keys( reps * keybytes );
+    r.rand_n(&keys[0], reps * keybytes);
+    addVCodeInput(&keys[0], reps * keybytes);
+
+    std::vector<uint8_t> seeds( reps * seedbytes );
+    rs.write(&seeds[0], 0, reps);
+    addVCodeInput(&seeds[0], reps * seedbytes);
 
     a_int irep( 0 );
 
@@ -135,14 +142,14 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
     }
 
     if (g_NCPU == 1) {
-        calcBiasRange<hashtype, seedbytes>(hinfo, bins[0], keybytes, &inputs[0], irep, reps, drawdots);
+        calcBiasRange<hashtype, seedbytes>(hinfo, bins[0], keybytes, &keys[0], &seeds[0], irep, reps, drawdots);
     } else {
 #if defined(HAVE_THREADS)
         std::thread t[g_NCPU];
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype, seedbytes>, hinfo, std::ref(bins[i]),
-                keybytes, &inputs[0], std::ref(irep), reps, drawdots
+                keybytes, &keys[0], &seeds[0], std::ref(irep), reps, drawdots
             };
         }
         for (unsigned i = 0; i < g_NCPU; i++) {

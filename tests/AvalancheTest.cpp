@@ -119,12 +119,13 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     const int arraysize = keybits * hashbits;
 
+    enum RandSeqType seqtype = (uint64_t)reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
+    RandSeq rs = r.get_seq(seqtype, keybytes);
+
     printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
 
     std::vector<uint8_t> keys( reps * keybytes );
-    for (int i = 0; i < reps; i++) {
-        r.rand_n(&keys[i * keybytes], keybytes);
-    }
+    rs.write(&keys[0], 0, reps);
     addVCodeInput(&keys[0], reps * keybytes);
 
     a_int irep( 0 );
