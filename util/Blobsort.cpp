@@ -87,7 +87,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
     case 14: // All zero bytes in MSB-1 position
     case 15: // Random numbers, except each position has some missing bytes
     {
-        r.rand_p(&blobs[0], blobtype::len * TEST_SIZE);
+        r.rand_n(&blobs[0], blobtype::len * TEST_SIZE);
         break;
     }
     case  8: // Many duplicates
@@ -95,7 +95,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
     {
         uint32_t x = 0;
         do {
-            r.rand_p(&blobs[x], blobtype::len);
+            r.rand_n(&blobs[x], blobtype::len);
             uint32_t count = 1 + r.rand_range(TEST_SIZE - 1 - x);
             for (uint32_t i = 1; i < count; i++) {
                 blobs[x + i] = blobs[x];
@@ -106,7 +106,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
     }
     case 10: // All duplicates
     {
-        r.rand_p(&blobs[0], blobtype::len);
+        r.rand_n(&blobs[0], blobtype::len);
         for (uint32_t i = 1; i < TEST_SIZE; i++) {
             blobs[i] = blobs[0];
         }
@@ -194,7 +194,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
     case 15:
     {
         uint8_t excludes[blobtype::len];
-        r.rand_p(excludes, sizeof(excludes));
+        r.rand_n(excludes, sizeof(excludes));
         for (uint32_t n = 0; n < TEST_SIZE; n++) {
             for (uint32_t i = 0; i < blobtype::len; i++) {
                 if (blobs[n][i] == excludes[i]) {

@@ -85,7 +85,7 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleReps, const 
     //----------
 
     for (int i = 0; i < keycount; i++) {
-        r.rand_p(cycle, cycleLen);
+        r.rand_n(cycle, cycleLen);
         if (ckuniq) {
             memcpy(&curcycle, cycle, cycleLen);
             if (seen.count(curcycle) > 0) { // not unique

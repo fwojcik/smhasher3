@@ -182,7 +182,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     Rand r( 1798473 + keybytes );
 
     std::vector<uint8_t> keys( reps * keybytes );
-    r.rand_p(&keys[0], reps * keybytes);
+    r.rand_n(&keys[0], reps * keybytes);
     addVCodeInput(&keys[0], reps * keybytes);
 
     a_int irep( 0 );

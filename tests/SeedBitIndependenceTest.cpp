@@ -135,8 +135,8 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
 
     std::vector<uint8_t> keys( reps * keybytes );
     std::vector<uint8_t> seeds( reps * seedbytes );
-    r.rand_p(&keys[0], reps * keybytes);
-    r.rand_p(&seeds[0], reps * seedbytes);
+    r.rand_n(&keys[0], reps * keybytes);
+    r.rand_n(&seeds[0], reps * seedbytes);
     addVCodeInput(&keys[0], reps * keybytes);
     addVCodeInput(&seeds[0], reps * seedbytes);
 

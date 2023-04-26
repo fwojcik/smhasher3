@@ -197,8 +197,7 @@ static bool DiffTestImpl( HashFn hash, const seed_t seed, int diffbits, int reps
     Rand r( 100 );
     std::vector<uint8_t> keys( reps * keybytes );
 
-    r.rand_p(&keys[0], reps * keybytes);
-
+    r.rand_n(&keys[0], reps * keybytes);
     addVCodeInput(&keys[0], reps * keybytes);
 
     a_int irep( 0 );

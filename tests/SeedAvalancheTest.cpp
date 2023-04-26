@@ -124,7 +124,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
     printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
 
     std::vector<uint8_t> inputs( reps * (keybytes + seedbytes) );
-    r.rand_p(&inputs[0], reps * (keybytes + seedbytes));
+    r.rand_n(&inputs[0], reps * (keybytes + seedbytes));
     addVCodeInput(&inputs[0], reps * (keybytes + seedbytes));
 
     a_int irep( 0 );

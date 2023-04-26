@@ -95,7 +95,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
         }
 
         for (int i = 0; i < keycount; i++) {
-            r.rand_p(&k, k.len);
+            r.rand_n(&k, k.len);
 
             if (ckuniq) {
                 memcpy(&curkey, &k, k.len);

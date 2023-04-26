@@ -123,7 +123,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     std::vector<uint8_t> keys( reps * keybytes );
     for (int i = 0; i < reps; i++) {
-        r.rand_p(&keys[i * keybytes], keybytes);
+        r.rand_n(&keys[i * keybytes], keybytes);
     }
     addVCodeInput(&keys[0], reps * keybytes);
 

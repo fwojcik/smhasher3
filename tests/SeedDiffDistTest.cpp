@@ -98,7 +98,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
         }
 
         for (int i = 0; i < keycount; i++) {
-            r.rand_p(&k, k.len);
+            r.rand_n(&k, k.len);
 
             if (ckuniq) {
                 memcpy(&curkey, &k, k.len);
@@ -109,7 +109,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
                 seenkeys.insert(curkey);
             }
 
-            r.rand_p(&curseed, bigseed ? 8 : 4);
+            r.rand_n(&curseed, bigseed ? 8 : 4);
             if (!bigseed) {
                 if (seenseeds.count(curseed) > 0) { // not unique
                     i--;

@@ -138,7 +138,7 @@ bool SanityTest1( const HashInfo * hinfo, bool verbose ) {
         for (int len = 0; len <= keymax; len++) {
             // Make 2 copies of some random input data, and hash one
             // of them.
-            r.rand_p(buffer1, buflen);
+            r.rand_n(buffer1, buflen);
             memcpy(buffer2, buffer1, buflen);
             hash(buffer1, len, seed, hash1);
             addVCodeOutput(hash1, hashbytes);
@@ -240,7 +240,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
             ExtBlob key1( &buffer1[pad], len );
 
             // Fill the first buffer with random data
-            r.rand_p(buffer1, buflen);
+            r.rand_n(buffer1, buflen);
 
             if (verbose) { progressdots(len + irep * keymax, 1, reps * keymax, 10); }
             // Record the hash of key1. hash1 becomes the correct
@@ -305,7 +305,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
                 ExtBlob key2( &buffer2[offset], len );
 
                 // Fill the second buffer with different random data
-                r.rand_p(buffer2, buflen);
+                r.rand_n(buffer2, buflen);
 
                 // Make key2 have the same data as key1. The rest of
                 // buffer2 is still random data that differs from
@@ -426,7 +426,7 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
         // bytes, etc. We really only need (reps*(reps+1)/2) bytes,
         // but this is just easier to code and slightly easier to
         // understand.
-        r.rand_p(&keys[0], keybytes);
+        r.rand_n(&keys[0], keybytes);
         maybeprintf(".");
 
         // Compute all the hashes in order on the main process in order
@@ -512,7 +512,7 @@ bool AppendedZeroesTest( const HashInfo * hinfo, bool verbose ) {
         unsigned char key[256];
         memset(key, 0, sizeof(key));
 
-        r.rand_p(key, 32);
+        r.rand_n(key, 32);
         // This test can halt early, so don't add input bytes to the VCode.
 
         std::vector<std::vector<uint8_t>> hashes;
@@ -577,7 +577,7 @@ bool PrependedZeroesTest( const HashInfo * hinfo, bool verbose ) {
         unsigned char key[256];
         memset(key, 0, sizeof(key));
 
-        r.rand_p(key + 32, 32);
+        r.rand_n(key + 32, 32);
         // This test can halt early, so don't add input bytes to the VCode.
 
         std::vector<std::vector<uint8_t>> hashes;

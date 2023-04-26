@@ -157,7 +157,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
     uint8_t * abuf = buf + (-reinterpret_cast<uintptr_t>(buf) % 256) + bufalign;
 
-    r.rand_p(buf, blocksize + 512);
+    r.rand_n(buf, blocksize + 512);
 
     if (maxvarysize > 0) {
         for (int i = 0; i < trials; i++) {
