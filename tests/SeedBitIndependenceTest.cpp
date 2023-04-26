@@ -74,99 +74,114 @@ typedef int a_int;
 // math/recordkeeping here works.
 
 template <typename hashtype>
-static void BicTestBatch( const HashInfo * hinfo, size_t reps, a_int & iseedbit, size_t batch_size,
-        size_t keybytes, uint32_t * popcount0, uint32_t * andcount0 ) {
+static void SeedBicTestBatch( const HashInfo * hinfo, std::vector<uint32_t> & popcount0,
+        std::vector<uint32_t> & andcount0, size_t keybytes, const uint8_t * keys,
+        size_t seedbytes, const uint8_t * seeds, a_int & irepp, size_t reps) {
     const HashFn hash         = hinfo->hashFn(g_hashEndian);
     const size_t seedbits     = hinfo->is32BitSeed() ? 32 : 64;
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
-    hashtype     h1, h2;
-    size_t       startseedbit;
-    Rand         r;
 
-    std::vector<uint8_t> keys( keybytes * reps );
+    hashtype h1, h2;
+    int      irep;
+    uint64_t iseed = 0;
 
-    while ((startseedbit = FETCH_ADD(iseedbit, batch_size)) < seedbits) {
-        const size_t stopseedbit = std::min(startseedbit + batch_size, seedbits);
+    while ((irep = irepp++) < reps) {
+        progressdots(irep, 0, reps - 1, 12);
 
-        for (size_t seedbit = startseedbit; seedbit < stopseedbit; seedbit++) {
-            uint32_t * pop_cursor_base = &popcount0[seedbit * hashbits    ];
-            uint32_t * and_cursor_base = &andcount0[seedbit * hashbitpairs];
-            uint8_t *  key_cursor      = &keys[0];
+        const uint8_t * key = &keys[keybytes * irep];
 
-            progressdots(seedbit, 0, seedbits - 1, 10);
+        memcpy(&iseed, &seeds[seedbytes * irep], seedbytes);
+        seed_t hseed = hinfo->Seed(iseed, false, 1);
+        hash(key, keybytes, hseed, &h1);
 
-            r.reseed((uint64_t)(4557191 + keybytes * 8193 + seedbit));
-            r.rand_p(key_cursor, keybytes * reps);
+        uint32_t * pop_cursor = &popcount0[0];
 
-            for (size_t irep = 0; irep < reps; irep++) {
-                uint32_t * pop_cursor = pop_cursor_base;
-                uint32_t * and_cursor = and_cursor_base;
-                ExtBlob    key( key_cursor, keybytes );
-                uint64_t   iseed;
-                seed_t     hseed;
+        for (size_t seedbit = 0; seedbit < seedbits; seedbit++) {
+            // The andcount array needs 1 element as a buffer due to how
+            // HistogramHashBits accesses memory prior to the cursor.
+            uint32_t * and_cursor = &andcount0[seedbit * hashbitpairs + 1];
 
-                r.rand_p(&iseed, sizeof(iseed));
-                hseed  = hinfo->Seed(iseed, false, 3);
-                hash(key, keybytes, hseed, &h1);
+            hseed = hinfo->Seed(iseed ^ UINT64_C(1) << seedbit, false, 1);
+            hash(key, keybytes, hseed, &h2);
 
-                iseed ^= UINT64_C(1) << seedbit;
-                hseed  = hinfo->Seed(iseed, false, 3);
-                hash(key, keybytes, hseed, &h2);
+            h2 = h1 ^ h2;
 
-                key_cursor += keybytes;
+            // First count how often each output bit changes
+            pop_cursor = HistogramHashBits(h2, pop_cursor);
 
-                h2 = h1 ^ h2;
-
-                // First count how often each output bit changes
-                pop_cursor = HistogramHashBits(h2, pop_cursor);
-
-                // Then count how often each pair of output bits changed together
-                for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
-                    if (h2.getbit(out1) == 0) {
-                        and_cursor += hashbits - 1 - out1;
-                        continue;
-                    }
-                    and_cursor = HistogramHashBits(h2, and_cursor, out1 + 1);
+            // Then count how often each pair of output bits changed together
+            for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
+                if (h2.getbit(out1) == 0) {
+                    and_cursor += hashbits - 1 - out1;
+                    continue;
                 }
+                and_cursor = HistogramHashBits(h2, and_cursor, out1 + 1);
             }
         }
     }
 }
 
 template <typename hashtype>
-static bool BicTestImpl( const HashInfo * hinfo, const size_t keybytes, const size_t reps, bool verbose = false ) {
+static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, const size_t reps, bool verbose = false ) {
+    const size_t seedbits     = hinfo->is32BitSeed() ? 32 : 64;
+    const size_t seedbytes    = seedbits / 8;
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
-    const size_t seedbits     = hinfo->is32BitSeed() ? 32 : 64;
 
-    printf("Testing %4zd-byte keys, %7zd reps  ", keybytes, reps);
+    printf("Testing %4zd-byte keys, %7zd reps", keybytes, reps);
 
-    // The andcount array needs 1 element as a buffer due to how
-    // HistogramHashBits accesses memory prior to the cursor.
-    std::vector<uint32_t> popcount( seedbits * hashbits        , 0 );
-    std::vector<uint32_t> andcount( seedbits * hashbitpairs + 1, 0 );
-    a_int iseedbit( 0 );
+    Rand r( 4557191 + keybytes );
+
+    std::vector<uint8_t> keys( reps * keybytes );
+    std::vector<uint8_t> seeds( reps * seedbytes );
+    r.rand_p(&keys[0], reps * keybytes);
+    r.rand_p(&seeds[0], reps * seedbytes);
+    addVCodeInput(&keys[0], reps * keybytes);
+    addVCodeInput(&seeds[0], reps * seedbytes);
+
+    a_int irep( 0 );
+
+    std::vector<std::vector<uint32_t>> popcounts( g_NCPU );
+    std::vector<std::vector<uint32_t>> andcounts( g_NCPU );
+    for (unsigned i = 0; i < g_NCPU; i++) {
+        // The andcount array needs 1 element as a buffer due to how
+        // HistogramHashBits accesses memory prior to the cursor.
+        popcounts[i].resize(seedbits * hashbits);
+        andcounts[i].resize(seedbits * hashbitpairs + 1);
+    }
 
     if (g_NCPU == 1) {
-        BicTestBatch<hashtype>(hinfo, reps, iseedbit, seedbits, keybytes, &popcount[0], &andcount[1]);
+        SeedBicTestBatch<hashtype>(hinfo, popcounts[0], andcounts[0],
+                keybytes, &keys[0], seedbytes, &seeds[0], irep, reps);
     } else {
 #if defined(HAVE_THREADS)
-        // Giving each thread a batch size of 2 seedbits is consistently best on my box
         std::thread t[g_NCPU];
         for (int i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
-                BicTestBatch<hashtype>, hinfo, reps, std::ref(iseedbit),
-                2, keybytes, &popcount[0], &andcount[1]
+                SeedBicTestBatch<hashtype>, hinfo, std::ref(popcounts[i]), std::ref(andcounts[i]),
+                keybytes, &keys[0], seedbytes, &seeds[0], std::ref(irep), reps
             };
         }
         for (int i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
+        for (int i = 1; i < g_NCPU; i++) {
+            for (int b = 0; b < seedbits * hashbits; b++) {
+                popcounts[0][b] += popcounts[i][b];
+            }
+            for (int b = 1; b < seedbits * hashbitpairs + 1; b++) {
+                andcounts[0][b] += andcounts[i][b];
+            }
+        }
 #endif
     }
 
-    bool result = ReportChiSqIndep(&popcount[0], &andcount[1], seedbits, hashbits, reps, verbose);
+    //----------
+
+    bool result = true;
+
+    result &= ReportChiSqIndep(&popcounts[0][0], &andcounts[0][1], seedbits, hashbits, reps, verbose);
 
     recordTestResult(result, "SeedBIC", keybytes);
 
@@ -190,9 +205,9 @@ bool SeedBicTest( const HashInfo * hinfo, const bool verbose, const bool extra )
     }
     for (const auto keylen: keylens) {
         if (keylen <= 16) {
-            result &= BicTestImpl<hashtype>(hinfo, keylen, reps * 2, verbose);
+            result &= SeedBicTestImpl<hashtype>(hinfo, keylen, reps * 2, verbose);
         } else {
-            result &= BicTestImpl<hashtype>(hinfo, keylen, reps, verbose);
+            result &= SeedBicTestImpl<hashtype>(hinfo, keylen, reps, verbose);
         }
     }
 

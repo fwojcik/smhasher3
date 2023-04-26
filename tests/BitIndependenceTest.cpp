@@ -125,53 +125,46 @@ typedef int a_int;
 // different keybit.
 
 template <typename hashtype>
-static void BicTestBatch( HashFn hash, const seed_t seed, size_t reps, a_int & ikeybit, size_t batch_size,
-        size_t keybytes, uint32_t * popcount0, uint32_t * andcount0 ) {
+static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> & popcount0,
+        std::vector<uint32_t> & andcount0, size_t keybytes, const uint8_t * keys,
+        a_int & irepp, size_t reps) {
     const size_t keybits      = keybytes * 8;
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
-    hashtype     h1, h2;
-    size_t       startkeybit;
-    Rand         r;
 
-    std::vector<uint8_t> keys( keybytes * reps );
+    uint8_t   buf[keybytes];
+    hashtype  h1, h2;
+    int       irep;
 
-    while ((startkeybit = FETCH_ADD(ikeybit, batch_size)) < keybits) {
-        const size_t stopkeybit = std::min(startkeybit + batch_size, keybits);
+    while ((irep = irepp++) < reps) {
+        progressdots(irep, 0, reps - 1, 12);
 
-        for (size_t keybit = startkeybit; keybit < stopkeybit; keybit++) {
-            uint32_t * pop_cursor_base = &popcount0[keybit * hashbits    ];
-            uint32_t * and_cursor_base = &andcount0[keybit * hashbitpairs];
-            uint8_t  *      key_cursor = &keys[0];
+        ExtBlob key( buf, &keys[keybytes * irep], keybytes );
+        hash(key, keybytes, seed, &h1);
 
-            progressdots(keybit, 0, keybits - 1, 10);
+        uint32_t * pop_cursor = &popcount0[0];
 
-            r.reseed((uint64_t)(1798473 + keybytes * 8193 + keybit));
-            r.rand_p(key_cursor, keybytes * reps);
+        for (size_t keybit = 0; keybit < keybits; keybit++) {
+            // The andcount array needs 1 element as a buffer due to how
+            // HistogramHashBits accesses memory prior to the cursor.
+            uint32_t * and_cursor = &andcount0[keybit * hashbitpairs + 1];
 
-            for (size_t irep = 0; irep < reps; irep++) {
-                uint32_t * pop_cursor = pop_cursor_base;
-                uint32_t * and_cursor = and_cursor_base;
+            key.flipbit(keybit);
+            hash(key, keybytes, seed, &h2);
+            key.flipbit(keybit);
 
-                ExtBlob key( key_cursor, keybytes );
-                hash(key, keybytes, seed, &h1);
-                key.flipbit(keybit);
-                hash(key, keybytes, seed, &h2);
-                key_cursor += keybytes;
+            h2 = h1 ^ h2;
 
-                h2 = h1 ^ h2;
+            // First count how often each output bit changes
+            pop_cursor = HistogramHashBits(h2, pop_cursor);
 
-                // First count how often each output bit changes
-                pop_cursor = HistogramHashBits(h2, pop_cursor);
-
-                // Then count how often each pair of output bits changed together
-                for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
-                    if (h2.getbit(out1) == 0) {
-                        and_cursor += hashbits - 1 - out1;
-                        continue;
-                    }
-                    and_cursor = HistogramHashBits(h2, and_cursor, out1 + 1);
+            // Then count how often each pair of output bits changed together
+            for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
+                if (h2.getbit(out1) == 0) {
+                    and_cursor += hashbits - 1 - out1;
+                    continue;
                 }
+                and_cursor = HistogramHashBits(h2, and_cursor, out1 + 1);
             }
         }
     }
@@ -184,33 +177,56 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
-    printf("Testing %4zd-byte keys, %7zd reps  ", keybytes, reps);
+    printf("Testing %4zd-byte keys, %7zd reps", keybytes, reps);
 
-    // The andcount array needs 1 element as a buffer due to how
-    // HistogramHashBits accesses memory prior to the cursor.
-    std::vector<uint32_t> popcount( keybits * hashbits        , 0 );
-    std::vector<uint32_t> andcount( keybits * hashbitpairs + 1, 0 );
-    a_int ikeybit( 0 );
+    Rand r( 1798473 + keybytes );
+
+    std::vector<uint8_t> keys( reps * keybytes );
+    r.rand_p(&keys[0], reps * keybytes);
+    addVCodeInput(&keys[0], reps * keybytes);
+
+    a_int irep( 0 );
+
+    std::vector<std::vector<uint32_t>> popcounts( g_NCPU );
+    std::vector<std::vector<uint32_t>> andcounts( g_NCPU );
+    for (unsigned i = 0; i < g_NCPU; i++) {
+        // The andcount array needs 1 element as a buffer due to how
+        // HistogramHashBits accesses memory prior to the cursor.
+        popcounts[i].resize(keybits * hashbits);
+        andcounts[i].resize(keybits * hashbitpairs + 1);
+    }
 
     if (g_NCPU == 1) {
-        BicTestBatch<hashtype>(hash, seed, reps, ikeybit, keybits, keybytes, &popcount[0], &andcount[1]);
+        BicTestBatch<hashtype>(hash, seed, popcounts[0], andcounts[0],
+                keybytes, &keys[0], irep, reps);
     } else {
 #if defined(HAVE_THREADS)
-        // Giving each thread a batch size of 2 keybits is consistently best on my box
         std::thread t[g_NCPU];
         for (int i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
-                BicTestBatch<hashtype>, hash, seed, reps, std::ref(ikeybit),
-                2, keybytes, &popcount[0], &andcount[1]
+                BicTestBatch<hashtype>, hash, seed, std::ref(popcounts[i]), std::ref(andcounts[i]),
+                keybytes, &keys[0], std::ref(irep), reps
             };
         }
         for (int i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
+        for (int i = 1; i < g_NCPU; i++) {
+            for (int b = 0; b < keybits * hashbits; b++) {
+                popcounts[0][b] += popcounts[i][b];
+            }
+            for (int b = 1; b < keybits * hashbitpairs + 1; b++) {
+                andcounts[0][b] += andcounts[i][b];
+            }
+        }
 #endif
     }
 
-    bool result = ReportChiSqIndep(&popcount[0], &andcount[1], keybits, hashbits, reps, verbose);
+    //----------
+
+    bool result = true;
+
+    result &= ReportChiSqIndep(&popcounts[0][0], &andcounts[0][1], keybits, hashbits, reps, verbose);
 
     recordTestResult(result, "BIC", keybytes);
 
