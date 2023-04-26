@@ -17,12 +17,12 @@
  * <https://www.gnu.org/licenses/>.
  */
 /*
- * Random number generation via CBRNG.
+ * Random number and sequence generation via CBRNG.
  *
- * This uses the Threefry algorithm as the base RNG. This configures it
- * such that a single 64-bit seed value gives 2^64 independent substreams
- * of 2^64 random numbers. It passes TestU01/BigCrush for both forward and
- * bit-reversed outputs.
+ * The Rand object uses the Threefry algorithm as the base RNG. This
+ * configures it such that a single 64-bit seed value gives 2^64
+ * independent substreams of 2^64 random numbers. It passes
+ * TestU01/BigCrush for both forward and bit-reversed outputs.
  *
  * The important feature of Threefry is that it is fully seekable. This is
  * because it is fundamentally counter-based: instead of storing the output
@@ -43,23 +43,7 @@
  * amounts of space quickly, and doesn't penalize numeric generation overly
  * much, as most platforms can byte-swap during the copy into an integer.
  *
- * Public generation APIs:
- *
- *   rand_u64() returns the next random 64-bit integer in native endianness.
- *
- *   rand_range(max) returns a random value in the range [0, max). It is
- *   not completely bias-free, because that would require more than a
- *   single random u64, and it is important that it does to retain the
- *   seekability advantage of this RNG setup. The current bias is negligible.
- *
- *   rand_n(buf, len) fills buf[] with len random bytes. It strictly
- *   follows the sequence of random u64s that are generated, so that it is
- *   possible to seek the RNG "across" a call to rand_n(). It always uses
- *   some multiple of 8 bytes of data. This implies that two consecutive
- *   calls to rand_n() are equivalent to one larger call if the first call
- *   has a length evenly divisible by 8.
- *
- * Public seeking/seeding APIs:
+ * Public Rand seeking/seeding APIs:
  *
  *   Rand takes a 64-bit seed, and an optional 64-bit substream number. The
  *   substream number is intended to allow for multiple independent streams
@@ -73,6 +57,111 @@
  *   numbers have been generated from the initial state. This is much
  *   faster than starting with the initial state and generating and
  *   discarding N numbers.
+ *
+ *   The getoffset() method will return a value N such that the N'th random
+ *   number is about to be generated. In this way, the value of getoffset()
+ *   can be saved before some amount of random number generation, and then
+ *   restored via seek() in order to generate the same sequence of random
+ *   numbers another time.
+ *
+ * Public Rand random number generation APIs:
+ *
+ *   rand_u64() returns the next random 64-bit integer in native endianness.
+ *
+ *   rand_range(max) returns a random value in the range [0, max). It is
+ *   not completely bias-free, because that would require more than a
+ *   single random u64, and it is important that it does to retain the
+ *   seekability advantage of this RNG setup. The current bias is negligible.
+ *
+ *   rand_n(buf, len) fills buf[] with len random bytes. It strictly
+ *   follows the sequence of random u64s that are generated, so that it is
+ *   possible to seek the RNG "across" a call to rand_n(). It always uses
+ *   some multiple of 8 bytes of data internally. Two consecutive calls to
+ *   rand_n() are equivalent to one larger call if the first call has a
+ *   length evenly divisible by 8. From a given starting state, rand_n()
+ *   will emit the same byte byte sequence as the integers given by
+ *   rand_u64() when those integers are considered in little-endian order.
+ *
+ * Public Rand random sequence APIs:
+ *
+ *   get_seq(seqtype, szelem) produces a RandSeq object, which has its own
+ *   API for generating random sequences of items, or even individual items
+ *   within those sequences. szelem has slightly different meanings,
+ *   depending on the value of seqtype.
+ *
+ *   RandSeq objects can produce 4 different kinds of sequences:
+ *     -) SEQ_DIST_1 will produce a sequence of szelem-byte objects, with
+ *        unique values; each value differs from all others by at least 1 bit
+ *     -) SEQ_DIST_2 will produce a sequence of szelem-byte objects, where
+ *        each value differs from all other by at least 2 bits
+ *     -) SEQ_DIST_3 will produce a sequence of szelem-byte objects, where
+ *        each value differs from all other by at least 3 bits
+ *     -) SEQ_NUM will produce a sequence of 64-bit integers, with values
+ *        from 0 through szelem, inclusive.
+ *
+ *   A given RandSeq object represents only one sequence; it does not
+ *   produce a different sequence of items if its APIs are called multiple
+ *   times. If multiple sequences are needed, then multiple RandSeq objects
+ *   can be created by repeatedly calling get_seq(). For seeking across
+ *   get_seq() calls, each call to get_seq() will use RandSeq::RNGU64_USED
+ *   (currently == 7) random numbers.
+ *
+ *   seq_maxelem() will return the maximum possible number of elements in
+ *   the sequence type specified. This may be useful to allow a caller to
+ *   fall back to a simpler/longer sequence type if their first choice does
+ *   not contain as many elements as desired.
+ *
+ *   While SEQ_NUM and SEQ_DIST_1 have sequence lengths as probably
+ *   expected, sequences with higher distance elements can be shorter than
+ *   is intuitive. Sequences of elements with a minimum distance of 2
+ *   (SEQ_DIST_2) are half the length of SEQ_DIST_1 (so, a sequence of
+ *   1-byte elements of type SEQ_DIST_2 has a maximum sequence length of
+ *   128, not 256). Sequences of elements with a minimum distance of 3
+ *   (SEQ_DIST_3) are even shorter, as shown in the following table:
+ *
+ *       szelem  |  maxelem
+ *      ---------------------
+ *         1     |   2** 4  ==         16
+ *         2     |   2**11  ==      2,048
+ *         3     |   2**19  ==    524,288
+ *         4     |   2**26  == 67,108,864
+ *         5     |   2**34
+ *         6     |   2**42
+ *         7     |   2**50
+ *         8     |   2**57
+ *
+ *   These higher-distance sequences can be useful for preventing
+ *   collisions in tests which examine the effects of single-bit changes in
+ *   hash inputs. With 2 bits of difference between elements, toggling any
+ *   bit will never produce another element in the same sequence. This
+ *   means that it will never be the case that one iteration of a test will
+ *   account for the hash difference between (e.g.) key A and key B while
+ *   another iteration will use the difference between key B and key
+ *   A. There may be some overlap at the edges (e.g. if C and D are two
+ *   elements in the sequence obtained from SEQ_DIST_2, then C^(1<<x) may
+ *   equal D^(1<<y) for some x and y, but C^(1<<x) will never equal D.
+ *
+ *   Further, if 3 bits of difference are possible then that means that no
+ *   items in the same test can overlap at all.
+ *
+ * Public RandSeq random sequence APIs:
+ *
+ *   write(buf, elem_lo, elem_n) fills buf[] with elem_n elements in its
+ *   random sequence, starting with elem_lo. If write() is called with
+ *   invalid values (e.g. a request for more elements than exist in the set
+ *   specified in the RandSeq object), then it will return false, and no
+ *   data will be written to buf[].
+ *
+ *   Due to details of the current implementation, sequences of elements
+ *   larger than 8 bytes do not represent a true random sampling of those
+ *   elements. For example, if 12-byte elements are needed for some
+ *   SEQ_DIST_* type, then no two elements produced by RandSeq will ever
+ *   match in their first 8 bytes. For now this should suffice, and it
+ *   seems an acceptable tradeoff for not making this code even more
+ *   complex than it is.
+ *
+ *   maxelem() returns the maximum number of elements that are in the
+ *   random sequence, just as in Rand::seq_maxelem().
  */
 
 /*
@@ -88,6 +177,15 @@
 #define PARALLEL 4
 
 //-----------------------------------------------------------------------------
+
+class RandSeq;
+
+enum RandSeqType : uint32_t {
+    SEQ_DIST_1 = 1,
+    SEQ_DIST_2 = 2,
+    SEQ_DIST_3 = 3,
+    SEQ_NUM    = 4,
+};
 
 class Rand {
   public:
@@ -167,6 +265,70 @@ class Rand {
     }
 
     void rand_n( void * buf, size_t bytes );
+
+    //-----------------------------------------------------------------------------
+
+    RandSeq get_seq( enum RandSeqType seqtype, const uint32_t szelem );
+
+    static uint64_t seq_maxelem( enum RandSeqType seqtype, const uint32_t szelem );
+
+    //-----------------------------------------------------------------------------
+
+    bool operator == ( const Rand & k ) const {
+        if (memcmp(&xseed[1], &k.xseed[1], sizeof(xseed) - sizeof(xseed[0])) != 0) {
+            return false;
+        }
+        if (rseed != k.rseed) {
+            return false;
+        }
+        if (rstream != k.rstream) {
+            return false;
+        }
+        if (getoffset() != k.getoffset()) {
+            return false;
+        }
+        return true;
+    }
 }; // class Rand
 
 //-----------------------------------------------------------------------------
+
+class RandSeq {
+  public:
+    // Even though, in theory, only 2 full Feistel rounds are needed for
+    // encryption, some smaller block sizes used in Random.cpp require more
+    // rounds to get sufficient uniformity of permutations.
+    //
+    // The "- 2" in RNGU64_USED is 1 for the counter and 1 for the
+    // Threefish-defined key, neither of which are random.
+    constexpr static unsigned  FEISTEL_MAXROUNDS = 4;
+    constexpr static unsigned  RNGU64_USED       = FEISTEL_MAXROUNDS + Rand::RNG_KEYS - 2;
+
+  private:
+    friend class Rand;
+
+    // fkeys[] is used in a Feistel cipher to generate random
+    // variable-width permutations. rkeys[] is used similarly to xseed[] in
+    // Rand objects. rkeys[1] is also used as an additional 64-bit random
+    // number for some things related to those permutations.
+    uint32_t          fkeys[FEISTEL_MAXROUNDS * 2];
+    uint64_t          rkeys[Rand::RNG_KEYS];
+    uint32_t          szelem;
+    enum RandSeqType  type;
+
+    template <unsigned mindist>
+    void fill_elem( uint8_t * out, const uint64_t elem_lo, const uint64_t elem_hi, const uint64_t elem_stride );
+
+    // A bare RandSeq() object is unusable; initialize via Rand::get_seq().
+    // It would be nicer if the constructor here could be deleted, but this
+    // setup allows for code which has a bare RandSeq object which then can
+    // get conditionally initialized later.
+    RandSeq() {}
+
+  public:
+    bool write( void * buf, const uint64_t elem_lo, const uint64_t elem_n );
+
+    inline uint64_t maxelem( void ) {
+        return Rand::seq_maxelem(type, szelem);
+    }
+}; // class RandSeq
