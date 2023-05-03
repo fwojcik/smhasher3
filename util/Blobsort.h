@@ -74,7 +74,7 @@ static void radixsort( T * begin, T * end ) {
         // Copy each element into its queue based on the current byte.
         for (size_t i = 0; i < count; i++) {
             uint8_t index = from[i][pass];
-            *queue_ptrs[index]++ = from[i];
+            *queue_ptrs[index]++ = std::move(from[i]);
             __builtin_prefetch(queue_ptrs[index] + 1);
         }
 
@@ -133,14 +133,15 @@ static void flagsort( T * begin, T * end, int idx ) {
         ptr += freqs[i];
     }
 
-    // Move all values into their correct block, maintaining a stable
-    // sort ordering inside each block.
+    // Move all values into their correct block.
     ptr = begin;
     T *     nxt      = begin + freqs[0];
     uint8_t curblock = 0;
-    while (curblock < (RADIX_SIZE - 1)) {
+    while (true) {
         if (expectp((ptr >= nxt), 0.0944)) {
-            curblock++;
+            if (++curblock >= (RADIX_SIZE - 1)) {
+                break;
+            }
             nxt += freqs[curblock];
             continue;
         }
@@ -150,7 +151,7 @@ static void flagsort( T * begin, T * end, int idx ) {
             continue;
         }
         // assert(block_ptrs[value] < end);
-        std::swap(*ptr, *block_ptrs[value]++); // MAYBE do this better manually?
+        std::iter_swap(ptr, block_ptrs[value]++);
     }
 
     if (idx == 0) {
