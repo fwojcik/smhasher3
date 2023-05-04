@@ -99,7 +99,25 @@ class Blob {
     // boolean operators
 
     bool operator < ( const Blob & k ) const {
-        for (int i = _bytes - 1; i >= 0; i--) {
+        size_t i = _bytes;
+        while (i >= 8) {
+            uint64_t a, b;
+            i -= 8;
+            memcpy(&a, &bytes[i], 8)  ; a = COND_BSWAP(a, isBE());
+            memcpy(&b, &k.bytes[i], 8); b = COND_BSWAP(b, isBE());
+            if (a < b) { return true; }
+            if (a > b) { return false; }
+        }
+        while (i >= 4) {
+            uint32_t a, b;
+            i -= 4;
+            memcpy(&a, &bytes[i], 4)  ; a = COND_BSWAP(a, isBE());
+            memcpy(&b, &k.bytes[i], 4); b = COND_BSWAP(b, isBE());
+            if (a < b) { return true; }
+            if (a > b) { return false; }
+        }
+        while (i >= 1) {
+            i -= 1;
             if (bytes[i] < k.bytes[i]) { return true; }
             if (bytes[i] > k.bytes[i]) { return false; }
         }
@@ -326,6 +344,22 @@ class Blob {
     //----------
     uint8_t  bytes[_bytes];
 }; // class Blob
+
+template <>
+FORCE_INLINE bool Blob<32>::operator < ( const Blob & k ) const {
+    uint32_t x, y;
+    memcpy(&x, bytes, 4);   x = COND_BSWAP(x, isBE());
+    memcpy(&y, k.bytes, 4); y = COND_BSWAP(y, isBE());
+    return (x < y) ? true : false;
+}
+
+template <>
+FORCE_INLINE bool Blob<64>::operator < ( const Blob & k ) const {
+    uint64_t x, y;
+    memcpy(&x, bytes, 8);   x = COND_BSWAP(x, isBE());
+    memcpy(&y, k.bytes, 8); y = COND_BSWAP(y, isBE());
+    return (x < y) ? true : false;
+}
 
 template <>
 FORCE_INLINE void Blob<32>::flipbit( size_t bit ) {
