@@ -235,6 +235,28 @@ static void FNV_Pippip_Yurii( const void * in, const size_t len, const seed_t se
     memcpy(out, &hash32, 4);
 } // Last update: 2019-Oct-30, 14 C lines strong, Kaze.
 
+// https://papa.bretmulvey.com/post/124027987928/hash-functions
+template <bool bswap>
+static void FNV_Mulvey( const void * in, const size_t len, const seed_t seed, void * out ) {
+    const uint8_t * data = (const uint8_t *)in;
+    uint32_t h = (uint32_t)seed;
+
+    h ^= 2166136261;
+    for (size_t i = 0; i < len; i++) {
+        h ^= data[i];
+        h *= 16777619;
+    }
+
+    h += h << 13;
+    h ^= h >> 7;
+    h += h << 3;
+    h ^= h >> 17;
+    h += h << 5;
+
+    h = COND_BSWAP(h, bswap);
+    memcpy(out, &h, sizeof(h));
+}
+
 // Also https://www.codeproject.com/articles/716530/fastest-hash-function-for-table-lookups-in-c
 REGISTER_FAMILY(fnv,
    $.src_url    = "http://www.sanmayce.com/Fastest_Hash/index.html",
@@ -388,4 +410,20 @@ REGISTER_HASH(FNV_PippipYurii,
    $.hashfn_native   = FNV_Pippip_Yurii<false>,
    $.hashfn_bswap    = FNV_Pippip_Yurii<true>,
    $.badseeds        = { 0x811c9dc5 }
+ );
+
+REGISTER_HASH(FNV_Mulvey,
+   $.desc       = "FNV-Mulvey 32-bit",
+   $.hash_flags =
+         FLAG_HASH_NO_SEED      |
+         FLAG_HASH_SMALL_SEED,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY |
+	 FLAG_IMPL_VERY_SLOW |
+	 FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0x0E256555,
+   $.verification_BE = 0xAC12B951,
+   $.hashfn_native   = FNV_Mulvey<false>,
+   $.hashfn_bswap    = FNV_Mulvey<true>
  );
