@@ -231,9 +231,8 @@ template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype>
 bool test_blobsort_type( void ) {
     bool passed = true;
     std::vector<blobtype> blobs( TEST_SIZE );
-    size_t timetotal = 0;
-    size_t timesum;
     std::vector<size_t> testnums;
+    uint64_t timetotal = 0;
 
     if (TEST_ITER > 1) {
         testnums = { 4, 6, 8, 9, 10, 15, 16, 19 };
@@ -243,26 +242,29 @@ bool test_blobsort_type( void ) {
         }
     }
 
-    for (int i: testnums) {
-        timesum = 0;
+    for (size_t i: testnums) {
+        uint64_t mintime = UINT64_C(-1);
         for (size_t j = 0; j < TEST_ITER; j++) {
             blobfill<blobtype, TEST_SIZE>(blobs, i, j);
-            size_t timeBegin = monotonic_clock();
+            uint64_t timeBegin = monotonic_clock();
             blobsort(blobs.begin(), blobs.end());
-            size_t timeEnd   = monotonic_clock();
-            timesum += timeEnd - timeBegin;
+            uint64_t timeEnd   = monotonic_clock();
+            uint64_t timesum   = timeEnd - timeBegin;
+            if (mintime > timesum) {
+                mintime = timesum;
+            }
             passed  &= blobverify(blobs);
         }
         if (TEST_ITER > 1) {
-            timetotal += timesum;
-            printf("%3lu bits, test %2d [%-50s]\t\t %5.2f s\n", blobtype::bitlen,
-                    i, teststr[i], (double)timesum / (double)NSEC_PER_SEC);
+            printf("%3lu bits, test %2zd [%-50s]\t\t %7.1f ms\n", blobtype::bitlen,
+                    i, teststr[i], (double)mintime / (double)(NSEC_PER_SEC / 1000));
         }
-        // printf("After test %d: %s\n", i, passed ? "ok" : "no");
+        timetotal += mintime;
+        //printf("After test %d: %s\n", i, passed ? "ok" : "no");
     }
     if (TEST_ITER > 1) {
-        printf("%3lu bits, %-60s\t\t%6.2f s\n\n", blobtype::bitlen, "SUM TOTAL",
-                (double)timetotal / (double)NSEC_PER_SEC);
+        printf("%3lu bits, %-60s\t\t%8.1f ms\n\n", blobtype::bitlen, "SUM TOTAL",
+                (double)timetotal / (double)(NSEC_PER_SEC / 1000));
     }
 
     return passed;
