@@ -227,12 +227,31 @@ static bool blobverify( std::vector<blobtype> & blobs ) {
     return passed;
 }
 
+//-----------------------------------------------------------------------------
+
+double baseline_timing[6][9] = {
+    { 40.4,  39.0, 46.8, 44.2,  9.3,  39.0,  9.8, 44.9 },
+    { 82.2,  82.2, 90.2, 89.3, 15.4,  82.2, 15.4, 82.2 },
+    { 63.0, 151.9, 23.8, 24.9, 12.5, 151.7, 12.5, 40.3 },
+    { 68.2, 172.8, 28.9, 26.1, 14.3, 172.2, 14.3, 43.4 },
+    { 65.6, 230.6, 39.1, 29.9, 16.5, 230.3, 16.5, 48.6 },
+    { 68.0, 198.1, 36.3, 39.2, 17.9, 198.2, 17.9, 48.3 },
+};
+const static int baseline_idx1[] = {
+    -1, +0, +1, -1, +2, +3, -1, +4, +5
+};
+const static int baseline_idx2[SORT_TESTS] = {
+    -1, -1, -1, -1, +0, -1, +1, -1, +2, +3,
+    +4, -1, -1, -1, -1, +5, +6, -1, -1, +7
+};
+
 template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype>
 bool test_blobsort_type( void ) {
     bool passed = true;
     std::vector<blobtype> blobs( TEST_SIZE );
     std::vector<size_t> testnums;
     uint64_t timetotal = 0;
+    double   basesum   = 0.0;
 
     if (TEST_ITER > 1) {
         testnums = { 4, 6, 8, 9, 10, 15, 16, 19 };
@@ -243,7 +262,8 @@ bool test_blobsort_type( void ) {
     }
 
     for (size_t i: testnums) {
-        uint64_t mintime = UINT64_C(-1);
+        bool     thispassed = true;
+        uint64_t mintime    = UINT64_C(-1);
         for (size_t j = 0; j < TEST_ITER; j++) {
             blobfill<blobtype, TEST_SIZE>(blobs, i, j);
             uint64_t timeBegin = monotonic_clock();
@@ -253,18 +273,27 @@ bool test_blobsort_type( void ) {
             if (mintime > timesum) {
                 mintime = timesum;
             }
-            passed  &= blobverify(blobs);
+            thispassed &= blobverify(blobs);
         }
         if (TEST_ITER > 1) {
-            printf("%3lu bits, test %2zd [%-50s]\t\t %7.1f ms\n", blobtype::bitlen,
-                    i, teststr[i], (double)mintime / (double)(NSEC_PER_SEC / 1000));
+            double thistime = (double)mintime / (double)(NSEC_PER_SEC / 1000);
+            double basetime = baseline_timing[baseline_idx1[blobtype::len / 4]][baseline_idx2[i]];
+            double delta    = thistime - basetime;
+            basesum += basetime - 0.05;
+            printf("%3lu bits, test %2zd [%-50s]\t\t %7.1f ms (%+5.1f ms)\t%s\n",
+                    blobtype::bitlen, i, teststr[i], thistime,
+                    ((delta >= -0.05) && (delta <= 0.05)) ? 0 : delta,
+                    thispassed ? "ok" : "NO");
         }
         timetotal += mintime;
-        //printf("After test %d: %s\n", i, passed ? "ok" : "no");
+        passed &= thispassed;
     }
+
     if (TEST_ITER > 1) {
-        printf("%3lu bits, %-60s\t\t%8.1f ms\n\n", blobtype::bitlen, "SUM TOTAL",
-                (double)timetotal / (double)(NSEC_PER_SEC / 1000));
+        double thistime = (double)timetotal / (double)(NSEC_PER_SEC / 1000);
+        double delta    = thistime - basesum;
+        printf("%3lu bits, %-60s\t\t%8.1f ms (%+5.1f ms)\n\n", blobtype::bitlen, "SUM TOTAL",
+                thistime, ((delta >= -0.05) && (delta <= 0.05)) ? 0 : delta);
     }
 
     return passed;
@@ -285,7 +314,7 @@ std::vector<SortTestFn> PACKEXPANDER() {
 }
 
 auto SortTestFns  = PACKEXPANDER<  100000,  1, HASHTYPELIST>();
-auto SortBenchFns = PACKEXPANDER<10000000, 10, HASHTYPELIST>();
+auto SortBenchFns = PACKEXPANDER< 4000000,100, HASHTYPELIST>();
 
 void BlobsortTest( void ) {
     bool result = true;
