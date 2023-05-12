@@ -58,7 +58,7 @@ template <typename blobtype, uint32_t TEST_SIZE>
 static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum ) {
     if (testnum >= SORT_TESTS) { return; }
 
-    Rand r( testnum + 0xb840a149 * (iternum + 1) );
+    Rand r( testnum, iternum );
 
     switch (testnum) {
     case  0: // Consecutive numbers, sorted
