@@ -379,11 +379,11 @@ REGISTER_HASH(FNV_YoshimitsuTRIAD,
 REGISTER_HASH(FNV_Totenschiff,
    $.desc       = "FNV-Totenschiff 32-bit (sanmayce)",
    $.hash_flags =
-         FLAG_HASH_NO_SEED      |
+         FLAG_HASH_NO_SEED       |
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS |
-         FLAG_IMPL_MULTIPLY     |
+         FLAG_IMPL_SANITY_FAILS  |
+         FLAG_IMPL_MULTIPLY      |
          FLAG_IMPL_READ_PAST_EOB |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
@@ -397,11 +397,11 @@ REGISTER_HASH(FNV_Totenschiff,
 REGISTER_HASH(FNV_PippipYurii,
    $.desc       = "FNV-Pippip-Yurii 32-bit (sanmayce)",
    $.hash_flags =
-         FLAG_HASH_NO_SEED      |
+         FLAG_HASH_NO_SEED       |
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
-         FLAG_IMPL_SANITY_FAILS |
-         FLAG_IMPL_MULTIPLY     |
+         FLAG_IMPL_SANITY_FAILS  |
+         FLAG_IMPL_MULTIPLY      |
          FLAG_IMPL_READ_PAST_EOB |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
@@ -415,12 +415,12 @@ REGISTER_HASH(FNV_PippipYurii,
 REGISTER_HASH(FNV_Mulvey,
    $.desc       = "FNV-Mulvey 32-bit",
    $.hash_flags =
-         FLAG_HASH_NO_SEED      |
+         FLAG_HASH_NO_SEED     |
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
-         FLAG_IMPL_MULTIPLY |
-	 FLAG_IMPL_VERY_SLOW |
-	 FLAG_IMPL_LICENSE_MIT,
+        FLAG_IMPL_MULTIPLY     |
+        FLAG_IMPL_VERY_SLOW    |
+        FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
    $.verification_LE = 0x0E256555,
    $.verification_BE = 0xAC12B951,
