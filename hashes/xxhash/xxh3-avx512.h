@@ -90,7 +90,7 @@ template <bool bswap>
 static FORCE_INLINE void XXH3_initCustomSecret_avx512( void * RESTRICT customSecret, uint64_t seed64 ) {
     XXH_ASSERT(((size_t)customSecret & 63) == 0);
     int const     nbRounds = XXH3_SECRET_DEFAULT_SIZE / sizeof(__m512i);
-    __m512i const seed_pos = _mm512_set1_epi64((xxh_i64)seed64);
+    __m512i const seed_pos = _mm512_set1_epi64((int64_t)seed64);
     __m512i const seed     = _mm512_mask_sub_epi64(seed_pos, 0xAA, _mm512_set1_epi8(0), seed_pos);
 
     const __m512i * const src  = (const __m512i *)((const void *)XXH3_kSecret);
