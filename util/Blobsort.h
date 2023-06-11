@@ -18,8 +18,46 @@
  * <https://www.gnu.org/licenses/>.
  */
 
+static constexpr ssize_t BYTESORT_CUTOFF = 60;
+
 //-----------------------------------------------------------------------------
 // Blob sorting routines
+
+template <typename T>
+static void movemin( T * begin, T * end ) {
+    T * min = begin;
+    for (T * i = begin + 1; i != end; i++) {
+        if (*i < *min) {
+            min = i;
+        }
+    }
+    std::iter_swap(begin, min);
+}
+
+// When this is called, begin-1 must be guaranteed to exist and to be less
+// than all elements in [begin, end).
+template <typename T>
+static void insertionsort( T * begin, T * end ) {
+    for (T * i = begin + 1; i != end; i++) {
+        T * node = i;
+        T * next = i - 1;
+        T   val  = std::move(*node);
+        while (val < *next) {
+            *node = std::move(*next);
+            node = next--;
+        }
+        *node = std::move(val);
+    }
+}
+
+template <typename T>
+static void smallsort( T * begin, T * end ) {
+    assume((end - begin) > 1);
+    movemin(begin, end);
+    insertionsort(begin + 1, end);
+}
+
+//-----------------------------------------------------------------------------
 static const uint32_t RADIX_BITS = 8;
 static const uint32_t RADIX_SIZE = (uint32_t)1 << RADIX_BITS;
 static const uint32_t RADIX_MASK = RADIX_SIZE - 1;
@@ -90,11 +128,9 @@ static void radixsort( T * begin, T * end ) {
 }
 
 //-----------------------------------------------------------------------------
-static const uint32_t SORT_CUTOFF = 60;
-
 // This is an in-place MSB radix sort that recursively sorts each
 // block, sometimes known as an "American Flag Sort". Testing shows
-// that performance increases by devolving to std::sort once we get
+// that performance increases by devolving to alternate sorts once we get
 // down to small block sizes. Both 40 and 60 items are best on my
 // system, but there could be a better value for the general case.
 template <typename T>
@@ -123,6 +159,7 @@ static void flagsort( T * begin, T * end, int idx ) {
         if (idx == 0) {
             return;
         }
+        assume((end - begin) > BYTESORT_CUTOFF);
         return radixsort(begin, end);
     }
 
@@ -159,13 +196,13 @@ static void flagsort( T * begin, T * end, int idx ) {
     }
 
     // Sort each block by the next less-significant byte, or by
-    // std::sort if there are only a few entries in the block.
+    // smallsort if there are only a few entries in the block.
     ptr = begin;
     for (size_t i = 0; i < RADIX_SIZE; i++) {
-        if (expectp((freqs[i] > SORT_CUTOFF), 0.00390611)) {
+        if (expectp(freqs[i] > BYTESORT_CUTOFF, 0.00390611)) {
             flagsort(ptr, ptr + freqs[i], idx - 1);
         } else if (expectp((freqs[i] > 1), 0.3847)) {
-            std::sort(ptr, ptr + freqs[i]);
+            smallsort(ptr, ptr + freqs[i]);
         }
         ptr += freqs[i];
     }
@@ -181,16 +218,14 @@ static void flagsort( T * begin, T * end, int idx ) {
 template <class Iter>
 static void blobsort( Iter iter_begin, Iter iter_end ) {
     typedef typename std::iterator_traits<Iter>::value_type T;
-    // Nothing to sort if there are 0 or 1 items
-    if ((iter_end - iter_begin) < 2) {
-        return;
-    } else if ((iter_end - iter_begin) <= SORT_CUTOFF) {
-        return std::sort(iter_begin, iter_end);
-    }
 
     T * begin = &(*iter_begin);
     T * end   = &(*iter_end  );
-    if (T::len > 8) {
+    if ((end - begin) <= BYTESORT_CUTOFF) {
+        if ((end - begin) > 1) {
+            smallsort(begin, end);
+        }
+    } else if (T::len > 8) {
         flagsort(begin, end, T::len - 1);
     } else {
         radixsort(begin, end);
