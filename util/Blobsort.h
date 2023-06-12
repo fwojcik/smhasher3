@@ -34,15 +34,15 @@ static void movemin( T * begin, T * end ) {
     std::iter_swap(begin, min);
 }
 
-// When this is called, begin-1 must be guaranteed to exist and to be less
-// than all elements in [begin, end).
-template <typename T>
+// When this is called with unguarded==true, begin-1 must be guaranteed to
+// exist and to be less than all elements in [begin, end).
+template <bool unguarded, typename T>
 static void insertionsort( T * begin, T * end ) {
     for (T * i = begin + 1; i != end; i++) {
         T * node = i;
         T * next = i - 1;
         T   val  = std::move(*node);
-        while (val < *next) {
+        while ((unguarded || (next >= begin)) && (val < *next)) {
             *node = std::move(*next);
             node = next--;
         }
@@ -51,10 +51,12 @@ static void insertionsort( T * begin, T * end ) {
 }
 
 template <typename T>
-static void smallsort( T * begin, T * end ) {
+static void smallsort( T * begin, T * end, bool guarded = true ) {
     assume((end - begin) > 1);
-    movemin(begin, end);
-    insertionsort(begin + 1, end);
+    if (guarded) {
+        movemin(begin++, end);
+    }
+    insertionsort<true>(begin, end);
 }
 
 //-----------------------------------------------------------------------------
@@ -134,7 +136,7 @@ static void radixsort( T * begin, T * end ) {
 // down to small block sizes. Both 40 and 60 items are best on my
 // system, but there could be a better value for the general case.
 template <typename T>
-static void flagsort( T * begin, T * end, int idx ) {
+static void flagsort( T * begin, T * end, T * base, int idx ) {
     const int    DIGITS = T::len;
     const size_t count  = end - begin;
 
@@ -200,9 +202,9 @@ static void flagsort( T * begin, T * end, int idx ) {
     ptr = begin;
     for (size_t i = 0; i < RADIX_SIZE; i++) {
         if (expectp(freqs[i] > BYTESORT_CUTOFF, 0.00390611)) {
-            flagsort(ptr, ptr + freqs[i], idx - 1);
+            flagsort(ptr, ptr + freqs[i], base, idx - 1);
         } else if (expectp((freqs[i] > 1), 0.3847)) {
-            smallsort(ptr, ptr + freqs[i]);
+            smallsort(ptr, ptr + freqs[i], (ptr == base));
         }
         ptr += freqs[i];
     }
@@ -226,7 +228,7 @@ static void blobsort( Iter iter_begin, Iter iter_end ) {
             smallsort(begin, end);
         }
     } else if (T::len > 8) {
-        flagsort(begin, end, T::len - 1);
+        flagsort(begin, end, begin, T::len - 1);
     } else {
         radixsort(begin, end);
     }
