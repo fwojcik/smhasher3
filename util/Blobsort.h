@@ -152,17 +152,21 @@ static void flagsort( T * begin, T * end, T * base, int idx ) {
         ++freqs[(*ptr)[idx]];
     } while (++ptr < (end - 1));
     // As in radix sort, if this pass would do no rearrangement, then
-    // there's no need to iterate over every item. Since this case is
-    // only likely to hit in degenerate cases (e.g. donothing64), just
-    // devolve into radixsort since that performs better on lists of
-    // many similar values.
+    // there's no need to iterate over every item. If there are no more
+    // passes, then we're just done. Otherwise, since this case is only
+    // likely to hit in degenerate cases (e.g. donothing64), just devolve
+    // into insertionsort since that performs better for those. smallsort()
+    // isn't used here because these blocks must be large.
     if (++freqs[(*ptr)[idx]] == count) {
-        // If there are no more passes, then we're just done.
-        if (idx == 0) {
-            return;
+        if (idx != 0) {
+            assume((end - begin) > BYTESORT_CUTOFF);
+            if (begin == base) {
+                insertionsort<false>(begin, end);
+            } else {
+                insertionsort<true>(begin, end);
+            }
         }
-        assume((end - begin) > BYTESORT_CUTOFF);
-        return radixsort(begin, end);
+        return;
     }
 
     T * block_ptrs[RADIX_SIZE];
