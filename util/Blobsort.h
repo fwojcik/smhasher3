@@ -18,7 +18,7 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-static constexpr ssize_t BYTESORT_CUTOFF = 60;
+static constexpr ssize_t SMALLSORT_CUTOFF = 1024;
 
 //-----------------------------------------------------------------------------
 // Blob sorting routines
@@ -50,6 +50,13 @@ static void insertionsort( T * begin, T * end ) {
     }
 }
 
+// Sort entry point for small blocks of items, where "small" is defined via
+// SMALLSORT_CUTOFF, the value of which is obtained by benchmarking the
+// resulting code.
+//
+// The original intent was to have smallsort incorporate a series of
+// routines based on sorting networks for very small (<= ~24 entries)
+// blocks, but that ended up not being faster no matter the cutoff.
 template <typename T>
 static void smallsort( T * begin, T * end, bool guarded = true ) {
     assume((end - begin) > 1);
@@ -159,7 +166,7 @@ static void flagsort( T * begin, T * end, T * base, int idx ) {
     // isn't used here because these blocks must be large.
     if (++freqs[(*ptr)[idx]] == count) {
         if (idx != 0) {
-            assume((end - begin) > BYTESORT_CUTOFF);
+            assume((end - begin) > SMALLSORT_CUTOFF);
             if (begin == base) {
                 insertionsort<false>(begin, end);
             } else {
@@ -205,7 +212,7 @@ static void flagsort( T * begin, T * end, T * base, int idx ) {
     // smallsort if there are only a few entries in the block.
     ptr = begin;
     for (size_t i = 0; i < RADIX_SIZE; i++) {
-        if (expectp(freqs[i] > BYTESORT_CUTOFF, 0.00390611)) {
+        if (expectp(freqs[i] > SMALLSORT_CUTOFF, 0.00390611)) {
             flagsort(ptr, ptr + freqs[i], base, idx - 1);
         } else if (expectp((freqs[i] > 1), 0.3847)) {
             smallsort(ptr, ptr + freqs[i], (ptr == base));
@@ -227,7 +234,7 @@ static void blobsort( Iter iter_begin, Iter iter_end ) {
 
     T * begin = &(*iter_begin);
     T * end   = &(*iter_end  );
-    if ((end - begin) <= BYTESORT_CUTOFF) {
+    if ((end - begin) <= SMALLSORT_CUTOFF) {
         if ((end - begin) > 1) {
             smallsort(begin, end);
         }
