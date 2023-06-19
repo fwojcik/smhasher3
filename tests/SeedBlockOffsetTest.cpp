@@ -114,7 +114,7 @@ static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hasht
 // Level 1: print out header, allocate hash vector, generate hashes, test them
 template <typename hashtype, size_t blocklen>
 static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min, size_t keylen_max,
-        size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits ) {
+        size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits, bool verbose ) {
     // Compute the number of hashes that will be generated
     size_t testseeds = 0;
 
@@ -149,7 +149,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
                 keylen_max, blockoffset, seedmaxbits, blockmaxbits);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(false);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     recordTestResult(result, "SeedBlockOffset", blockoffset);
@@ -179,7 +179,7 @@ bool SeedBlockOffsetTest( const HashInfo * hinfo, const bool verbose, const bool
         const size_t minkeylen = blocklen + blockoffset;
         const size_t maxkeylen = 31;
         result &= SeedBlockOffsetTest_Impl1<hashtype, blocklen>(hinfo, minkeylen,
-                maxkeylen, blockoffset, seedbits, blockbits);
+                maxkeylen, blockoffset, seedbits, blockbits, verbose);
     }
 
     printf("%s\n", result ? "" : g_failstr);

@@ -118,7 +118,7 @@ static void SeedBlockLenTest_Impl2( const HashInfo * hinfo, std::vector<hashtype
 // Level 1: print out header, allocate hash vector, generate hashes, test them
 template <typename hashtype, size_t blocklen>
 static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_min, size_t blockoffset_incr,
-        size_t keylen, size_t seedmaxbits, size_t blockmaxbits ) {
+        size_t keylen, size_t seedmaxbits, size_t blockmaxbits, bool verbose ) {
     assert((keylen - blocklen - blockoffset_min) >= blockoffset_incr);
     const size_t blockoffset_max = blockoffset_min +
             (((keylen - blocklen - blockoffset_min) / blockoffset_incr) * blockoffset_incr);
@@ -166,7 +166,7 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
                 blockoffset_incr, blockoffset_max, seedmaxbits, blockmaxbits);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(false);
+    bool result = TestHashList(hashes).drawDiagram(verbose);
     printf("\n");
 
     recordTestResult(result, "SeedBlockLen", keylen);
@@ -200,7 +200,8 @@ bool SeedBlockLenTest( const HashInfo * hinfo, const bool verbose, const bool ex
     bool result = true;
 
     for (size_t kl = minkey; kl <= maxkey; kl++) {
-        result &= SeedBlockLenTest_Impl1<hashtype, blocklen>(hinfo, minoffset, incroffset, kl, seedbits, blockbits);
+        result &= SeedBlockLenTest_Impl1<hashtype, blocklen>(hinfo, minoffset,
+                incroffset, kl, seedbits, blockbits, verbose);
     }
 
     printf("%s\n", result ? "" : g_failstr);
