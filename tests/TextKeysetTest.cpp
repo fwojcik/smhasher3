@@ -236,19 +236,14 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
 template <typename hashtype>
 static bool WordsDictImpl( HashFn hash, const seed_t seed, bool verbose ) {
     std::vector<std::string> words = GetWordlist(false, verbose);
-    long wordscount = words.size();
+    const size_t wordscount = words.size();
 
-    printf("Keyset 'Dict' - dictionary words - %ld keys\n", wordscount);
+    printf("Keyset 'Dict' - dictionary words - %zd keys\n", wordscount);
 
-    std::unordered_set<std::string> wordset; // need to be unique, otherwise we report collisions
-    std::vector<hashtype>           hashes;
+    std::vector<hashtype> hashes;
     hashes.resize(wordscount);
 
-    for (int i = 0; i < (int)wordscount; i++) {
-        if (wordset.count(words[i]) > 0) { // not unique
-            continue;
-        }
-        wordset.insert(words[i]);
+    for (size_t i = 0; i < wordscount; i++) {
         const int    len = words[i].length();
         const char * key = words[i].c_str();
         hash(key, len, seed, &hashes[i]);

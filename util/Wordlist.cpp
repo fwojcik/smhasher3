@@ -47,14 +47,15 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <unordered_set>
 
 #include "Wordlist.h"
 #include "words/array.h"
 
 std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
     std::vector<std::string> wordvec;
-    std::string line;
-    unsigned    sum  = 0;
+    std::unordered_set<std::string> wordset; // words need to be unique, otherwise we report collisions
+    unsigned sum = 0, skip_dup = 0, skip_char = 0;
 
     const char * ptr = words_array + 1; // Skip over initial newline
     const char * eof = ptr + strlen(ptr);
@@ -62,7 +63,13 @@ std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
     while (ptr != eof) {
         const char * end = (const char *)memchr(ptr, '\n', eof - ptr);
         std::string  str( ptr, end - ptr );
-        wordvec.push_back(str);
+        if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyz") != std::string::npos) {
+            skip_char++;
+        } else if (wordset.count(str) > 0) {
+            skip_dup++;
+        } else {
+            wordvec.push_back(str);
+        }
         if (addSingleCap) {
             std::transform(str.begin(), str.begin() + 1, str.begin(), ::toupper);
             wordvec.push_back(str);
@@ -71,6 +78,11 @@ std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
         wordvec.push_back(str);
         sum += end - ptr;
         ptr  = end + 1;
+    }
+
+    if ((skip_dup > 0) || (skip_char > 0)) {
+        fprintf(stderr, "WARNING: skipped %d bad internal words (%d dupes, %d from invalid chars)\n",
+                skip_dup + skip_char, skip_dup, skip_char);
     }
 
     if (verbose) {
