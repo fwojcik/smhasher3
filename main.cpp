@@ -64,6 +64,7 @@
 #include "Timing.h"
 #include "Hashlib.h"
 #include "TestGlobals.h"
+#include "Random.h"
 #include "Blobsort.h"
 #include "Analyze.h"
 #include "Stats.h"
@@ -695,6 +696,7 @@ int main( int argc, const char ** argv ) {
 
 #if defined(DEBUG)
     BlobsortTest();
+    RandTest(4);
 #endif
 
     set_default_tests(true);
@@ -806,6 +808,11 @@ int main( int argc, const char ** argv ) {
             }
             if (strcmp(arg, "--SortBench") == 0) {
                 BlobsortBenchmark();
+                exit(0);
+            }
+            if (strcmp(arg, "--RandBench") == 0) {
+                RandTest(1);
+                RandBenchmark();
                 exit(0);
             }
             // invalid command

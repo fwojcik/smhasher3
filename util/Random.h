@@ -332,3 +332,8 @@ class RandSeq {
         return Rand::seq_maxelem(type, szelem);
     }
 }; // class RandSeq
+
+//-----------------------------------------------------------------------------
+
+void RandTest( const unsigned runs );
+void RandBenchmark( void );

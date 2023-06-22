@@ -18,7 +18,11 @@
  */
 #include "Platform.h"
 #include "Random.h"
+#include "TestGlobals.h"
+#include "Stats.h"
+#include "Timing.h"
 
+#include <vector>
 #include <algorithm>
 #include <cassert>
 
@@ -558,4 +562,466 @@ RandSeq Rand::get_seq( enum RandSeqType seqtype, const uint32_t szelem ) {
     rs.szelem   = szelem;
 
     return rs;
+}
+
+//-----------------------------------------------------------------------------
+// Unit tests and benchmarks
+
+#define WEAKRAND(i) (UINT64_C(0xBB67AE8584CAA73D) * (i + 1))
+#define VERIFY(r, t) { if (!(r)) { printf("%s:%d: Test for %s failed!\n", __FILE__, __LINE__, t); } }
+#define VERIFYEQUAL(x, y, n) {                                         \
+        VERIFY(x.rand_u64() == y.rand_u64(), "Rand() equality");       \
+        VERIFY(x.rand_range(n) == y.rand_range(n), "Rand() equality"); \
+        VERIFY(x == y, "Rand() equality");                             \
+    }
+
+static void progress( const char * s ) {
+    double tim = (double)monotonic_clock() / NSEC_PER_SEC;
+
+    printf("%11.2f: %s\n", tim, s);
+}
+
+void RandTest( const unsigned runs ) {
+    std::vector<Rand> testRands1;
+    std::vector<Rand> testRands2;
+    volatile uint64_t ignored;
+
+    // This comprises ~6000 tests, so ~50% chance of hitting Logp of 14,
+    // and ~5% chance of hitting 18, assuming real randomness.
+    constexpr int    LogpFail     = 18;
+    constexpr int    LogpPrint    = LogpFail;
+    constexpr size_t Testcount_sm = 1024;
+    constexpr size_t Testcount_lg = 1024 * 256;
+
+    constexpr size_t Maxrange     = 256;
+    constexpr size_t Buf64len     = 128;
+    constexpr size_t Buf8len      = 2048;
+    uint64_t         buf64_A[Maxrange][Buf64len], buf64_B[Maxrange][Buf64len];
+    uint64_t         nbuf[Maxrange];
+    uint32_t         cnt32[Maxrange][Maxrange];
+    uint8_t          buf8_A[Buf8len], buf8_B[Buf8len];
+
+    for (unsigned i = 0; i < runs; i++) {
+        progress("Basic sanity");
+
+        // Ensure two Rand() objects seeded identically produce identical results
+        testRands1.emplace_back(Rand(i));
+        testRands2.emplace_back(Rand(i));
+
+        testRands1.emplace_back(Rand(WEAKRAND(i)));
+        testRands2.emplace_back(Rand(WEAKRAND(i)));
+
+        testRands1.emplace_back(Rand(i, 123));
+        testRands2.emplace_back(Rand(i, 123));
+
+        testRands1.emplace_back(Rand(123, i));
+        testRands2.emplace_back(Rand(123, i));
+
+        testRands1.emplace_back(Rand(i, i));
+        testRands2.emplace_back(Rand(i, i));
+
+        testRands1.emplace_back(Rand(WEAKRAND(i), i));
+        testRands2.emplace_back(Rand(WEAKRAND(i), i));
+
+        testRands1.emplace_back(Rand(i, WEAKRAND(i)));
+        testRands2.emplace_back(Rand(i, WEAKRAND(i)));
+
+        testRands1.emplace_back(Rand(WEAKRAND(2 * i), WEAKRAND(2 * i + 1)));
+        testRands2.emplace_back(Rand(WEAKRAND(2 * i), WEAKRAND(2 * i + 1)));
+
+        size_t Randcount = std::min(testRands1.size(), Maxrange);
+
+        for (size_t j = 0; j < Randcount; j++) {
+            VERIFY(testRands1[j] == testRands2[j], "Rand() equality");
+        }
+        for (size_t j = 0; j < Randcount; j++) {
+            for (size_t k = 0; k < Testcount_sm; k++) {
+                VERIFYEQUAL(testRands1[j], testRands2[j], j + 2);
+            }
+        }
+
+        // Ensure Rand() and reseed() work the same
+        Rand A1(WEAKRAND(5 * i));
+        Rand A2(0);
+        ignored = A2.rand_u64(); (void)ignored;
+        A2.reseed((uint64_t)(WEAKRAND(5 * i)));
+        VERIFYEQUAL(A1, A2, 999);
+        Rand B1(WEAKRAND(7 * i), WEAKRAND(9 * i));
+        Rand B2(123, 456);
+        ignored = B2.rand_u64(); (void)ignored;
+        B2.reseed((uint64_t)(WEAKRAND(7 * i)), (uint64_t)(WEAKRAND(9 * i)));
+        VERIFYEQUAL(B1, B2, 999);
+
+        // Ensure Rand() and substream() work the same
+        Rand C1(WEAKRAND(11 * i), WEAKRAND(13 * i));
+        Rand C2(WEAKRAND(11 * i));
+        ignored = C2.rand_u64(); (void)ignored;
+        C2.substream((uint64_t)(WEAKRAND(13 * i)));
+        VERIFYEQUAL(C1, C2, 999);
+        Rand D1(0, WEAKRAND(15 * i));
+        Rand D2(0, WEAKRAND(17 * i));
+        ignored = D2.rand_u64(); (void)ignored;
+        D2.substream((uint64_t)(WEAKRAND(15 * i)));
+        VERIFYEQUAL(D1, D2, 999);
+
+        progress("Seeking");
+
+        // Ensure seek() works the same as stepping forward
+        for (size_t j = 0; j < Testcount_sm; j++) {
+            const size_t forward = j + 3;
+            for (size_t k = 0; k < forward; k++) {
+                for (size_t l = 0; l < Randcount; l++) {
+                    ignored = testRands1[l].rand_u64(); (void)ignored;
+                }
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands2[l].seek(testRands2[l].getoffset() + forward);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                VERIFYEQUAL(testRands1[l], testRands2[l], j + 2);
+            }
+        }
+
+        progress("u64 vs. bytes");
+
+        // Ensure rand_u64() x N and rand_n(N) match
+        for (size_t j = 0; j < Randcount; j++) {
+            for (size_t k = 0; k < Buf64len; k++) {
+                buf64_A[j][k] = COND_BSWAP(testRands1[j].rand_u64(), isBE());
+            }
+        }
+        for (size_t j = 0; j < Randcount; j++) {
+            testRands2[j].rand_n(&buf64_B[j][0], Buf64len * sizeof(uint64_t));
+        }
+        for (size_t j = 0; j < Randcount; j++) {
+            VERIFY(memcmp(&buf64_A[j][0], &buf64_B[j][0], Buf64len * sizeof(uint64_t)) == 0,
+                    "rand_u64() x N and rand_n(N) outputs match");
+        }
+        // Also verify that seek() works
+        for (size_t j = 0; j < Randcount; j++) {
+            testRands1[j].seek(testRands1[j].getoffset() - Buf64len);
+        }
+        for (size_t j = 0; j < Randcount; j++) {
+            testRands1[j].rand_n(&buf64_B[j][0], Buf64len * sizeof(uint64_t));
+        }
+        for (size_t j = 0; j < Randcount; j++) {
+            VERIFY(memcmp(&buf64_A[j][0], &buf64_B[j][0], Buf64len * sizeof(uint64_t)) == 0,
+                    "seek()+rand_(n) and rand_n(N) outputs match");
+            VERIFYEQUAL(testRands1[j], testRands2[j], j + 2);
+        }
+
+        progress("byte generation");
+
+        // Verify that all paths through rand_n() work and give the same results
+        for (size_t j = 0; j < Randcount; j++) {
+            uint64_t init = testRands1[j].getoffset();
+            testRands1[j].rand_n(&buf64_A[j][0], Buf64len * sizeof(uint64_t));
+            for (size_t k = 0; k < Buf64len; k++) {
+                testRands1[j].seek(init + k);
+                testRands1[j].rand_n(&buf64_B[j][k]    , 1                * sizeof(uint64_t));
+                testRands1[j].rand_n(&buf64_B[j][k + 1], (Buf64len - 1 - k) * sizeof(uint64_t));
+                VERIFY(memcmp(&buf64_A[j][0], &buf64_B[j][0], Buf64len * sizeof(uint64_t)) == 0,
+                        "seek()+rand_(n) and rand_n(N) outputs match");
+            }
+        }
+
+        progress("rng_range");
+
+        // Ensure rng_range() doesn't give invalid values for edge cases
+        for (size_t j = 0; j < Testcount_sm; j++) {
+            for (size_t k = 0; k < Randcount; k++) {
+                VERIFY(testRands1[k].rand_range(0) == 0, "Rand().rand_range(0) == 0");
+                VERIFY(testRands1[k].rand_range(1) == 0, "Rand().rand_range(1) == 0");
+            }
+        }
+
+        // Ensure rng_range() works acceptably
+        for (size_t j = 2; j <= Maxrange; j += 3) {
+            memset(&cnt32[0][0], 0, sizeof(cnt32));
+            for (size_t k = 0; k < Randcount; k++) {
+                for (size_t l = 0; l < Testcount_lg; l++) {
+                    uint32_t r = testRands1[k].rand_range(j);
+                    VERIFY(r < j, "Rand.rand_range(N) < N");
+                    cnt32[k][r]++;
+                }
+                uint64_t sumsq      = sumSquaresBasic(&cnt32[k][0], j);
+                double   score      = calcScore(sumsq, j, Testcount_lg);
+                double   p_value    = GetStdNormalPValue(score);
+                int      logp_value = GetLog2PValue(p_value);
+                VERIFY(logp_value <= LogpFail, "Rand.rand_range(N) is equally distributed");
+                if (logp_value > LogpPrint) {
+                    printf("%zd %zd: %e %e %d\n", j, k, score, p_value, logp_value);
+                }
+            }
+        }
+
+        progress("Numeric sequence basics");
+
+        // Test SEQ_NUM
+        for (uint64_t j = 1; j < (UINT64_C(1) << 32); j = j * 2 + 1) {
+            for (size_t k = 0; k < Randcount; k++) {
+                const uint64_t numgen = std::min(Buf64len, Rand::seq_maxelem(SEQ_NUM, j));
+
+                RandSeq rs1 = testRands1[k].get_seq(SEQ_NUM, j);
+                rs1.write(&buf64_A[k][0], 0, numgen);
+
+                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+
+                RandSeq rs2 = testRands1[k].get_seq(SEQ_NUM, j);
+                rs2.write(&buf64_B[k][0], 0, numgen);
+
+                VERIFY(memcmp(&buf64_A[k][0], &buf64_B[k][0], numgen * sizeof(uint64_t)) == 0,
+                        "RandSeq and seek + RandSeq outputs match");
+
+                for (uint64_t off = 1; off < numgen; off++) {
+                    rs2.write(&buf64_B[k][off], off, numgen - off);
+
+                    VERIFY(memcmp(&buf64_A[k][0], &buf64_B[k][0], numgen * sizeof(uint64_t)) == 0,
+                            "RandSeq write() outputs match");
+                }
+
+                for (uint64_t l = 0; l < numgen; l++) {
+                    VERIFY(buf64_A[k][l] <= j, "RandSeq SEQ_NUM output range <= N");
+                    for (uint64_t m = l + 1; m < numgen; m++) {
+                        VERIFY(buf64_A[k][l] != buf64_A[k][m], "RandSeq SEQ_NUM outputs are unique");
+                    }
+                    rs1.write(&buf64_B[k][l], l, 1);
+                    VERIFY(buf64_A[k][l] == buf64_B[k][l], "RandSeq write(N) and write(1) agree");
+                }
+            }
+        }
+
+        progress("Numeric sequence bias");
+
+        // Ensure SEQ_NUM() works acceptably
+        //
+        // This increment was tuned to produce a "nice" range of varying
+        // sizes that ends exactly at 256. The sizes it tests are:
+        //   2-12, 18, 27, 40, 58, 84, 122, 177, 256
+        for (size_t j = 2; j <= Maxrange;
+                j = 1 + ((j < 12) ? j : (j * 1445 / 1000))) {
+            for (size_t l = 0; l < Randcount; l++) {
+                memset(&cnt32[0][0], 0, sizeof(cnt32));
+                for (size_t k = 0; k < Testcount_lg; k++) {
+                    RandSeq rs = testRands1[l].get_seq(SEQ_NUM, j - 1);
+                    rs.write(nbuf, 0, j);
+                    for (size_t m = 0; m < j; m++) {
+                        VERIFY(nbuf[m] < j, "RandSeq.SEQ_NUM(N) < N");
+                        cnt32[m][nbuf[m]]++;
+                    }
+                }
+                for (size_t m = 0; m < j; m++) {
+                    uint64_t sumsq      = sumSquaresBasic(&cnt32[m][0], j);
+                    double   score      = calcScore(sumsq, j, Testcount_lg);
+                    double   p_value    = GetStdNormalPValue(score);
+                    int      logp_value = GetLog2PValue(p_value);
+                    VERIFY(logp_value <= LogpFail, "RandSeq SEQ_NUM(N) is equally distributed");
+                    if (logp_value > LogpPrint) {
+                        printf("%zd %zd: %e %e %d\n", j, l, score, p_value, logp_value);
+                    }
+                }
+            }
+        }
+
+        progress("Distance 1 sequence basics");
+
+        // Test SEQ_DIST_1
+        for (size_t j = 1; j <= 12; j++) {
+            for (size_t k = 0; k < Randcount; k++) {
+                const size_t numgen = std::min(Buf8len / j, Rand::seq_maxelem(SEQ_DIST_1, j));
+
+                RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_1, j);
+                rs1.write(buf8_A, 0, numgen);
+
+                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+
+                RandSeq rs2 = testRands1[k].get_seq(SEQ_DIST_1, j);
+                rs2.write(buf8_B, 0, numgen);
+
+                VERIFY(memcmp(buf8_A, buf8_B, numgen * j) == 0, "RandSeq and seek + RandSeq outputs match");
+
+                for (size_t off = 1; off < numgen - 1; off++) {
+                    rs2.write(&buf8_B[off * j], off, numgen - off);
+
+                    VERIFY(memcmp(buf8_A, buf8_B, numgen * j) == 0, "RandSeq write() outputs match");
+                }
+
+                for (size_t l = 0; l < numgen; l++) {
+                    uint64_t s = 0;
+                    memcpy(&s, &buf8_A[l * j], std::min(j, sizeof(s)));
+                    for (size_t m = l + 1; m < numgen; m++) {
+                        uint64_t t = 0;
+                        memcpy(&t, &buf8_A[m * j], std::min(j, sizeof(s)));
+                        VERIFY(s != t, "RandSeq SEQ_DIST_1 outputs are unique");
+                    }
+                    rs1.write(buf8_B, l, 1);
+                    int u = memcmp(buf8_B, &buf8_A[l * j], j);
+                    VERIFY(u == 0, "RandSeq write(N) and write(1) agree");
+                }
+            }
+        }
+
+        progress("Distance 1 sequence bias");
+
+        // Ensure SEQ_DIST_1() works acceptably
+        unsigned sdcnt;
+        sdcnt = Rand::seq_maxelem(SEQ_DIST_1, 1);
+        static_assert(Maxrange >= 256, "Maxrange must handle all 1-byte values");
+        for (size_t l = 0; l < Randcount; l++) {
+            memset(&cnt32[0][0], 0, sizeof(cnt32));
+            for (size_t k = 0; k < Testcount_lg; k++) {
+                RandSeq rs = testRands1[l].get_seq(SEQ_DIST_1, 1);
+                rs.write(buf8_A, 0, sdcnt);
+                for (size_t m = 0; m < sdcnt; m++) {
+                    cnt32[m][buf8_A[m]]++;
+                }
+            }
+            for (size_t m = 0; m < 256; m++) {
+                uint64_t sumsq      = sumSquaresBasic(&cnt32[m][0], 256);
+                double   score      = calcScore(sumsq, 256, Testcount_lg);
+                double   p_value    = GetStdNormalPValue(score);
+                int      logp_value = GetLog2PValue(p_value);
+                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_1(N) is equally distributed");
+                if (logp_value > LogpPrint) {
+                    printf("%d %zd: %e %e %d\n", 256, l, score, p_value, logp_value);
+                }
+            }
+        }
+
+        progress("Distance 2 sequence basics");
+
+        // Test SEQ_DIST_2
+        for (size_t j = 1; j <= 12; j++) {
+            for (size_t k = 0; k < Randcount; k++) {
+                const size_t numgen = std::min(Buf8len / j, Rand::seq_maxelem(SEQ_DIST_2, j));
+
+                RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_2, j);
+                rs1.write(buf8_A, 0, numgen);
+
+                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+
+                RandSeq rs2 = testRands1[k].get_seq(SEQ_DIST_2, j);
+                rs2.write(buf8_B, 0, numgen);
+
+                VERIFY(memcmp(buf8_A, buf8_B, numgen * j) == 0, "RandSeq and seek + RandSeq outputs match");
+
+                for (size_t off = 1; off < numgen - 1; off++) {
+                    rs2.write(&buf8_B[off * j], off, numgen - off);
+
+                    VERIFY(memcmp(buf8_A, buf8_B, numgen * j) == 0, "RandSeq write() outputs match");
+                }
+
+                for (size_t l = 0; l < numgen; l++) {
+                    uint64_t s = 0;
+                    memcpy(&s, &buf8_A[l * j], std::min(j, sizeof(s)));
+                    for (size_t m = l + 1; m < numgen; m++) {
+                        uint64_t t = 0;
+                        memcpy(&t, &buf8_A[m * j], std::min(j, sizeof(s)));
+                        VERIFY(s != t, "RandSeq SEQ_DIST_2 outputs are unique");
+                        VERIFY(popcount8(s ^ t) >= 2, "RandSeq SEQ_DIST_2 outputs are at least 2 bits apart");
+                    }
+                    rs1.write(buf8_B, l, 1);
+                    int u = memcmp(buf8_B, &buf8_A[l * j], j);
+                    VERIFY(u == 0, "RandSeq write(N) and write(1) agree");
+                }
+            }
+        }
+
+        progress("Distance 2 sequence bias");
+
+        // Ensure SEQ_DIST_2() works acceptably
+        sdcnt = Rand::seq_maxelem(SEQ_DIST_2, 1);
+        static_assert(Maxrange >= 256, "Maxrange must handle all 1-byte values");
+        for (size_t l = 0; l < Randcount; l++) {
+            memset(&cnt32[0][0], 0, sizeof(cnt32));
+            for (size_t k = 0; k < Testcount_lg; k++) {
+                RandSeq rs = testRands1[l].get_seq(SEQ_DIST_2, 1);
+                rs.write(buf8_A, 0, sdcnt);
+                for (size_t m = 0; m < sdcnt; m++) {
+                    cnt32[m][buf8_A[m]]++;
+                }
+            }
+            for (size_t m = 0; m < 256; m++) {
+                uint64_t sumsq      = sumSquaresBasic(&cnt32[m][0], 256);
+                double   score      = calcScore(sumsq, 256, Testcount_lg);
+                double   p_value    = GetStdNormalPValue(score);
+                int      logp_value = GetLog2PValue(p_value);
+                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_2(N) is equally distributed");
+                if (logp_value > LogpPrint) {
+                    printf("%d %zd: %e %e %d\n", 256, l, score, p_value, logp_value);
+                }
+            }
+        }
+
+        progress("Distance 3 sequence basics");
+
+        // Test SEQ_DIST_3
+        for (size_t j = 1; j <= 12; j++) {
+            for (size_t k = 0; k < Randcount; k++) {
+                const size_t numgen = std::min(Buf8len / j, Rand::seq_maxelem(SEQ_DIST_3, j));
+
+                RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_3, j);
+                rs1.write(buf8_A, 0, numgen);
+
+                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+
+                RandSeq rs2 = testRands1[k].get_seq(SEQ_DIST_3, j);
+                rs2.write(buf8_B, 0, numgen);
+
+                VERIFY(memcmp(buf8_A, buf8_B, numgen * j) == 0, "RandSeq and seek + RandSeq outputs match");
+
+                for (size_t off = 1; off < numgen - 1; off++) {
+                    rs2.write(&buf8_B[off * j], off, numgen - off);
+
+                    VERIFY(memcmp(buf8_A, buf8_B, numgen * j) == 0, "RandSeq write() outputs match");
+                }
+
+                for (size_t l = 0; l < numgen; l++) {
+                    uint64_t s = 0;
+                    memcpy(&s, &buf8_A[l * j], std::min(j, sizeof(s)));
+                    for (size_t m = l + 1; m < numgen; m++) {
+                        uint64_t t = 0;
+                        memcpy(&t, &buf8_A[m * j], std::min(j, sizeof(s)));
+                        VERIFY(s != t, "RandSeq SEQ_DIST_3 outputs are unique");
+                        VERIFY(popcount8(s ^ t) >= 3, "RandSeq SEQ_DIST_3 outputs are at least 3 bits apart");
+                    }
+                    rs1.write(buf8_B, l, 1);
+                    int u = memcmp(buf8_B, &buf8_A[l * j], j);
+                    VERIFY(u == 0, "RandSeq write(N) and write(1) agree");
+                }
+            }
+        }
+
+        progress("Distance 3 sequence bias");
+
+        // Ensure SEQ_DIST_3() works acceptably
+        sdcnt = Rand::seq_maxelem(SEQ_DIST_3, 1);
+        static_assert(Maxrange >= 256, "Maxrange must handle all 1-byte values");
+        for (size_t l = 0; l < Randcount; l++) {
+            memset(&cnt32[0][0], 0, sizeof(cnt32));
+            for (size_t k = 0; k < Testcount_lg; k++) {
+                RandSeq rs = testRands1[l].get_seq(SEQ_DIST_3, 1);
+                rs.write(buf8_A, 0, sdcnt);
+                for (size_t m = 0; m < sdcnt; m++) {
+                    cnt32[m][buf8_A[m]]++;
+                }
+            }
+            for (size_t m = 0; m < 256; m++) {
+                uint64_t sumsq      = sumSquaresBasic(&cnt32[m][0], 256);
+                double   score      = calcScore(sumsq, 256, Testcount_lg);
+                double   p_value    = GetStdNormalPValue(score);
+                int      logp_value = GetLog2PValue(p_value);
+                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_3(N) is equally distributed");
+                if (logp_value > LogpPrint) {
+                    printf("%d %zd: %e %e %d\n", 256, l, score, p_value, logp_value);
+                }
+            }
+        }
+
+        testRands1.clear();
+        testRands2.clear();
+    }
+}
+
+void RandBenchmark( void ) {
 }
