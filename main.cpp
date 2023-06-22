@@ -96,11 +96,12 @@
 #include "SeedBitIndependenceTest.h"
 #include "BadSeedsTest.h"
 
-#include <stdio.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <time.h>
-#include <errno.h>
+#include <cstdio>
+#include <cstdint>
+#include <cinttypes>
+#include <ctime>
+#include <cerrno>
+#include <clocale>
 
 //-----------------------------------------------------------------------------
 // Globally-visible configuration
