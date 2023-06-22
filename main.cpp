@@ -686,6 +686,8 @@ static void usage( void ) {
 int main( int argc, const char ** argv ) {
     setbuf(stdout, NULL); // Unbuffer stdout always
     setbuf(stderr, NULL); // Unbuffer stderr always
+    std::setlocale(LC_COLLATE, "C");
+    std::setlocale(LC_CTYPE, "C");
 
     if (!isLE() && !isBE()) {
         printf("Runtime endian detection failed! Cannot continue\n");
