@@ -60,6 +60,16 @@
 #include "Stats.h"
 
 //-----------------------------------------------------------------------------
+// Some useful constant(s). These are not guaranteed to be available from
+// math.h or cmath, so we simply define them here, instead of having
+// additional platform detection (for things like _USE_MATH_DEFINES) and
+// fallback code.
+
+#if !defined(M_SQRT1_2)
+#define M_SQRT1_2 0.70710678118654752440  //  1.0 / sqrt(2.0)
+#endif
+
+//-----------------------------------------------------------------------------
 
 double CalcMean( std::vector<double> & v ) {
     double sum = std::accumulate(v.begin(), v.end(), 0.0);
