@@ -374,14 +374,11 @@ static void beamsplitter_64( const void * in, const size_t len, const seed_t see
 
     // the cali number from the Matrix (1999)
     uint32_t seed32 = seed;
-    if (!bswap) {
-        seedbuf[0]  = 0xc5550690;
-        seedbuf[0] -= seed32;
-        seedbuf[1]  = ~(1 - seed32);
-    } else {
-        seedbuf[1]  = 0xc5550690;
-        seedbuf[1] -= seed32;
-        seedbuf[0]  = ~(1 - seed32);
+    seedbuf[0]  = 0xc5550690;
+    seedbuf[0] -= seed32;
+    seedbuf[1]  = ~(1 - seed32);
+    if (bswap) {
+        std::swap(seedbuf[0], seedbuf[1]);
     }
 
     uint64_t state[STATE / 8];

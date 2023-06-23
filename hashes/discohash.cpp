@@ -112,7 +112,8 @@ static FORCE_INLINE void round( uint64_t * ds, const uint8_t * m8, uint32_t len 
 
     // #pragma omp parallel for
     for (index = Len; index < len; index++) {
-        ((uint8_t *)ds)[bswap ? (sindex ^ 7) : sindex] += ROTR8(m8[index] + index + counter8 + 1, 23);
+        uint32_t ssindex = bswap ? (sindex ^ 7) : sindex;
+        ((uint8_t *)ds)[ssindex] += ROTR8(m8[index] + index + counter8 + 1, 23);
         // I also wonder if this was intended to be m8[index], to
         // mirror the primary 8-byte loop above...
         //
@@ -146,18 +147,14 @@ static void BEBB4185( const void * in, const size_t len, const seed_t seed, void
 
     // the cali number from the Matrix (1999)
     uint32_t seed32 = seed;
-    if (!bswap) {
-        seedbuf[0]  = 0xc5550690;
-        seedbuf[0] -= seed32;
-        seedbuf[1]  =   1 + seed32;
-        seedbuf[2]  = ~(1 - seed32);
-        seedbuf[3]  =  (1 + seed32) * 0xf00dacca;
-    } else {
-        seedbuf[1]  = 0xc5550690;
-        seedbuf[1] -= seed32;
-        seedbuf[0]  =   1 + seed32;
-        seedbuf[3]  = ~(1 - seed32);
-        seedbuf[2]  =  (1 + seed32) * 0xf00dacca;
+    seedbuf[0]  = 0xc5550690;
+    seedbuf[0] -= seed32;
+    seedbuf[1]  =   1 + seed32;
+    seedbuf[2]  = ~(1 - seed32);
+    seedbuf[3]  =  (1 + seed32) * 0xf00dacca;
+    if (bswap) {
+        std::swap(seedbuf[0], seedbuf[1]);
+        std::swap(seedbuf[2], seedbuf[3]);
     }
 
     uint64_t ds[STATE / 8];
