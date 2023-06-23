@@ -27,7 +27,20 @@
 #include "Platform.h"
 #include "Hashlib.h"
 
-#include <math.h> // For M_E and M_PI
+#include <math.h> // For pow()
+
+//-----------------------------------------------------------------------------
+// Some useful constant(s). These are not guaranteed to be available from
+// math.h or cmath, so we simply define them here, instead of having
+// additional platform detection (for things like _USE_MATH_DEFINES) and
+// fallback code.
+#if !defined(M_PI)
+#define M_PI           3.14159265358979323846
+#endif
+
+#if !defined(M_E)
+#define M_E            2.7182818284590452354
+#endif
 
 //------------------------------------------------------------
 // Cross-platform bitwise-exact floating point math is not guaranteed to be possible
