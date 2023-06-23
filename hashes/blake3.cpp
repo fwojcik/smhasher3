@@ -31,9 +31,9 @@
 #include "Hashlib.h"
 
 static const uint32_t IV         [8] = {
-    0x6A09E667UL, 0xBB67AE85UL, 0x3C6EF372UL,
-    0xA54FF53AUL, 0x510E527FUL, 0x9B05688CUL,
-    0x1F83D9ABUL, 0x5BE0CD19UL
+    0x6A09E667, 0xBB67AE85, 0x3C6EF372,
+    0xA54FF53A, 0x510E527F, 0x9B05688C,
+    0x1F83D9AB, 0x5BE0CD19
 };
 
 static const uint8_t MSG_SCHEDULE[7][16] = {
@@ -70,7 +70,7 @@ static FORCE_INLINE uint32_t counter_high( uint64_t counter ) {
 }
 
 static FORCE_INLINE uint64_t round_down_to_power_of_2( uint64_t x ) {
-    return 1ULL << (63 ^ clz8(x | 1));
+    return UINT64_C(1) << (63 ^ clz8(x | 1));
 }
 
 static FORCE_INLINE size_t left_len( size_t content_len ) {

@@ -174,7 +174,7 @@ static __m128i lazyLengthHash( uint64_t keylength, uint64_t length ) {
 // see precompReduction64
 static inline __m128i precompReduction64_si128( __m128i A ) {
     // const __m128i C = _mm_set_epi64x(1U,(1U<<4)+(1U<<3)+(1U<<1)+(1U<<0)); // C is the irreducible poly. (64,4,3,1,0)
-    const __m128i C  = _mm_cvtsi64_si128((1U << 4) + (1U << 3) + (1U << 1) + (1U << 0));
+    const __m128i C  = _mm_cvtsi64_si128((1 << 4) + (1 << 3) + (1 << 1) + (1 << 0));
     __m128i       Q2 = _mm_clmulepi64_si128(A, C, 0x01);
     __m128i       Q3 = _mm_shuffle_epi8(_mm_setr_epi8(0, 27, 54, 45, 108, 119, 90, 65, (uint8_t)216, (uint8_t)195,
             (uint8_t)238, (uint8_t)245, (uint8_t)180, (uint8_t)175, (uint8_t)130, (uint8_t)153), _mm_srli_si128(Q2, 8));

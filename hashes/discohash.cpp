@@ -37,8 +37,8 @@ static const uint64_t Q         = UINT64_C(13166748625691186689);
 
 //--------
 // State mix function
-static FORCE_INLINE uint8_t ROTR8( uint8_t v, int n ) {
-    n = n & 7U;
+static FORCE_INLINE uint8_t ROTR8( uint8_t v, unsigned n ) {
+    n = n & 7;
     if (n) {
         v = (v >> n) | (v << (8 - n));
     }

@@ -394,7 +394,7 @@ static inline struct split_accumulator split_accumulator_update( const struct sp
     mul128(m1, h1, hi1, lo1);
 
     /* partial \eqv (acc.base + h0 + 8 * acc.fixup)  mod 2**64 - 8 */
-    if (unlikely(h0 > -8ULL * (SPLIT_ACCUMULATOR_MAX_FIXUP + 1))) {
+    if (unlikely(h0 > UINT64_C(-8) * (SPLIT_ACCUMULATOR_MAX_FIXUP + 1))) {
         h0 = add_mod_slow(h0, 8 * acc.fixup);
     } else {
         /*
@@ -416,7 +416,7 @@ static inline struct split_accumulator split_accumulator_update( const struct sp
     /* hi0 and hi1 < 2**61, so this addition never overflows. */
     hi     = hi0 + hi1;
 
-    fixup += (hi & (1ULL << 61)) != 0;
+    fixup += (hi & (UINT64_C(1) << 61)) != 0;
     hi    *= 8;
 
     fixup += add_overflow(sum, hi, &sum);
