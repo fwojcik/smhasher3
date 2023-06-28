@@ -1024,4 +1024,319 @@ void RandTest( const unsigned runs ) {
 }
 
 void RandBenchmark( void ) {
+    constexpr size_t TEST_ITER = 1000;
+    constexpr size_t TEST_SIZE = 1 * 1024 * 1024;
+
+    alignas(uint64_t) uint8_t buf[TEST_SIZE];
+
+    volatile uint64_t val;
+    Rand randbuf[TEST_ITER];
+
+    size_t numgen;
+    double deltat;
+
+    printf("Raw RNG.........................");
+    deltat = UINT64_C(1) << 53;
+    for (size_t i = 0; i < TEST_ITER; i++) {
+        uint64_t keys[5] = { 1, 2, 3, 4, 5 };
+        uint64_t begin   = timer_start();
+        threefry(buf, keys);
+        uint64_t end     = timer_start();
+        deltat = std::min(deltat, (double)(end - begin));
+    }
+    printf("%8.2f\n", deltat);
+
+    printf("Object init.....................");
+    deltat = UINT64_C(1) << 53;
+    for (size_t i = 0; i < TEST_ITER; i++) {
+        uint64_t begin = timer_start();
+        randbuf[i] = Rand(i);
+        uint64_t end   = timer_start();
+        deltat = std::min(deltat, (double)(end - begin));
+    }
+    printf("%8.2f\n", deltat);
+
+    printf("Reseeding.......................");
+    deltat = UINT64_C(1) << 53;
+    for (size_t i = 0; i < TEST_ITER; i++) {
+        Rand r1;
+        uint64_t begin = timer_start();
+        r1.reseed(i, i);
+        uint64_t end   = timer_start();
+        deltat = std::min(deltat, (double)(end - begin));
+    }
+    printf("%8.2f\n", deltat);
+
+    printf("Reseed + rand_u64().............");
+    deltat = UINT64_C(1) << 53;
+    for (size_t i = 0; i < TEST_ITER; i++) {
+        Rand r2b;
+        uint64_t begin = timer_start();
+        r2b.reseed(i, i);
+        val = r2b.rand_u64(); (void)val;
+        uint64_t end =   timer_start();
+        deltat = std::min(deltat, (double)(end - begin));
+    }
+    printf("%8.2f\n", deltat);
+
+    printf("rand_u64()......................");
+    deltat = UINT64_C(1) << 53;
+    for (size_t i = 0; i < TEST_ITER; i++) {
+        Rand r3;
+        uint64_t begin = timer_start();
+        for (size_t j = 0; j < 4096; j++) {
+            val = r3.rand_u64(); (void)val;
+        }
+        uint64_t end =   timer_start();
+        deltat = std::min(deltat, (double)(end - begin));
+    }
+    printf("%8.2f\n", deltat / 4096.0);
+
+    printf("rand_range()....................");
+    deltat = UINT64_C(1) << 53;
+    for (size_t i = 0; i < TEST_ITER; i++) {
+        Rand r4;
+        uint64_t begin = timer_start();
+        for (size_t j = 0; j < 4096; j++) {
+            val = r4.rand_range(j); (void)val;
+        }
+        uint64_t end =   timer_start();
+        deltat = std::min(deltat, (double)(end - begin));
+    }
+    printf("%8.2f\n", deltat / 4096.0);
+
+    printf("rand_n()........................");
+    deltat = UINT64_C(1) << 53;
+    for (size_t i = 0; i < TEST_ITER; i++) {
+        Rand r5;
+        uint64_t begin = timer_start();
+        r5.rand_n(buf, sizeof(buf));
+        uint64_t end   = timer_start();
+        deltat = std::min(deltat, (double)(end - begin));
+    }
+    printf("%8.2f\n", deltat / (sizeof(buf) / sizeof(uint64_t)));
+
+    printf("\n................................ batch  \tordered \t random \n");
+
+    for (uint64_t szelem = 1; szelem <= 16; szelem++) {
+        printf("RandSeq(SEQ_DIST_1, %2d).........", (int)szelem);
+        deltat = UINT64_C(1) << 53;
+        Rand r6(6, szelem);
+        numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_1, szelem));
+        // Batched
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs1   = r6.get_seq(SEQ_DIST_1, szelem);
+            uint64_t begin = timer_start();
+            rs1.write(buf, 0, numgen);
+            uint64_t end   = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs1   = r6.get_seq(SEQ_DIST_1, szelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                rs1.write(buf, j, 1);
+            }
+            uint64_t end =   timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in random order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq rs2 = r6.get_seq(SEQ_NUM, numgen - 1);
+            rs2.write(buf, 0, numgen);
+
+            RandSeq  rs1   = r6.get_seq(SEQ_DIST_1, szelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                uint64_t k = GET_U64<false>(buf, j * 8);
+                rs1.write(buf, k, 1);
+            }
+            uint64_t end = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\n", deltat / numgen);
+    }
+
+    for (uint64_t szelem = 1; szelem <= 16; szelem++) {
+        printf("RandSeq(SEQ_DIST_2, %2d).........", (int)szelem);
+        deltat = UINT64_C(1) << 53;
+        Rand r7(7, szelem);
+        numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_2, szelem));
+        // Batched
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs2   = r7.get_seq(SEQ_DIST_2, szelem);
+            uint64_t begin = timer_start();
+            rs2.write(buf, 0, numgen);
+            uint64_t end   = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs2   = r7.get_seq(SEQ_DIST_2, szelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                rs2.write(buf, j, 1);
+            }
+            uint64_t end =   timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in random order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq rs3 = r7.get_seq(SEQ_NUM, numgen - 1);
+            rs3.write(buf, 0, numgen);
+
+            RandSeq  rs2   = r7.get_seq(SEQ_DIST_2, szelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                uint64_t k = GET_U64<false>(buf, j * 8);
+                rs2.write(buf, k, 1);
+            }
+            uint64_t end = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\n", deltat / numgen);
+    }
+
+    for (uint64_t szelem = 1; szelem <= 16; szelem++) {
+        printf("RandSeq(SEQ_DIST_3, %2d).........", (int)szelem);
+        deltat = UINT64_C(1) << 53;
+        Rand r8(8, szelem);
+        numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_3, szelem));
+        // Batched
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs3   = r8.get_seq(SEQ_DIST_3, szelem);
+            uint64_t begin = timer_start();
+            rs3.write(buf, 0, numgen);
+            uint64_t end   = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs3   = r8.get_seq(SEQ_DIST_3, szelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                rs3.write(buf, j, 1);
+            }
+            uint64_t end =   timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in random order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq rs4 = r8.get_seq(SEQ_NUM, numgen - 1);
+            rs4.write(buf, 0, numgen);
+
+            RandSeq  rs3   = r8.get_seq(SEQ_DIST_3, szelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                uint64_t k = GET_U64<false>(buf, j * 8);
+                rs3.write(buf, k, 1);
+            }
+            uint64_t end = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\n", deltat / numgen);
+    }
+
+    for (uint64_t maxelemP = 4; maxelemP <= 31; maxelemP += 3) {
+        printf("RandSeq(SEQ_NUM, (1<<%2d)-1).....", (int)maxelemP);
+        const uint64_t maxelem = UINT64_C(1) << maxelemP;
+        deltat = UINT64_C(1) << 53;
+        Rand r9(9, maxelemP);
+        numgen = std::min(maxelem, (uint64_t)(sizeof(buf) / sizeof(uint64_t)));
+        // Batched
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs4   = r9.get_seq(SEQ_NUM, maxelem - 1);
+            uint64_t begin = timer_start();
+            rs4.write(buf, 0, numgen);
+            uint64_t end   = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs4   = r9.get_seq(SEQ_NUM, maxelem - 1);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                rs4.write(buf, j, 1);
+            }
+            uint64_t end =   timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in random order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq rs5 = r9.get_seq(SEQ_NUM, numgen - 1);
+            rs5.write(buf, 0, numgen);
+
+            RandSeq  rs4   = r9.get_seq(SEQ_NUM, maxelem - 1);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                uint64_t k = GET_U64<false>(buf, j * 8);
+                rs4.write(buf, k, 1);
+            }
+            uint64_t end = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\n", deltat / numgen);
+    }
+
+    for (uint64_t maxelemP = 4; maxelemP <= 31; maxelemP += 3) {
+        printf("RandSeq(SEQ_NUM, (1<<%2d)).......", (int)maxelemP);
+        const uint64_t maxelem = UINT64_C(1) << maxelemP;
+        deltat = UINT64_C(1) << 53;
+        Rand rA(10, maxelemP);
+        numgen = std::min(maxelem, (uint64_t)(sizeof(buf) / sizeof(uint64_t)));
+        // Batched
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs5   = rA.get_seq(SEQ_NUM, maxelem);
+            uint64_t begin = timer_start();
+            rs5.write(buf, 0, numgen);
+            uint64_t end   = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq  rs5   = rA.get_seq(SEQ_NUM, maxelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                rs5.write(buf, j, 1);
+            }
+            uint64_t end =   timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\t", deltat / numgen);
+        // One-at-a-time, in random order
+        deltat = UINT64_C(1) << 53;
+        for (size_t i = 0; i < TEST_ITER; i++) {
+            RandSeq rs6 = rA.get_seq(SEQ_NUM, numgen - 1);
+            rs6.write(buf, 0, numgen);
+
+            RandSeq  rs5   = rA.get_seq(SEQ_NUM, maxelem);
+            uint64_t begin = timer_start();
+            for (size_t j = 0; j < numgen; j++) {
+                uint64_t k = GET_U64<false>(buf, j * 8);
+                rs5.write(buf, k, 1);
+            }
+            uint64_t end = timer_start();
+            deltat = std::min(deltat, (double)(end - begin));
+        }
+        printf("%8.2f\n", deltat / numgen);
+    }
 }
