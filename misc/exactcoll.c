@@ -48,7 +48,7 @@
  */
 
 /* Number of bits of precision to use */
-#define PRECISION 768
+#define PRECISION 1024
 /* Number of digits to emit beyond that specified by DBL_DECIMAL_DIG */
 #define EXTRA_DIGITS 0
 
@@ -206,33 +206,36 @@ int main( void ) {
         2098177, 2097152, 1271626, 1180417, 1048576,
         1000000, 819841, 652545, 524801, 401857,
         264097, 204800, 200000, 102774, 100000,
-        77163, 50643, 6
+        77163, 50643, 16388, 6
     };
-    const uint64_t bits[] = { 256, 224, 160, 128, 64, 55, 45, 42, 39, 36, 32, 29, 27, 24, 22, 19, 12, 8 };
+    const uint64_t bits[] = { 256, 224, 160, 128, 64, 61, 58, 55, 52, 49, 46, 43,
+                              40, 37, 34, 32, 29, 26, 23, 20, 17, 14, 12, 8 };
     const uint64_t keycnt = sizeof(keys) / sizeof(keys[0]);
     const uint64_t bitcnt = sizeof(bits) / sizeof(bits[0]);
 
-    printf("double realcoll[%d][%d] = {\n", keycnt, bitcnt);
+    printf("static const double realcoll[%d][%d] = {\n", keycnt, bitcnt);
 
     for (int i = 0; i < keycnt; i++) {
         const uint64_t key = keys[i];
-        printf("    /* %d */\n    { ", key);
+        printf("    /* %d */\n    {\n        ", key);
         for (int j = 0; j < bitcnt; j++) {
             const uint64_t bit = bits[j];
             printcoll(key, bit);
             if (j == bitcnt - 1) {
-                printf(" },\n");
+                printf("\n    },\n");
             } else if ((j % 3) == 2) {
-                printf(",\n      ");
+                printf(",\n        ");
             } else {
                 printf(", ");
             }
         }
     }
 
+    const unsigned nwidth = ceil(log10((double)keys[0]));
+
     printf("};\n\n    const int keys[] = {\n      ");
     for (int i = 0; i < keycnt; i++) {
-        printf("%d", (int)keys[i]);
+        printf("%*d", nwidth, (int)keys[i]);
         if (i == keycnt - 1) {
             printf("\n    };\n");
         } else if ((i % 6) == 5) {
