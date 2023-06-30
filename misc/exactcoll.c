@@ -82,7 +82,7 @@ FILE * membuf;
   #define MP(x, ...) mpfr_ ## x(__VA_ARGS__, MPFR_RNDN)
 #endif
 
-void printcoll( uint64_t balls, uint64_t log2bins ) {
+double printcoll( uint64_t balls, uint64_t log2bins, int doprint ) {
     mp_t m, n, p, e, f, c;
 
 #if defined(USE_MPFI)
@@ -176,7 +176,9 @@ void printcoll( uint64_t balls, uint64_t log2bins ) {
         printf("Increase EXTRA_DIGITS slightly and recompile\n");
         exit(1);
     }
-    printf("%s", buf);
+    if (doprint) {
+        printf("%s", buf);
+    }
 
 #if defined(USE_MPFI)
     mpfi_clear(m);
@@ -188,6 +190,8 @@ void printcoll( uint64_t balls, uint64_t log2bins ) {
 #else
     mpfr_clears(m, n, p, e, f, c, NULL);
 #endif
+
+    return lbr;
 }
 
 int main( void ) {
@@ -220,7 +224,7 @@ int main( void ) {
         printf("    /* %d */\n    {\n        ", key);
         for (int j = 0; j < bitcnt; j++) {
             const uint64_t bit = bits[j];
-            printcoll(key, bit);
+            printcoll(key, bit, 1);
             if (j == bitcnt - 1) {
                 printf("\n    },\n");
             } else if ((j % 3) == 2) {
