@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <float.h>
+#include <math.h>
 
 /*
  * This program uses arbitrary precision floating point libraries to
@@ -194,7 +195,7 @@ double printcoll( uint64_t balls, uint64_t log2bins, int doprint ) {
     return lbr;
 }
 
-int main( void ) {
+int main( int argc, char * argv[] ) {
     mpfr_set_default_prec(PRECISION);
     membuf = fmemopen(buf, sizeof(buf), "w");
 
@@ -216,6 +217,47 @@ int main( void ) {
                               40, 37, 34, 32, 29, 26, 23, 20, 17, 14, 12, 8 };
     const uint64_t keycnt = sizeof(keys) / sizeof(keys[0]);
     const uint64_t bitcnt = sizeof(bits) / sizeof(bits[0]);
+
+#if 0
+
+    if (argc < 3) {
+        printf("Usage: %s START END\n", argv[0]);
+        exit(1);
+    }
+    unsigned start = atoi(argv[1]);
+    unsigned end   = atoi(argv[2]);
+
+    for (unsigned i = start; i != end; i++) {
+        // This acts like a Sobol sequence to allow a quick view of which
+        // hash depths are likely to be interesting to look at fully.
+        // const uint64_t key = (UINT64_C(0x9E3779B9) * i) & ((1 << 26) - 1);
+
+        // Now that we know, just specify the nbH values to test directly.
+        const uint64_t key = i;
+
+        // This seems to be a good range to test for values of nbBits.
+        for (int j = 26; j <= 54; j++) {
+            const uint64_t bit = j;
+            double actual = printcoll(key, bit, 0);
+            double nbH    = key;
+            int    nbBits = j;
+            double est1   = ldexp(nbH * (nbH - 1), -nbBits - 1);
+            double est2   = nbH + ldexp(expm1(nbH * log1p(-exp2(-nbBits))), nbBits);
+            double rerr1  = fabs(est1 - actual) / actual;
+            double rerr2  = fabs(est2 - actual) / actual;
+            int    rerr1m = (rerr1 == 0.0) ? 99 : -ilogb(rerr1);
+            int    rerr2m = (rerr2 == 0.0) ? 99 : -ilogb(rerr2);
+            printf("%12ld %12ld\t%.17e\t%.17e %.17e\t%.17e %.17e\t\t%2d %2d %c\n",
+                    (unsigned)nbH, bit,
+                    actual,
+                    est1, rerr1,
+                    est2, rerr2,
+                    rerr1m, rerr2m,
+                    rerr2 <= rerr1 ? 'y' : 'n');
+        }
+    }
+
+#else
 
     printf("static const double realcoll[%d][%d] = {\n", keycnt, bitcnt);
 
@@ -258,6 +300,7 @@ int main( void ) {
             printf(", ");
         }
     }
+#endif
 
     fclose(membuf);
 
