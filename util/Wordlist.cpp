@@ -57,9 +57,10 @@ std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
     unsigned    sum  = 0;
 
     const char * ptr = words_array + 1; // Skip over initial newline
+    const char * eof = ptr + strlen(ptr);
 
-    while (*ptr != '\0') {
-        const char * end = (const char *)rawmemchr(ptr, '\n');
+    while (ptr != eof) {
+        const char * end = (const char *)memchr(ptr, '\n', eof - ptr);
         std::string  str( ptr, end - ptr );
         wordvec.push_back(str);
         if (addSingleCap) {
