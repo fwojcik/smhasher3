@@ -146,7 +146,7 @@ static void BicTestBatch( HashFn hash, const seed_t seed, size_t reps, a_int & i
 
             progressdots(keybit, 0, keybits - 1, 10);
 
-            r.reseed(1798473 + keybytes * 8193 + keybit);
+            r.reseed((uint64_t)(1798473 + keybytes * 8193 + keybit));
             r.rand_p(key_cursor, keybytes * reps);
 
             for (size_t irep = 0; irep < reps; irep++) {
