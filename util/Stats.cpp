@@ -281,22 +281,26 @@ static double EstimateNbCollisions_cur( const double nbH, const int nbBits ) {
     // to fit in a double with room for a guard bit and an error bit. Since
     // doubles have 53 bits of mantissa, nbBits cannot exceed 51 to use it.
     //
-    // If it cannot, then we use the simpler estimation here. This should
-    // be a good estimate when the probability that there are 1 or more
+    // If it cannot be used, then we use the simpler estimation here. This
+    // is a good estimate when the probability that there are 1 or more
     // collisions (p(C >= 1)) is not much higher than the probability of
-    // exactly 1 collision (p(C == 1)). Given the nbH values we care about
-    // (< 2**28), this should hold for the same nbBits condition.
+    // exactly 1 collision (p(C == 1)).
     //
     // As is probably less of a coincidence than it seems, this simpler
     // formula is also the first term in the Taylor/Laurent series of the
     // full formula.
     //
-    // This is probably not the best possible cutoff condition, as the full
-    // formula can sometimes lead to worse answers when nbBits >= 39, but
-    // this happens only for some values of nbH and nbBits, and the
-    // relationship is difficult to decode. The full formula is usually
-    // better. For now, this setup is very good and good enough.
-    if (nbBits > 51) {
+    // Because of that, we know the maximum absolute error for the simpler
+    // estimation is bounded by the magnitude of the second term, which is
+    // ((nbH-2)*(nbH-1)*nbH)/((2**nbBits)*3!), so relative error goes as
+    // nbH/(2**nbBits) approximately.
+    //
+    // The error for the full formula is quite complicated, and doesn't
+    // form a smooth graph. I tested this empirically by plotting out the
+    // values it produces versus those from exactcoll.c. This cutoff is
+    // fairly simple, and produces RMSE close to the minimum possible with
+    // these two choices for estimation.
+    if ((nbBits > 51) || (nbH < exp2(nbBits - 25.5))) {
         return ldexp(nbH * (nbH - 1), -nbBits - 1);
     }
 
