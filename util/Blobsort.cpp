@@ -86,7 +86,7 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
     case 14: // All zero bytes in MSB-1 position
     case 15: // Random numbers, except each position has some missing bytes
     {
-        r.rand_p(&blobs[0], sizeof(blobtype) * TEST_SIZE);
+        r.rand_p(&blobs[0], blobtype::len * TEST_SIZE);
         break;
     }
     case  8: // Many duplicates
@@ -94,7 +94,7 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
     {
         uint32_t x = 0;
         do {
-            r.rand_p(&blobs[x], sizeof(blobtype));
+            r.rand_p(&blobs[x], blobtype::len);
             uint32_t count = 1 + r.rand_range(TEST_SIZE - 1 - x);
             for (uint32_t i = 1; i < count; i++) {
                 blobs[x + i] = blobs[x];
@@ -105,7 +105,7 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
     }
     case 10: // All duplicates
     {
-        r.rand_p(&blobs[0], sizeof(blobtype));
+        r.rand_p(&blobs[0], blobtype::len);
         for (uint32_t i = 1; i < TEST_SIZE; i++) {
             blobs[i] = blobs[0];
         }
@@ -125,25 +125,19 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
     }
     case 18: // All Fs
     {
-        memset(&blobs[0], 0xFF, TEST_SIZE * sizeof(blobtype));
+        memset(&blobs[0], 0xFF, TEST_SIZE * blobtype::len);
         break;
     }
     case 19: // All 0xAAA and 0x555
     {
-        uint32_t i = 0;
-        do {
-            uint64_t rndnum = r.rand_u64();
-            for (int j = 0; j < 64; j++) {
-                if (rndnum & 1) {
-                    memset(&blobs[i], 0xAA, sizeof(blobtype));
-                } else {
-                    memset(&blobs[i], 0x55, sizeof(blobtype));
-                }
-                i++;
-                rndnum >>= 1;
-                if (i == TEST_SIZE) { break; }
+        uint64_t rndnum = rndnum;
+        for (uint32_t i = 0; i < TEST_SIZE; i++) {
+            if (unlikely(i % 64 == 0)) {
+                rndnum = r.rand_u64();
             }
-        } while (i < TEST_SIZE);
+            memset(&blobs[i], rndnum & 1 ? 0xAA : 0x55, blobtype::len);
+            rndnum >>= 1;
+        }
         break;
     }
     default: unreachable(); break;
@@ -198,10 +192,10 @@ static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) 
     // Exclude a byte value from each position
     case 15:
     {
-        uint8_t excludes[sizeof(blobtype)];
+        uint8_t excludes[blobtype::len];
         r.rand_p(excludes, sizeof(excludes));
         for (uint32_t n = 0; n < TEST_SIZE; n++) {
-            for (uint32_t i = 0; i < sizeof(blobtype); i++) {
+            for (uint32_t i = 0; i < blobtype::len; i++) {
                 if (blobs[n][i] == excludes[i]) {
                     blobs[n][i] = ~excludes[i];
                 }
@@ -260,13 +254,13 @@ bool test_blobsort_type( void ) {
         }
         if (TEST_ITER > 1) {
             timetotal += timesum;
-            printf("%3lu bits, test %2d [%-50s]\t\t %5.2f s\n", sizeof(blobtype) * 8,
+            printf("%3lu bits, test %2d [%-50s]\t\t %5.2f s\n", blobtype::bitlen,
                     i, teststr[i], (double)timesum / (double)NSEC_PER_SEC);
         }
         // printf("After test %d: %s\n", i, passed ? "ok" : "no");
     }
     if (TEST_ITER > 1) {
-        printf("%3lu bits, %-60s\t\t%6.2f s\n\n", sizeof(blobtype) * 8, "SUM TOTAL",
+        printf("%3lu bits, %-60s\t\t%6.2f s\n\n", blobtype::bitlen, "SUM TOTAL",
                 (double)timetotal / (double)NSEC_PER_SEC);
     }
 

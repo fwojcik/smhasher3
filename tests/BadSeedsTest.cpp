@@ -409,7 +409,7 @@ bool BadSeedsTest( const HashInfo * hinfo, bool find_new_seeds ) {
      *
      * For now, just don't test 32-bit hashes.
      */
-    if (sizeof(hashtype) <= 4) {
+    if (hashtype::len <= 4) {
         printf("Skipping BadSeeds test on 32-bit hash\n\n");
         return result;
     }

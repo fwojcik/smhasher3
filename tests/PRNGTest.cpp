@@ -68,7 +68,7 @@ static void Prn_gen( int nbRn, HashFn hash, const seed_t seed, std::vector<hasht
     // that to verify cross-system consistency across hashes, so just
     // use the test parameters for the input VCode.
     addVCodeInput(nbRn);
-    addVCodeInput(sizeof(hashtype));
+    addVCodeInput(hashtype::len);
 
     hashtype hcopy;
     memset(&hcopy, 0, sizeof(hcopy));
@@ -76,9 +76,9 @@ static void Prn_gen( int nbRn, HashFn hash, const seed_t seed, std::vector<hasht
     // a generated random number becomes the input for the next one
     for (int i = 0; i < nbRn; i++) {
         hashtype h;
-        hash(&hcopy, sizeof(hcopy), seed, &h);
+        hash(&hcopy, hcopy.len, seed, &h);
         hashes.push_back(h);
-        memcpy(&hcopy, &h, sizeof(h));
+        memcpy(&hcopy, &h, h.len);
     }
 }
 
@@ -92,7 +92,7 @@ bool PRNGTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
 
     printf("[[[ PRNG Tests (deprecated) ]]]\n\n");
 
-    if (sizeof(hashtype) < 8) {
+    if (hashtype::len < 8) {
         printf("Skipping PRNG test; it is designed for hashes >= 64-bits\n\n");
         return result;
     }

@@ -25,7 +25,7 @@ static const uint32_t RADIX_MASK = RADIX_SIZE - 1;
 
 template <typename T>
 static void radixsort( T * begin, T * end ) {
-    const uint32_t RADIX_LEVELS = sizeof(T);
+    const uint32_t RADIX_LEVELS = T::len;
     const size_t   count        = end - begin;
 
     size_t freqs[RADIX_SIZE][RADIX_LEVELS] = {};
@@ -98,7 +98,7 @@ static const uint32_t SORT_CUTOFF = 60;
 // system, but there could be a better value for the general case.
 template <typename T>
 static void flagsort( T * begin, T * end, int idx ) {
-    const uint32_t DIGITS = sizeof(T);
+    const uint32_t DIGITS = T::len;
     const size_t   count  = end - begin;
 
     assume(idx >= 0    );
@@ -188,8 +188,8 @@ static void blobsort( Iter iter_begin, Iter iter_end ) {
 
     T * begin = &(*iter_begin);
     T * end   = &(*iter_end  );
-    if (sizeof(T) > 8) {
-        flagsort(begin, end, sizeof(T) - 1);
+    if (T::len > 8) {
+        flagsort(begin, end, T::len - 1);
     } else {
         radixsort(begin, end);
     }

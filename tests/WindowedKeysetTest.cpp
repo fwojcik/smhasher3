@@ -64,8 +64,8 @@
 
 template <typename keytype, typename hashtype>
 static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits, bool verbose, bool extra ) {
-    const int keybits  = sizeof(keytype ) * 8;
-    const int hashbits = sizeof(hashtype) * 8;
+    const int keybits  = keytype::bitlen;
+    const int hashbits = hashtype::bitlen;
     // calc keycount to expect min. 0.5 collisions: EstimateNbCollisions, except for 64++bit.
     // there limit to 2^25 = 33554432 keys
     int keycount = 1 << windowbits;
@@ -96,8 +96,8 @@ static bool WindowedKeyImpl( HashFn hash, const seed_t seed, int windowbits, boo
         for (int i = 0; i < keycount; i++) {
             key = i;
             key.lrot(minbit);
-            hash(&key, sizeof(keytype), seed, &hashes[i]);
-            addVCodeInput(&key, sizeof(keytype));
+            hash(&key, key.len, seed, &hashes[i]);
+            addVCodeInput(&key, key.len);
         }
 
         printf("Window at bit %3d\n", j);
@@ -128,7 +128,7 @@ bool WindowedKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
     // except for 64++bit where it unrealistic. There use smaller but more keys,
     // to get a higher collision percentage.
     int windowbits         = 20;
-    constexpr int hashbits = sizeof(hashtype) * 8;
+    constexpr int hashbits = hashtype::bitlen;
     constexpr int keybits  = (hashbits >= 64) ? 32 : 72;
 
     printf("[[[ Keyset 'Window' Tests (deprecated) ]]]\n\n");

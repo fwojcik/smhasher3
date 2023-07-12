@@ -114,8 +114,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
 
     const int keybytes  = keybits / 8;
 
-    const int hashbytes = sizeof(hashtype);
-    const int hashbits  = hashbytes * 8;
+    const int hashbits  = hashtype::bitlen;
 
     const int arraysize = keybits * hashbits;
 

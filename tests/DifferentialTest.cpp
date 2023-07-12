@@ -122,7 +122,7 @@ static bool ProcessDifferentials( std::map<keytype, uint32_t> & diffcounts, int 
 template <bool recursemore, typename keytype, typename hashtype>
 static void DiffTestRecurse( const HashFn hash, const seed_t seed, keytype & k1, keytype & k2, hashtype & h1,
         hashtype & h2, int start, int bitsleft, std::map<keytype, uint32_t> & diffcounts ) {
-    const int bits = sizeof(keytype) * 8;
+    const int bits = keytype::bitlen;
 
     assume(start < bits);
     for (int i = start; i < bits; i++) {
@@ -132,7 +132,7 @@ static void DiffTestRecurse( const HashFn hash, const seed_t seed, keytype & k1,
 
         bitsleft--;
 
-        hash(&k2, sizeof(k2), seed, &h2);
+        hash(&k2, k2.len, seed, &h2);
 
         if (h1 == h2) {
             ++diffcounts[k1 ^ k2];
@@ -157,7 +157,7 @@ static void DiffTestRecurse( const HashFn hash, const seed_t seed, keytype & k1,
 template <typename keytype, typename hashtype>
 static void DiffTestImplThread( const HashFn hash, const seed_t seed, std::map<keytype, uint32_t> & diffcounts,
         const uint8_t * keys, int diffbits, a_int & irepp, const int reps ) {
-    const int keybytes = sizeof(keytype);
+    const int keybytes = keytype::len;
 
     keytype  k1, k2;
     hashtype h1, h2;
@@ -168,10 +168,10 @@ static void DiffTestImplThread( const HashFn hash, const seed_t seed, std::map<k
     while ((irep = irepp++) < reps) {
         progressdots(irep, 0, reps - 1, 10);
 
-        memcpy(&k1, &keys[keybytes * irep], sizeof(k1));
+        memcpy(&k1, &keys[keybytes * irep], keybytes);
         k2 = k1;
 
-        hash(&k1, sizeof(k1), seed, (void *)&h1);
+        hash(&k1, keybytes, seed, (void *)&h1);
 
         DiffTestRecurse<true, keytype, hashtype>(hash, seed, k1, k2, h1, h2, 0, diffbits, diffcounts);
     }
@@ -181,9 +181,9 @@ static void DiffTestImplThread( const HashFn hash, const seed_t seed, std::map<k
 
 template <typename keytype, typename hashtype>
 static bool DiffTestImpl( HashFn hash, const seed_t seed, int diffbits, int reps, bool dumpCollisions ) {
-    const int keybytes = sizeof(keytype);
-    const int keybits  = sizeof(keytype ) * 8;
-    const int hashbits = sizeof(hashtype) * 8;
+    const int keybytes = keytype::len;
+    const int keybits  = keytype::bitlen;
+    const int hashbits = hashtype::bitlen;
 
     double diffcount   = chooseUpToK(keybits, diffbits);
     double testcount   = (diffcount * double(reps));
@@ -196,9 +196,8 @@ static bool DiffTestImpl( HashFn hash, const seed_t seed, int diffbits, int reps
     Rand r( 100 );
     std::vector<uint8_t> keys( reps * keybytes );
 
-    for (int i = 0; i < reps; i++) {
-        r.rand_p(&keys[i * keybytes], keybytes);
-    }
+    r.rand_p(&keys[0], reps * keybytes);
+
     addVCodeInput(&keys[0], reps * keybytes);
 
     a_int irep( 0 );
@@ -228,7 +227,7 @@ static bool DiffTestImpl( HashFn hash, const seed_t seed, int diffbits, int reps
     }
 
     for (std::pair<keytype, uint32_t> dc: diffcounts[0]) {
-        addVCodeOutput(&dc.first , sizeof(keytype) );
+        addVCodeOutput(&dc.first , keybytes);
         addVCodeOutput(&dc.second, sizeof(uint32_t));
     }
 

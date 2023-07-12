@@ -154,7 +154,7 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
 
 #if 0 && defined DEBUG
         uint64_t h;
-        memcpy(&h, &hashes[i], std::max(sizeof(hashtype), 8));
+        memcpy(&h, &hashes[i], std::max(hashtype::len, 8));
         printf("%d %s %lx\n", i, (char *)key, h);
 #endif
     }

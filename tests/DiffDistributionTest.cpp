@@ -61,13 +61,13 @@
 // generate random key pairs and run full distribution/collision tests on the
 // hash differentials
 
-template <typename keytype, typename hashtype, bool ckuniq = (sizeof(keytype) < 6)>
+template <typename keytype, typename hashtype, bool ckuniq = (keytype::len < 6)>
 static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    Rand r( 857374 + sizeof(keytype) );
+    Rand r( 857374 + keytype::len );
 
-    int       keybytes = sizeof(keytype);
-    int       keybits  = keybytes * 8;
+    int       keybytes = keytype::len;
+    int       keybits  = keytype::bitlen;
     const int keycount = 512 * 1024 * (ckuniq ? 2 : (hinfo->bits <= 64) ? 3 : 4);
     keytype   k;
 
@@ -94,10 +94,10 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
         }
 
         for (int i = 0; i < keycount; i++) {
-            r.rand_p(&k, sizeof(keytype));
+            r.rand_p(&k, k.len);
 
             if (ckuniq) {
-                memcpy(&curkey, &k, sizeof(keytype));
+                memcpy(&curkey, &k, k.len);
                 if (seen.count(curkey) > 0) { // not unique
                     i--;
                     continue;
@@ -105,13 +105,13 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
                 seen.insert(curkey);
             }
 
-            hash(&k, sizeof(keytype), seed, &h1);
-            addVCodeInput(&k, sizeof(keytype));
+            hash(&k, k.len, seed, &h1);
+            addVCodeInput(&k, k.len);
 
             k.flipbit(keybit);
 
             if (ckuniq) {
-                memcpy(&curkey, &k, sizeof(keytype));
+                memcpy(&curkey, &k, k.len);
                 if (seen.count(curkey) > 0) { // not unique
                     i--;
                     continue;
@@ -119,8 +119,8 @@ static bool DiffDistTest2( const HashInfo * hinfo, const seed_t seed, bool drawD
                 seen.insert(curkey);
             }
 
-            hash(&k, sizeof(keytype), seed, &h2);
-            addVCodeInput(&k, sizeof(keytype));
+            hash(&k, k.len, seed, &h2);
+            addVCodeInput(&k, k.len);
 
             hashes[i] = h1 ^ h2;
         }
@@ -216,9 +216,9 @@ void DiffDistTest( HashFn hash, const int diffbits, int trials, double & worst, 
 
     // FIXME seedHash(hash, g_seed);
     for (int i = 0; i < trials; i++) {
-        rand_p(&keys[i], sizeof(keytype));
+        rand_p(&keys[i], keytype::len);
 
-        hash(&keys[i], sizeof(keytype), g_seed, (uint32_t *)&A[i]);
+        hash(&keys[i], keytype::len, g_seed, (uint32_t *)&A[i]);
     }
 
     //----------
@@ -242,7 +242,7 @@ void DiffDistTest( HashFn hash, const int diffbits, int trials, double & worst, 
         for (int i = 0; i < trials; i++) {
             keytype k2 = keys[i] ^ d;
 
-            hash(&k2, sizeof(k2), g_seed, &h2);
+            hash(&k2, k2.len, g_seed, &h2);
 
             B[i] = A[i] ^ h2;
         }

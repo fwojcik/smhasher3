@@ -117,8 +117,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
 
     const int seedbytes = seedbits / 8;
 
-    const int hashbytes = sizeof(hashtype);
-    const int hashbits  = hashbytes * 8;
+    const int hashbits  = hashtype::bitlen;
 
     const int arraysize = seedbits * hashbits;
 

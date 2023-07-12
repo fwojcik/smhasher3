@@ -61,13 +61,13 @@
 // generate random key pairs and run full distribution/collision tests on the
 // hash differentials
 
-template <typename keytype, typename hashtype, bool bigseed, bool ckuniq = (sizeof(keytype) < 6)>
+template <typename keytype, typename hashtype, bool bigseed, bool ckuniq = (keytype::len < 6)>
 static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    Rand r( 482813 + sizeof(keytype) );
+    Rand r( 482813 + keytype::len );
 
     int       seedbits = bigseed ? 64 : 32;
-    int       keybits  = sizeof(keytype) * 8;
+    int       keybits  = keytype::bitlen;
     const int keycount = 512 * 1024 * (ckuniq ? 2 : 3);
     keytype   k;
 
@@ -88,20 +88,20 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
     bool result = true;
 
     if (!drawDiagram) {
-        printf("Testing %3zd-byte keys, %2d-bit seeds, %d reps", sizeof(keytype), seedbits, keycount);
+        printf("Testing %3zd-byte keys, %2d-bit seeds, %d reps", keytype::len, seedbits, keycount);
     }
 
     for (int seedbit = 0; seedbit < seedbits; seedbit++) {
         if (drawDiagram) {
             printf("Testing seed bit %d / %d - %3zd-byte keys - %d keys\n",
-                    seedbit, seedbits, sizeof(keytype), keycount);
+                    seedbit, seedbits, keytype::len, keycount);
         }
 
         for (int i = 0; i < keycount; i++) {
-            r.rand_p(&k, sizeof(keytype));
+            r.rand_p(&k, k.len);
 
             if (ckuniq) {
-                memcpy(&curkey, &k, sizeof(keytype));
+                memcpy(&curkey, &k, k.len);
                 if (seenkeys.count(curkey) > 0) { // not unique
                     i--;
                     continue;
@@ -119,11 +119,11 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
             }
 
             seed_t hseed1 = hinfo->Seed(curseed, false);
-            hash(&k, sizeof(keytype), hseed1, &h1);
+            hash(&k, k.len, hseed1, &h1);
             seed_t hseed2 = hinfo->Seed(curseed ^ (UINT64_C(1) << seedbit), false);
-            hash(&k, sizeof(keytype), hseed2, &h2);
+            hash(&k, k.len, hseed2, &h2);
 
-            addVCodeInput(&k, sizeof(keytype));
+            addVCodeInput(&k, k.len);
             addVCodeInput(curseed);
 
             hashes[i] = h1 ^ h2;
@@ -163,7 +163,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
         printf("\n");
     }
 
-    recordTestResult(result, "SeedDiffDist", sizeof(keytype));
+    recordTestResult(result, "SeedDiffDist", keytype::len);
 
     return result;
 }

@@ -356,7 +356,7 @@ INSTANTIATE(PrintCollisions, HASHTYPELIST);
 template <typename hashtype>
 static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t const nbH,
         int minHBits, int maxHBits, int threshHBits, int * collcounts ) {
-    const int origBits = sizeof(hashtype) * 8;
+    const int origBits = hashtype::bitlen;
 
     assert(minHBits >= 1       );
     assert(minHBits <= maxHBits);
@@ -536,7 +536,7 @@ static int MaxDistBits( const uint64_t nbH ) {
 
 template <typename hashtype>
 static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool verbose, bool drawDiagram ) {
-    const int      hashbits = sizeof(hashtype) * 8;
+    const int      hashbits = hashtype::bitlen;
     const uint64_t nbH      = hashes.size();
     int            maxwidth = MaxDistBits(nbH);
     int            minwidth = 8;
@@ -759,12 +759,12 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
     }
 
     if (testCollision) {
-        unsigned const hashbits = sizeof(hashtype) * 8;
+        unsigned const hashbits = hashtype::bitlen;
         if (verbose) {
             printf("Testing all collisions (     %3i-bit)", hashbits);
         }
 
-        addVCodeOutput(&hashes[0], sizeof(hashtype) * nbH);
+        addVCodeOutput(&hashes[0], hashtype::len * nbH);
 
         std::set<hashtype> collisions;
         int collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
@@ -981,8 +981,7 @@ INSTANTIATE(TestHashListImpl, HASHTYPELIST);
 
 template <typename hashtype>
 double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagram ) {
-    const int nbytes   = sizeof(hashtype);
-    const int hashbits = nbytes * 8;
+    const int hashbits = hashtype::bitlen;
 
     const int nbins    = 65536;
 

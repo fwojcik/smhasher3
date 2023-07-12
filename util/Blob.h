@@ -49,10 +49,13 @@
 extern const uint8_t hzb[256];
 
 //-----------------------------------------------------------------------------
-#define _bytes ((_bits + 7) / 8)
+#define _bytes ((size_t)(_bits + 7) / 8)
 template <unsigned _bits>
 class Blob {
   public:
+    static constexpr size_t bitlen = _bits;
+    static constexpr size_t len = _bytes;
+
     //----------
     // constructors
 
@@ -61,7 +64,7 @@ class Blob {
     }
 
     Blob( const void * p, size_t len ) {
-        len = std::min(len, sizeof(bytes));
+        len = std::min(len, _bytes);
         memcpy(bytes, p, len);
         memset(&bytes[len], 0, sizeof(bytes) - len);
     }
@@ -73,12 +76,12 @@ class Blob {
     // unary operators
 
     uint8_t & operator [] ( int i ) {
-        // assert(i < sizeof(bytes));
+        // assert(i < _bytes);
         return bytes[i];
     }
 
     const uint8_t & operator [] ( int i ) const {
-        // assert(i < sizeof(bytes));
+        // assert(i < _bytes);
         return bytes[i];
     }
 
@@ -90,7 +93,7 @@ class Blob {
     Blob & operator = ( const uint32_t & x ) {
         const uint32_t y = COND_BSWAP(x, isBE());
 
-        memcpy(bytes, &y, std::min(sizeof(y), sizeof(bytes)));
+        memcpy(bytes, &y, std::min(sizeof(y), _bytes));
         return *this;
     }
 
@@ -98,7 +101,7 @@ class Blob {
     // boolean operators
 
     bool operator < ( const Blob & k ) const {
-        for (int i = sizeof(bytes) - 1; i >= 0; i--) {
+        for (int i = _bytes - 1; i >= 0; i--) {
             if (bytes[i] < k.bytes[i]) { return true; }
             if (bytes[i] > k.bytes[i]) { return false; }
         }
@@ -121,7 +124,7 @@ class Blob {
     Blob operator ^ ( const Blob & k ) const {
         Blob t;
 
-        for (size_t i = 0; i < sizeof(bytes); i++) {
+        for (size_t i = 0; i < _bytes; i++) {
             t.bytes[i] = bytes[i] ^ k.bytes[i];
         }
 
@@ -129,7 +132,7 @@ class Blob {
     }
 
     Blob & operator ^= ( const Blob & k ) {
-        for (size_t i = 0; i < sizeof(bytes); i++) {
+        for (size_t i = 0; i < _bytes; i++) {
             bytes[i] ^= k.bytes[i];
         }
         return *this;
@@ -139,35 +142,35 @@ class Blob {
     // interface
 
     FORCE_INLINE uint32_t getbit( size_t bit ) const {
-        return _getbit(bit, bytes, sizeof(bytes));
+        return _getbit(bit, bytes, _bytes);
     }
 
     FORCE_INLINE void printhex( const char * prefix = "" ) const {
-        _printhex(prefix, bytes, sizeof(bytes));
+        _printhex(prefix, bytes, _bytes);
     }
 
     FORCE_INLINE void printbits( const char * prefix = "" ) const {
-        _printbits(prefix, bytes, sizeof(bytes));
+        _printbits(prefix, bytes, _bytes);
     }
 
     FORCE_INLINE uint32_t highzerobits( void ) const {
-        return _highzerobits(bytes, sizeof(bytes));
+        return _highzerobits(bytes, _bytes);
     }
 
     FORCE_INLINE uint32_t window( size_t start, size_t count ) const {
-        return _window(start, count, bytes, sizeof(bytes));
+        return _window(start, count, bytes, _bytes);
     }
 
     FORCE_INLINE void flipbit( size_t bit ) {
-        _flipbit(bit, bytes, sizeof(bytes));
+        _flipbit(bit, bytes, _bytes);
     }
 
     FORCE_INLINE void reversebits( void ) {
-        _reversebits(bytes, sizeof(bytes));
+        _reversebits(bytes, _bytes);
     }
 
     FORCE_INLINE void lrot( size_t c ) {
-        _lrot(c, bytes, sizeof(bytes));
+        _lrot(c, bytes, _bytes);
     }
 
   protected:

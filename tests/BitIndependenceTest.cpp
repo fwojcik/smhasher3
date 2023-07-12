@@ -127,8 +127,7 @@ template <typename hashtype>
 static void BicTestBatch( HashFn hash, const seed_t seed, size_t reps, a_int & ikeybit, size_t batch_size,
         size_t keybytes, uint32_t * popcount0, uint32_t * andcount0 ) {
     const size_t keybits      = keybytes * 8;
-    const size_t hashbytes    = sizeof(hashtype);
-    const size_t hashbits     = hashbytes * 8;
+    const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
     hashtype     h1, h2;
     size_t       startkeybit;
@@ -181,8 +180,7 @@ template <typename hashtype>
 static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
         const size_t reps, bool verbose = false ) {
     const size_t keybits      = keybytes * 8;
-    const size_t hashbytes    = sizeof(hashtype);
-    const size_t hashbits     = hashbytes * 8;
+    const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
     printf("Testing %4zd-byte keys, %7zd reps  ", keybytes, reps);

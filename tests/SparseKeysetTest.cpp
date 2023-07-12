@@ -61,17 +61,14 @@
 template <typename keytype, typename hashtype>
 static void SparseKeygenRecurse( HashFn hash, const seed_t seed, int start, int bitsleft,
         bool inclusive, keytype & k, std::vector<hashtype> & hashes ) {
-    const int nbytes = sizeof(keytype);
-    const int nbits  = nbytes * 8;
-
     hashtype h;
 
-    for (int i = start; i < nbits; i++) {
+    for (int i = start; i < k.bitlen; i++) {
         k.flipbit(i);
 
         if (inclusive || (bitsleft == 1)) {
-            hash(&k, sizeof(keytype), seed, &h);
-            addVCodeInput(&k, sizeof(keytype));
+            hash(&k, k.len, seed, &h);
+            addVCodeInput(&k, k.len);
             hashes.push_back(h);
         }
 
@@ -99,7 +96,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bo
 
     if (inclusive) {
         hashes.resize(1);
-        hash(&k, sizeof(keytype), seed, &hashes[0]);
+        hash(&k, k.len, seed, &hashes[0]);
     }
 
     SparseKeygenRecurse(hash, seed, 0, setbits, inclusive, k, hashes);

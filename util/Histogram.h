@@ -29,7 +29,7 @@
 
 template <typename hashtype>
 static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cursor ) {
-    const int hashbytes = sizeof(hashtype);
+    const int hashbytes = hashtype::len;
 
 #if defined(HAVE_AVX2)
     const __m256i ONE  = _mm256_set1_epi32(1);
@@ -112,7 +112,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
 
 template <typename hashtype>
 static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cursor, size_t startbit ) {
-    const int hashbytes = sizeof(hashtype);
+    const int hashbytes = hashtype::len;
 
 #if defined(HAVE_AVX2)
     const __m256i ONE       = _mm256_set1_epi32(1);

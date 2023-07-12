@@ -77,8 +77,7 @@ static void BicTestBatch( const HashInfo * hinfo, size_t reps, a_int & iseedbit,
         size_t keybytes, uint32_t * popcount0, uint32_t * andcount0 ) {
     const HashFn hash         = hinfo->hashFn(g_hashEndian);
     const size_t seedbits     = hinfo->is32BitSeed() ? 32 : 64;
-    const size_t hashbytes    = sizeof(hashtype);
-    const size_t hashbits     = hashbytes * 8;
+    const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
     hashtype     h1, h2;
     size_t       startseedbit;
@@ -136,8 +135,7 @@ static void BicTestBatch( const HashInfo * hinfo, size_t reps, a_int & iseedbit,
 
 template <typename hashtype>
 static bool BicTestImpl( const HashInfo * hinfo, const size_t keybytes, const size_t reps, bool verbose = false ) {
-    const size_t hashbytes    = sizeof(hashtype);
-    const size_t hashbits     = hashbytes * 8;
+    const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
     const size_t seedbits     = hinfo->is32BitSeed() ? 32 : 64;
 
