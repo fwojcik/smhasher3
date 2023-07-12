@@ -183,29 +183,23 @@ class Blob {
     }
 
     static void _printhex( const char * prefix, const uint8_t * bytes, const size_t len ) {
-        const size_t buflen = 4 + 2 * len + ((len + 3) / 4);
-        char         buf[buflen];
-        char *       p;
-
-        buf[0] = '[';
-        buf[1] = ' ';
-        // Space preceding the closing ']' gets added by the loop below
-        buf[buflen - 2] = ']';
-        buf[buflen - 1] = '\0';
+        char         buf[2 * len + (len + 3) / 4 + 1];
+        char *       p = buf;
+        size_t       i = len;
 
         // Print using MSB-first notation
-        p = &buf[2];
-        for (size_t i = len; i != 0; i--) {
-            uint8_t vh = (bytes[i - 1] >> 4);
-            uint8_t vl = (bytes[i - 1] & 15);
-            *p++       = vh + ((vh <= 9) ? '0' : 'W'); // 'W' + 10 == 'a'
-            *p++       = vl + ((vl <= 9) ? '0' : 'W');
-            if ((i & 3) == 1) {
+        while (i--) {
+            uint8_t vh = (bytes[i] >> 4);
+            uint8_t vl = (bytes[i] & 15);
+            *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
+            *p++       = vl + (vl <= 9 ? '0' : 'a' - 10);
+            if ((i & 3) == 0) {
                 *p++ = ' ';
             }
         }
+        *p = '\0';
 
-        printf("%s%s\n", prefix, buf);
+        printf("%s[ %s]\n", prefix, buf);
     }
 
     static void _printbits( const char * prefix, const uint8_t * bytes, const size_t len ) {
