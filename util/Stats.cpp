@@ -1341,17 +1341,11 @@ double normalizeScore( double score, int scorewidth, int tests ) {
         return 0.0;
     }
 
-    // Never return a result higher than this, as a precise value
-    // would be visually cluttered and not really meaningful.
-    const double maxresult = 999.9;
-
     double result = score / sqrt(2.0 * scorewidth);
 
-    if (result > maxresult) {
-        return maxresult;
-    }
-
-    return result;
+    // Never return a result higher than 999.9, as a precise value
+    // would be visually cluttered and not really meaningful.
+    return std::min(result, 999.9);
 }
 
 //----------------------------------------------------------------------------
