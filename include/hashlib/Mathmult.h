@@ -57,15 +57,15 @@
 static FORCE_INLINE void mult32_64( uint32_t & rlo, uint32_t & rhi, uint32_t a, uint32_t b ) {
     // XXX Are either of these asm blocks better than just the plain code?
 #if 0 && defined(HAVE_ARM_ASM)
-    __asm__ ("UMULL w%0, w%1, w%2, w%3\n"
+    __asm__ ("UMULL %w0, %w1, %w2, %w3\n"
              : "+r" (rlo), "+r" (rhi)
              : "r" (a), "r" (b)
              : "cc", "memory"
     );
 #elif 0 && defined(HAVE_X86_64_ASM)
-    __asm__ ("mull  %[b]\n"
+    __asm__ ("mull  %[b]"
              : "=d" (rhi), "=a" (rlo)
-             : "1" (a), [b] "rm" (b)
+             : "%1" (a), [b] "rm" (b)
     );
 #else
     uint64_t r = (uint64_t)a * (uint64_t)b;
@@ -95,11 +95,11 @@ static FORCE_INLINE void add96( uint32_t & rlo, uint32_t & rmi, uint32_t & rhi, 
              : "cc"
     );
 #elif defined(HAVE_X86_64_ASM)
-    __asm__ ("addl %3, %0\n"
-             "adcl %4, %1\n"
-             "adcl %5, %2\n"
-             : "+g" (rlo), "+g" (rmi), "+g" (rhi)
-             : "g" (addlo), "g" (addmi), "g" (addhi)
+    __asm__ ("addl %3, %0\n\t"
+             "adcl %4, %1\n\t"
+             "adcl %5, %2"
+             : "+ga,ga,ga,ga,r,r,r,r" (rlo), "+ga,ga,r,r,ga,ga,r,r" (rmi), "+ga,r,ga,r,ga,r,ga,r" (rhi)
+             : "re,re,re,re,m,m,m,m" (addlo), "re,re,m,m,re,re,m,m" (addmi), "re,m,re,m,re,m,re,m" (addhi)
              : "cc"
     );
 #else
@@ -125,14 +125,14 @@ static FORCE_INLINE void fma32_96( uint32_t & rlo, uint32_t & rmi, uint32_t & rh
              : "cc"
     );
 #elif defined(HAVE_X86_64_ASM)
-    uint32_t tmphi;
-    __asm__ ("mull %5\n"
-             "addl %%eax, %0\n"
-             "adcl %%edx, %1\n"
-             "adcl $0, %2\n"
-             : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (tmphi)
-             : "a" (a), "g" (b)
-             : "edx", "cc"
+    uint32_t tmplo, tmphi;
+    __asm__ ("mull %6\n\t"
+             "addl %%eax, %0\n\t"
+             "adcl %%edx, %1\n\t"
+             "adcl $0, %2"
+             : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (tmplo), "=d" (tmphi)
+             : "%a" (a), "rm" (b)
+             : "cc"
     );
 #else
     uint32_t tmplo, tmpmi, tmphi = 0;
@@ -173,14 +173,14 @@ static FORCE_INLINE void mult64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a,
      * takes 3-cycles vs. 4 for MULX, MULX permits more freedom in
      * insn scheduling as it uses less fixed registers.
      */
-    __asm__ ("mulxq %3,%1,%0\n"
+    __asm__ ("mulxq %3,%1,%0"
              : "=r" (rhi), "=r" (rlo)
-             : "d" (a), "r" (b)
+             : "%d" (a), "r" (b)
     );
 #elif defined(HAVE_X86_64_ASM)
-    __asm__ ("mulq %[b]\n"
+    __asm__ ("mulq %[b]"
              : "=d" (rhi), "=a" (rlo)
-             : "1" (a), [b] "rm" (b)
+             : "%1" (a), [b] "rm" (b)
              : "cc"
     );
 #elif defined(HAVE_INT128)
@@ -232,8 +232,8 @@ static FORCE_INLINE void mult64_128_nocarry( uint64_t & rlo, uint64_t & rhi, uin
 // 128-bit addition special case [rhi:rlo += 0:addlo]
 static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo ) {
 #if defined(HAVE_X86_64_ASM)
-    __asm__ ("addq %2, %0\n"
-             "adcq $0, %1\n"
+    __asm__ ("addq %2, %0\n\t"
+             "adcq $0, %1"
   #if defined(DEBUG)
              : "+r" (rlo), "+r" (rhi)
              : "r" (addlo)
@@ -246,8 +246,8 @@ static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo 
              : "+r" (rlo), "+r" (rhi)
              : "m" (addlo)
   #else
-             : "+g" (rlo), "+g" (rhi)
-             : "g" (addlo)
+             : "+g,r" (rlo), "+ag,ag" (rhi)
+             : "re,m" (addlo)
   #endif
              : "cc"
     );
@@ -266,8 +266,8 @@ static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo,
              : "r" (addhi), "r" (addlo)
     );
 #elif defined(HAVE_X86_64_ASM)
-    __asm__ ("addq %2, %0\n"
-             "adcq %3, %1\n"
+    __asm__ ("addq %2, %0\n\t"
+             "adcq %3, %1"
   #if defined(DEBUG)
              : "+r" (rlo), "+r" (rhi)
              : "r" (addlo), "r" (addhi)
@@ -280,8 +280,8 @@ static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo,
              : "+r" (rlo), "+r" (rhi)
              : "m" (addlo), "m" (addhi)
   #else
-             : "+r" (rlo), "+g" (rhi)
-             : "g" (addlo), "g" (addhi)
+             : "+g,g,r,r" (rlo), "+g,r,g,r" (rhi)
+             : "re,re,m,m" (addlo), "re,m,re,me" (addhi)
   #endif
              : "cc"
     );
@@ -296,9 +296,9 @@ static FORCE_INLINE void add128( uint64_t & rlo, uint64_t & rhi, uint64_t addlo,
 static FORCE_INLINE void add192( uint64_t & rlo, uint64_t & rmi, uint64_t & rhi, const uint64_t & addlo,
         const uint64_t & addmi, const uint64_t & addhi ) {
 #if defined(HAVE_X86_64_ASM)
-    __asm__ ("addq %3, %0\n"
-             "adcq %4, %1\n"
-             "adcq %5, %2\n"
+    __asm__ ("addq %3, %0\n\t"
+             "adcq %4, %1\n\t"
+             "adcq %5, %2"
   #if defined(DEBUG)
              : "+r" (rlo), "+r" (rmi), "+r" (rhi)
              : "r" (addlo), "r" (addmi), "r" (addhi)
@@ -311,8 +311,8 @@ static FORCE_INLINE void add192( uint64_t & rlo, uint64_t & rmi, uint64_t & rhi,
              : "+r" (rlo), "+r" (rmi), "+r" (rhi)
              : "m" (addlo), "m" (addmi), "m" (addhi)
   #else
-             : "+g" (rlo), "+g" (rmi), "+g" (rhi)
-             : "rm" (addlo), "rm" (addmi), "rm" (addhi)
+             : "+g,g,g,g,r,r,r,r" (rlo), "+g,g,r,r,g,g,r,r" (rmi), "+g,r,g,r,g,r,g,r" (rhi)
+             : "re,re,re,re,m,m,m,m" (addlo), "re,re,m,m,re,re,m,m" (addmi), "re,m,re,m,re,m,re,m" (addhi)
   #endif
              : "cc"
     );
@@ -329,9 +329,9 @@ static FORCE_INLINE void add192( uint64_t & rlo, uint64_t & rmi, uint64_t & rhi,
 static FORCE_INLINE void fma64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
 #if defined(HAVE_AVX2) && defined(HAVE_X86_64_ASM)
     uint64_t tmplo, tmphi;
-    __asm__ ("mulxq %5,%2,%3\n"
-             "addq %2, %0\n"
-             "adcq %3, %1\n"
+    __asm__ ("mulxq %5,%2,%3\n\t"
+             "addq %2, %0\n\t"
+             "adcq %3, %1"
     /*
      * tmplo and tmphi aren't output-only variables so that the compiler can
      * overwrite an input location if it thinks that's good. This is safe because
@@ -340,13 +340,13 @@ static FORCE_INLINE void fma64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a, 
      */
   #if defined(DEBUG)
              : "+r" (rlo), "+r" (rhi), "=r" (tmplo), "=r" (tmphi)
-             : "d" (a), "r" (b)
+             : "%d" (a), "r" (b)
   #elif defined(__clang__)
              : "+r" (rlo), "+r" (rhi), "=r" (tmplo), "=r" (tmphi)
-             : "d" (a), "m" (b)
+             : "%d" (a), "m" (b)
   #else
-             : "+g" (rlo), "+g" (rhi), "=g" (tmplo), "=g" (tmphi)
-             : "d" (a), "g" (b)
+             : "+g" (rlo), "+g" (rhi), "=r" (tmplo), "=r" (tmphi)
+             : "%d" (a), "rm" (b)
   #endif
              : "cc");
 #elif defined(HAVE_X86_64_ASM)
@@ -355,26 +355,26 @@ static FORCE_INLINE void fma64_128( uint64_t & rlo, uint64_t & rhi, uint64_t a, 
      * input and clobbered but not actually output; see assembler code
      * below. Better syntactic expression is very welcome.
      */
-    uint64_t dummy;
-    __asm__ ("mulq %4\n"
-             "addq %%rax, %0\n"
-             "adcq %%rdx, %1\n"
+    uint64_t dummy1, dummy2;
+    __asm__ ("mulq %5\n\t"
+             "addq %%rax, %0\n\t"
+             "adcq %%rdx, %1"
   #if defined(DEBUG)
-             : "+r" (rlo), "+r" (rhi), "=a" (dummy)
-             : "a" (a), "r" (b)
+             : "+r" (rlo), "+r" (rhi), "=a" (dummy1), "=d" (dummy2)
+             : "%a" (a), "r" (b)
   #elif defined(__clang__)
              // clang cannot work properly with "g" and silently
              // produces hardly-workging code, if "g" is specified;
              // see, for instance, here:
              // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
              // To avoid 3x performance hit we have to specify sources/destinations
-             : "+r" (rlo), "+r" (rhi), "=a" (dummy)
-             : "a" (a), "m" (b)
+             : "+r" (rlo), "+r" (rhi), "=a" (dummy1), "=d" (dummy2)
+             : "%a" (a), "m" (b)
   #else
-             : "+g" (rlo), "+g" (rhi), "=a" (dummy)
-             : "a" (a), "g" (b)
+             : "+g" (rlo), "+g" (rhi), "=a" (dummy1), "=d" (dummy2)
+             : "%a" (a), "rm" (b)
   #endif
-             : "rdx", "cc");
+             : "cc");
 #else
     uint64_t tmplo, tmphi;
     mult64_128(tmplo, tmphi, a, b);
@@ -390,27 +390,27 @@ static FORCE_INLINE void fma64_192( uint64_t & rlo, uint64_t & rmi, uint64_t & r
      * input and clobbered but not actually output; see assembler code
      * below. Better syntactic expression is very welcome.
      */
-    uint64_t dummy;
-    __asm__ ("mulq %5\n"
-             "addq %%rax, %0\n"
-             "adcq %%rdx, %1\n"
-             "adcq $0, %2\n"
+    uint64_t dummy1, dummy2;
+    __asm__ ("mulq %6\n\t"
+             "addq %%rax, %0\n\t"
+             "adcq %%rdx, %1\n\t"
+             "adcq $0, %2"
   #if defined(DEBUG)
-             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
-             : "a" (a), "r" (b)
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy1), "=d" (dummy2)
+             : "%a" (a), "r" (b)
   #elif defined(__clang__)
              // clang cannot work properly with "g" and silently
              // produces hardly-workging code, if "g" is specified;
              // see, for instance, here:
              // http://stackoverflow.com/questions/16850309/clang-llvm-inline-assembly-multiple-constraints-with-useless-spills-reload
              // To avoid 3x performance hit we have to specify sources/destinations
-             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy)
-             : "a" (a), "m" (b)
+             : "+r" (rlo), "+r" (rmi), "+r" (rhi), "=a" (dummy1), "=d" (dummy2)
+             : "%a" (a), "m" (b)
   #else
-             : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (dummy)
-             : "a" (a), "g" (b)
+             : "+g" (rlo), "+g" (rmi), "+g" (rhi), "=a" (dummy1), "=d" (dummy2)
+             : "%a" (a), "rm" (b)
   #endif
-             : "rdx", "cc");
+             : "cc");
 #else
     uint64_t tmplo, tmpmi, tmphi = 0;
     mult64_128(tmplo, tmpmi, a, b);
