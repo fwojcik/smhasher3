@@ -155,11 +155,9 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     Rand r( 444793 + (callcount++));
 
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
-    uintptr_t t1  = reinterpret_cast<uintptr_t>(buf);
+    uint8_t * abuf = buf + (-reinterpret_cast<uintptr_t>(buf) % 256) + align;
 
     r.rand_p(buf, blocksize + 512);
-    t1  = (t1 + 255) & UINT64_C(0xFFFFFFFFFFFFFF00);
-    t1 += align;
 
     if (maxvarysize > 0) {
         for (int i = 0; i < trials; i++) {
@@ -186,7 +184,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     //----------
     for (int itrial = 0; itrial < trials; itrial++) {
         int       testsize = sizes[itrial];
-        uint8_t * block    = reinterpret_cast<uint8_t *>(t1 + alignments[itrial]);
+        uint8_t * block    = abuf + alignments[itrial];
 
         double t;
         if (testsize < 128) {
