@@ -247,6 +247,7 @@ static void blake2_compress( blake2b_context * ctx, const uint8_t * in ) {
     const __m128i r16 = _mm_setr_epi8(2, 3, 4, 5, 6, 7, 0, 1, 10, 11, 12, 13, 14, 15, 8,  9);
     const __m128i r24 = _mm_setr_epi8(3, 4, 5, 6, 7, 0, 1, 2, 11, 12, 13, 14, 15,  8, 9, 10);
 
+#if defined(HAVE_SSE_4_1)
     const __m128i m0  = bswap ? mm_bswap64(LOADU(in +  00)) : LOADU(in +  00);
     const __m128i m1  = bswap ? mm_bswap64(LOADU(in +  16)) : LOADU(in +  16);
     const __m128i m2  = bswap ? mm_bswap64(LOADU(in +  32)) : LOADU(in +  32);
@@ -255,6 +256,16 @@ static void blake2_compress( blake2b_context * ctx, const uint8_t * in ) {
     const __m128i m5  = bswap ? mm_bswap64(LOADU(in +  80)) : LOADU(in +  80);
     const __m128i m6  = bswap ? mm_bswap64(LOADU(in +  96)) : LOADU(in +  96);
     const __m128i m7  = bswap ? mm_bswap64(LOADU(in + 112)) : LOADU(in + 112);
+#else
+    const uint64_t m0  = GET_U64<bswap>(in,   0), m1  = GET_U64<bswap>(in,   8);
+    const uint64_t m2  = GET_U64<bswap>(in,  16), m3  = GET_U64<bswap>(in,  24);
+    const uint64_t m4  = GET_U64<bswap>(in,  32), m5  = GET_U64<bswap>(in,  40);
+    const uint64_t m6  = GET_U64<bswap>(in,  48), m7  = GET_U64<bswap>(in,  56);
+    const uint64_t m8  = GET_U64<bswap>(in,  64), m9  = GET_U64<bswap>(in,  72);
+    const uint64_t m10 = GET_U64<bswap>(in,  80), m11 = GET_U64<bswap>(in,  88);
+    const uint64_t m12 = GET_U64<bswap>(in,  96), m13 = GET_U64<bswap>(in, 104);
+    const uint64_t m14 = GET_U64<bswap>(in, 112), m15 = GET_U64<bswap>(in, 120);
+#endif
 
     row1l = LOADU(&(ctx->h   [0]));
     row1h = LOADU(&(ctx->h   [2]));
@@ -676,10 +687,21 @@ static void blake2_compress( blake2s_context * ctx, const uint8_t * in ) {
     const __m128i r8  = _mm_set_epi8(12, 15, 14, 13, 8, 11, 10,  9, 4, 7, 6, 5, 0, 3, 2, 1);
     const __m128i r16 = _mm_set_epi8(13, 12, 15, 14, 9,  8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
+#if defined(HAVE_XOP) || defined(HAVE_SSE_4_1)
     const __m128i m0  = bswap ? mm_bswap32(LOADU(in + 00)) : LOADU(in + 00);
     const __m128i m1  = bswap ? mm_bswap32(LOADU(in + 16)) : LOADU(in + 16);
     const __m128i m2  = bswap ? mm_bswap32(LOADU(in + 32)) : LOADU(in + 32);
     const __m128i m3  = bswap ? mm_bswap32(LOADU(in + 48)) : LOADU(in + 48);
+#else
+    const uint32_t m0  = GET_U32<bswap>(in,  0), m1  = GET_U32<bswap>(in,  4);
+    const uint32_t m2  = GET_U32<bswap>(in,  8), m3  = GET_U32<bswap>(in, 12);
+    const uint32_t m4  = GET_U32<bswap>(in, 16), m5  = GET_U32<bswap>(in, 20);
+    const uint32_t m6  = GET_U32<bswap>(in, 24), m7  = GET_U32<bswap>(in, 28);
+    const uint32_t m8  = GET_U32<bswap>(in, 32), m9  = GET_U32<bswap>(in, 36);
+    const uint32_t m10 = GET_U32<bswap>(in, 40), m11 = GET_U32<bswap>(in, 44);
+    const uint32_t m12 = GET_U32<bswap>(in, 48), m13 = GET_U32<bswap>(in, 52);
+    const uint32_t m14 = GET_U32<bswap>(in, 56), m15 = GET_U32<bswap>(in, 60);
+#endif
 
     row1 = ff0 = LOADU(&ctx->h[0]);
     row2 = ff1 = LOADU(&ctx->h[4]);
