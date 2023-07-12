@@ -46,7 +46,7 @@
  */
 #include <algorithm>
 
-extern const uint32_t hzb[256];
+extern const uint8_t hzb[256];
 
 //-----------------------------------------------------------------------------
 #define _bytes ((_bits + 7) / 8)
