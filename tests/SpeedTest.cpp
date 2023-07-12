@@ -205,7 +205,6 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     unsigned count       = 0;
     unsigned sbmcount    = 0;
 
-    std::map<int, int> summary;
     for (int size = blocksize - maxvarysize; size <= blocksize; size++) {
         for (int align = 0; align <= maxvaryalign; align++) {
             std::vector<double> & timevec = times[std::make_pair(size, align)];
