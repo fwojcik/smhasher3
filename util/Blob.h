@@ -203,27 +203,25 @@ class Blob {
     }
 
     static void _printbits( const char * prefix, const uint8_t * bytes, const size_t len ) {
-        const size_t buflen = 4 + 9 * len;
-        char         buf[buflen];
-        char *       p;
+        char         buf[9*len + 1];
+        char *       p = buf;
+        size_t       i = len;
 
-        buf[0] = '[';
-        buf[1] = ' ';
-        // Space preceding the closing ']' gets added by the loop below
-        buf[buflen - 2] = ']';
-        buf[buflen - 1] = '\0';
-
-        // Print using MSB-first notation
-        p = &buf[2];
-        for (size_t i = len; i != 0; i--) {
-            uint8_t v = bytes[i - 1];
-            for (int j = 7; j >= 0; j--) {
-                *p++ = (v & (1 << j)) ? '1' : '0';
-            }
+        // Print using MSB-first notation.  v serves double duty as the
+        // byte being printed and the loop counter.
+        while (i--) {
+            uint8_t v = bytes[i];
+            bool bit = v >> 7;
+            v = v << 1 | 1;
+            do {
+                *p++ = '0' + bit;
+                bit = v >> 7;
+            } while ((v <<= 1));
             *p++ = ' ';
         }
+        *p = 0;
 
-        printf("%s%s\n", prefix, buf);
+        printf("%s[ %s]\n", prefix, buf);
     }
 
     static FORCE_INLINE uint32_t _highzerobits( const uint8_t * bytes, const size_t len ) {
