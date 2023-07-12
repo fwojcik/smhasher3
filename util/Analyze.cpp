@@ -552,8 +552,8 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
         printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
     }
 
-    std::vector<uint32_t> bins;
-    bins.resize(1 << maxwidth);
+    std::vector<uint8_t> bins8(1 << maxwidth);
+    std::vector<uint32_t> bins32;
 
     double worstN     = 0; // Only report on biases above 0
     int    worstStart = -1;
@@ -563,20 +563,51 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
     for (int start = 0; start < hashbits; start++) {
         int width    = maxwidth;
         int bincount = (1 << width);
+        bool bigbins = false;          // Are we using 32-bit bins?
 
-        memset(&bins[0], 0, sizeof(uint32_t) * bincount);
+        // This loop does random writes to the bins, so time is completely
+        // dominated by cache performance.  For ballpark numbers,
+        // think 2 cycles per hash if bins fit in L1, 4 cycles in L2,
+        // and 8 cycles in L3.
+        //
+        // Since the number of bins is selected so the average occupancy
+        // of each bin is in the range 5..10, the initial counts almost
+        // always fit into a byte.
+        //
+        // Thus, there's a huge advantage to using 8-bit bins where possible.
+        // The problem is, if the hash is bad, we might overflow a bin.
+        //
+        // We could add a 16-bit bin code path, but it's not clear it'd
+        // be worth the complexity.  For now, if the distribution is
+        // bad enough that we overflow 8 bits, go straight to 32 bits.
 
+        memset(&bins8[0], 0, bincount * sizeof(bins8[0]));
         for (size_t j = 0; j < nbH; j++) {
             uint32_t index = hashes[j].window(start, width);
 
-            bins[index]++;
+            if (unlikely(++bins8[index] == 0))
+                goto overflow;
+        }
+        if (0) {
+  overflow:
+            // Primary overflow, during initial counting
+            // FIXME: If we got far enough (j large enough), copy
+            // counts and continue 8-bit loop.
+            // printf("TestDistribution: Overflow %zu into %u: bit %d/%d\n", nbH, bincount, start, hashbits);
+            bins32.clear();
+            bins32.resize(bincount);
+            for (size_t j = 0; j < nbH; j++) {
+                uint32_t index = hashes[j].window(start, width);
+                ++bins32[index];
+            }
+            bigbins = true;
         }
 
-        // Test the distribution, then fold the bins in half,
-        // repeat until we're down to 256 (== 1 << minwidth) bins
-
+        // Test the distribution, then fold the bins in half, and
+        // repeat until we're down to 256 (== 1 << minwidth) bins.
         while (true) {
-            uint64_t sumsq = sumSquares(&bins[0], bincount);
+            uint64_t sumsq = bigbins ? sumSquares(&bins32[0], bincount) :
+                                       sumSquares(&bins8[0], bincount);
             double n = calcScore(sumsq, bincount, nbH);
 
             tests++;
@@ -594,10 +625,34 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
 
             if (width < minwidth) { break; }
 
-            // To allow the compiler to parallelize this loop
+            // To allow the compiler to vectorize these loops
             assume((bincount % 64) == 0);
-            for (int i = 0; i < bincount; i++) {
-                bins[i] += bins[i + bincount];
+            if (bigbins) {
+                // Fold 32-bit bins in half
+                for (size_t i = 0; i < bincount; i++) {
+                    bins32[i] += bins32[i + bincount];
+                }
+            } else {
+                // Fold 8-bit bins in half and detect overflow
+                for (size_t i = 0; i < bincount; i++) {
+                    uint8_t b = bins8[i + bincount];
+                    uint8_t a = bins8[i] += b;
+                    // Detect unsigned overflow. We can't easily just stop
+                    // the loop here, because some number of items have
+                    // already been folded.
+                    bigbins |= a < b;
+                }
+                if (bigbins) {
+                    // Secondary overflow, during folding
+                    bins32.resize(bincount);
+                    for (size_t i = 0; i < bincount; i++) {
+                        // This undoes the (possibly overflowed) addition
+                        // in the previous loop.
+                        uint8_t b = bins8[i + bincount];
+                        uint8_t a = bins8[i] - b;
+                        bins32[i] = (uint32_t)a + (uint32_t)b;
+                    }
+                }
             }
         }
 
