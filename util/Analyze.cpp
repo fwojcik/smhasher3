@@ -537,7 +537,7 @@ static int MaxDistBits( const uint64_t nbH ) {
 template <typename hashtype>
 static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool verbose, bool drawDiagram ) {
     const int      hashbits = hashtype::bitlen;
-    const uint64_t nbH      = hashes.size();
+    const size_t   nbH      = hashes.size();
     int            maxwidth = MaxDistBits(nbH);
     int            minwidth = 8;
 
@@ -552,7 +552,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
         printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
     }
 
-    std::vector<unsigned> bins;
+    std::vector<uint32_t> bins;
     bins.resize(1 << maxwidth);
 
     double worstN     = 0; // Only report on biases above 0
@@ -564,18 +564,18 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
         int width    = maxwidth;
         int bincount = (1 << width);
 
-        memset(&bins[0], 0, sizeof(int) * bincount);
+        memset(&bins[0], 0, sizeof(uint32_t) * bincount);
 
-        for (uint64_t j = 0; j < nbH; j++) {
+        for (size_t j = 0; j < nbH; j++) {
             uint32_t index = hashes[j].window(start, width);
 
             bins[index]++;
         }
 
         // Test the distribution, then fold the bins in half,
-        // repeat until we're down to 256 bins
+        // repeat until we're down to 256 (== 1 << minwidth) bins
 
-        while (bincount >= 256) {
+        while (true) {
             double n = calcScore(&bins[0], bincount, nbH);
 
             tests++;
@@ -594,8 +594,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
             if (width < minwidth) { break; }
 
             // To allow the compiler to parallelize this loop
-            assume((bincount % 8) == 0);
-
+            assume((bincount % 64) == 0);
             for (int i = 0; i < bincount; i++) {
                 bins[i] += bins[i + bincount];
             }
@@ -985,7 +984,7 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 
     const int nbins    = 65536;
 
-    std::vector<unsigned> bins( nbins, 0 );
+    std::vector<uint32_t> bins( nbins, 0 );
 
     double worst = 0;
 
@@ -1000,7 +999,7 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
             bins.clear();
             bins.resize(nbins, 0);
 
-            for (uint64_t i = 0; i < hashes.size(); i++) {
+            for (size_t i = 0; i < hashes.size(); i++) {
                 uint32_t pa = window(hashes[i], a, 8);
                 uint32_t pb = window(hashes[i], b, 8);
 
@@ -1011,9 +1010,7 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
 
             if (drawDiagram) { plot(s); }
 
-            if (s > worst) {
-                worst = s;
-            }
+            worst = std::max(worst, s);
         }
 
         if (drawDiagram) { printf("]\n"); }
