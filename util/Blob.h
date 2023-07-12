@@ -333,6 +333,7 @@ template <>
 FORCE_INLINE void Blob<32>::flipbit( size_t bit ) {
     uint32_t v;
     memcpy(&v, bytes, 4);
+    if (isBE()) { bit ^= 0x18; }
     v ^= 1 << bit;
     memcpy(bytes, &v, 4);
 }
@@ -341,6 +342,7 @@ template <>
 FORCE_INLINE void Blob<64>::flipbit( size_t bit ) {
     uint64_t v;
     memcpy(&v, bytes, 8);
+    if (isBE()) { bit ^= 0x38; }
     v ^= UINT64_C(1) << bit;
     memcpy(bytes, &v, 8);
 }
@@ -349,6 +351,7 @@ template <>
 FORCE_INLINE uint32_t Blob<32>::getbit( size_t bit ) const {
     uint32_t v;
     memcpy(&v, bytes, 4);
+    if (isBE()) { bit ^= 0x18; }
     return (v >> bit) & 1;
 }
 
@@ -356,6 +359,7 @@ template <>
 FORCE_INLINE uint32_t Blob<64>::getbit( size_t bit ) const {
     uint64_t v;
     memcpy(&v, bytes, 8);
+    if (isBE()) { bit ^= 0x38; }
     return (v >> bit) & 1;
 }
 
