@@ -136,8 +136,9 @@ static void pearson_hash_128( uint8_t * out, const uint8_t * in, size_t len, uin
 
 static void pearson_hash_64( uint8_t * out, const uint8_t * in, size_t len, uint64_t hash_in ) {
     size_t  i;
-    __m128i hash_mask = _mm_cvtsi64_si128(UINT64_C(0x0706050403020100));
-    __m128i hash      = _mm_cvtsi64_si128(hash_in);
+    // _mm_cvtsi64_si28 doesn't exist on x86-32
+    __m128i hash_mask = _mm_set_epi64x(0, UINT64_C(0x0706050403020100));
+    __m128i hash      = _mm_set_epi64x(0, hash_in);
 
     // table lookup preparation
     __m128i const p16        = _mm_set1_epi8(0x10);
