@@ -282,8 +282,8 @@ class Blob {
 
     // from the "Bit Twiddling Hacks" webpage
     static FORCE_INLINE uint8_t _byterev( uint8_t b ) {
-        return ((b * UINT64_C(0x0802) & UINT64_C(0x22110)) |
-               (b * UINT64_C(0x8020) & UINT64_C(0x88440)))  * UINT64_C(0x10101) >> 16;
+        return ((b * UINT32_C(0x0802) & UINT32_C(0x22110)) |
+                (b * UINT32_C(0x8020) & UINT32_C(0x88440)))  * UINT32_C(0x10101) >> 16;
     }
 
     // 0xf00f1001 => 0x8008f00f
