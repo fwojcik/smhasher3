@@ -162,8 +162,6 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     if (maxvarysize > 0) {
         for (int i = 0; i < trials; i++) {
             sizes.push_back(blocksize - maxvarysize + (i % (maxvarysize + 1)));
-        }
-        for (int i = trials - 1; i > 0; i--) {
             std::swap(sizes[i], sizes[r.rand_range(i + 1)]);
         }
     } else {
@@ -173,8 +171,6 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     if (maxvaryalign > 0) {
         for (int i = 0; i < trials; i++) {
             alignments.push_back((i + 1) % (maxvaryalign + 1));
-        }
-        for (int i = trials - 1; i > 0; i--) {
             std::swap(alignments[i], alignments[r.rand_range(i + 1)]);
         }
     } else {
