@@ -299,10 +299,11 @@ class Blob {
         if (bitoffset == 0) {
             memcpy(bytes, tmp, len);
         } else {
+            uint8_t b = tmp[len - 1];
             for (size_t i = 0; i < len; i++) {
                 uint8_t a = tmp[i];
-                uint8_t b = (i == 0) ? tmp[len - 1] : tmp[i - 1];
                 bytes[i] = (a << bitoffset) | (b >> (8 - bitoffset));
+                b = a;
             }
         }
     }
