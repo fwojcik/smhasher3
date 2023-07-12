@@ -81,24 +81,34 @@ double CalcMean( std::vector<double> & v, int a, int b ) {
     return sum / (b - a + 1);
 }
 
+// Calculate the sum of squared differences from the mean.
+static double CalcSumSq( std::vector<double>::const_iterator first,
+        std::vector<double>::const_iterator last, double mean ) {
+    auto n = std::distance(first, last);
+    double sum = 0, sumsq = 0;
+
+    while (first != last) {
+        double x = *first++ - mean;
+        sum += x;
+        sumsq += x * x;
+    }
+    // This is the "corrected two-pass" algorithm.  If arithmetic were exact,
+    // sum would be zero, but including the sum*sum term improves precision.
+    return sumsq - sum * sum / n;
+}
+
 double CalcStdv( std::vector<double> & v, int a, int b ) {
     double mean = CalcMean(v, a, b);
+    double sumsq = CalcSumSq(v.cbegin() + a, v.cbegin() + b + 1, mean);
 
-    double stdv = 0;
-
-    for (int i = a; i <= b; i++) {
-        double x = v[i] - mean;
-
-        stdv += x * x;
-    }
-
-    stdv = sqrt(stdv / (b - a + 1));
-
-    return stdv;
+    return sqrt(sumsq / (b - a + 1));
 }
 
 double CalcStdv( std::vector<double> & v ) {
-    return CalcStdv(v, 0, v.size() - 1);
+    double mean = CalcMean(v);
+    double sumsq = CalcSumSq(v.cbegin(), v.cend(), mean);
+
+    return sqrt(sumsq / v.size());
 }
 
 // Return true if the largest value in v[0,len) is more than three
