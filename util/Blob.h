@@ -274,8 +274,21 @@ class Blob {
 
     // from the "Bit Twiddling Hacks" webpage
     static FORCE_INLINE uint8_t _byterev( uint8_t b ) {
-        return ((b * UINT32_C(0x0802) & UINT32_C(0x22110)) |
-                (b * UINT32_C(0x8020) & UINT32_C(0x88440)))  * UINT32_C(0x10101) >> 16;
+        uint32_t t = b * UINT32_C(0x0802);
+        return ((t >> 4 & UINT32_C(0x2211)) |
+                (t      & UINT32_C(0x8844)))  * UINT32_C(0x10101) >> 12;
+        // b =                           abcdefgh
+        // t =                abcdefgh__abcdefgh_
+        // t >> 4 & 0x2211 =       b___f____a___e
+        // t      & 0x8844 =     d___h____c___g__
+        // combination     =     d_b_h_f__c_a_g_e
+        // * 0x10101       =     d_b_h_f__c_a_g_e
+        //             + d_b_h_f__c_a_g_e________
+        //     + d_b_h_f__c_a_g_e________
+        //     = d_b_h_f_dcbahgfedcbahgfe_c_a_g_e
+        //                   ^^^^^^^^
+        // >> 12           = d b_h_f_dcbahgfedcba
+        // (uint8_t)       =             hgfedcba
     }
 
     // 0xf00f1001 => 0x8008f00f
