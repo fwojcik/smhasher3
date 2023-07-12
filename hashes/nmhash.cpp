@@ -501,9 +501,9 @@ static uint32_t NMHASH32_long( const uint8_t * const RESTRICT p, size_t const le
     for (i = 0; i < sizeof(accX) / sizeof(*accX); ++i) { accX[i] ^= NMH_ACC_INIT[i]; }
     for (i = 0; i < sizeof(accX) / sizeof(*accX); ++i) { sum += accX[i]; }
 
-    if (sizeof(size_t) > sizeof(uint32_t)) {
-        sum += (uint32_t)(len >> 32);
-    }
+    /* A no-op if size_t is 32 bits */
+    sum += (uint32_t)(len >> 16 >> 16);
+
     return sum ^ (uint32_t)len;
 }
 

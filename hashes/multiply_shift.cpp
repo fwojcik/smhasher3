@@ -82,12 +82,13 @@ static void multiply_shift32( const void * in, const size_t len_bytes, const see
     // We mix in len_bytes in the basis, since smhasher considers two keys
     // of different length to be different, even if all the extra bits are 0.
     // This is needed for the AppendZero test.
+    // ">> 16 >> 16" is because ">> 32" is undefined if size_t is 32 bits.
     uint64_t h, t;
 
-    h =     ((uint32_t)(seed           )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
-            ((uint32_t)(seed      >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
-            ((uint32_t)(len_bytes      )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
-            ((uint32_t)(len_bytes >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
+    h =     (uint32_t)(seed                 ) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
+            (uint32_t)(seed      >> 16 >> 16) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
+            (uint32_t)(len_bytes            ) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
+            (uint32_t)(len_bytes >> 16 >> 16) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
 
     for (size_t i = 0; i < len; i++, buf += 4) {
         t  = GET_U32<bswap>(buf, 0) *
@@ -120,10 +121,10 @@ static void pair_multiply_shift32( const void * in, const size_t len_bytes, cons
     // This is needed for the AppendZero test.
     uint64_t h, t;
 
-    h =     ((uint32_t)(seed           )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
-            ((uint32_t)(seed      >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
-            ((uint32_t)(len_bytes      )) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
-            ((uint32_t)(len_bytes >> 32)) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
+    h =     (uint32_t)(seed                 ) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1] +
+            (uint32_t)(seed      >> 16 >> 16) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2] +
+            (uint32_t)(len_bytes            ) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3] +
+            (uint32_t)(len_bytes >> 16 >> 16) * multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4];
 
     for (size_t i = 0; i < len / 2; i++, buf += 8) {
         t  = GET_U64<bswap>(buf, 0);
