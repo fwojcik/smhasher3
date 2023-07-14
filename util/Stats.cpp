@@ -66,32 +66,34 @@
 // fallback code.
 
 #if !defined(M_SQRT1_2)
-#define M_SQRT1_2 0.70710678118654752440  //  1.0 / sqrt(2.0)
+  #define M_SQRT1_2 0.70710678118654752440 //  1.0 / sqrt(2.0)
 #endif
 
 //-----------------------------------------------------------------------------
 
 double CalcMean( std::vector<double> & v ) {
     double sum = std::accumulate(v.begin(), v.end(), 0.0);
+
     return sum / v.size();
 }
 
 double CalcMean( std::vector<double> & v, int a, int b ) {
     double sum = std::accumulate(v.begin() + a, v.begin() + b + 1, 0.0);
+
     return sum / (b - a + 1);
 }
 
 // Calculate the sum of squared differences from the mean.
 // (The input data values are all well-behaved enough that
 // there is no need to worry about numeric overflow.)
-static double CalcSumSq( std::vector<double>::const_iterator first,
-        std::vector<double>::const_iterator last, double mean ) {
-    auto n = std::distance(first, last);
+static double CalcSumSq( std::vector<double>::const_iterator first, std::vector<double>::const_iterator last,
+        double mean ) {
+    auto   n   = std::distance(first, last);
     double sum = 0, sumsq = 0;
 
     while (first != last) {
         double x = *first++ - mean;
-        sum += x;
+        sum   += x;
         sumsq += x * x;
     }
     // This is the "corrected two-pass" algorithm.  If arithmetic were exact,
@@ -100,7 +102,7 @@ static double CalcSumSq( std::vector<double>::const_iterator first,
 }
 
 double CalcStdv( std::vector<double> & v ) {
-    double mean = CalcMean(v);
+    double mean  = CalcMean(v);
     double sumsq = CalcSumSq(v.cbegin(), v.cend(), mean);
 
     return sqrt(sumsq / v.size());
@@ -117,22 +119,23 @@ double CalcStdv( std::vector<double> & v ) {
 void FilterOutliers( std::vector<double> & v ) {
     std::sort(v.begin(), v.end());
 
-    if (v.size() <= 2)
+    if (v.size() <= 2) {
         return;
+    }
 
-    double mean = CalcMean(v);
+    double mean  = CalcMean(v);
     double sumsq = CalcSumSq(v.cbegin(), v.cend(), mean);
 
     do {
-        double n_1 = v.size() - 1;
-        double diff = v.back() - mean;  // Always positive
+        double n_1  = v.size() - 1;
+        double diff = v.back() - mean; // Always positive
 
         // Is this difference more than 3 standard deviations?
         //
         // Rather than test abs(diff) > 3*sqrt(variance) = 3*sqrt(sumsq/(n-1)),
         // we test (n-1) * diff**2 > 9 * sumsq.
         if (diff * diff * n_1 <= 9 * sumsq) {
-            break;  // All samples are in range
+            break; // All samples are in range
         }
 
         v.pop_back();
@@ -141,7 +144,7 @@ void FilterOutliers( std::vector<double> & v ) {
         // (or, equivalently, with a sample weight of -1).
         // Remove the sample from the mean and sum of squares.
         double delta = diff / n_1;
-        mean -= delta;
+        mean  -= delta;
         sumsq -= diff * (diff - delta);
     } while (v.size() > 2);
 }
@@ -1010,8 +1013,10 @@ void ReportCollisionEstimates( void ) {
            524801,   401857,   264097,   204800,   200000,   102774,
            100000,    77163,    50643,    16388,        6
     };
-    const int bits[] = { 256, 224, 160, 128, 64, 61, 58, 55, 52, 49, 46, 43,
-                         40, 37, 34, 32, 29, 26, 23, 20, 17, 14, 12, 8 };
+    const int bits[] = {
+        256, 224, 160, 128, 64, 61, 58, 55, 52, 49, 46, 43,
+         40,  37,  34,  32, 29, 26, 23, 20, 17, 14, 12,  8
+    };
 
     printf("EstimateNbCollisions:\n");
     printf(

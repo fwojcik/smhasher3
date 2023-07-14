@@ -183,9 +183,9 @@ class Blob {
     }
 
     static void _printhex( const char * prefix, const uint8_t * bytes, const size_t len ) {
-        char         buf[2 * len + (len + 3) / 4 + 1];
-        char *       p = buf;
-        size_t       i = len;
+        char   buf[2 * len + (len + 3) / 4 + 1];
+        char * p = buf;
+        size_t i = len;
 
         // Print using MSB-first notation
         while (i--) {
@@ -203,15 +203,15 @@ class Blob {
     }
 
     static void _printbits( const char * prefix, const uint8_t * bytes, const size_t len ) {
-        char         buf[9*len + 1];
-        char *       p = buf;
-        size_t       i = len;
+        char   buf[9 * len + 1];
+        char * p = buf;
+        size_t i = len;
 
         // Print using MSB-first notation.  v serves double duty as the
         // byte being printed and the loop counter.
         while (i--) {
-            uint8_t v = bytes[i];
-            bool bit = v >> 7;
+            uint8_t v   = bytes[i];
+            bool    bit = v >> 7;
             v = v << 1 | 1;
             do {
                 *p++ = '0' + bit;
