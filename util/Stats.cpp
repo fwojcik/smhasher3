@@ -82,6 +82,8 @@ double CalcMean( std::vector<double> & v, int a, int b ) {
 }
 
 // Calculate the sum of squared differences from the mean.
+// (The input data values are all well-behaved enough that
+// there is no need to worry about numeric overflow.)
 static double CalcSumSq( std::vector<double>::const_iterator first,
         std::vector<double>::const_iterator last, double mean ) {
     auto n = std::distance(first, last);
@@ -97,13 +99,6 @@ static double CalcSumSq( std::vector<double>::const_iterator first,
     return sumsq - sum * sum / n;
 }
 
-double CalcStdv( std::vector<double> & v, int a, int b ) {
-    double mean = CalcMean(v, a, b);
-    double sumsq = CalcSumSq(v.cbegin() + a, v.cbegin() + b + 1, mean);
-
-    return sqrt(sumsq / (b - a + 1));
-}
-
 double CalcStdv( std::vector<double> & v ) {
     double mean = CalcMean(v);
     double sumsq = CalcSumSq(v.cbegin(), v.cend(), mean);
@@ -111,85 +106,45 @@ double CalcStdv( std::vector<double> & v ) {
     return sqrt(sumsq / v.size());
 }
 
-// Return true if the largest value in v[0,len) is more than three
-// standard deviations from the mean
-
-bool ContainsOutlier( std::vector<double> & v, size_t len ) {
-    double mean = 0;
-
-    for (size_t i = 0; i < len; i++) {
-        mean += v[i];
-    }
-
-    mean /= double(len);
-
-    double stdv = 0;
-
-    for (size_t i = 0; i < len; i++) {
-        double x = v[i] - mean;
-        stdv += x * x;
-    }
-
-    stdv = sqrt(stdv / double(len));
-
-    double cutoff = mean + stdv * 3;
-
-    return v[len - 1] > cutoff;
-}
-
-// Do a binary search to find the largest subset of v that does not contain
-// outliers.
-
+// Remove outliers from the vector until all members
+// are within 3 standard deviations of the mean.
+//
+// This only removes high outliers, as it is applied to
+// benchmark timings where crazy-low values don't happen.
+//
+// The vector is permuted in place (sorted, actually)
+// to accomplish this.
 void FilterOutliers( std::vector<double> & v ) {
     std::sort(v.begin(), v.end());
 
-    size_t       len = 0;
-    const size_t sz  = v.size();
+    if (v.size() <= 2)
+        return;
 
-    for (size_t x = 0x40000000; x; x = x >> 1) {
-        if ((len | x) >= sz) { continue; }
+    double mean = CalcMean(v);
+    double sumsq = CalcSumSq(v.cbegin(), v.cend(), mean);
 
-        if (!ContainsOutlier(v, len | x)) {
-            len |= x;
+    do {
+        double n_1 = v.size() - 1;
+        double diff = v.back() - mean;  // Always positive
+
+        // Is this difference more than 3 standard deviations?
+        //
+        // Rather than test abs(diff) > 3*sqrt(variance) = 3*sqrt(sumsq/(n-1)),
+        // we test (n-1) * diff**2 > 9 * sumsq.
+        if (diff * diff * n_1 <= 9 * sumsq) {
+            break;  // All samples are in range
         }
-    }
 
-    if (len) {
-        v.resize(len);
-    }
+        v.pop_back();
+
+        // Welford's incremental algorithm in reverse
+        // (or, equivalently, with a sample weight of -1).
+        // Remove the sample from the mean and sum of squares.
+        double delta = diff / n_1;
+        mean -= delta;
+        sumsq -= diff * (diff - delta);
+    } while (v.size() > 2);
 }
-
-#if 0
-// Iteratively tighten the set to find a subset that does not contain
-// outliers. I'm not positive this works correctly in all cases.
-
-void FilterOutliers2( std::vector<double> & v ) {
-    std::sort(v.begin(), v.end());
-
-    int a = 0;
-    int b = (int)(v.size() - 1);
-
-    for (int i = 0; i < 10; i++) {
-        // printf("%d %d\n",a,b);
-
-        double mean = CalcMean(v, a, b);
-        double stdv = CalcStdv(v, a, b);
-
-        double cutA = mean - stdv * 3;
-        double cutB = mean + stdv * 3;
-
-        while ((a < b) && (v[a] < cutA)) { a++; }
-        while ((b > a) && (v[b] > cutB)) { b--; }
-    }
-
-    std::vector<double> v2;
-
-    v2.insert(v2.begin(), v.begin() + a, v.begin() + b + 1);
-
-    v.swap(v2);
-}
-
-#endif
 
 //-----------------------------------------------------------------------------
 

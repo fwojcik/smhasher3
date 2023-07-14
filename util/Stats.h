@@ -53,8 +53,6 @@
 double CalcMean( std::vector<double> & v );
 double CalcMean( std::vector<double> & v, int a, int b );
 double CalcStdv( std::vector<double> & v );
-double CalcStdv( std::vector<double> & v, int a, int b );
-bool ContainsOutlier( std::vector<double> & v, size_t len );
 void FilterOutliers( std::vector<double> & v );
 
 double chooseK( int b, int k );
