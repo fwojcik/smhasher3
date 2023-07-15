@@ -1286,8 +1286,8 @@ double BoundedPoissonPValue( const double expected, const uint64_t collisions ) 
 // be a standard normal variable (E[score] = 0, Var[score] = 1)
 // independent of bincount and keycount.
 //
-// The way the RMSE is calculated is a little odd. What we want is
-// sumN{(Bi - lambda)**2}. But Bi values are integers, and doing all
+// The way the RMSE is calculated is a little odd. One term in what we want
+// is sumN{(Bi - lambda)**2}. But Bi values are integers, and doing all
 // that math in a loop is expensive. So that formula gets rearranged:
 //
 // sumN{(Bi - lambda)**2}
@@ -1300,23 +1300,36 @@ double BoundedPoissonPValue( const double expected, const uint64_t collisions ) 
 // sumN{(Bi**2)} - M**2 / N
 // sumN{(Bi**2)} - M * lambda
 //
+// From there, the formula for the score is:
+//
+// RMSE    = sqrt((sumN{(Bi**2)} - M * lambda) / N)
+// score   = (RMSE/sqrt(lambda) - 1.0) * sqrt(2.0 * N)
+//
+// but the first part of the score formula gets further rearranged, to
+// minimize the number of math operations:
+//
+// sqrt((sumN{(Bi**2)} - M * lambda) / N) / sqrt(lambda)
+// sqrt((sumN{(Bi**2)} - M * lambda) / N) / sqrt(M / N)
+// sqrt(((sumN{(Bi**2)} - M * lambda) / N) / (M / N))
+// sqrt(((sumN{(Bi**2)} - M * lambda) / N) * (N / M))
+// sqrt((sumN{(Bi**2)} - M * lambda) / M)
+// sqrt((sumN{(Bi**2)} / M - lambda))
+//
 // NB: bincount must be a non-zero multiple of 8!
 double calcScore( const unsigned * bins, const int bincount, const int keycount ) {
     const double n      = bincount;
-    const double k      = keycount;
-    const double lambda = k / n;
+    const double m      = keycount;
+    const double lambda = m / n;
 
     uint64_t sumsq      = 0;
 
     assume(bincount >= 8);
-    for (int i = 0; i < (bincount >> 3) << 3; i++) {
+    for (int i = 0; i < ((bincount >> 3) << 3); i++) {
         sumsq += (uint64_t)bins[i] * (uint64_t)bins[i];
     }
 
-    double sumsqe        = (double)sumsq - lambda * k;
-    double rmse          = sqrt(sumsqe / n);
-    double rmse_ratio_m1 = (rmse - sqrt(lambda)) / sqrt(lambda); // == rmse/sqrt(lambda) - 1.0
-    double score         = (rmse_ratio_m1) * sqrt(2.0 * n);
+    double rmse_ratio    = sqrt(((double)sumsq) / m - lambda);
+    double score         = (rmse_ratio - 1.0) * sqrt(2.0 * n);
 
     return score;
 }
