@@ -151,12 +151,12 @@ std::vector<int> alignments( MAX_TRIALS );
 std::map<std::pair<int, int>, std::vector<double>> times;
 
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
-        const int align, const int maxvarysize, const int maxvaryalign ) {
+        const int bufalign, const int maxvarysize, const int maxvaryalign ) {
     static uint64_t callcount = 0;
     Rand r( 444793 + (callcount++));
 
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
-    uint8_t * abuf = buf + (-reinterpret_cast<uintptr_t>(buf) % 256) + align;
+    uint8_t * abuf = buf + (-reinterpret_cast<uintptr_t>(buf) % 256) + bufalign;
 
     r.rand_p(buf, blocksize + 512);
 
