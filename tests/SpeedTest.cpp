@@ -60,8 +60,8 @@
 #include <functional>
 #include <map>
 
-constexpr int BULK_RUNS   = 16;
-constexpr int BULK_TRIALS = 9600;
+constexpr int BULK_RUNS   = 160;
+constexpr int BULK_TRIALS = 960*2;
 // constexpr int BULK_SAMPLES = 2;
 
 constexpr int TINY_TRIALS  = 600;   // Timings per hash for small (<128b) keys
