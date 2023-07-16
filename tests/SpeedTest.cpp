@@ -59,6 +59,7 @@
 #include <string>
 #include <functional>
 #include <map>
+#include <limits>
 
 constexpr int BULK_RUNS   = 160;
 constexpr int BULK_TRIALS = 960*2;
@@ -247,11 +248,10 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
     volatile double warmup_cycles = SpeedTest(hash, seed, trials, blocksize, 0, 0, 0);
 
     for (int align = 7; align >= 0; align--) {
-        double cycles = 0;
+        double cycles = std::numeric_limits<double>::max();
         for (int i = 0; i < runcount; i++) {
-            cycles += SpeedTest(hash, seed, trials, blocksize, align, maxvary, 0);
+            cycles = std::min(cycles, SpeedTest(hash, seed, trials, blocksize, align, maxvary, 0));
         }
-        cycles /= (double)runcount;
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
@@ -266,11 +266,10 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
 
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (vary_align) {
-        double cycles = 0;
+        double cycles = std::numeric_limits<double>::max();
         for (int i = 0; i < runcount; i++) {
-            cycles += SpeedTest(hash, seed, trials, blocksize, 0, maxvary, 7);
+            cycles = std::min(cycles, SpeedTest(hash, seed, trials, blocksize, 0, maxvary, 7));
         }
-        cycles /= (double)runcount;
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
