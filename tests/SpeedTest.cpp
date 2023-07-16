@@ -89,7 +89,6 @@ NEVER_INLINE static int64_t timehash( HashFn hash, const seed_t seed, void * con
     begin = timer_start();
 
     hash(key, len, seed, key);
-    hash(key, len, seed, key);
 
     end = timer_end();
 
@@ -187,7 +186,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
         if (testsize < 128) {
             t = (double)timehash_small(hash, seed, block, testsize) / (double)TINY_SAMPLES;
         } else {
-            t = (double)timehash(hash      , seed, block, testsize) / (double)2.0;
+            t = (double)timehash(hash      , seed, block, testsize);
         }
 
         rawtimes[itrial] = t;
