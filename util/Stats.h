@@ -52,7 +52,6 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 double CalcMean( std::vector<double> & v );
-double CalcMean( std::vector<double> & v, int a, int b );
 double CalcStdv( std::vector<double> & v );
 void FilterOutliers( std::vector<double> & v );
 

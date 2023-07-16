@@ -79,12 +79,6 @@ double CalcMean( std::vector<double> & v ) {
     return sum / v.size();
 }
 
-double CalcMean( std::vector<double> & v, int a, int b ) {
-    double sum = std::accumulate(v.begin() + a, v.begin() + b + 1, 0.0);
-
-    return sum / (b - a + 1);
-}
-
 // Calculate the sum of squared differences from the mean.
 // (The input data values are all well-behaved enough that
 // there is no need to worry about numeric overflow.)

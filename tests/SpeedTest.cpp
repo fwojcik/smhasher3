@@ -200,7 +200,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     }
 
     //----------
-    double   avgtotal    = 0.0;
+    double   mintotal    = 0.0;
     double   stddevtotal = 0.0;
     unsigned count       = 0;
     unsigned sbmcount    = 0;
@@ -212,8 +212,9 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
 
             FilterOutliers(timevec);
 
-            avgtotal    += CalcMean(timevec, 0, timevec.size() / 2);
             stddevtotal += CalcStdv(timevec);
+            mintotal    += timevec[0];
+
             count++;
         }
     }
@@ -223,7 +224,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     times.clear();
 
     stddev = stddevtotal / count;
-    return avgtotal / count;
+    return mintotal / count;
 }
 
 //-----------------------------------------------------------------------------
