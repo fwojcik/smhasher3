@@ -255,14 +255,14 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
-        double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
-        printf("Alignment  %2d - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz (%10.6f stdv%8.4f%%)\n",
-                align, bestbpc, bestbps, stddev, 100.0 * stddev / cycles);
+        double bestbps = (bestbpc * 3500000000.0 / 1073741824.0);
+        printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f %10.6f stdv%8.4f%%)\n",
+                align, bestbpc, bestbps, cycles, stddev, 100.0 * stddev / cycles);
         sumbpc += bestbpc;
     }
 
     sumbpc = sumbpc / 8.0;
-    printf("Average       - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz\n", sumbpc, (sumbpc * 3000000000.0 / 1048576.0));
+    printf("Average       - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n", sumbpc, (sumbpc * 3500000000.0 / 1073741824.0));
 
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (vary_align) {
@@ -273,8 +273,8 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
-        double bestbps = (bestbpc * 3000000000.0 / 1048576.0);
-        printf("Alignment rnd - %6.3f bytes/cycle - %7.2f MiB/sec @ 3 ghz (%10.6f stdv%8.4f%%)\n",
+        double bestbps = (bestbpc * 3500000000.0 / 1073741824.0);
+        printf("Alignment rnd - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f stdv%8.4f%%)\n",
                 bestbpc, bestbps, stddev, 100.0 * stddev / cycles);
     }
 
