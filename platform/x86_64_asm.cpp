@@ -7,7 +7,7 @@ uint32_t multasm32(
     __asm__("addl %3, %0\n"
             "adcl %4, %1\n"
             "adcl %5, %2\n"
-            : "+g" (var1), "+g" (var2), "+g" (var3)
+            : "+r" (var1), "+r" (var2), "+r" (var3)
             : "g" (var4), "g" (var5), "g" (var6)
             : "cc"
             );
@@ -25,7 +25,7 @@ uint64_t multasm64(
     __asm__("addq %3, %0\n"
             "adcq %4, %1\n"
             "adcq %5, %2\n"
-            : "+g" (var5), "+g" (var6), "+g" (var7)
+            : "+r" (var5), "+r" (var6), "+r" (var7)
             : "g" (var8), "g" (var9), "g" (var1)
             : "cc"
             );
@@ -40,9 +40,9 @@ uint64_t multasm64(
             : "cc"
             );
 #if defined(__AVX2__)
-    __asm__("mulx %3,%0,%1\n"
-            : "=g" (var9), "=r" (var1)
-            : "d" (var2), "g" (var3)
+   __asm__("mulxq %3, %0, %1\n"
+            : "=r" (var9), "=r" (var1)
+            : "%d" (var2), "rm" (var3)
             );
 #endif
     return var1+var2+var3+var4+var5+var6+var7+var8+var9;
