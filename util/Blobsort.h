@@ -23,6 +23,14 @@ static constexpr ssize_t SMALLSORT_CUTOFF = 1024;
 //-----------------------------------------------------------------------------
 // Blob sorting routines
 
+// This moves the smallest element in [begin, end) to be the first
+// element. It is one step in insertionsort, and it is used to ensure there
+// is a sentinel at the beginning that is less than or equal to every other
+// element, so that the array bounds don't need to be checked inside the
+// loop. This makes flagsort() (and thus blobsort()) unstable sorts,
+// because the std::iter_swap() below can move the first element past some
+// other element that it equals. This could be rectified by using
+// std::rotate() at some runtime cost.
 template <typename T>
 static void movemin( T * begin, T * end ) {
     T * min = begin;
@@ -35,7 +43,10 @@ static void movemin( T * begin, T * end ) {
 }
 
 // When this is called with unguarded==true, begin-1 must be guaranteed to
-// exist and to be less than all elements in [begin, end).
+// exist and to be less than all elements in [begin, end). This can be done
+// via movemin(), or with the magic knowledge (that comes from sorting a
+// larger array by sections) there are more elements before begin that are
+// smaller than any element in [begin, end).
 template <bool unguarded, typename T>
 static void insertionsort( T * begin, T * end ) {
     for (T * i = begin + 1; i != end; i++) {
