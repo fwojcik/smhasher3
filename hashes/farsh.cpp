@@ -97,6 +97,7 @@ alignas(32) static const uint32_t FARSH_KEYS[STRIPE_ELEMENTS + EXTRA_ELEMENTS] =
 /* Internal: hash exactly STRIPE bytes */
 template <bool bswap>
 static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
+    uint64_t sum64;
 #if defined(HAVE_AVX2)
   #define FARSH_IMPL_STR "avx2"
     __m256i         sum   = _mm256_setzero_si256();
@@ -115,7 +116,15 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
     sum = _mm256_add_epi64(sum, _mm256_shuffle_epi32(sum, 3 * 4 + 2)); // return sum of four 64-bit values in
                                                                        // the sum
     __m128i sum128 = _mm_add_epi64(_mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum, 1));
-    return _mm_cvtsi128_si64(sum128);
+
+  #if defined(HAVE_32BIT_PLATFORM)
+    // _mm_cvtsi128_si64 isn't available on 32-bit platforms, so we use
+    // _mm_storel_epi64 instead.
+    _mm_storel_epi64((__m128i *)&sum64, sum128);
+  #else
+    sum64 = _mm_cvtsi128_si64(sum128);
+  #endif
+    return sum64;
 #elif defined(HAVE_SSE_2)
   #define FARSH_IMPL_STR "sse2"
     __m128i         sum   = _mm_setzero_si128();
@@ -131,15 +140,23 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
         sum = _mm_add_epi64(sum, res);
     }
     sum = _mm_add_epi64(sum, _mm_shuffle_epi32(sum, 3 * 4 + 2)); // return sum of two 64-bit values in the sum
-    return _mm_cvtsi128_si64(sum);
+
+  #if defined(HAVE_32BIT_PLATFORM)
+    // _mm_cvtsi128_si64 isn't available on 32-bit platforms, so we use
+    // _mm_storel_epi64 instead.
+    _mm_storel_epi64((__m128i *)&sum64, sum);
+  #else
+    sum64 = _mm_cvtsi128_si64(sum);
+  #endif
+    return sum64;
 #else
   #define FARSH_IMPL_STR "portable"
-    uint64_t sum = 0;
+    sum64 = 0;
     for (int i = 0; i < STRIPE_ELEMENTS; i += 2) {
-        sum += (GET_U32<bswap>(data, i * 4) + key[i]) *
+        sum64 += (GET_U32<bswap>(data, i * 4) + key[i]) *
                 (uint64_t)(GET_U32<bswap>(data, (i + 1) * 4) + key[i + 1]);
     }
-    return sum;
+    return sum64;
 #endif
 }
 

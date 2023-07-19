@@ -327,5 +327,13 @@ static uint32_t khashv32( const khashvSeed * seed, const uint8_t * data, size_t 
 static uint64_t khashv64( const khashvSeed * seed, const uint8_t * data, size_t data_len ) {
     __m128i h = khashv_hash_vector(seed->vec, data, data_len);
 
+#if defined(HAVE_32BIT_PLATFORM)
+    // _mm_cvtsi128_si64 isn't available on 32-bit platforms, so we use
+    // _mm_storel_epi64 instead.
+    uint64_t r;
+    _mm_storel_epi64((__m128i *)&r, h);
+    return r;
+#else
     return _mm_cvtsi128_si64(h);
+#endif
 }
