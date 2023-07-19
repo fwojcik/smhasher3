@@ -52,6 +52,8 @@ extern const uint8_t hzb[256];
 #define _bytes ((size_t)(_bits + 7) / 8)
 template <unsigned _bits>
 class Blob {
+    static_assert((_bits % 8) == 0, "Blob<> bit size must be a whole number of bytes");
+
   public:
     static constexpr size_t bitlen = _bits;
     static constexpr size_t len = _bytes;
