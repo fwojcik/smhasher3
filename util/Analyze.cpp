@@ -585,14 +585,15 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
         for (size_t j = 0; j < nbH; j++) {
             uint32_t index = hashes[j].window(start, width);
 
-            if (unlikely(++bins8[index] == 0))
-                goto overflow;
+            if (unlikely(++bins8[index] == 0)) {
+                bigbins = true;
+                break;
+            }
         }
-        if (0) {
-  overflow:
-            // Primary overflow, during initial counting
-            // FIXME: If we got far enough (j large enough), copy
-            // counts and continue 8-bit loop.
+        if (unlikely(bigbins)) {
+            // Primary overflow, during initial counting.
+            // XXX Maybe If we got far enough (j large enough), copy counts
+            // and continue 8-bit loop?
             // printf("TestDistribution: Overflow %zu into %u: bit %d/%d\n", nbH, bincount, start, hashbits);
             bins32.clear();
             bins32.resize(bincount);
@@ -600,7 +601,6 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
                 uint32_t index = hashes[j].window(start, width);
                 ++bins32[index];
             }
-            bigbins = true;
         }
 
         // Test the distribution, then fold the bins in half, and
@@ -633,21 +633,25 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
                     bins32[i] += bins32[i + bincount];
                 }
             } else {
-                // Fold 8-bit bins in half and detect overflow
+                // Fold 8-bit bins in half and detect unsigned overflow. We
+                // can't easily just stop the loop when it happens, because
+                // some number of items have already been folded. I did try
+                // stopping this loop when overflow is detected, undoing
+                // just that addition, and then copying the first i
+                // non-overflowed items from bins8[] into bins32[] followed
+                // by summing the rest into bins32[] as "normal", but that
+                // ended up being slightly slower than this!
                 for (size_t i = 0; i < bincount; i++) {
                     uint8_t b = bins8[i + bincount];
                     uint8_t a = bins8[i] += b;
-                    // Detect unsigned overflow. We can't easily just stop
-                    // the loop here, because some number of items have
-                    // already been folded.
                     bigbins |= a < b;
                 }
                 if (bigbins) {
                     // Secondary overflow, during folding
                     bins32.resize(bincount);
                     for (size_t i = 0; i < bincount; i++) {
-                        // This undoes the (possibly overflowed) addition
-                        // in the previous loop.
+                        // This construction undoes the (possibly
+                        // overflowed) addition in the previous loop.
                         uint8_t b = bins8[i + bincount];
                         uint8_t a = bins8[i] - b;
                         bins32[i] = (uint32_t)a + (uint32_t)b;
