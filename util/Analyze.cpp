@@ -576,7 +576,8 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
         // repeat until we're down to 256 (== 1 << minwidth) bins
 
         while (true) {
-            double n = calcScore(&bins[0], bincount, nbH);
+            uint64_t sumsq = sumSquares(&bins[0], bincount);
+            double n = calcScore(sumsq, bincount, nbH);
 
             tests++;
 
@@ -1006,7 +1007,8 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
                 bins[pa | (pb << 8)]++;
             }
 
-            double s = calcScore(bins, nbins, hashes.size());
+            uint64_t sumsq = sumSquares(bins, nbins);
+            double s = calcScore(sumsq, nbins, hashes.size());
 
             if (drawDiagram) { plot(s); }
 

@@ -51,6 +51,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "Platform.h"
+#include "Instantiate.h"
 
 #include <vector>
 #include <algorithm>
@@ -1240,7 +1241,27 @@ double BoundedPoissonPValue( const double expected, const uint64_t collisions ) 
 
 //-----------------------------------------------------------------------------
 // Distribution score
-//
+
+// Compute the sum of squares of a series of integer values
+// NB: bincount must be a non-zero multiple of 64!
+template <typename T>
+uint64_t sumSquares( const T * bins, size_t bincount ) {
+    static_assert(std::is_integral<T>::value, "sumSquares only uses integer data");
+    uint64_t sumsq = 0;
+
+    // To allow the compiler to vectorize this loop
+    assume(bincount % 64 == 0);
+    assume(bincount > 0);
+    for (size_t i = 0; i < bincount; i++) {
+        sumsq += (uint64_t)bins[i] * bins[i];
+    }
+
+    return sumsq;
+}
+
+#define SUMSQ_TYPES uint8_t, uint32_t
+INSTANTIATE(sumSquares, SUMSQ_TYPES);
+
 // Randomly distributing m balls into n bins is a well-studied
 // statistical model, relevant to a wide range of real world
 // problems. It is exactly analogous to hashing k keys into n
@@ -1300,6 +1321,9 @@ double BoundedPoissonPValue( const double expected, const uint64_t collisions ) 
 // sumN{(Bi**2)} - M**2 / N
 // sumN{(Bi**2)} - M * lambda
 //
+// This also allows the sum of the square of all the terms to be computed
+// externally from this function, perhaps by sumSquares() defined above.
+//
 // From there, the formula for the score is:
 //
 // RMSE    = sqrt((sumN{(Bi**2)} - M * lambda) / N)
@@ -1314,22 +1338,13 @@ double BoundedPoissonPValue( const double expected, const uint64_t collisions ) 
 // sqrt(((sumN{(Bi**2)} - M * lambda) / N) * (N / M))
 // sqrt((sumN{(Bi**2)} - M * lambda) / M)
 // sqrt((sumN{(Bi**2)} / M - lambda))
-//
-// NB: bincount must be a non-zero multiple of 8!
-double calcScore( const unsigned * bins, const int bincount, const int keycount ) {
+double calcScore( const uint64_t sumsq, const int bincount, const int keycount ) {
     const double n      = bincount;
     const double m      = keycount;
     const double lambda = m / n;
 
-    uint64_t sumsq      = 0;
-
-    assume(bincount >= 8);
-    for (int i = 0; i < ((bincount >> 3) << 3); i++) {
-        sumsq += (uint64_t)bins[i] * (uint64_t)bins[i];
-    }
-
-    double rmse_ratio    = sqrt(((double)sumsq) / m - lambda);
-    double score         = (rmse_ratio - 1.0) * sqrt(2.0 * n);
+    double rmse_ratio   = sqrt(((double)sumsq) / m - lambda);
+    double score        = (rmse_ratio - 1.0) * sqrt(2.0 * n);
 
     return score;
 }

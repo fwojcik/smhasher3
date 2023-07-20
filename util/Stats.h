@@ -70,7 +70,13 @@ double EstimatedBinomialPValue( const unsigned long nbH, const int nbBits, const
 double EstimateMaxCollisions( const unsigned long nbH, const int nbBits );
 double BoundedPoissonPValue( const double expected, const uint64_t collisions );
 
-double calcScore( const unsigned * bins, const int bincount, const int ballcount );
+// calcScore() is currently instantiated for uint8_t and uint32_t.
+// See SUMSQ_TYPES in Stats.cpp to expand this as needed.
+// NB: bincount must be a non-zero multiple of 64!
+template <typename T>
+uint64_t sumSquares( const T * bins, size_t bincount );
+
+double calcScore( const uint64_t sumsq, const int bincount, const int ballcount );
 double normalizeScore( double score, int scorewidth, int tests );
 
 double ChiSqIndepValue( const uint32_t * boxes, size_t total );
