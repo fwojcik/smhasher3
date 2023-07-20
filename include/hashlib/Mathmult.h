@@ -2,7 +2,8 @@
  * Multiplication and addition routines for >=64-bit math,
  * in terms of <=64-bit variables.
  *
- * Copyright (C) 2021-2022  Frank J. T. Wojcik
+ * Copyright (C) 2021-2023  Frank J. T. Wojcik
+ * Copyright (C) 2023       jason
  * Copyright (c) 2016 Vladimir Makarov <vmakarov@gcc.gnu.org>
  *
  * Permission is hereby granted, free of charge, to any person

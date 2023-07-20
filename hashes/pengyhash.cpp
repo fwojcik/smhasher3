@@ -1,6 +1,7 @@
 /*
  * Pengyhash, v0.2
- * Copyright (C) 2021-2022  Frank J. T. Wojcik
+ * Copyright (C) 2021-2023  Frank J. T. Wojcik
+ * Copyright (C) 2023       jason
  * Copyright (c) 2020 Alberto Fajardo
  * All rights reserved.
  *

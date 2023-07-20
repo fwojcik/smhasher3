@@ -1,6 +1,7 @@
 /*
  * UMASH
- * Copyright (C) 2021-2022  Frank J. T. Wojcik
+ * Copyright (C) 2021-2023  Frank J. T. Wojcik
+ * Copyright (C) 2023       jason
  * Copyright 2020-2022 Backtrace I/O, Inc.
  * Copyright 2022 Paul Khuong
  *
