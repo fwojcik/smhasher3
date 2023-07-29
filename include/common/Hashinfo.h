@@ -142,8 +142,8 @@ class HashInfo {
     }
 
   public:
-    const char *      family;
     const char *      name;
+    const char *      family;
     const char *      desc;
     const char *      impl;
     uint64_t          hash_flags;
@@ -161,9 +161,9 @@ class HashInfo {
     const char *      badseeddesc;
 
     HashInfo( const char * n, const char * f ) :
-        name( _fixup_name( n )), family( f ), desc( "" ), impl( "" ),
+        name( _fixup_name( n ) ), family( f ), desc( "" ), impl( "" ),
         initfn( NULL ), seedfixfn( NULL ), seedfn( NULL ),
-        badseeddesc( NULL ), hashfn_native( NULL ), hashfn_bswap( NULL ) {}
+        hashfn_native( NULL ), hashfn_bswap( NULL ), badseeddesc( NULL ) {}
 
     ~HashInfo() {
         free((char *)name);
