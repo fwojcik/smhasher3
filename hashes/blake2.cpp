@@ -42,6 +42,7 @@ static const uint32_t blake2s_IV [ 8]     = {
     0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19
 };
 
+#if !defined(HAVE_SSE_2)
 static const uint8_t blake2_sigma[12][16] = {
     {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
     { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 },
@@ -56,6 +57,7 @@ static const uint8_t blake2_sigma[12][16] = {
     {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
     { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 }
 };
+#endif
 
 typedef struct blake2b_context_ {
     uint64_t  h[8];

@@ -343,8 +343,10 @@ static uint32_t crc32_sw( uint32_t crci, const crc_sw_table crc32_table, const v
  * For now, only store 1 set of tables at a time.
  */
 static uint32_t     table_poly;
-static crc_hw_table hw_tables;
 static crc_sw_table sw_tables;
+#if defined(HAVE_X86_64_CRC32C)
+static crc_hw_table hw_tables;
+#endif
 
 template <uint32_t polynomial>
 static void CRC32( const void * in, const size_t len, const seed_t seed, void * out ) {
