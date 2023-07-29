@@ -106,7 +106,7 @@ static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hasht
             /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
             uint64_t t = (numseed | (numseed - 1)) + 1;
             numseed  = t | ((((t & -t) / (numseed & -numseed)) >> 1) - 1);
-            seeddone = bigseed ? (numseed == ~0) : ((numseed >> 32) != 0);
+            seeddone = bigseed ? (numseed == ~UINT64_C(0)) : ((numseed >> 32) != 0);
         } while (!seeddone);
     }
 }

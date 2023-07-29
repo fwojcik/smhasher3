@@ -100,7 +100,7 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
             /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
             uint64_t t = (seed | (seed - 1)) + 1;
             seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
-            done = bigseed ? (seed == ~0) : ((seed >> 32) != 0);
+            done = bigseed ? (seed == ~UINT64_C(0)) : ((seed >> 32) != 0);
         } while (!done);
     }
 
