@@ -244,6 +244,7 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
     double sumbpc = 0.0;
 
     volatile double warmup_cycles = SpeedTest(hash, seed, trials, blocksize, 0, 0, 0);
+    (void)warmup_cycles;
 
     for (int align = 7; align >= 0; align--) {
         double cycles = std::numeric_limits<double>::max();
@@ -288,6 +289,7 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
     printf("Small key speed test - [1, %2d]-byte keys\n", maxkeysize);
 
     volatile double warmup_cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, 0, 0);
+    (void)warmup_cycles;
 
     for (int i = 1; i <= maxkeysize; i++) {
         volatile int j      = i;
@@ -375,6 +377,7 @@ void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
         // Do a warmup to get things into cache
         volatile double warmup_cycles =
                 SpeedTest(hash, seed, BULK_TRIALS, baselen, 0, 0, 0);
+        (void)warmup_cycles;
 
         // Do a bulk speed test, varying precise block size and alignment
         double cycles = SpeedTest(hash, seed, BULK_TRIALS, baselen, basealignoffset, maxvarylen, maxvaryalign);
