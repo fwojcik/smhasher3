@@ -1257,6 +1257,23 @@ uint64_t sumSquares( const T * bins, size_t bincount ) {
 #define SUMSQ_TYPES uint8_t, uint32_t
 INSTANTIATE(sumSquares, SUMSQ_TYPES);
 
+// Compute the sum of squares of a series of integer values
+// NB: bincount can be any value
+template <typename T>
+uint64_t sumSquaresBasic( const T * bins, size_t bincount ) {
+    static_assert(std::is_integral<T>::value, "sumSquares only uses integer data");
+    uint64_t sumsq = 0;
+
+    for (size_t i = 0; i < bincount; i++) {
+        sumsq += (uint64_t)bins[i] * bins[i];
+    }
+
+    return sumsq;
+}
+
+#define SUMSQBASIC_TYPES uint32_t
+INSTANTIATE(sumSquaresBasic, SUMSQBASIC_TYPES);
+
 // Randomly distributing m balls into n bins is a well-studied
 // statistical model, relevant to a wide range of real world
 // problems. It is exactly analogous to hashing k keys into n
