@@ -131,7 +131,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
     }
     case 19: // All 0xAAA and 0x555
     {
-        uint64_t rndnum = rndnum;
+        uint64_t rndnum = 0;
         for (uint32_t i = 0; i < TEST_SIZE; i++) {
             if (unlikely(i % 64 == 0)) {
                 rndnum = r.rand_u64();
