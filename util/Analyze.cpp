@@ -290,9 +290,9 @@ static bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsi
 // Sort the hash list, count the total number of collisions and return
 // the first N collisions for further processing
 template <typename hashtype>
-unsigned int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
+int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
         int maxCollisions, bool drawDiagram ) {
-    unsigned int collcount = 0;
+    int collcount = 0;
 
     blobsort(hashes.begin(), hashes.end());
 

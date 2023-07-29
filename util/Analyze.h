@@ -57,7 +57,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
         size_t hashbits, size_t testcount, bool drawDiagram );
 
 template <typename hashtype>
-unsigned int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
+int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
         int maxCollisions = 1000, bool drawDiagram = false );
 
 template <typename hashtype>
