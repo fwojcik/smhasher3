@@ -88,11 +88,6 @@ class Blob {
         return bytes[i];
     }
 
-    Blob & operator = ( const Blob & k ) {
-        memcpy(bytes, k.bytes, sizeof(bytes));
-        return *this;
-    }
-
     Blob & operator = ( const uint32_t & x ) {
         const uint32_t y = COND_BSWAP(x, isBE());
 
