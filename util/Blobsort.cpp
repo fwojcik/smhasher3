@@ -114,7 +114,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
     }
     case 16: // All zeroes
     {
-        memset(&blobs[0], 0, TEST_SIZE * sizeof(blobtype));
+        memset((void *)&blobs[0], 0, TEST_SIZE * sizeof(blobtype));
         break;
     }
     case 17: // All ones
@@ -126,7 +126,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
     }
     case 18: // All Fs
     {
-        memset(&blobs[0], 0xFF, TEST_SIZE * blobtype::len);
+        memset((void *)&blobs[0], 0xFF, TEST_SIZE * blobtype::len);
         break;
     }
     case 19: // All 0xAAA and 0x555
@@ -136,7 +136,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum
             if (unlikely(i % 64 == 0)) {
                 rndnum = r.rand_u64();
             }
-            memset(&blobs[i], rndnum & 1 ? 0xAA : 0x55, blobtype::len);
+            memset((void *)&blobs[i], rndnum & 1 ? 0xAA : 0x55, blobtype::len);
             rndnum >>= 1;
         }
         break;

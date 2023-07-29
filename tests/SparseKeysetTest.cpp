@@ -92,8 +92,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bo
 
     std::vector<hashtype> hashes;
 
-    keytype k;
-    memset(&k, 0, sizeof(k));
+    keytype k(0);
 
     if (inclusive) {
         hashes.resize(1);

@@ -71,8 +71,7 @@ static void Prn_gen( int nbRn, HashFn hash, const seed_t seed, std::vector<hasht
     addVCodeInput(nbRn);
     addVCodeInput(hashtype::len);
 
-    hashtype hcopy;
-    memset(&hcopy, 0, sizeof(hcopy));
+    hashtype hcopy(0);
 
     // a generated random number becomes the input for the next one
     for (int i = 0; i < nbRn; i++) {
