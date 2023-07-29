@@ -824,6 +824,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
 
         std::set<hashtype> collisions;
         int collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
+        addVCodeResult(collcount);
 
         /*
          * Do all other compute-intensive stuff (as requested) before
@@ -906,43 +907,42 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
          */
         std::vector<int> collcounts_fwd;
         std::vector<int> collcounts_rev;
-        int minBits, maxBits, threshBits;
+        int minBits = 0, maxBits = 0, threshBits = 0;
 
         if (testHighBits || testLowBits) {
             std::set<int> combinedBitsvec;
             combinedBitsvec.insert(nbBitsvec.begin()  , nbBitsvec.end()  );
             combinedBitsvec.insert(testBitsvec.begin(), testBitsvec.end());
             ComputeCollBitBounds(combinedBitsvec, hashbits, nbH, minBits, maxBits, threshBits);
-        }
 
-        if (testHighBits && (maxBits > 0)) {
-            collcounts_fwd.reserve(maxBits - minBits + 1);
-            CountRangedNbCollisions(hashes, nbH, minBits, maxBits, threshBits, &collcounts_fwd[0]);
-        }
-
-        if (testLowBits && (maxBits > 0)) {
-            collcounts_rev.reserve(maxBits - minBits + 1);
-            for (size_t hnb = 0; hnb < nbH; hnb++) {
-                hashes[hnb].reversebits();
+            if (testHighBits && (maxBits > 0)) {
+                collcounts_fwd.resize(maxBits - minBits + 1);
+                CountRangedNbCollisions(hashes, nbH, minBits, maxBits, threshBits, &collcounts_fwd[0]);
             }
-            blobsort(hashes.begin(), hashes.end());
 
-            CountRangedNbCollisions(hashes, nbH, minBits, maxBits, threshBits, &collcounts_rev[0]);
+            if (testLowBits && (maxBits > 0)) {
+                collcounts_rev.resize(maxBits - minBits + 1);
+                for (size_t hnb = 0; hnb < nbH; hnb++) {
+                    hashes[hnb].reversebits();
+                }
+                blobsort(hashes.begin(), hashes.end());
 
-            for (size_t hnb = 0; hnb < nbH; hnb++) {
-                hashes[hnb].reversebits();
+                CountRangedNbCollisions(hashes, nbH, minBits, maxBits, threshBits, &collcounts_rev[0]);
+
+                for (size_t hnb = 0; hnb < nbH; hnb++) {
+                    hashes[hnb].reversebits();
+                }
+                // No need to re-sort, since TestDistribution doesn't care
             }
-            // No need to re-sort, since TestDistribution doesn't care
-        }
 
-        addVCodeResult(collcount);
-        if (testHighBits && (collcounts_fwd.size() != 0)) {
-            addVCodeResult(&collcounts_fwd[0], sizeof(collcounts_fwd[0]) *
-                    collcounts_fwd.size());
-        }
-        if (testLowBits && (collcounts_rev.size() != 0)) {
-            addVCodeResult(&collcounts_rev[0], sizeof(collcounts_rev[0]) *
-                    collcounts_rev.size());
+            if (testHighBits && (collcounts_fwd.size() != 0)) {
+                addVCodeResult(&collcounts_fwd[0], sizeof(collcounts_fwd[0]) *
+                        collcounts_fwd.size());
+            }
+            if (testLowBits && (collcounts_rev.size() != 0)) {
+                addVCodeResult(&collcounts_rev[0], sizeof(collcounts_rev[0]) *
+                        collcounts_rev.size());
+            }
         }
 
         // Report on complete collisions, now that the heavy lifting is complete
@@ -975,20 +975,20 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
                     }
                 }
             }
-        }
 
-        if (testHighBits) {
-            result &= ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
-                    minTBits, maxTBits, &curlogp, true, verbose, drawDiagram);
-            if (logpSumPtr != NULL) {
-                *logpSumPtr += curlogp;
+            if (testHighBits) {
+                result &= ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
+                        minTBits, maxTBits, &curlogp, true, verbose, drawDiagram);
+                if (logpSumPtr != NULL) {
+                    *logpSumPtr += curlogp;
+                }
             }
-        }
-        if (testLowBits) {
-            result &= ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
-                    minTBits, maxTBits, &curlogp, false, verbose, drawDiagram);
-            if (logpSumPtr != NULL) {
-                *logpSumPtr += curlogp;
+            if (testLowBits) {
+                result &= ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
+                        minTBits, maxTBits, &curlogp, false, verbose, drawDiagram);
+                if (logpSumPtr != NULL) {
+                    *logpSumPtr += curlogp;
+                }
             }
         }
     }
