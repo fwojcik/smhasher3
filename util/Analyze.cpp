@@ -474,7 +474,7 @@ static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, i
         spacelen -= printf("Worst is %2i bits: %i/%i ", maxCollDevBits, maxCollDevNb, i_maxCollDevExp);
         if (spacelen < 0) {
             spacelen = 0;
-        } else if (spacelen > strlen(spaces)) {
+        } else if (spacelen > (int)strlen(spaces)) {
             spacelen = strlen(spaces);
         }
 
@@ -525,7 +525,7 @@ static int MaxDistBits( const uint64_t nbH ) {
     int maxwidth = 24;
     // We need at least 5 keys per bin to reliably test distribution biases
     // down to 1%, so don't bother to test sparser distributions than that
-    while (nbH < (5 << maxwidth)) {
+    while (nbH < (UINT64_C(5) << maxwidth)) {
         --maxwidth;
     }
     return maxwidth;
