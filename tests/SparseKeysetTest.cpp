@@ -64,7 +64,7 @@ static void SparseKeygenRecurse( HashFn hash, const seed_t seed, int start, int 
         bool inclusive, keytype & k, std::vector<hashtype> & hashes ) {
     hashtype h;
 
-    for (int i = start; i < k.bitlen; i++) {
+    for (size_t i = start; i < k.bitlen; i++) {
         k.flipbit(i);
 
         if (inclusive || (bitsleft == 1)) {

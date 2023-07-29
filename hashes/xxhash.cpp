@@ -699,7 +699,7 @@ static NEVER_INLINE uint64_t XXH3_len_129to240_64b( const uint8_t * RESTRICT inp
   #pragma clang loop vectorize(disable)
 #endif
 
-    for (int i = 8; i < nbRounds; i++) {
+    for (unsigned i = 8; i < nbRounds; i++) {
         /*
          * Prevents clang for unrolling the acc loop and interleaving with this one.
          */

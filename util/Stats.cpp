@@ -1019,9 +1019,9 @@ void ReportCollisionEstimates( void ) {
             "  # keys   : bits|    True answer     |     A: _cur()      |     B: _prev()     |   C: _prevprev()   |    Error A   |    Error B   |    Error C   |\n");
     printf(
             "---------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    for (int i = 0; i < sizeof(keys) / sizeof(keys[0]); i++) {
+    for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); i++) {
         const int key = keys[i];
-        for (int j = 0; j < sizeof(bits) / sizeof(bits[0]); j++) {
+        for (size_t j = 0; j < sizeof(bits) / sizeof(bits[0]); j++) {
             const int bit = bits[j];
             printf(" %9d : %3d |", key, bit);
             printdouble(20, realcoll[i][j]);

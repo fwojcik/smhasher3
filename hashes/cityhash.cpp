@@ -158,7 +158,7 @@ static uint32_t Hash32Len0to4( const uint8_t * s, size_t len, uint32_t seed ) {
     uint32_t b = seed;
     uint32_t c = 9;
 
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         b  = b * c1 + s[i];
         c ^= b;
     }

@@ -84,7 +84,7 @@ static void chaskey_impl( uint8_t * tag, const uint8_t * m, const size_t mlen, c
     v[2] ^= lastkey[2];
     v[3] ^= lastkey[3];
 
-    for (int i = 0; i < tagwords; i++) {
+    for (uint32_t i = 0; i < tagwords; i++) {
         PUT_U32<bswap>(v[i], tag, 4 * i);
     }
 }

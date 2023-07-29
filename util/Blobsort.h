@@ -99,8 +99,8 @@ static const uint32_t SORT_CUTOFF = 60;
 // system, but there could be a better value for the general case.
 template <typename T>
 static void flagsort( T * begin, T * end, int idx ) {
-    const uint32_t DIGITS = T::len;
-    const size_t   count  = end - begin;
+    const int    DIGITS = T::len;
+    const size_t count  = end - begin;
 
     assume(idx >= 0    );
     assume(idx < DIGITS);
@@ -160,7 +160,7 @@ static void flagsort( T * begin, T * end, int idx ) {
     // Sort each block by the next less-significant byte, or by
     // std::sort if there are only a few entries in the block.
     ptr = begin;
-    for (int i = 0; i < RADIX_SIZE; i++) {
+    for (size_t i = 0; i < RADIX_SIZE; i++) {
         if (expectp((freqs[i] > SORT_CUTOFF), 0.00390611)) {
             flagsort(ptr, ptr + freqs[i], idx - 1);
         } else if (expectp((freqs[i] > 1), 0.3847)) {

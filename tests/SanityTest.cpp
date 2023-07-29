@@ -385,12 +385,12 @@ static void hashthings( const HashInfo * hinfo, seed_t seed, uint32_t reps, uint
     const uint32_t hashbytes = hinfo->bits / 8;
 
     // Each thread should hash the keys in a different, random order
-    std::vector<int> idxs( reps );
+    std::vector<uint32_t> idxs( reps );
 
     if (order != 0) {
         Rand r( 46742 + order );
-        for (int i = 0; i < reps; i++) { idxs[i] = i; }
-        for (int i = reps - 1; i > 0; i--) {
+        for (uint32_t i = 0; i < reps; i++) { idxs[i] = i; }
+        for (uint32_t i = reps - 1; i > 0; i--) {
             std::swap(idxs[i], idxs[r.rand_range(i + 1)]);
         }
     }
@@ -399,8 +399,8 @@ static void hashthings( const HashInfo * hinfo, seed_t seed, uint32_t reps, uint
     // If we're testing #2 above, then reseed per-key.
     // Add each key to the input VCode, but only on the main proc.
     // Print out progress dots on the main proc AND thread #0.
-    for (int i = 0; i < reps; i++) {
-        const int idx = (order == 0) ? i : idxs[i];
+    for (uint32_t i = 0; i < reps; i++) {
+        const uint32_t idx = (order == 0) ? i : idxs[i];
         if (reseed) { seed = hinfo->Seed(idx * UINT64_C(0xa5), true, 1); }
         hash(&keys[idx * reps], idx + 1, seed, &hashes[idx * hashbytes]);
         if (verbose && (order < 2)) { progressdots(i, 0, reps - 1, 4); }
@@ -441,17 +441,17 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
         // Compute all the hashes in different random orders in threads
         std::vector<std::vector<uint8_t>> threadhashes( g_NCPU, std::vector<uint8_t>(reps * hashbytes));
         std::thread t[g_NCPU];
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 hashthings, hinfo, seed, reps, i + 1, seedthread, verbose, std::ref(keys), std::ref(threadhashes[i])
             };
         }
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
         // Make sure all thread results match the main process
         maybeprintf(".");
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             if (!memcmp(&mainhashes[0], &threadhashes[i][0], reps * hashbytes)) {
                 continue;
             }
@@ -459,7 +459,7 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
                 result = false;
                 break;
             }
-            for (int j = 0; j < reps; j++) {
+            for (uint32_t j = 0; j < reps; j++) {
                 if (memcmp(&mainhashes[j * hashbytes], &threadhashes[i][j * hashbytes], hashbytes) != 0) {
                     maybeprintf("\nMismatch between main process and thread #%d at index %d\n", i, j);
                     if (verbose) { ExtBlob(&mainhashes[j * hashbytes], hashbytes).printhex("  main   :"); }

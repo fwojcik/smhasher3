@@ -558,9 +558,9 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
     int    tests      = 0;
 
     for (int start = 0; start < hashbits; start++) {
-        int width    = maxwidth;
-        int bincount = (1 << width);
-        bool bigbins = false;          // Are we using 32-bit bins?
+        int    width    = maxwidth;
+        size_t bincount = (1 << width);
+        bool   bigbins  = false;          // Are we using 32-bit bins?
 
         // This loop does random writes to the bins, so time is completely
         // dominated by cache performance.  For ballpark numbers,
@@ -1157,7 +1157,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
         for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
             for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
                 printf("Output bits (%3zd,%3zd) - ", out1, out2);
-                for (int keybit = 0; keybit < keybits; keybit++) {
+                for (size_t keybit = 0; keybit < keybits; keybit++) {
                     const uint32_t * pop_cursor = &popcount[keybit * hashbits               ];
                     const uint32_t * and_cursor = &andcount[keybit * hashbitpairs + xyoffset];
 

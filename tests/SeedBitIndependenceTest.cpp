@@ -83,7 +83,7 @@ static void SeedBicTestBatch( const HashInfo * hinfo, std::vector<uint32_t> & po
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
     hashtype h1, h2;
-    int      irep;
+    size_t   irep;
     uint64_t iseed = 0;
 
     while ((irep = irepp++) < reps) {
@@ -157,20 +157,20 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
     } else {
 #if defined(HAVE_THREADS)
         std::thread t[g_NCPU];
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 SeedBicTestBatch<hashtype>, hinfo, std::ref(popcounts[i]), std::ref(andcounts[i]),
                 keybytes, &keys[0], seedbytes, &seeds[0], std::ref(irep), reps
             };
         }
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
-        for (int i = 1; i < g_NCPU; i++) {
-            for (int b = 0; b < seedbits * hashbits; b++) {
+        for (unsigned i = 1; i < g_NCPU; i++) {
+            for (size_t b = 0; b < seedbits * hashbits; b++) {
                 popcounts[0][b] += popcounts[i][b];
             }
-            for (int b = 1; b < seedbits * hashbitpairs + 1; b++) {
+            for (size_t b = 1; b < seedbits * hashbitpairs + 1; b++) {
                 andcounts[0][b] += andcounts[i][b];
             }
         }

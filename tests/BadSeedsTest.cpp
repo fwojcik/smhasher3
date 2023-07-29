@@ -67,8 +67,8 @@
 
 const std::set<int>        testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
 const std::vector<uint8_t> testbytes = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
-const unsigned numtestbytes = testbytes.size();
-const unsigned numtestlens  = testlens.size();
+const size_t numtestbytes = testbytes.size();
+const size_t numtestlens  = testlens.size();
 
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
@@ -108,7 +108,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
 
     /* Premake all the test keys */
     uint8_t keys[numtestbytes][128];
-    for (int i = 0; i < numtestbytes; i++) {
+    for (size_t i = 0; i < numtestbytes; i++) {
         memset(&keys[i][0], testbytes[i], 128);
     }
 
@@ -134,7 +134,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
 
         memset(&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
         unsigned cnt = 0;
-        for (int i = 0; i < numtestbytes; i++) {
+        for (size_t i = 0; i < numtestbytes; i++) {
             for (int len: testlens) {
                 hash(&keys[i][0], len, hseed, &hashes[cnt++]);
             }
@@ -163,7 +163,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
                 // Can't just print hashes vector because it's now sorted
                 hashtype v;
                 printf("Colliding hashes:\n");
-                for (int i = 0; i < numtestbytes; i++) {
+                for (size_t i = 0; i < numtestbytes; i++) {
                     for (int len: testlens) {
                         hash(&keys[i][0], len, hseed, &v);
                         if (std::find(collisions.begin(), collisions.end(), v) != collisions.end()) {
@@ -194,7 +194,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
             if (!known_seed && (fails < 32)) { // don't print too many lines
                 hashtype v;
                 printf("Zero hashes:\n");
-                for (int i = 0; i < numtestbytes; i++) {
+                for (size_t i = 0; i < numtestbytes; i++) {
                     for (int len: testlens) {
                         hash(&keys[i][0], len, hseed, &v);
                         if (v == zero) {
@@ -236,7 +236,7 @@ static bool TestManySeeds( const HashInfo * hinfo, const uint64_t hi, bool & new
         bool * newresults = new bool[g_NCPU]();
 
         printf("%d threads starting...\n", g_NCPU);
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             const uint32_t start = i * len;
             const uint32_t end   = (i < (g_NCPU - 1)) ? start + (len - 1) : 0xffffffff;
             t[i] = std::thread {
@@ -247,13 +247,13 @@ static bool TestManySeeds( const HashInfo * hinfo, const uint64_t hi, bool & new
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
 
         printf("All %d threads ended\n", g_NCPU);
 
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             result    &= results[i];
             newresult |= newresults[i];
         }
@@ -315,7 +315,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
 
     /* Premake all the test keys */
     uint8_t keys[numtestbytes][128];
-    for (int i = 0; i < numtestbytes; i++) {
+    for (size_t i = 0; i < numtestbytes; i++) {
         memset(&keys[i][0], testbytes[i], 128);
     }
 
@@ -324,7 +324,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
 
     memset(&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
     unsigned cnt = 0;
-    for (int i = 0; i < numtestbytes; i++) {
+    for (size_t i = 0; i < numtestbytes; i++) {
         for (int len: testlens) {
             hash(&keys[i][0], len, hseed, &hashes[cnt++]);
         }
@@ -336,7 +336,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
 #if 0
         hashtype v;
         cnt = 0;
-        for (int i = 0; i < numtestbytes; i++) {
+        for (size_t i = 0; i < numtestbytes; i++) {
             for (int len: testlens) {
                 hash(&keys[i][0], len, hseed, &v);
                 if (std::find(collisions.begin(), collisions.end(), v) != collisions.end()) {

@@ -97,7 +97,7 @@ static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
     // a has be at most 2^60, or the lazy modular reduction won't work.
     poly_mersenne_data.poly_mersenne_a = rand_u128(&BSD_nextrand) % (MERSENNE_61 / 2);
     poly_mersenne_data.poly_mersenne_b = rand_u128(&BSD_nextrand) % MERSENNE_61;
-    for (int i = 0; i < POLY_MERSENNE_MAX_K + 1; i++) {
+    for (uint32_t i = 0; i < POLY_MERSENNE_MAX_K + 1; i++) {
         // The random values should be at most 2^61-2, or the lazy
         // modular reduction won't work.
         poly_mersenne_data.poly_mersenne_random[i] = rand_u128(&BSD_nextrand) % MERSENNE_61;
@@ -152,7 +152,7 @@ static void Poly_Mersenne( const void * in, const size_t len, const seed_t seed,
     if (K != 0) {
         uint64_t h0 = h;
         h = data->poly_mersenne_random[0];
-        for (int i = 1; i <= std::min(K, POLY_MERSENNE_MAX_K); i++) {
+        for (uint32_t i = 1; i <= std::min(K, POLY_MERSENNE_MAX_K); i++) {
             h = mult_combine61(h, h0, data->poly_mersenne_random[i]);
         }
     }

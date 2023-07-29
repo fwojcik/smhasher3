@@ -76,7 +76,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
     const char text[]      = "The quick brown fox jumps over the lazy dog";
     const int  textlen     = (int)strlen(text);
     char       key[MAXLEN] = { 0 };
-    for (int i = 0; i < keylen / textlen; i++) {
+    for (size_t i = 0; i < keylen / textlen; i++) {
         memcpy(&key[i * textlen], text, textlen);
     }
     memcpy(&key[keylen / textlen * textlen], text, keylen % textlen);
@@ -126,7 +126,7 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
     const char text[64]    = "Sphinx of black quartz, judge my vow";
     const int  textlen     = (int)strlen(text);
     char       key[MAXLEN] = { 0 };
-    for (int i = 0; i < keylen / textlen; i++) {
+    for (size_t i = 0; i < keylen / textlen; i++) {
         memcpy(&key[i * textlen], text, textlen);
     }
     memcpy(&key[keylen / textlen * textlen], text, keylen % textlen);

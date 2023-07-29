@@ -63,7 +63,7 @@ static void CombinationKeygenRecurse( uint8_t * key, int len, int maxlen, const 
         uint32_t blocksz, HashFn hash, const seed_t seed, std::vector<hashtype> & hashes ) {
     if (len == maxlen) { return; } // end recursion
 
-    for (int i = 0; i < blockcount; i++) {
+    for (size_t i = 0; i < blockcount; i++) {
         memcpy(&key[len * blocksz], &blocks[i * blocksz], blocksz);
 
         hashtype h;

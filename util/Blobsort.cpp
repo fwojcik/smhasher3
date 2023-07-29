@@ -30,7 +30,7 @@
 //-----------------------------------------------------------------------------
 // Blob sorting routine unit tests
 
-static const uint32_t SORT_TESTS = 20;
+static const size_t SORT_TESTS = 20;
 static const char * teststr[SORT_TESTS] = {
     "Consecutive numbers, sorted",
     "Consecutive numbers, almost sorted",
@@ -55,7 +55,7 @@ static const char * teststr[SORT_TESTS] = {
 };
 
 template <typename blobtype, uint32_t TEST_SIZE>
-static void blobfill( std::vector<blobtype> & blobs, int testnum, int iternum ) {
+static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum ) {
     if (testnum >= SORT_TESTS) { return; }
 
     Rand r( testnum + 0xb840a149 * (iternum + 1) );
@@ -233,19 +233,19 @@ bool test_blobsort_type( void ) {
     std::vector<blobtype> blobs( TEST_SIZE );
     size_t timetotal = 0;
     size_t timesum;
-    std::vector<int> testnums;
+    std::vector<size_t> testnums;
 
     if (TEST_ITER > 1) {
         testnums = { 4, 6, 8, 9, 10, 15, 16, 19 };
     } else {
-        for (int i = 0; i < SORT_TESTS; i++) {
+        for (size_t i = 0; i < SORT_TESTS; i++) {
             testnums.push_back(i);
         }
     }
 
     for (int i: testnums) {
         timesum = 0;
-        for (int j = 0; j < TEST_ITER; j++) {
+        for (size_t j = 0; j < TEST_ITER; j++) {
             blobfill<blobtype, TEST_SIZE>(blobs, i, j);
             size_t timeBegin = monotonic_clock();
             blobsort(blobs.begin(), blobs.end());

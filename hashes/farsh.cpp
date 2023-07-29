@@ -104,7 +104,7 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
     const __m256i * xdata = (const __m256i *)data;
     const __m256i * xkey  = (const __m256i *)key;
 
-    for (int i = 0; i < STRIPE / sizeof(__m256i); i++) {
+    for (size_t i = 0; i < STRIPE / sizeof(__m256i); i++) {
         __m256i d   = _mm256_loadu_si256(xdata + i);
         if (bswap) { d = mm256_bswap32(d); }
         __m256i k   = _mm256_loadu_si256(xkey + i );
@@ -152,7 +152,7 @@ static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
 #else
   #define FARSH_IMPL_STR "portable"
     sum64 = 0;
-    for (int i = 0; i < STRIPE_ELEMENTS; i += 2) {
+    for (size_t i = 0; i < STRIPE_ELEMENTS; i += 2) {
         sum64 += (GET_U32<bswap>(data, i * 4) + key[i]) *
                 (uint64_t)(GET_U32<bswap>(data, (i + 1) * 4) + key[i + 1]);
     }
@@ -171,7 +171,7 @@ static uint64_t farsh_partial_block( const uint8_t * data, size_t bytes, const u
 
     memcpy(extra_data, data + 4 * elements, extra_bytes);
 
-    int i;
+    size_t i;
     for (i = 0; i < elements; i += 2) {
         sum += (GET_U32<bswap>(data, i * 4) + key[i]) *
                 (uint64_t)(GET_U32<bswap>(data, (i + 1) * 4) + key[i + 1]);

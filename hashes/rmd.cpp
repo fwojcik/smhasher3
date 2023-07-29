@@ -473,7 +473,7 @@ static void rmd_init( rmd_ctx * ctx ) {
 
 template <uint32_t hashwidth, bool bswap>
 static void rmd_done( rmd_ctx * ctx, uint8_t * out ) {
-    int i;
+    unsigned int i;
 
     /* increase the length of the message */
     ctx->length += ctx->curlen * 8;

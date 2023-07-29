@@ -209,7 +209,7 @@ static bool wyhash64_selftest( void ) {
         },
     };
 
-    for (int i = 0; i < sizeof(selftests) / sizeof(selftests[0]); i++) {
+    for (size_t i = 0; i < sizeof(selftests) / sizeof(selftests[0]); i++) {
         uint64_t h;
         if (isLE()) {
             Wyhash64<false, false>(selftests[i].key, strlen(selftests[i].key), i, &h);

@@ -70,12 +70,12 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
     assert(inputLen <= INPUT_LEN_MAX);
 
     std::vector<hashtype> hashes;
-    uint8_t      key[INPUT_LEN_MAX] = { 0 };
-    int const    xMax = (1 << Xbits);
-    int const    yMax = (1 << Ybits);
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    uint8_t        key[INPUT_LEN_MAX] = { 0 };
+    const uint64_t xMax = (UINT64_C(1) << Xbits);
+    const uint64_t yMax = (UINT64_C(1) << Ybits);
+    const HashFn   hash = hinfo->hashFn(g_hashEndian);
 
-    printf("Generating coordinates from %3i-byte keys - %d keys\n", inputLen, xMax * yMax);
+    printf("Generating coordinates from %3i-byte keys - %ld keys\n", inputLen, xMax * yMax);
 
     addVCodeInput(yMax);
     // Since seeding can be expensive, loop over the seed-dependent

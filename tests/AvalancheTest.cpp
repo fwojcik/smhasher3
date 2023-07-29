@@ -139,16 +139,16 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
     } else {
 #if defined(HAVE_THREADS)
         std::thread t[g_NCPU];
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype>, hash, seed, std::ref(bins[i]),
                 keybytes, &keys[0], std::ref(irep), reps, drawdots
             };
         }
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
-        for (int i = 1; i < g_NCPU; i++) {
+        for (unsigned i = 1; i < g_NCPU; i++) {
             for (int b = 0; b < arraysize; b++) {
                 bins[0][b] += bins[i][b];
             }

@@ -205,7 +205,7 @@ static void sha3_Finalize( sha3_context * ctx, size_t digest_words, uint8_t * di
 
     uint32_t maxdigest_words = ctx->capacityWords / 2;
     if (digest_words > maxdigest_words) { digest_words = maxdigest_words; }
-    for (int i = 0; i < digest_words; i++) {
+    for (size_t i = 0; i < digest_words; i++) {
         PUT_U64<bswap>(ctx->s[i], digest, 8 * i);
     }
 

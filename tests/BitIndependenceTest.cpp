@@ -134,7 +134,7 @@ static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> 
 
     uint8_t   buf[keybytes];
     hashtype  h1, h2;
-    int       irep;
+    size_t    irep;
 
     while ((irep = irepp++) < reps) {
         progressdots(irep, 0, reps - 1, 12);
@@ -202,20 +202,20 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     } else {
 #if defined(HAVE_THREADS)
         std::thread t[g_NCPU];
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 BicTestBatch<hashtype>, hash, seed, std::ref(popcounts[i]), std::ref(andcounts[i]),
                 keybytes, &keys[0], std::ref(irep), reps
             };
         }
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
-        for (int i = 1; i < g_NCPU; i++) {
-            for (int b = 0; b < keybits * hashbits; b++) {
+        for (unsigned i = 1; i < g_NCPU; i++) {
+            for (size_t b = 0; b < keybits * hashbits; b++) {
                 popcounts[0][b] += popcounts[i][b];
             }
-            for (int b = 1; b < keybits * hashbitpairs + 1; b++) {
+            for (size_t b = 1; b < keybits * hashbitpairs + 1; b++) {
                 andcounts[0][b] += andcounts[i][b];
             }
         }

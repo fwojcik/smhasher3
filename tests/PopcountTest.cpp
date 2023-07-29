@@ -144,7 +144,7 @@ static bool PopcountResults( long double srefh, long double srefl, long double b
 
 static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) {
     const long double n     = UINT64_C(0x100000000) / step;
-    const int         hbits = std::min(hinfo->bits, 64U); // limited due to popcount8
+    const uint64_t    hbits = std::min(hinfo->bits, UINT32_C(64)); // limited due to popcount8
 
     assert(hbits <= HASH_SIZE_MAX * 8);
     assert(inputSize >= 4);
@@ -243,7 +243,7 @@ static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) 
         printf("%d threads starting... ", g_NCPU);
 
         const uint64_t len = UINT64_C(0x100000000) / (step * g_NCPU);
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             const uint32_t start = i * len * step;
             const uint32_t end   = (i < (g_NCPU - 1)) ? start + (len * step - 1) : 0xffffffff;
             // printf("thread[%d]: %d, 0x%x - 0x%x %d\n", i, inputSize, start, end, step);
@@ -254,13 +254,13 @@ static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) 
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
 
         printf(" done\n");
-        for (int i = 1; i < g_NCPU; i++) {
-            for (int j = 0; j <= hbits; j++) {
+        for (unsigned i = 1; i < g_NCPU; i++) {
+            for (uint64_t j = 0; j <= hbits; j++) {
                 rawhash[0][j] += rawhash[i][j];
                 xorhash[0][j] += xorhash[i][j];
             }

@@ -82,18 +82,18 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
     size_t cnt = 0;
     seed_t hseed;
 
-    for (int j = 1; j <= maxbits; j++) {
+    for (size_t j = 1; j <= maxbits; j++) {
         uint64_t seed = (UINT64_C(1) << j) - 1;
         bool     done;
 
         do {
             hseed = hinfo->Seed(seed, false);
-            for (int i = 1; i <= keycount; i++) {
+            for (size_t i = 1; i <= keycount; i++) {
                 hash(nullblock, i, hseed, &hashes[cnt++]);
             }
 
             hseed = hinfo->Seed(~seed, false);
-            for (int i = 1; i <= keycount; i++) {
+            for (size_t i = 1; i <= keycount; i++) {
                 hash(nullblock, i, hseed, &hashes[cnt++]);
             }
 

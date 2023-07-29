@@ -210,16 +210,16 @@ static bool DiffTestImpl( HashFn hash, const seed_t seed, int diffbits, int reps
     } else {
 #if defined(HAVE_THREADS)
         std::thread t[g_NCPU];
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 DiffTestImplThread<keytype, hashtype>, hash, seed, std::ref(diffcounts[i]),
                 &keys[0], diffbits, std::ref(irep), reps
             };
         }
-        for (int i = 0; i < g_NCPU; i++) {
+        for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
         }
-        for (int i = 1; i < g_NCPU; i++) {
+        for (unsigned i = 1; i < g_NCPU; i++) {
             for (std::pair<keytype, uint32_t> dc: diffcounts[i]) {
                 diffcounts[0][dc.first] += dc.second;
             }

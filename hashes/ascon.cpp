@@ -441,7 +441,7 @@ static const uint8_t KAT[KAT_NUM][2][256 / 8] = {
 static bool ascon_xof_selftest( void ) {
     uint8_t input[KAT_NUM - 1];
 
-    for (int i = 0; i < sizeof(input); i++) { input[i] = (uint8_t)i; }
+    for (size_t i = 0; i < sizeof(input); i++) { input[i] = (uint8_t)i; }
 
     bool passed = true;
     for (int i = 0; i < KAT_NUM; i++) {
