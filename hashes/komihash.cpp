@@ -273,7 +273,7 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
         uint64_t Seed6 = UINT64_C(0xBE5466CF34E90C6C) ^ Seed5;
         uint64_t Seed7 = UINT64_C(0xC0AC29B7C97C50DD) ^ Seed5;
         uint64_t Seed8 = UINT64_C(0x3F84D5B5B5470917) ^ Seed5;
-        uint64_t r3l, r3h, r4l, r4h;
+        uint64_t r3h, r4h;
 
         do {
             prefetch(Msg);

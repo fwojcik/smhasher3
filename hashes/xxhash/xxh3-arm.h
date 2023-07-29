@@ -227,7 +227,6 @@ static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const vo
     }
     /* Operate on the remaining NEON lanes 2 at a time. */
     for (; i < XXH3_NEON_LANES / 2; i++) {
-        uint64x2_t acc_vec  = xacc[i];
         /* data_vec = xinput[i]; */
         uint64x2_t data_vec = XXH_vld1q_u64(xinput  + (i * 16));
         /* key_vec  = xsecret[i];  */

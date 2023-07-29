@@ -78,10 +78,6 @@ static uint64_t rnd64( void ) {
     return GET_U64<false>(result, 0);
 }
 
-static void rng_ffwd( int64_t ffwd ) {
-    ctr[0] += ffwd; ctr[1] -= ffwd;
-}
-
 static void rng_setctr( uint64_t stream, uint64_t seq ) {
     ctr[0] = seq; ctr[1] = stream;
 }

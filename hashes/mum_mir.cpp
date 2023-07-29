@@ -67,8 +67,6 @@ static inline uint64_t _mum( uint64_t v, uint64_t p ) {
  * probability of their bit values.  They are used to randomize input
  * values.
  */
-static const uint64_t _mum_hash_step_prime   = UINT64_C(0x2e0bb864e9ea7df5);
-static const uint64_t _mum_key_step_prime    = UINT64_C(0xcdb32970830fcaa1);
 static const uint64_t _mum_block_start_prime = UINT64_C(0xc42b5e2e6480b23b);
 static const uint64_t _mum_unroll_prime      = UINT64_C(0x7b51ec3d22f7096f);
 static const uint64_t _mum_tail_prime        = UINT64_C(0xaf47d47c99b1461b);
@@ -273,7 +271,6 @@ static void mir_hash( const void * in, const size_t olen, const seed_t seed, voi
     const uint8_t * v   = (const uint8_t *)in;
     uint64_t        r   = seed + olen;
     size_t          len = olen;
-    uint64_t        blk;
 
     for (; len >= 16; len -= 16, v += 16) {
         r ^= mir_mum<exactmul>(GET_U64<bswap>(v, 0), p1);

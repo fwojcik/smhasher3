@@ -79,7 +79,6 @@ typedef uint32_t popcnt_hist[65];
 static void PopcountThread( const HashInfo * hinfo, const seed_t seed, const int inputSize, const unsigned start,
         const unsigned end, const unsigned step, popcnt_hist & hist1, popcnt_hist & hist2 ) {
     const HashFn      hash     = hinfo->hashFn(g_hashEndian);
-    long double const n        = (end - (start + 1)) / step;
     uint64_t          previous = 0;
 
 #define INPUT_SIZE_MAX 256
@@ -87,7 +86,6 @@ static void PopcountThread( const HashInfo * hinfo, const seed_t seed, const int
     char key[INPUT_SIZE_MAX]       = { 0 };
 #define HASH_SIZE_MAX 64
     char      hbuff[HASH_SIZE_MAX] = { 0 };
-    const int hbits = std::min(hinfo->bits, 64U); // limited due to popcount8
 
     assert(sizeof(unsigned) <= inputSize);
     assert(start < end);
@@ -145,8 +143,6 @@ static bool PopcountResults( long double srefh, long double srefl, long double b
 }
 
 static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) {
-    const HashFn      hash  = hinfo->hashFn(g_hashEndian);
-    const unsigned    mx    = 0xffffffff;
     const long double n     = UINT64_C(0x100000000) / step;
     const int         hbits = std::min(hinfo->bits, 64U); // limited due to popcount8
 

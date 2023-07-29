@@ -85,7 +85,6 @@ constexpr int MAX_TRIALS = (BULK_TRIALS > TINY_TRIALS) ? BULK_TRIALS : TINY_TRIA
 // without affecting branch prediction too much.
 NEVER_INLINE static int64_t timehash( HashFn hash, const seed_t seed, void * const key, int len ) {
     volatile int64_t begin, end;
-    uint32_t         temp[16];
 
     begin = timer_start();
 
@@ -204,7 +203,6 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     double   mintotal    = 0.0;
     double   stddevtotal = 0.0;
     unsigned count       = 0;
-    unsigned sbmcount    = 0;
 
     for (int size = blocksize - maxvarysize; size <= blocksize; size++) {
         for (int align = 0; align <= maxvaryalign; align++) {
@@ -358,7 +356,6 @@ void ShortSpeedTestHeader( bool verbose ) {
 
 void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
-    bool         result = true;
     Rand         r( 321321 );
 
     const int maxvaryalign    = 7;

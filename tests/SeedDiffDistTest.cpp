@@ -68,7 +68,6 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, bool drawDiagram ) {
     Rand r( 482813 + keytype::len );
 
     int       seedbits = bigseed ? 64 : 32;
-    int       keybits  = keytype::bitlen;
     const int keycount = 512 * 1024 * (ckuniq ? 2 : 3);
     keytype   k;
 

@@ -204,7 +204,6 @@ enum t1ha_modes {
 template <enum t1ha_modes mode, bool aligned>
 static FORCE_INLINE uint32_t fetch16( const void * v ) {
     constexpr bool force_aligned = (T1HA_SYS_UNALIGNED_ACCESS != T1HA_UNALIGNED_ACCESS__UNABLE);
-    uint16_t       result;
 
     if (aligned) { assert(((uintptr_t)v) % ALIGNMENT_16 == 0); }
 
@@ -223,7 +222,6 @@ static FORCE_INLINE uint32_t fetch16( const void * v ) {
 template <enum t1ha_modes mode, bool aligned>
 static FORCE_INLINE uint32_t fetch32( const void * v ) {
     constexpr bool force_aligned = (T1HA_SYS_UNALIGNED_ACCESS != T1HA_UNALIGNED_ACCESS__UNABLE);
-    uint32_t       result;
 
     if (aligned) { assert(((uintptr_t)v) % ALIGNMENT_32 == 0); }
 
@@ -243,7 +241,6 @@ static FORCE_INLINE uint32_t fetch32( const void * v ) {
 template <enum t1ha_modes mode, bool aligned>
 static FORCE_INLINE uint64_t fetch64( const void * v ) {
     constexpr bool force_aligned = (T1HA_SYS_UNALIGNED_ACCESS != T1HA_UNALIGNED_ACCESS__UNABLE);
-    uint64_t       result;
 
     if (aligned) { assert(((uintptr_t)v) % ALIGNMENT_64 == 0); }
 
@@ -1180,7 +1177,6 @@ template <enum t1ha_modes mode, bool xwidth, bool selftest_seeding = false>
 static void t1ha2_incr( const void * in, const size_t len, const seed_t seed, void * out ) {
     alignas(16) t1ha_context_t ctx;
     uint64_t hash, xhash = 0;
-    uint64_t length = (uint64_t)len;
 
     t1ha2_init(&ctx, seed, selftest_seeding ? seed : 0);
     t1ha2_update<mode>(&ctx, in, len);

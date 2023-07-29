@@ -288,9 +288,6 @@ static const uint64_t T[1024] = {
     UINT64_C(0x7f25bae3c4fea8af), UINT64_C(0xecf8ed9dac1367b8), UINT64_C(0x1a49274e39668f4e), UINT64_C(0xca4a0ae881c7dc39)
 };
 
-static const int      STATE = 32;
-static const uint64_t MASK  = UINT64_C(0xffffffffffffff);
-
 //--------
 // State mix function
 static FORCE_INLINE uint8_t beam_ROTR8( uint8_t v, int n ) {
@@ -381,7 +378,7 @@ static void beamsplitter_64( const void * in, const size_t len, const seed_t see
         std::swap(seedbuf[0], seedbuf[1]);
     }
 
-    uint64_t state[STATE / 8];
+    uint64_t state[4];
     // nothing up my sleeve
     state[0] = UINT64_C(0x123456789abcdef0);
     state[1] = UINT64_C(0x0fedcba987654321);

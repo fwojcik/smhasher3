@@ -393,8 +393,7 @@ static bool BadSeedsKnown( const HashInfo * hinfo ) {
 //-----------------------------------------------------------------------------
 template <typename hashtype>
 bool BadSeedsTest( const HashInfo * hinfo, bool find_new_seeds ) {
-    const HashFn hash   = hinfo->hashFn(g_hashEndian);
-    bool         result = true;
+    bool result = true;
 
     // Never find new bad seeds for mock hashes, except for aesrng
     if (hinfo->isMock() && (strncmp(hinfo->name, "aesrng", 6) != 0)) {

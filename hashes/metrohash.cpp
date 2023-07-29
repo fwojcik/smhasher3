@@ -72,7 +72,6 @@ static void MetroHash64( const void * in, const size_t len, const seed_t seed, v
 
     const uint64_t *      K      = &MULTK64[variant][0];
     const uint8_t *       ROTK   = &ROTK64 [variant][0];
-    const size_t          length = len;
     const uint8_t *       ptr    = (const uint8_t *)in;
     const uint8_t * const end    = ptr + len;
     uint64_t v[4];
@@ -182,7 +181,6 @@ static void MetroHash128( const void * in, const size_t len, const seed_t seed, 
 
     const uint64_t *      K      = &MULTK128[variant][0];
     const uint8_t *       ROTK   = &ROTK128 [variant][0];
-    const size_t          length = len;
     const uint8_t *       ptr    = (const uint8_t *)in;
     const uint8_t * const end    = ptr + len;
 

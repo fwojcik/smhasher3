@@ -108,8 +108,6 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
             worstbias  = bias;
             worstbiasN = i;
         }
-        double rt = (double)bias / (double)coinflips;
-        double pv = 2.0 * exp(-(double)bias * 2.0 * rt);
     }
     const int worstbiasKeybit  = worstbiasN / hashbits;
     const int worstbiasHashbit = worstbiasN % hashbits;
@@ -357,11 +355,9 @@ INSTANTIATE(PrintCollisions, HASHTYPELIST);
 template <typename hashtype>
 static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t const nbH,
         int minHBits, int maxHBits, int threshHBits, int * collcounts ) {
-    const int origBits = hashtype::bitlen;
-
     assert(minHBits >= 1       );
     assert(minHBits <= maxHBits);
-    assert(origBits >= maxHBits);
+    assert(hashtype::bitlen >= maxHBits);
     assert((threshHBits == 0) || (threshHBits >= minHBits));
     assert((threshHBits == 0) || (threshHBits <= maxHBits));
 

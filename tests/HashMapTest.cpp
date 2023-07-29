@@ -79,7 +79,6 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
     Rand r( 82762 );
 
     const HashFn hash     = hinfo->hashFn(g_hashEndian);
-    const int    hashbits = hinfo->bits;
     const seed_t seed     = hinfo->Seed(g_seed ^ r.rand_u64());
 
     std_hashmap hashmap( words.size(), [=]( const std::string & key ) {

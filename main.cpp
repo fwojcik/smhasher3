@@ -388,8 +388,7 @@ static void print_pvaluecounts( void ) {
 
 template <typename hashtype>
 static bool test( const HashInfo * hInfo ) {
-    const int hashbits = sizeof(hashtype) * 8;
-    bool      result   = true;
+    bool result   = true;
 
     if (g_testAll) {
         printf("-------------------------------------------------------------------------------\n");

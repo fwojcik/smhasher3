@@ -77,7 +77,6 @@ template <typename hashtype, int seedbytes>
 static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins, const int keybytes,
         const uint8_t * inputs, a_int & irepp, const int reps, const bool verbose ) {
     const HashFn hash    = hinfo->hashFn(g_hashEndian);
-    const int    keybits = keybytes * 8;
 
     hashtype A, B;
     int      irep;

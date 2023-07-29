@@ -123,7 +123,6 @@ class Rand {
 
     void rand_p( void * blob, uint64_t bytes ) {
         uint8_t * blocks = reinterpret_cast<uint8_t *>(blob);
-        size_t    i;
 
         while (bytes >= 4) {
             uint32_t r = COND_BSWAP(rand_u32(), isBE());
