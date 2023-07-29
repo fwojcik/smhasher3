@@ -57,13 +57,16 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL GNU
 
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -ggdb3")
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}    -ggdb3")
-  set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_ASAN} -Og -ggdb3  \
+  set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_ASAN} -Og -ggdb3 \
       -fsanitize=address,undefined -fno-optimize-sibling-calls \
       -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
 
   if(NOT CMAKE_CROSSCOMPILING)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
   endif()
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function \
+      -Wno-unknown-pragmas -Wno-unused-lambda-capture")
 endif()
 
 function(whole_archive_link_flags lib var)
