@@ -67,6 +67,10 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL GNU
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function \
       -Wno-unknown-pragmas -Wno-unused-lambda-capture")
+
+  if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+    set(ACTUAL_GCC TRUE)
+  endif()
 endif()
 
 function(whole_archive_link_flags lib var)

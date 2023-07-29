@@ -27,3 +27,8 @@ if(MSVC)
 else()
   set(MSVC_IMPL "")
 endif()
+
+if(ACTUAL_GCC)
+  message(STATUS "GCC detected")
+  set(HAVE_GCC_COMPILER TRUE)
+endif()
