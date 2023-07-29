@@ -8,7 +8,7 @@ set(HASH_SRC_FILES
 # parallel compilation times
 #########################################
 #
-  hashes/pmp_multilinear.cpp
+#  hashes/pmp_multilinear.cpp
   hashes/xxhash.cpp
   hashes/t1ha.cpp
   hashes/farmhash.cpp
