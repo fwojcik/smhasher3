@@ -221,7 +221,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
     bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(true).testDeltas(1);
     printf("\n");
 
-    char buf[32];
+    char buf[64];
     snprintf(buf, sizeof(buf), "Long %s %s %d-%d", name, varyprefix ? "first" : "last", minlen, maxlen);
     recordTestResult(result, "Text", buf);
 
