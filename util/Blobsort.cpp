@@ -19,12 +19,11 @@
  */
 #include "Platform.h"
 #include "Timing.h"
-#include "Blob.h"
+#include "TestGlobals.h"
 #include "Blobsort.h"
 #include "Instantiate.h"
 #include "Random.h"
 
-#include <vector>
 #include <type_traits>
 
 //-----------------------------------------------------------------------------
@@ -264,26 +263,33 @@ bool test_blobsort_type( void ) {
     for (size_t i: testnums) {
         bool     thispassed = true;
         uint64_t mintime    = UINT64_C(-1);
+        if (TEST_ITER > 1) {
+            printf("%3lu bits, test %2zd [%-50s]", blobtype::bitlen, i, teststr[i]);
+        }
         for (size_t j = 0; j < TEST_ITER; j++) {
             blobfill<blobtype, TEST_SIZE>(blobs, i, j);
             uint64_t timeBegin = monotonic_clock();
             blobsort(blobs.begin(), blobs.end());
             uint64_t timeEnd   = monotonic_clock();
+
             uint64_t timesum   = timeEnd - timeBegin;
             if (mintime > timesum) {
                 mintime = timesum;
             }
             thispassed &= blobverify(blobs);
+            if (TEST_ITER > 1) {
+                progressdots(j, 0, TEST_ITER - 1, 16);
+            }
         }
         if (TEST_ITER > 1) {
             double thistime = (double)mintime / (double)(NSEC_PER_SEC / 1000);
             double basetime = baseline_timing[baseline_idx1[blobtype::len / 4]][baseline_idx2[i]];
             double delta    = thistime - basetime;
+            if ((delta >= -0.05) && (delta <= 0.05)) {
+                delta = 0.0;
+            }
             basesum += basetime - 0.05;
-            printf("%3lu bits, test %2zd [%-50s]\t\t %7.1f ms (%+5.1f ms)\t%s\n",
-                    blobtype::bitlen, i, teststr[i], thistime,
-                    ((delta >= -0.05) && (delta <= 0.05)) ? 0 : delta,
-                    thispassed ? "ok" : "NO");
+            printf("\t %7.1f ms ( %+6.1f ms ) %s\n", thistime, delta, thispassed ? "ok" : "NO");
         }
         timetotal += mintime;
         passed &= thispassed;
@@ -292,8 +298,11 @@ bool test_blobsort_type( void ) {
     if (TEST_ITER > 1) {
         double thistime = (double)timetotal / (double)(NSEC_PER_SEC / 1000);
         double delta    = thistime - basesum;
-        printf("%3lu bits, %-60s\t\t%8.1f ms (%+5.1f ms)\n\n", blobtype::bitlen, "SUM TOTAL",
-                thistime, ((delta >= -0.05) && (delta <= 0.05)) ? 0 : delta);
+        if ((delta >= -0.05) && (delta <= 0.05)) {
+            delta = 0.0;
+        }
+        printf("%3lu bits, %-60s                \t%8.1f ms ( %+6.1f ms )\n\n",
+                blobtype::bitlen, "SUM TOTAL", thistime, delta);
     }
 
     return passed;
