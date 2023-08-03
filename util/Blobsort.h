@@ -93,6 +93,7 @@ static void radixsort( T * begin, T * end ) {
     // Record byte frequencies in each position over all items except
     // the last one.
     do {
+        prefetch(ptr + 64);
         for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
             uint8_t value = (*ptr)[pass];
             ++freqs[value][pass];
@@ -133,7 +134,10 @@ static void radixsort( T * begin, T * end ) {
         for (size_t i = 0; i < count; i++) {
             uint8_t index = from[i][pass];
             *queue_ptrs[index]++ = std::move(from[i]);
-            __builtin_prefetch(queue_ptrs[index] + 1);
+            // These prefetch() calls make a small but significant
+            // difference (e.g. 41.1ms -> 35.9ms).
+            prefetch(&from[i + 64]);
+            prefetch(queue_ptrs[index]);
         }
 
         std::swap(from, to);
