@@ -87,8 +87,8 @@ static void radixsort( T * begin, T * end ) {
     const uint32_t RADIX_LEVELS = T::len;
     const size_t   count        = end - begin;
 
-    size_t freqs[RADIX_SIZE][RADIX_LEVELS] = {};
-    T *    ptr = begin;
+    uint32_t freqs[RADIX_SIZE][RADIX_LEVELS] = {};
+    T *      ptr = begin;
 
     // Record byte frequencies in each position over all items except
     // the last one.
@@ -164,8 +164,8 @@ static void flagsort( T * begin, T * end, T * base, int idx ) {
     // Each pass must compute its own frequency table, because the
     // counts depend on all previous bytes, since each pass operates on
     // a successively smaller subset of the total list to sort.
-    size_t freqs[RADIX_SIZE] = {};
-    T *    ptr = begin;
+    uint32_t freqs[RADIX_SIZE] = {};
+    T *      ptr = begin;
     do {
         ++freqs[(*ptr)[idx]];
     } while (++ptr < (end - 1));
