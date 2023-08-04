@@ -47,8 +47,6 @@
  */
 #include <algorithm>
 
-extern const uint8_t hzb[256];
-
 //-----------------------------------------------------------------------------
 #define _bytes ((size_t)(_bits + 7) / 8)
 template <unsigned _bits>
@@ -283,13 +281,39 @@ class Blob {
 
     static FORCE_INLINE uint32_t _highzerobits( const uint8_t * bytes, const size_t len ) {
         uint32_t zb = 0;
+        size_t i = _bytes;
 
-        for (ssize_t i = len - 1; i >= 0; i--) {
-            zb += hzb[bytes[i]];
-            if (bytes[i] != 0) {
-                break;
+        while (i >= 8) {
+            uint64_t a;
+            i -= 8;
+            memcpy(&a, &bytes[i], 8); a = COND_BSWAP(a, isBE());
+            if (a != 0) {
+                zb += clz8(a);
+                return zb;
             }
+            zb += 64;
         }
+        while (i >= 4) {
+            uint32_t a;
+            i -= 4;
+            memcpy(&a, &bytes[i], 4); a = COND_BSWAP(a, isBE());
+            if (a != 0) {
+                zb += clz4(a);
+                return zb;
+            }
+            zb += 32;
+        }
+        while (i >= 1) {
+            uint32_t a;
+            i -= 1;
+            a = bytes[i];
+            if (a != 0) {
+                zb += clz4(a);
+                return zb;
+            }
+            zb += 8;
+        }
+
         return zb;
     }
 
