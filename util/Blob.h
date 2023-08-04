@@ -287,7 +287,7 @@ class Blob {
         const size_t byteoffset = bit >> 3;
         const size_t bitoffset  = bit & 7;
 
-        if (byteoffset < len) {
+        if (likely(byteoffset < len)) {
             bytes[byteoffset] ^= (1 << bitoffset);
         }
     }
