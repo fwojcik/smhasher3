@@ -863,24 +863,29 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
     // This must be done before the list of hashes is sorted below via
     // FindCollisions(). The calls to test the list(s) of deltas come at
     // the bottom of this function.
+    //
+    // The ASM for these loops contains more mov instructions than seem
+    // necessary, and even an extra cmp/je pair for the std::vector length,
+    // but no matter how I tweak things to tighten the loop it always ends
+    // up slower. Not a huge deal, but this is a hot spot.
     std::vector<hashtype> hashdeltas_1;
     std::vector<hashtype> hashdeltas_N;
 
     if (testDeltaNum >= 1) {
-        hashdeltas_1.reserve(nbH);
+        hashdeltas_1.reserve(nbH - 1);
 
-        hashtype h;
+        hashtype hprv = hashes[0];
         for (size_t hnb = 1; hnb < nbH; hnb++) {
-            h = hashes[hnb - 1] ^ hashes[hnb];
-            hashdeltas_1.push_back(h);
+            hashtype h = hashes[hnb];
+            hashdeltas_1.emplace_back(h ^ hprv);
+            hprv = h;
         }
 
         if (testDeltaNum >= 2) {
-            hashdeltas_N.reserve(nbH);
+            hashdeltas_N.reserve(nbH - testDeltaNum);
 
             for (size_t hnb = testDeltaNum; hnb < nbH; hnb++) {
-                h = hashes[hnb - testDeltaNum] ^ hashes[hnb];
-                hashdeltas_N.push_back(h);
+                hashdeltas_N.emplace_back(hashes[hnb - testDeltaNum] ^ hashes[hnb]);
             }
         }
     }
