@@ -35,7 +35,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
 #if defined(HAVE_AVX2)
     const __m256i ONE  = _mm256_set1_epi32(1);
     const __m256i MASK = _mm256_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7);
-    for (int oWord = 0; oWord < (hashbytes / 4); oWord++) {
+    for (unsigned oWord = 0; oWord < (hashbytes / 4); oWord++) {
         // Get the next 32-bit chunk of the hash difference
         uint32_t word;
         memcpy(&word, ((const uint8_t *)&hash) + 4 * oWord, 4);
@@ -72,7 +72,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
 #elif defined(HAVE_SSE_4_1)
     const __m128i ONE  = _mm_set1_epi32(1);
     const __m128i MASK = _mm_setr_epi32(1 << 0, 1 << 1, 1 << 2, 1 << 3);
-    for (int oWord = 0; oWord < (hashbytes / 4); oWord++) {
+    for (unsigned oWord = 0; oWord < (hashbytes / 4); oWord++) {
         // Get the next 32-bit chunk of the hash difference
         uint32_t word;
         memcpy(&word, ((const uint8_t *)&hash) + 4 * oWord, 4);
@@ -81,7 +81,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
         // each integer being zero or one, and add them into the
         // counts in the histogram.
         __m128i base = _mm_set1_epi32(word);
-        for (int i = 0; i < 8; i++) {
+        for (unsigned i = 0; i < 8; i++) {
             __m128i incr = _mm_min_epu32(_mm_and_si128(base, MASK), ONE);
             __m128i cnt  = _mm_loadu_si128((const __m128i *)cursor);
             cnt     = _mm_add_epi32(cnt, incr);
@@ -91,9 +91,9 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
         }
     }
 #else
-    for (int oByte = 0; oByte < hashbytes; oByte++) {
+    for (unsigned oByte = 0; oByte < hashbytes; oByte++) {
         uint8_t byte = hash[oByte];
-        for (int oBit = 0; oBit < 8; oBit++) {
+        for (unsigned oBit = 0; oBit < 8; oBit++) {
             (*cursor++) += byte & 1;
             byte       >>= 1;
         }
@@ -122,7 +122,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
     startbit &= 31;
     // Align the cursor to the start of the chunk of 32 integer counters
     cursor   -= startbit;
-    for (int oWord = startWord; oWord < (hashbytes / 4); oWord++) {
+    for (unsigned oWord = startWord; oWord < (hashbytes / 4); oWord++) {
         // Get the next 32-bit chunk of the hash difference
         uint32_t word;
         memcpy(&word, ((const uint8_t *)&hash) + 4 * oWord, 4);
@@ -168,7 +168,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
     startbit &= 31;
     // Align the cursor to the start of the chunk of 32 integer counters
     cursor   -= startbit;
-    for (int oWord = startWord; oWord < (hashbytes / 4); oWord++) {
+    for (unsigned oWord = startWord; oWord < (hashbytes / 4); oWord++) {
         // Get the next 32-bit chunk of the hash difference
         uint32_t word;
         memcpy(&word, ((const uint8_t *)&hash) + 4 * oWord, 4);
@@ -180,7 +180,7 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
         // each integer being zero or one, and add them into the
         // counts in the histogram.
         __m128i base = _mm_set1_epi32(word);
-        for (int i = 0; i < 8; i++) {
+        for (unsigned i = 0; i < 8; i++) {
             __m128i incr = _mm_min_epu32(_mm_and_si128(base, MASK), ONE);
             __m128i cnt  = _mm_loadu_si128((const __m128i *)cursor);
             cnt     = _mm_add_epi32(cnt, incr);
@@ -196,12 +196,12 @@ static inline uint32_t * HistogramHashBits( const hashtype & hash, uint32_t * cu
     startbit &= 7;
     // Align the cursor to the start of the chunk of 8 integer counters
     cursor   -= startbit;
-    for (int oByte = startByte; oByte < hashbytes; oByte++) {
+    for (unsigned oByte = startByte; oByte < hashbytes; oByte++) {
         uint8_t byte = hash[oByte];
         // Mask off the bits before startbit
         byte >>= startbit;
         byte <<= startbit;
-        for (int oBit = 0; oBit < 8; oBit++) {
+        for (unsigned oBit = 0; oBit < 8; oBit++) {
             (*cursor++) += byte & 1;
             byte       >>= 1;
         }
