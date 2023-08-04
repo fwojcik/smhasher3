@@ -141,7 +141,25 @@ class Blob {
     Blob operator ^ ( const Blob & k ) const {
         Blob t;
 
-        for (size_t i = 0; i < _bytes; i++) {
+        size_t i = _bytes;
+        while (i >= 8) {
+            uint64_t a, b;
+            i -= 8;
+            memcpy(&a, &bytes[i], 8);
+            memcpy(&b, &k.bytes[i], 8);
+            a ^= b;
+            memcpy(&t.bytes[i], &a, 8);
+        }
+        while (i >= 4) {
+            uint32_t a, b;
+            i -= 4;
+            memcpy(&a, &bytes[i], 4);
+            memcpy(&b, &k.bytes[i], 4);
+            a ^= b;
+            memcpy(&t.bytes[i], &a, 4);
+        }
+        while (i >= 1) {
+            i -= 1;
             t.bytes[i] = bytes[i] ^ k.bytes[i];
         }
 
@@ -149,9 +167,28 @@ class Blob {
     }
 
     Blob & operator ^= ( const Blob & k ) {
-        for (size_t i = 0; i < _bytes; i++) {
-            bytes[i] ^= k.bytes[i];
+        size_t i = _bytes;
+        while (i >= 8) {
+            uint64_t a, b;
+            i -= 8;
+            memcpy(&a, &bytes[i], 8);
+            memcpy(&b, &k.bytes[i], 8);
+            a ^= b;
+            memcpy(&bytes[i], &a, 8);
         }
+        while (i >= 4) {
+            uint32_t a, b;
+            i -= 4;
+            memcpy(&a, &bytes[i], 4);
+            memcpy(&b, &k.bytes[i], 4);
+            a ^= b;
+            memcpy(&bytes[i], &a, 4);
+        }
+        while (i >= 1) {
+            i -= 1;
+            bytes[i] = bytes[i] ^ k.bytes[i];
+        }
+
         return *this;
     }
 
