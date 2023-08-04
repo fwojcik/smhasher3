@@ -361,36 +361,41 @@ INSTANTIATE(PrintCollisions, HASHTYPELIST);
 // since a collision for N bits is also a collision for N-k bits.
 //
 // This requires the vector of hashes to be sorted.
-template <typename hashtype>
-static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t const nbH,
+template <bool calcmax, typename hashtype>
+static void CountRangedNbCollisionsImpl( std::vector<hashtype> & hashes, uint64_t const nbH,
         int minHBits, int maxHBits, int threshHBits, int * collcounts ) {
     assert(minHBits >= 1       );
     assert(minHBits <= maxHBits);
     assert(hashtype::bitlen >= maxHBits);
-    assert((threshHBits == 0) || (threshHBits >= minHBits));
-    assert((threshHBits == 0) || (threshHBits <= maxHBits));
+    assert(!calcmax || (threshHBits >= minHBits));
+    assert(!calcmax || (threshHBits <= maxHBits));
 
     const int collbins    = maxHBits - minHBits + 1;
-    const int maxcollbins = (threshHBits == 0) ? 0 : threshHBits - minHBits + 1;
+    const int maxcollbins = calcmax ? threshHBits - minHBits + 1 : 0;
     int       prevcoll[maxcollbins + 1];
     int       maxcoll[maxcollbins + 1];
 
     memset(collcounts, 0, sizeof(collcounts[0]) * collbins );
-    memset(prevcoll  , 0, sizeof(prevcoll[0]) * maxcollbins);
-    memset(maxcoll   , 0, sizeof(maxcoll[0]) * maxcollbins );
+    if (calcmax) {
+        memset(prevcoll, 0, sizeof(prevcoll[0]) * maxcollbins);
+        memset(maxcoll , 0, sizeof(maxcoll[0])  * maxcollbins);
+    }
 
     for (uint64_t hnb = 1; hnb < nbH; hnb++) {
         hashtype hdiff = hashes[hnb - 1] ^ hashes[hnb];
         int      hzb   = hdiff.highzerobits();
-        if (hzb > maxHBits) {
-            hzb = maxHBits;
-        }
         if (hzb >= minHBits) {
+            if (hzb > maxHBits) {
+                hzb = maxHBits;
+            }
             collcounts[hzb - minHBits]++;
         }
         // If we don't care about maximum collision counts, or if this
         // hash is a collision for *all* bit widths where we do care about
         // maximums, then this is all that need be done for this hash.
+        if (!calcmax) {
+            continue;
+        }
         if (hzb >= threshHBits) {
             continue;
         }
@@ -422,13 +427,24 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t co
     for (int i = collbins - 2; i >= 0; i--) {
         collcounts[i] += collcounts[i + 1];
     }
-    for (int i = maxcollbins - 1; i >= 0; i--) {
-        collcounts[i] = std::max(maxcoll[i], collcounts[i] - prevcoll[i]);
+    if (calcmax) {
+        for (int i = maxcollbins - 1; i >= 0; i--) {
+            collcounts[i] = std::max(maxcoll[i], collcounts[i] - prevcoll[i]);
+        }
+    }
+}
+
+template <typename hashtype>
+static void CountRangedNbCollisions( std::vector<hashtype> & hashes, uint64_t const nbH,
+        int minHBits, int maxHBits, int threshHBits, int * collcounts ) {
+    if (threshHBits == 0) {
+        return CountRangedNbCollisionsImpl<false>(hashes, nbH, minHBits, maxHBits, 0, collcounts);
+    } else {
+        return CountRangedNbCollisionsImpl<true>(hashes, nbH, minHBits, maxHBits, threshHBits, collcounts);
     }
 }
 
 //-----------------------------------------------------------------------------
-//
 
 static bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxBits,
         int * logpp, bool highbits, bool verbose, bool drawDiagram ) {
