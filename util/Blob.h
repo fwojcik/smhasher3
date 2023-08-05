@@ -457,6 +457,30 @@ FORCE_INLINE uint32_t Blob<64>::getbit( size_t bit ) const {
     return (v >> bit) & 1;
 }
 
+template <>
+FORCE_INLINE uint32_t Blob<32>::window( size_t start, size_t count ) const {
+    const uint32_t mask = (1 << count) - 1;
+    uint32_t v;
+    memcpy(&v, bytes, 4);
+    v = COND_BSWAP(v, isBE());
+    if (likely(start > 0)) {
+        v = ROTR32(v, start & 31);
+    }
+    return v & mask;
+}
+
+template <>
+FORCE_INLINE uint32_t Blob<64>::window( size_t start, size_t count ) const {
+    const uint32_t mask = (1 << count) - 1;
+    uint64_t v;
+    memcpy(&v, bytes, 8);
+    v = COND_BSWAP(v, isBE());
+    if (likely(start > 0)) {
+        v = ROTR64(v, start & 63);
+    }
+    return v & mask;
+}
+
 // from the "Bit Twiddling Hacks" webpage
 template <>
 FORCE_INLINE void Blob<32>::reversebits( void ) {
