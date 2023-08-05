@@ -592,6 +592,7 @@ static void TestDistributionBatch( const std::vector<hashtype> & hashes, const u
 
             memset(&bins8[0], 0, bincount * sizeof(bins8[0]));
             for (size_t j = 0; j < nbH; j++) {
+                prefetch(&hashes[j + 4]);
                 uint32_t index = hashes[j].window(start, width);
 
                 if (unlikely(++bins8[index] == 0)) {
