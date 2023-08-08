@@ -70,6 +70,11 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL GNU
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(ACTUAL_GCC TRUE)
+
+    # For my development system
+    if(EXISTS "${CMAKE_SOURCE_DIR}/.devbox")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gdwarf-4 -fvar-tracking-assignments")
+    endif()
   endif()
 endif()
 
