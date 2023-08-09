@@ -93,6 +93,8 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
         uint32_t * cursor = &bins[0];
 
         for (int iBit = 0; iBit < keybits; iBit++) {
+            prefetch(cursor);
+
             K.flipbit(iBit);
             hash(K, keybytes, seed, &B);
             K.flipbit(iBit);

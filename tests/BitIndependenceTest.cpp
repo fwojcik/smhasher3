@@ -151,6 +151,12 @@ static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> 
 
             key.flipbit(keybit);
             hash(key, keybytes, seed, &h2);
+
+            // The current arrangement of the andcount array doesn't allow
+            // for effective prefetching, unfortunately, but at least this
+            // helps a little bit.
+            prefetch(pop_cursor);
+
             key.flipbit(keybit);
 
             h2 = h1 ^ h2;
