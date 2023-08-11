@@ -99,6 +99,7 @@ class Blob {
 
     bool operator < ( const Blob & k ) const {
         size_t i = _bytes;
+#pragma GCC unroll 4
         while (i >= 8) {
             uint64_t a, b;
             i -= 8;

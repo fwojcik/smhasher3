@@ -92,6 +92,7 @@ static void radixsort( T * begin, T * end ) {
 
     // Record byte frequencies in each position over all items except
     // the last one.
+    assume(begin <= (end - SMALLSORT_CUTOFF));
     do {
         prefetch(ptr + 64);
         for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
@@ -179,7 +180,7 @@ static void flagsort( T * begin, T * end, T * base, int idx ) {
     // likely to hit in degenerate cases (e.g. donothing64), just devolve
     // into insertionsort since that performs better for those. smallsort()
     // isn't used here because these blocks must be large.
-    if (++freqs[(*ptr)[idx]] == count) {
+    if (unlikely(++freqs[(*ptr)[idx]] == count)) {
         if (idx != 0) {
             assume((end - begin) > SMALLSORT_CUTOFF);
             if (begin == base) {
