@@ -146,7 +146,7 @@ include(hashes/Hashsrc.cmake)
 add_custom_command(
   OUTPUT ${CMAKE_BINARY_DIR}/Hashrefs.cpp
   IMPLICIT_DEPENDS CXX ${CMAKE_SOURCE_DIR}/hashes/Hashrefs.cpp.in
-  DEPENDS ${HASH_SRC_FILES}
+  DEPENDS ${HASH_SRC_FILES} hashes/Hashsrc.cmake
   COMMAND ${CMAKE_COMMAND}
     -D SRCDIR=${CMAKE_SOURCE_DIR}
     -D SRC=${CMAKE_SOURCE_DIR}/hashes/Hashrefs.cpp.in
