@@ -1,5 +1,60 @@
 [[_TOC_]]
 
+Differences from beta2 to beta3
+===============================
+
+General changes
+---------------
+- Fixed some compilation problems on non-Linux platforms
+- Fixed some UB and other problems on 32-bit platforms
+- Many performance increases and memory-use reductions
+- More testing aspects now support threading/using multiple CPUs
+- RNG has been updated to Threefry, and RNG API has been rewritten
+- Code is now compiled with "-Wall" on non-MSVC compilers
+- "C" locale is now explicitly set internally
+- Many code cleanups and readability improvements
+- Added documentation on what each test does
+
+Testing changes
+---------------
+- BIC and SeedBIC tests have been reorganized
+   - The same input data is now used for each input bit, to reduce
+     memory usage and be consistent with other test suites
+- SanityTest error messages have been improved
+- SpeedTest fidelity has been improved
+- Expected collision estimation has been improved
+- Some progress indicators have been made more granular
+- Some display errors have been fixed
+
+General hash changes
+--------------------
+- Mathmult implementations improved and made consistent
+   - Should produce faster code in hashes which use them
+   - Clang ASM workarounds now exist for all Mathmult functions
+     which need them
+
+Specific hash changes
+---------------------
+- beamsplitter
+   - Made byteswapping changes be clearer
+- blake2
+   - Fixed compilation for SSE2 implementation
+- chaskey
+   - Improved readability of implementation
+- discohash
+   - Made byteswapping changes be clearer
+- fnv-mulvey
+   - Added
+- hasshe2
+   - Altered tweaked version to be streamable
+- khashv
+   - Updated to latest revision
+- pmp_multilinear
+   - Hash has been temporarily disabled
+- xxh3
+   - Fixed bug in AVX-512 implementation
+   
+
 Differences from beta1 to beta2
 ===============================
 
