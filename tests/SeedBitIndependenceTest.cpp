@@ -92,7 +92,7 @@ static void SeedBicTestBatch( const HashInfo * hinfo, std::vector<uint32_t> & po
         const uint8_t * key = &keys[keybytes * irep];
 
         memcpy(&iseed, &seeds[seedbytes * irep], seedbytes);
-        seed_t hseed = hinfo->Seed(iseed, false, 1);
+        seed_t hseed = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX, 1);
         hash(key, keybytes, hseed, &h1);
 
         uint32_t * pop_cursor = &popcount0[0];
@@ -102,7 +102,7 @@ static void SeedBicTestBatch( const HashInfo * hinfo, std::vector<uint32_t> & po
             // HistogramHashBits accesses memory prior to the cursor.
             uint32_t * and_cursor = &andcount0[seedbit * hashbitpairs + 1];
 
-            hseed = hinfo->Seed(iseed ^ UINT64_C(1) << seedbit, false, 1);
+            hseed = hinfo->Seed(iseed ^ UINT64_C(1) << seedbit, HashInfo::SEED_ALLOWFIX, 1);
             hash(key, keybytes, hseed, &h2);
 
             h2 = h1 ^ h2;

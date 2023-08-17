@@ -64,7 +64,7 @@ uint32_t HashInfo::_ComputedVerifyImpl( const HashInfo * hinfo, enum HashInfo::e
     // 256-N as the seed
     for (int i = 0; i < 256; i++) {
         seed_t seed = 256 - i;
-        seed = hinfo->Seed(seed, true, 1);
+        seed = hinfo->Seed(seed, SEED_FORCED, 1);
         hash(key, i, seed, &hashes[i * hashbytes]);
         addVCodeInput(key, i);
         key[i] = (uint8_t)i;
@@ -72,7 +72,7 @@ uint32_t HashInfo::_ComputedVerifyImpl( const HashInfo * hinfo, enum HashInfo::e
 
     // Then hash the result array
     seed_t seed = 0;
-    seed = hinfo->Seed(0, true, 1);
+    seed = hinfo->Seed(0, SEED_FORCED, 1);
     hash(hashes, hashbytes * 256, seed, total);
     addVCodeOutput(hashes, 256 * hashbytes);
     addVCodeOutput(total , hashbytes);

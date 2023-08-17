@@ -93,7 +93,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
     for (seed_t i = 0; i < (1 << hibits); i++) {
         for (seed_t j = 0; j < (1 << lobits); j++) {
             const seed_t seed  = (i << shiftbits) + j;
-            const seed_t hseed = hinfo->Seed(seed, true);
+            const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
             hash(key, keylen, hseed, &hashes[(i << lobits) + j]);
         }
     }
@@ -141,7 +141,7 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
 
     seed_t seed;
 
-    seed = hinfo->Seed(0, true);
+    seed = hinfo->Seed(0, HashInfo::SEED_FORCED);
     hash(key, keylen, seed, &hashes[cnt++]);
 
     for (seed_t i = 1; i <= maxbits; i++) {
@@ -150,7 +150,7 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
 
         do {
             seed_t hseed;
-            hseed = hinfo->Seed(seed, true);
+            hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
             hash(key, keylen, hseed, &hashes[cnt++]);
 
             /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */

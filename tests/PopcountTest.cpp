@@ -232,7 +232,7 @@ static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) 
     memset(rawhash, 0, sizeof(rawhash));
     memset(xorhash, 0, sizeof(xorhash));
 
-    const seed_t seed = hinfo->Seed(g_seed, false, 1);
+    const seed_t seed = hinfo->Seed(g_seed, HashInfo::SEED_ALLOWFIX, 1);
 
     if (g_NCPU == 1) {
         PopcountThread(hinfo, seed, inputSize, 0, 0xffffffff, step, rawhash[0], xorhash[0]);

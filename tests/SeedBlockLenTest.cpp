@@ -91,7 +91,7 @@ static void SeedBlockLenTest_Impl2( const HashInfo * hinfo, std::vector<hashtype
         bool seeddone;
         numseed = (UINT64_C(1) << seedbits) - 1;
         do {
-            const seed_t seed = hinfo->Seed(numseed);
+            const seed_t seed = hinfo->Seed(numseed, HashInfo::SEED_ALLOWFIX);
 
             for (size_t blockbits = 1; blockbits <= blockmaxbits; blockbits++) {
                 bool blockdone;

@@ -130,7 +130,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         }
 
         /* Test the next seed against each test byte */
-        const seed_t hseed = hinfo->Seed(seed, true, 1);
+        const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED, 1);
 
         memset((void *)&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
         unsigned cnt = 0;
@@ -320,7 +320,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
     }
 
     printf("0x%" PRIx64 "\n", seed);
-    const seed_t hseed = hinfo->Seed(seed, true);
+    const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
 
     memset((void *)&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
     unsigned cnt = 0;

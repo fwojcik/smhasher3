@@ -180,7 +180,7 @@ bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra
 
     printf("[[[ Avalanche Tests ]]]\n\n");
 
-    const seed_t seed = hinfo->Seed(g_seed, false, 2);
+    const seed_t seed = hinfo->Seed(g_seed, HashInfo::SEED_ALLOWFIX, 2);
 
     std::set<int> testBitsvec = { 24, 32, 40, 48, 56, 64, 72, 80, 96, 128, 160 };
     if (hinfo->bits <= 128) {

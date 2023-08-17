@@ -105,6 +105,11 @@ class HashInfo {
         ENDIAN_BIG
     };
 
+    enum fixupseed : size_t {
+        SEED_ALLOWFIX = 0,  // Seed via a SeedfixFn, if the hash has one
+        SEED_FORCED   = 1   // Seed using the given seed, always
+    };
+
   protected:
     static const char * _fixup_name( const char * in );
 
@@ -191,12 +196,12 @@ class HashInfo {
         return true;
     }
 
-    FORCE_INLINE seed_t Seed( seed_t seed, bool force = false, uint64_t hint = 0 ) const {
+    FORCE_INLINE seed_t Seed( seed_t seed, enum fixupseed fixup = SEED_ALLOWFIX, uint64_t hint = 0 ) const {
         if (unlikely(impl_flags & FLAG_IMPL_SEED_WITH_HINT)) {
             seedfixfn(NULL, hint);
             return seed;
         }
-        if (!force && (seedfixfn != NULL)) {
+        if ((fixup == SEED_ALLOWFIX) && (seedfixfn != NULL)) {
             seed = seedfixfn(this, seed);
         }
         if (seedfn != NULL) {

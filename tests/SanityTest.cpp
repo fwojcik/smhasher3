@@ -113,7 +113,7 @@ bool SanityTest1( const HashInfo * hinfo, bool verbose ) {
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
-    const seed_t seed      = hinfo->Seed(0, true);
+    const seed_t seed      = hinfo->Seed(0, HashInfo::SEED_FORCED);
 
     const int reps         = 10;
     const int keymax       = 256;
@@ -219,7 +219,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
-    seed_t       seed      = hinfo->Seed(0, true); // not const!
+    seed_t       seed      = hinfo->Seed(0, HashInfo::SEED_FORCED); // not const!
 
     const int reps         = 5;
     const int keymax       = 128;
@@ -273,7 +273,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
 
             for (int bit = 0; bit < 64; bit++) {
                 // Flip a seed bit, hash the key -> we should get a different result.
-                seed = hinfo->Seed(UINT64_C(1) << bit, true);
+                seed = hinfo->Seed(UINT64_C(1) << bit, HashInfo::SEED_FORCED);
                 hash(key1, len, seed, hash2);
                 addVCodeOutput(hash2, hashbytes);
 
@@ -291,7 +291,7 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
                 }
 
                 // Flip it back, hash again -> we should get the original result.
-                seed = hinfo->Seed(0, true);
+                seed = hinfo->Seed(0, HashInfo::SEED_FORCED);
                 hash(key1, len, seed, hash2);
 
                 if (!verify_hashmatch<false>(hash1, hash2, hashbytes, verbose)) {
@@ -401,7 +401,7 @@ static void hashthings( const HashInfo * hinfo, seed_t seed, uint32_t reps, uint
     // Print out progress dots on the main proc AND thread #0.
     for (uint32_t i = 0; i < reps; i++) {
         const uint32_t idx = (order == 0) ? i : idxs[i];
-        if (reseed) { seed = hinfo->Seed(idx * UINT64_C(0xa5), true, 1); }
+        if (reseed) { seed = hinfo->Seed(idx * UINT64_C(0xa5), HashInfo::SEED_FORCED, 1); }
         hash(&keys[idx * reps], idx + 1, seed, &hashes[idx * hashbytes]);
         if (verbose && (order < 2)) { progressdots(i, 0, reps - 1, 4); }
         if (order == 0) { addVCodeInput(&keys[idx * reps], idx + 1); }
@@ -416,7 +416,7 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
     const uint32_t       keybytes  = (reps * reps);
     std::vector<uint8_t> keys( keybytes );
     std::vector<uint8_t> mainhashes( reps * hashbytes );
-    const seed_t         seed = seedthread ? 0 : hinfo->Seed(0x12345, true, 1);
+    const seed_t         seed = seedthread ? 0 : hinfo->Seed(0x12345, HashInfo::SEED_FORCED, 1);
     bool result = true;
 
     maybeprintf("Running thread-safety test %d ", seedthread ? 2 : 1);
@@ -499,7 +499,7 @@ bool AppendedZeroesTest( const HashInfo * hinfo, bool verbose ) {
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
-    const seed_t seed      = hinfo->Seed(0, true);
+    const seed_t seed      = hinfo->Seed(0, HashInfo::SEED_FORCED);
     bool         result    = true;
 
     maybeprintf("Running append zeroes test   ");
@@ -564,7 +564,7 @@ bool PrependedZeroesTest( const HashInfo * hinfo, bool verbose ) {
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
-    const seed_t seed      = hinfo->Seed(0, true);
+    const seed_t seed      = hinfo->Seed(0, HashInfo::SEED_FORCED);
     bool         result    = true;
 
     maybeprintf("Running prepend zeroes test  ");

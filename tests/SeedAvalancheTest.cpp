@@ -89,7 +89,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
         const uint8_t * keyptr = &keys[keybytes * irep];
         memcpy(&iseed, &seeds[seedbytes * irep], seedbytes);
-        seed_t hseed = hinfo->Seed(iseed, false);
+        seed_t hseed = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
 
         hash(keyptr, keybytes, hseed, &A);
 
@@ -97,7 +97,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
         for (int iBit = 0; iBit < 8 * seedbytes; iBit++) {
             iseed ^= UINT64_C(1) << iBit;
-            hseed  = hinfo->Seed(iseed, false);
+            hseed  = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
             hash(keyptr, keybytes, hseed, &B);
             iseed ^= UINT64_C(1) << iBit;
 

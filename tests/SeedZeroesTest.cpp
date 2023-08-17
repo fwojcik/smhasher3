@@ -87,12 +87,12 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
         bool     done;
 
         do {
-            hseed = hinfo->Seed(seed, false);
+            hseed = hinfo->Seed(seed, HashInfo::SEED_ALLOWFIX);
             for (size_t i = 1; i <= keycount; i++) {
                 hash(nullblock, i, hseed, &hashes[cnt++]);
             }
 
-            hseed = hinfo->Seed(~seed, false);
+            hseed = hinfo->Seed(~seed, HashInfo::SEED_ALLOWFIX);
             for (size_t i = 1; i <= keycount; i++) {
                 hash(nullblock, i, hseed, &hashes[cnt++]);
             }

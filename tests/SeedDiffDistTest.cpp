@@ -109,13 +109,13 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, int keybits, bool drawDiag
             memcpy(&curseed, seedptr, seedbytes);
 
             addVCodeInput(curseed);
-            seed_t hseed1 = hinfo->Seed(curseed, false);
+            seed_t hseed1 = hinfo->Seed(curseed, HashInfo::SEED_ALLOWFIX);
             hash(keyptr, keybytes, hseed1, &h1);
 
             curseed ^= (UINT64_C(1) << seedbit);
 
             addVCodeInput(curseed);
-            seed_t hseed2 = hinfo->Seed(curseed, false);
+            seed_t hseed2 = hinfo->Seed(curseed, HashInfo::SEED_ALLOWFIX);
             hash(keyptr, keybytes, hseed2, &h2);
 
             keyptr += keybytes;
