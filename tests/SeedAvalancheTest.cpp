@@ -80,7 +80,8 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
     hashtype A, B;
     int      irep;
-    uint64_t iseed = 0;
+    seed_t   iseed;
+    uint64_t baseseed = 0;
 
     while ((irep = irepp++) < reps) {
         if (verbose) {
@@ -88,16 +89,16 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
         }
 
         const uint8_t * keyptr = &keys[keybytes * irep];
-        memcpy(&iseed, &seeds[seedbytes * irep], seedbytes);
-        seed_t hseed = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
+        memcpy(&baseseed, &seeds[seedbytes * irep], seedbytes);
+        iseed = hinfo->getFixedSeed((seed_t)baseseed);
 
+        seed_t hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
         hash(keyptr, keybytes, hseed, &A);
 
         uint32_t * cursor = &bins[0];
-
         for (int iBit = 0; iBit < 8 * seedbytes; iBit++) {
             iseed ^= UINT64_C(1) << iBit;
-            hseed  = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
+            hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
             hash(keyptr, keybytes, hseed, &B);
             iseed ^= UINT64_C(1) << iBit;
 

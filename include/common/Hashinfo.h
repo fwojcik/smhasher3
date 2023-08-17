@@ -213,6 +213,13 @@ class HashInfo {
         return seed;
     }
 
+    FORCE_INLINE seed_t getFixedSeed( seed_t seed ) const {
+        if (unlikely(seedfixfn != NULL)) {
+            seed = (seed_t)seedfixfn(this, seed);
+        }
+        return seed;
+    }
+
     FORCE_INLINE bool isMock( void ) const {
         return !!(hash_flags & FLAG_HASH_MOCK);
     }
