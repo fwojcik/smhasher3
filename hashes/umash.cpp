@@ -39,7 +39,7 @@ typedef __m128i v128;
   #include "Mathmult.h"
 
 static inline void mul128( uint64_t x, uint64_t y, uint64_t & hi, uint64_t & lo ) {
-    mult64_128(lo, hi, x, y);
+    MathMult::mult64_128(lo, hi, x, y);
 }
 
 // This is an efficient and portable replacement for GCC's

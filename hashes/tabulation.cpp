@@ -260,7 +260,7 @@ static inline uint64_t combine61( uint64_t h, uint64_t x, uint64_t a ) {
 
     uint64_t rhi = 0, rlo = a;
 
-    fma64_128(rlo, rhi, h, x);
+    MathMult::fma64_128(rlo, rhi, h, x);
 
     rhi <<= (64   - 61);
     rhi  |= (rlo >> 61);

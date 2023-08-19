@@ -523,7 +523,7 @@ static FORCE_INLINE uint64_t tail64( const void * v, size_t tail ) {
 static FORCE_INLINE void mixup32( uint32_t * a, uint32_t * b, uint32_t v, uint32_t prime ) {
     uint32_t rlo, rhi;
 
-    mult32_64(rlo, rhi, *b + v, prime);
+    MathMult::mult32_64(rlo, rhi, *b + v, prime);
     *a ^= rlo;
     *b += rhi;
 }
@@ -609,7 +609,7 @@ static uint64_t t1ha0_32_impl( const void * data, size_t len, uint64_t seed ) {
 static FORCE_INLINE uint64_t mux64( uint64_t v, uint64_t prime ) {
     uint64_t l, h;
 
-    mult64_128(l, h, v, prime);
+    MathMult::mult64_128(l, h, v, prime);
     return l ^ h;
 }
 
@@ -738,7 +738,7 @@ static FORCE_INLINE void squash( t1ha_state256_t * s ) {
 static FORCE_INLINE void mixup64( uint64_t * RESTRICT a, uint64_t * RESTRICT b, uint64_t v, uint64_t prime ) {
     uint64_t l, h;
 
-    mult64_128(l, h, *b + v, prime);
+    MathMult::mult64_128(l, h, *b + v, prime);
     *a ^= l;
     *b += h;
 }

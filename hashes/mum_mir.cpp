@@ -46,9 +46,9 @@ static inline uint64_t _mum( uint64_t v, uint64_t p ) {
     uint64_t hi, lo;
 
     if (exact) {
-        mult64_128(lo, hi, v, p);
+        MathMult::mult64_128(lo, hi, v, p);
     } else {
-        mult64_128_nocarry(lo, hi, v, p);
+        MathMult::mult64_128_nocarry(lo, hi, v, p);
     }
 
     /*

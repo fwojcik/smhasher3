@@ -469,13 +469,14 @@ multiply two 32-bit numbers together and keep a 96-bit wide running sum of the 6
 results. Or a hash might want to multiply two 64-bit numbers together and get the
 full 128-bit result.
 
-SMHasher3 provides a number of optimized routines for these kinds of operations,
-collectively referred to as `Mathmult`. Hash implementations should use these instead
-of coding their own. If you find that a new routine needs to be added to SMHasher3,
-or you have an alternate implementation for one that exists, please feel free to
-update `Mathmult`.
+SMHasher3 provides a number of optimized routines for these kinds of
+operations, collectively referred to as `MathMult`. These routines are all
+under the namespace `MathMult::`. Hash implementations should use these
+instead of coding their own. If you find that a new routine needs to be
+added to SMHasher3, or you have an alternate implementation for one that
+exists, please feel free to update `MathMult`.
 
-The current list of `Mathmult` functions is:
+The current list of `MathMult::` functions is:
 - `mult32_64()` multiplies two 32-bit numbers for a 64-bit result which is returned
   as two 32-bit numbers
 - `mult32_64()` can also multiply two 32-bit numbers for a 64-bit result which is
@@ -502,7 +503,10 @@ The current list of `Mathmult` functions is:
   stored as two 64-bit numbers
 
 To use any of these, simply have your hash implementation `#include
-"Mathmult.h"`. Full function details can be found in `include/hashlib/Mathmult.h`.
+"Mathmult.h"`. Full function details can be found in
+`include/hashlib/Mathmult.h`. It is strongly preferable to use the
+`MathMult::` namespace explicitly, instead of a catch-all `using namespace
+MathMult` statement.
 
 It is possible that the name of this collection of functions will change in future
 releases, and it is likely that the function names themselves will have some sort of

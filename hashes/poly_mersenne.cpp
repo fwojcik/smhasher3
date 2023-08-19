@@ -108,7 +108,7 @@ static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
 static uint64_t mult_combine61( uint64_t h, uint64_t x, uint64_t a ) {
     uint64_t rhi = 0, rlo = a;
 
-    fma64_128(rlo, rhi, h, x);
+    MathMult::fma64_128(rlo, rhi, h, x);
 
     rhi <<= (64   - 61);
     rhi  |= (rlo >> 61);

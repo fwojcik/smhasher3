@@ -662,17 +662,17 @@ static inline uint64_t fmix64_short( uint64_t k ) {
 
 static inline
 void multiply32x32to64( uint32_t & rhi, uint32_t & rlo, uint32_t a, uint32_t b ) {
-    mult32_64(rlo, rhi, a, b);
+    MathMult::mult32_64(rlo, rhi, a, b);
 }
 
 static inline
 void add64( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWord, uint32_t & loAdd, uint32_t & hiAdd, uint32_t & hhAdd ) {
-    add96(loWord, hiWord, hhWord, loAdd, hiAdd, hhAdd);
+    MathMult::add96(loWord, hiWord, hhWord, loAdd, hiAdd, hhAdd);
 }
 
 static FORCE_INLINE
 void mul32x32to64addto96( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWord, uint32_t a, uint32_t b ) {
-    fma32_96(loWord, hiWord, hhWord, a, b);
+    MathMult::fma32_96(loWord, hiWord, hhWord, a, b);
 }
 
 #define PMPML_CHUNK_LOOP_INTRO_L0 \
@@ -1915,7 +1915,7 @@ class PMP_Multilinear_Hasher_32 {
 // 64-bit hash
 
 static FORCE_INLINE void MultiplyWordLoHi( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
-    mult64_128(rlo, rhi, a, b);
+    MathMult::mult64_128(rlo, rhi, a, b);
 }
 
 /*
@@ -1923,7 +1923,7 @@ static FORCE_INLINE void MultiplyWordLoHi( uint64_t & rlo, uint64_t & rhi, uint6
  * value spread across rhi:rlo.
  */
 static FORCE_INLINE void AccumulateLoHi( uint64_t & rlo, uint64_t & rhi, uint64_t alo ) {
-    add128(rlo, rhi, alo);
+    MathMult::add128(rlo, rhi, alo);
 }
 
 /*
@@ -1932,7 +1932,7 @@ static FORCE_INLINE void AccumulateLoHi( uint64_t & rlo, uint64_t & rhi, uint64_
  */
 static FORCE_INLINE void AccumulateLoMidHi( uint64_t & rlo, uint64_t & rmi,
         uint64_t & rhi, uint64_t alo, uint64_t ami, uint64_t ahi ) {
-    add192(rlo, rmi, rhi, alo, ami, ahi);
+    MathMult::add192(rlo, rmi, rhi, alo, ami, ahi);
 }
 
 /*
@@ -1940,7 +1940,7 @@ static FORCE_INLINE void AccumulateLoMidHi( uint64_t & rlo, uint64_t & rmi,
  * 192-bit value spread across rhi:rmi:rlo.
  */
 static FORCE_INLINE void MultiplyAccumulateWordLoMidHi( uint64_t & rlo, uint64_t & rmi, uint64_t & rhi, uint64_t a, uint64_t b ) {
-    fma64_192(rlo, rmi, rhi, a, b);
+    MathMult::fma64_192(rlo, rmi, rhi, a, b);
 }
 
 /*
@@ -1948,7 +1948,7 @@ static FORCE_INLINE void MultiplyAccumulateWordLoMidHi( uint64_t & rlo, uint64_t
  * 128-bit value spread across rhi:rlo.
  */
 static FORCE_INLINE void MultiplyAccumulateWordLoHi( uint64_t & rlo, uint64_t & rhi, uint64_t a, uint64_t b ) {
-    fma64_128(rlo, rhi, a, b);
+    MathMult::fma64_128(rlo, rhi, a, b);
 }
 
 #define ADD_SHIFT_ADD_NORMALIZE( lo, hi ) {             \

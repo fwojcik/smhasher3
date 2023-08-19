@@ -77,7 +77,7 @@ static inline void _wymum( uint64_t * A, uint64_t * B ) {
         }
     } else {
         uint64_t rlo, rhi;
-        mult64_128(rlo, rhi, *A, *B);
+        MathMult::mult64_128(rlo, rhi, *A, *B);
         if (strict) {
             *A ^= rlo; *B ^= rhi;
         } else {

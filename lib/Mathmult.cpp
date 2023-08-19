@@ -21,6 +21,8 @@
 
 #include "Mathmult.h"
 
+using namespace MathMult;
+
 template <typename T>
 static void fail( const char * test, int idx, const T * expected, std::initializer_list<T> actual ) {
     if (idx >= 0) {

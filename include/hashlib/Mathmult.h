@@ -73,6 +73,8 @@
  *    https://godbolt.org/z/Wr3EvKnhn
  */
 
+namespace MathMult {
+
 // 32x32->64 multiplication [rhi:rlo = a * b]
 static FORCE_INLINE void mult32_64( uint32_t & rlo, uint32_t & rhi, uint32_t a, uint32_t b ) {
     // XXX Are either of these asm blocks better than just the plain code?
@@ -449,3 +451,5 @@ static FORCE_INLINE void mult128_128( uint64_t & rlo, uint64_t & rhi, uint64_t a
     rhi += blo * ahi;
 #endif
 }
+
+} // namespace MathMult

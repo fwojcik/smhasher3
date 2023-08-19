@@ -120,7 +120,7 @@ static inline uint64_t kh_lpu64ec_l4( const uint8_t * const Msg, const size_t Ms
 static inline void kh_m128( const uint64_t m1, const uint64_t m2, uint64_t * const rl, uint64_t * const rh ) {
     uint64_t rlo, rhi;
 
-    mult64_128(rlo, rhi, m1, m2);
+    MathMult::mult64_128(rlo, rhi, m1, m2);
     *rl = rlo;
     *rh = rhi;
 }

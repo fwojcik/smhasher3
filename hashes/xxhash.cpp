@@ -441,14 +441,14 @@ typedef struct {
 static inline uint64_t XXH_mult32to64( uint32_t lhs, uint32_t rhs ) {
     uint64_t r64;
 
-    mult32_64(r64, lhs, rhs);
+    MathMult::mult32_64(r64, lhs, rhs);
     return r64;
 }
 
 static inline XXH128_hash_t XXH_mult64to128( uint64_t lhs, uint64_t rhs ) {
     XXH128_hash_t r128;
 
-    mult64_128(r128.low64, r128.high64, lhs, rhs);
+    MathMult::mult64_128(r128.low64, r128.high64, lhs, rhs);
     return r128;
 }
 

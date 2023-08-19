@@ -172,14 +172,16 @@ static void multiply_shift64( const void * in, const size_t len_bytes, const see
     // This is needed for the AppendZero test.
     uint64_t h, t, ignored;
 
-    mult128_128(ignored, h, (uint64_t)seed     , 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
+    MathMult::mult128_128(ignored, h, (uint64_t)seed     , 0,
+            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2]);
-    mult128_128(ignored, t, (uint64_t)len_bytes, 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
+    MathMult::mult128_128(ignored, t, (uint64_t)len_bytes, 0,
+            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4]);
     h += t;
 
     for (size_t i = 0; i < len; i++, buf += 8) {
-        mult128_128(ignored, t, GET_U64<bswap>(buf, 0), 0,
+        MathMult::mult128_128(ignored, t, GET_U64<bswap>(buf, 0), 0,
                 multiply_shift_random[(i % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
                 multiply_shift_random[(i % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1]);
         h += t;
@@ -192,7 +194,8 @@ static void multiply_shift64( const void * in, const size_t len_bytes, const see
         if (remaining_bytes & 4) { last = GET_U32<bswap>(buf, 0); buf += 4; }
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
         if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
-        mult128_128(ignored, t, last, 0, multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
+        MathMult::mult128_128(ignored, t, last, 0,
+                multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
                 multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1]);
         h += t;
     }
@@ -211,9 +214,11 @@ static void pair_multiply_shift64( const void * in, const size_t len_bytes, cons
     // This is needed for the AppendZero test.
     uint64_t h, t, ignored;
 
-    mult128_128(ignored, h, (uint64_t)seed     , 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
+    MathMult::mult128_128(ignored, h, (uint64_t)seed     , 0,
+            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 1],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 2]);
-    mult128_128(ignored, t, (uint64_t)len_bytes, 0, multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
+    MathMult::mult128_128(ignored, t, (uint64_t)len_bytes, 0,
+            multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 3],
             multiply_shift_random[MULTIPLY_SHIFT_RANDOM_WORDS - 4]);
     h += t;
     for (size_t i = 0; i < len / 2; i++, buf += 16) {
@@ -222,15 +227,15 @@ static void pair_multiply_shift64( const void * in, const size_t len_bytes, cons
         blk1hi = multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 3];
         blk2lo = multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0];
         blk2hi = multiply_shift_random[((2 * i) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1];
-        add128(blk1lo, blk1hi, GET_U64<bswap>(buf, 0));
-        add128(blk2lo, blk2hi, GET_U64<bswap>(buf, 8));
-        mult128_128(ignored, t, blk1lo, blk1hi, blk2lo, blk2hi);
+        MathMult::add128(blk1lo, blk1hi, GET_U64<bswap>(buf, 0));
+        MathMult::add128(blk2lo, blk2hi, GET_U64<bswap>(buf, 8));
+        MathMult::mult128_128(ignored, t, blk1lo, blk1hi, blk2lo, blk2hi);
         h += t;
     }
 
     // Make sure we have the last word, if the number of words is odd
     if (len & 1) {
-        mult128_128(ignored, t, GET_U64<bswap>(buf, 0), 0,
+        MathMult::mult128_128(ignored, t, GET_U64<bswap>(buf, 0), 0,
                 multiply_shift_random[((len - 1) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
                 multiply_shift_random[((len - 1) % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1]);
         h   += t;
@@ -244,7 +249,8 @@ static void pair_multiply_shift64( const void * in, const size_t len_bytes, cons
         if (remaining_bytes & 4) { last = GET_U32<bswap>(buf, 0); buf += 4; }
         if (remaining_bytes & 2) { last = (last << 16) | GET_U16<bswap>(buf, 0); buf += 2; }
         if (remaining_bytes & 1) { last = (last << 8) | (*buf); }
-        mult128_128(ignored, t, last, 0, multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
+        MathMult::mult128_128(ignored, t, last, 0,
+                multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 0],
                 multiply_shift_random[(len % MULTIPLY_SHIFT_RANDOM_WORDS) * 2 + 1]);
         h += t;
     }

@@ -71,9 +71,9 @@ const uint64_t mpoly = UINT64_C(0x1fffffff1fffffff); /* Poly key mask     */
 
 //-----------------------------------------------------------------------------
 
-#define ADD128(rh, rl, ih, il) add128(rl, rh, il, ih)
+#define ADD128(rh, rl, ih, il) MathMult::add128(rl, rh, il, ih)
 
-#define MUL64(rh, rl, i1, i2)  mult64_128(rl, rh, i1, i2)
+#define MUL64(rh, rl, i1, i2)  MathMult::mult64_128(rl, rh, i1, i2)
 
 // PMUL is a special case of MUL where one carry bit is guaranteed to
 // not be needed. We'll just ignore that for now.
@@ -93,7 +93,7 @@ static inline void nh_16_portable( const uint8_t * mp, const uint64_t * kp, size
     // uint64_t th, tl;
     rh = rl = 0;
     for (size_t i = 0; i < nw; i += 2) {
-        fma64_128(rl, rh, (GET_U64<bswap>(mp, i * 8) + kp[i]), (GET_U64<bswap>(mp, i * 8 + 8) + kp[i + 1]));
+        MathMult::fma64_128(rl, rh, (GET_U64<bswap>(mp, i * 8) + kp[i]), (GET_U64<bswap>(mp, i * 8 + 8) + kp[i + 1]));
     }
 }
 

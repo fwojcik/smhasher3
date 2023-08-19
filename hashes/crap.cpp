@@ -113,10 +113,10 @@ static uint32_t CrapWow_impl( const uint8_t * key, size_t len, uint32_t seed ) {
 
 template <bool bswap>
 static uint64_t CrapWow64_impl( const uint8_t * key, size_t len, uint64_t seed ) {
-#define cwfold(a, b, lo, hi) {    \
-        mult64_128(pl, ph, a, b); \
-        lo ^= pl;                 \
-        hi ^= ph;                 \
+#define cwfold(a, b, lo, hi) {              \
+        MathMult::mult64_128(pl, ph, a, b); \
+        lo ^= pl;                           \
+        hi ^= ph;                           \
     }
 #define cwmixa(in) { cwfold(in, m, k, h); }
 #define cwmixb(in) { cwfold(in, n, h, k); }
