@@ -422,7 +422,7 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
     maybeprintf("Running thread-safety test %d ", seedthread ? 2 : 1);
 
     if ((g_NCPU > 1) || g_doVCode) {
-        // Generate a bunch of key data. Key 0 is 1 byte, key 2 is 1
+        // Generate a bunch of key data. Key 0 is 1 byte, key 1 is 2
         // bytes, etc. We really only need (reps*(reps+1)/2) bytes,
         // but this is just easier to code and slightly easier to
         // understand.
