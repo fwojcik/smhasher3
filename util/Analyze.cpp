@@ -366,7 +366,7 @@ static void CountRangedNbCollisionsImpl( std::vector<hashtype> & hashes, uint64_
         int minHBits, int maxHBits, int threshHBits, int * collcounts ) {
     assert(minHBits >= 1       );
     assert(minHBits <= maxHBits);
-    assert(hashtype::bitlen >= maxHBits);
+    assert(hashtype::bitlen >= (size_t)maxHBits);
     assert(!calcmax || (threshHBits >= minHBits));
     assert(!calcmax || (threshHBits <= maxHBits));
 

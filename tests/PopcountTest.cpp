@@ -87,7 +87,7 @@ static void PopcountThread( const HashInfo * hinfo, const seed_t seed, const int
 #define HASH_SIZE_MAX 64
     char      hbuff[HASH_SIZE_MAX] = { 0 };
 
-    assert(sizeof(unsigned) <= inputSize);
+    assert(sizeof(unsigned) <= (size_t)inputSize);
     assert(start < end);
     // assert(step > 0);
 
