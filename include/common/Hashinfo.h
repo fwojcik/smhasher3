@@ -197,14 +197,14 @@ class HashInfo {
     }
 
     FORCE_INLINE seed_t Seed( seed_t seed, enum fixupseed fixup = SEED_ALLOWFIX, uint64_t hint = 0 ) const {
-        if (unlikely(impl_flags & FLAG_IMPL_SEED_WITH_HINT)) {
-            seedfixfn(NULL, hint);
-            return seed;
+        if (unlikely(seedfixfn != NULL)) {
+            if (unlikely(impl_flags & FLAG_IMPL_SEED_WITH_HINT)) {
+                seedfixfn(NULL, hint);
+            } else if (fixup == SEED_ALLOWFIX) {
+                seed = seedfixfn(this, seed);
+            }
         }
-        if ((fixup == SEED_ALLOWFIX) && (seedfixfn != NULL)) {
-            seed = seedfixfn(this, seed);
-        }
-        if (seedfn != NULL) {
+        if (unlikely(seedfn != NULL)) {
             seed_t newseed = (seed_t)seedfn(seed);
             if (newseed != 0) {
                 seed = newseed;
