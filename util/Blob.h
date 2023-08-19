@@ -53,6 +53,9 @@ template <unsigned _bits>
 class Blob {
     static_assert((_bits % 8) == 0, "Blob<> bit size must be a whole number of bytes");
 
+  private:
+    uint8_t  bytes[_bytes];
+
   public:
     static constexpr size_t bitlen = _bits;
     static constexpr size_t len = _bytes;
@@ -402,10 +405,6 @@ class Blob {
             }
         }
     }
-
-  private:
-    //----------
-    uint8_t  bytes[_bytes];
 }; // class Blob
 
 template <>
@@ -527,6 +526,10 @@ typedef void *       voidptr_t;
 typedef const void * constvoidptr_t;
 
 class ExtBlob : private Blob<0> {
+  private:
+    uint8_t * ptr;
+    size_t    len;
+
   public:
     //----------
     // constructors
@@ -587,8 +590,4 @@ class ExtBlob : private Blob<0> {
     FORCE_INLINE void lrot( size_t c ) {
         _lrot(c, ptr, len);
     }
-
-  private:
-    uint8_t * ptr;
-    size_t    len;
 }; // class ExtBlob
