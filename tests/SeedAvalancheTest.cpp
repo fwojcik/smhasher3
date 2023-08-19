@@ -92,13 +92,13 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
         memcpy(&baseseed, &seeds[seedbytes * irep], seedbytes);
         iseed = hinfo->getFixedSeed((seed_t)baseseed);
 
-        seed_t hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+        seed_t hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED, 1);
         hash(keyptr, keybytes, hseed, &A);
 
         uint32_t * cursor = &bins[0];
         for (int iBit = 0; iBit < 8 * seedbytes; iBit++) {
             iseed ^= UINT64_C(1) << iBit;
-            hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+            hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED, 1);
             hash(keyptr, keybytes, hseed, &B);
             iseed ^= UINT64_C(1) << iBit;
 
