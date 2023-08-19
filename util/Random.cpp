@@ -567,6 +567,8 @@ RandSeq Rand::get_seq( enum RandSeqType seqtype, const uint32_t szelem ) {
 //-----------------------------------------------------------------------------
 // Unit tests and benchmarks
 
+#if !defined(BARE_RNG)
+
 #define WEAKRAND(i) (UINT64_C(0xBB67AE8584CAA73D) * (i + 1))
 #define VERIFY(r, t) { if (!(r)) { printf("%s:%d: Test for %s failed!\n", __FILE__, __LINE__, t); } }
 #define VERIFYEQUAL(x, y, n) {                                         \
@@ -1340,3 +1342,5 @@ void RandBenchmark( void ) {
         printf("%8.2f\n", deltat / numgen);
     }
 }
+
+#endif // BARE_RNG

@@ -241,6 +241,9 @@ add_custom_target(SMHasher3Version ${CMAKE_COMMAND}
 )
 add_dependencies(SMHasher3 SMHasher3Version)
 
+add_executable(rngstream EXCLUDE_FROM_ALL misc/rngstream.cpp)
+target_include_directories(rngstream PRIVATE util)
+
 # IPO/LTO is a giant pain, and does not seem to increase performance at
 # all (--extra runs 3s faster without it!). Disable it completely for now.
 
