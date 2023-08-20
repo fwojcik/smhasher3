@@ -1,8 +1,8 @@
 /*
  * Discohash (aka BEBB4185)
+ * Copyright (c) 2020-2023 Cris Stringfellow
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (c) 2020-2021 Reini Urban
- * Copyright (c) 2020 Cris Stringfellow
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -51,14 +51,12 @@ static FORCE_INLINE void mix( uint64_t * ds, const uint32_t A ) {
     ds[A] *= P;
     ds[A]  = ROTR64(ds[A], 23);
     ds[A] *= Q;
-    // ds[A] = ROTR64(ds[A], 23);
 
     ds[B] ^= ds[A];
 
     ds[B] *= P;
     ds[B]  = ROTR64(ds[B], 23);
     ds[B] *= Q;
-    // ds[B] = ROTR64(ds[B], 23);
 }
 
 //---------
@@ -67,10 +65,7 @@ static FORCE_INLINE void mix( uint64_t * ds, const uint32_t A ) {
 // The reread parameter is needed because sometimes the same array is
 // read-from and written-to via different pointers (m8 and ds), but it
 // usually isn't. This lets those cases avoid a possible bswap().
-//
-// The oldver parameter "fixes" a possibly-unintentional behavior
-// change, details of which are below.
-template <bool bswap, bool reread, bool oldver>
+template <uint32_t version, bool bswap, bool reread>
 static FORCE_INLINE void round( uint64_t * ds, const uint8_t * m8, uint32_t len ) {
     uint32_t index;
     uint32_t sindex   = 0;
@@ -78,7 +73,6 @@ static FORCE_INLINE void round( uint64_t * ds, const uint8_t * m8, uint32_t len 
     uint64_t counter  = UINT64_C(0xfaccadaccad09997);
     uint8_t  counter8 = 137;
 
-    // #pragma omp parallel for
     for (index = 0; index < Len; index++) {
         uint64_t blk = GET_U64<bswap>(m8, index * 8);
         ds[sindex] += ROTR64(blk + index + counter + 1, 23);
@@ -95,33 +89,20 @@ static FORCE_INLINE void round( uint64_t * ds, const uint8_t * m8, uint32_t len 
 
     mix(ds, 1);
 
-    // In commit 73bfb9e31e68a31dc49ba53dbd33ca72e4c931a8 titled
-    // "Added pragmas and changed loop format to fit omp
-    // requirements." the author moved the initialization of index
-    // into the for loop below. This also changed the way sindex is
-    // calculated, as index was no longer modified before sindex was
-    // set to be index&(STATEM). This appears to be unintentional, so
-    // both the original "old" behavior and the latest "new" behavior
-    // are implemented here.
-    Len = index << 3;
-    if (oldver) {
-        sindex = Len & (STATEM);
-    } else {
-        sindex = index & (STATEM);
-    }
+    Len    = index << 3;
+    sindex = Len & (STATEM);
 
-    // #pragma omp parallel for
     for (index = Len; index < len; index++) {
         uint32_t ssindex = bswap ? (sindex ^ 7) : sindex;
         ((uint8_t *)ds)[ssindex] += ROTR8(m8[index] + index + counter8 + 1, 23);
-        // I also wonder if this was intended to be m8[index], to
-        // mirror the primary 8-byte loop above...
-        //
-        // Regardless, m8[sindex] can never read past EOB here, which
-        // is the important thing. This is because the maximum value
-        // of sindex is (len & ~7) if oldver == true, and (len >> 3)
-        // if oldver == false.
-        counter8 += ~m8[sindex] + 1;
+        // m8[sindex] can never read past EOB here, which is the important
+        // thing. This is because the maximum value of sindex is (len & 31)
+        // (STATEM = 32 - 1)
+        if (version == 1) {
+            counter8 += ~m8[sindex] + 1;
+        } else {
+            counter8 += ~m8[index ] + 1;
+        }
         mix(ds, index % STATE64M);
         if (sindex >= STATEM) {
             sindex = -1;
@@ -137,8 +118,8 @@ static FORCE_INLINE void round( uint64_t * ds, const uint8_t * m8, uint32_t len 
 //---------
 // main hash function
 
-template <uint32_t hashsize, bool bswap, bool oldver>
-static void BEBB4185( const void * in, const size_t len, const seed_t seed, void * out ) {
+template <uint32_t version, uint32_t hashsize, bool bswap>
+static void discohash( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint8_t * key8Arr = (const uint8_t *)in;
     uint8_t *       out8    = (uint8_t *      )out;
     uint32_t        seedbuf[4];
@@ -169,29 +150,28 @@ static void BEBB4185( const void * in, const size_t len, const seed_t seed, void
     // variable. The mixing of the state with itself also doesn't need
     // bswap set, because the endianness of the data will naturally
     // always match the endianness of the ds[] values.
-    round<bswap, false, oldver>(ds, key8Arr           , (uint32_t)len);
-    round<false, false, oldver>(ds, (uint8_t *)seedbuf,            16);
-    round<false,  true, oldver>(ds, (uint8_t *)ds     , STATE        );
-
-    /*
-     *
-     * printf("ds = %#018" PRIx64 " %#018" PRIx64 " %#018" PRIx64 " %#018" PRIx64 "\n",
-     * ds[0], ds[1], ds[2], ds[3] );
-     *
-     */
+    round<version, bswap, false>(ds, key8Arr           , (uint32_t)len);
+    round<version, false, false>(ds, (uint8_t *)seedbuf,            16);
+    round<version, false,  true>(ds, (uint8_t *)ds     , STATE        );
 
     uint64_t h[STATE64] = { 0 };
 
-    h[0]  = ds[2];
-    h[1]  = ds[3];
+    if (version == 1) {
+        h[0]  = ds[2];
+        h[1]  = ds[3];
 
-    h[0] += h [1];
+        h[0] += h [1];
+    } else {
+        h[0] -= ds[2];
+        h[0] -= ds[3];
+    }
 
     if (hashsize == 128) {
-        h[2]  = ds[0];
-        h[3]  = ds[1];
+        round<version, false, true>(ds, (uint8_t *)ds, STATE);
+        h[2]  = ds[2];
+        h[3]  = ds[3];
 
-        h[2] += h [3];
+        h[2] ^= h [3];
         PUT_U64<bswap>(h[2], out8, 8);
     }
     if (hashsize >= 64) {
@@ -199,16 +179,26 @@ static void BEBB4185( const void * in, const size_t len, const seed_t seed, void
     }
 }
 
-REGISTER_FAMILY(discohash,
-   $.src_url    = "https://github.com/crisdosyago/discohash",
-   $.src_status = HashFamilyInfo::SRC_STABLEISH
- );
+//---------
+// hash function wrappers
 
-// Yes, none of these have any bad seeds! The state was inadvertently
-// shared across threads, giving bad test results. It has been changed to
-// be on the stack instead.
-REGISTER_HASH(Discohash__old,
-   $.desc       = "Discohash (aka BEBB4185) prior version",
+template <uint32_t hashsize, bool bswap>
+static void BEBB4185( const void * in, const size_t len, const seed_t seed, void * out ) {
+    discohash<1, hashsize, bswap>(in, len, seed, out);
+}
+
+template <uint32_t hashsize, bool bswap>
+static void discohash2( const void * in, const size_t len, const seed_t seed, void * out ) {
+    discohash<2, hashsize, bswap>(in, len, seed, out);
+}
+
+REGISTER_FAMILY(discohash,
+   $.src_url    = "https://github.com/dosyago/discohash",
+   $.src_status = HashFamilyInfo::SRC_STABLEISH
+);
+
+REGISTER_HASH(Discohash1,
+   $.desc       = "Discohash (aka BEBB4185) v1",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
@@ -219,12 +209,28 @@ REGISTER_HASH(Discohash__old,
    $.bits = 64,
    $.verification_LE = 0xBEBB4185,
    $.verification_BE = 0x4B5579AD,
-   $.hashfn_native   = BEBB4185<64, false, true>,
-   $.hashfn_bswap    = BEBB4185<64, true, true>
- );
+   $.hashfn_native   = BEBB4185<64, false>,
+   $.hashfn_bswap    = BEBB4185<64, true>
+);
 
-REGISTER_HASH(Discohash,
-   $.desc       = "Discohash (aka BEBB4185)",
+REGISTER_HASH(Discohash1_128,
+   $.desc       = "Discohash (aka BEBB4185) v1 - 128-bit",
+   $.hash_flags =
+         FLAG_HASH_SMALL_SEED,
+   $.impl_flags =
+         FLAG_IMPL_MULTIPLY_64_64   |
+         FLAG_IMPL_ROTATE           |
+         FLAG_IMPL_SLOW             |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 128,
+   $.verification_LE = 0x05C0460C,
+   $.verification_BE = 0xD0A5D9FD,
+   $.hashfn_native   = BEBB4185<128, false>,
+   $.hashfn_bswap    = BEBB4185<128, true>
+);
+
+REGISTER_HASH(Discohash2,
+   $.desc       = "Discohash v2",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
@@ -233,14 +239,14 @@ REGISTER_HASH(Discohash,
          FLAG_IMPL_SLOW             |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
-   $.verification_LE = 0xFBA72400,
-   $.verification_BE = 0x286DD52C,
-   $.hashfn_native   = BEBB4185<64, false, false>,
-   $.hashfn_bswap    = BEBB4185<64, true, false>
- );
+   $.verification_LE = 0x8FF45ABF,
+   $.verification_BE = 0x430BECB8,
+   $.hashfn_native   = discohash2<64, false>,
+   $.hashfn_bswap    = discohash2<64, true>
+);
 
-REGISTER_HASH(Discohash_128__old,
-   $.desc       = "Discohash (aka BEBB4185) prior version",
+REGISTER_HASH(Discohash2_128,
+   $.desc       = "Discohash v2 - 128-bit",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
@@ -249,24 +255,8 @@ REGISTER_HASH(Discohash_128__old,
          FLAG_IMPL_SLOW             |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0x000ED2A6,
-   $.verification_BE = 0x3110ECFA,
-   $.hashfn_native   = BEBB4185<128, false, true>,
-   $.hashfn_bswap    = BEBB4185<128, true, true>
- );
-
-REGISTER_HASH(Discohash_128,
-   $.desc       = "Discohash (aka BEBB4185)",
-   $.hash_flags =
-         FLAG_HASH_SMALL_SEED,
-   $.impl_flags =
-         FLAG_IMPL_MULTIPLY_64_64   |
-         FLAG_IMPL_ROTATE           |
-         FLAG_IMPL_SLOW             |
-         FLAG_IMPL_LICENSE_MIT,
-   $.bits = 128,
-   $.verification_LE = 0x231868B1,
-   $.verification_BE = 0xEB4228F3,
-   $.hashfn_native   = BEBB4185<128, false, false>,
-   $.hashfn_bswap    = BEBB4185<128, true, false>
- );
+   $.verification_LE = 0x95E58C14,
+   $.verification_BE = 0xA09C5726,
+   $.hashfn_native   = discohash2<128, false>,
+   $.hashfn_bswap    = discohash2<128, true>
+);
