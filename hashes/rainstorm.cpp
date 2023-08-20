@@ -4,6 +4,7 @@
  * Can also be utilized as an eXtensible Output Function (XOF, keystream generator).
  *
  * Copyright (C) 2023 Cris Stringfellow (and DOSYAGO)
+ * Copyright (C) 2023 Frank J. T. Wojcik
  *
  * Rainstorm hash is licensed under Apache-2.0
  *
@@ -118,7 +119,13 @@ static void rainstorm( const void * in, const size_t len, const seed_t seed, voi
     // Pad and process any remaining data less than 64 bytes (512 bits)
     memset(temp, (0x80 + lenRemaining) & 255, sizeof(temp));
     memcpy(temp, data, lenRemaining);
-    temp[lenRemaining >> 3] |= lenRemaining >> (lenRemaining - 56) * 8;
+    for (int i = 0, j = 0; i < 8; ++i, j += 8) {
+        temp[i] = GET_U64<bswap>((uint8_t *)temp, j);
+    }
+    // On LE platforms, this is a no-op. On BE, it can overwrite real data.
+    // So I'm commenting it out.
+    //
+    //temp[lenRemaining >> 3] |= (uint64_t)(lenRemaining << ((lenRemaining&7)*8));
 
     for (int i = 0; i < ROUNDS; i++) {
         weakfunc(h, temp, i & 1);
@@ -155,7 +162,7 @@ REGISTER_HASH(rainstorm,
      FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 64,
    $.verification_LE = 0xC8DB71D5,
-   $.verification_BE = 0x37E68529,
+   $.verification_BE = 0xC13929D4,
    $.hashfn_native   = rainstorm<64, false>,
    $.hashfn_bswap    = rainstorm<64, true>
  );
@@ -168,7 +175,7 @@ REGISTER_HASH(rainstorm_128,
      FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 128,
    $.verification_LE = 0x17E0FC1B,
-   $.verification_BE = 0x5CC5A132,
+   $.verification_BE = 0xF9E1DCA4,
    $.hashfn_native   = rainstorm<128, false>,
    $.hashfn_bswap    = rainstorm<128, true>
  );
