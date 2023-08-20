@@ -296,6 +296,7 @@ endif()
 
 enable_testing()
 add_test(VerifyAll SMHasher3 --test=VerifyAll)
+add_test(InternalTests SMHasher3 --InternalTests)
 add_test(Sanity SMHasher3 --test=Sanity)
 add_test(Cyclic SMHasher3 --test=Cyclic)
 add_test(Zeroes SMHasher3 --test=Zeroes)

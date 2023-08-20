@@ -806,6 +806,11 @@ int main( int argc, const char ** argv ) {
                 ReportCollisionEstimates();
                 exit(0);
             }
+            if (strcmp(arg, "--InternalTests") == 0) {
+                BlobsortTest();
+                RandTest(1);
+                exit(0);
+            }
             if (strcmp(arg, "--SortBench") == 0) {
                 BlobsortBenchmark();
                 exit(0);

@@ -570,7 +570,7 @@ RandSeq Rand::get_seq( enum RandSeqType seqtype, const uint32_t szelem ) {
 #if !defined(BARE_RNG)
 
 #define WEAKRAND(i) (UINT64_C(0xBB67AE8584CAA73D) * (i + 1))
-#define VERIFY(r, t) { if (!(r)) { printf("%s:%d: Test for %s failed!\n", __FILE__, __LINE__, t); } }
+#define VERIFY(r, t) { if (!(r)) { printf("%s:%d: Test for %s failed!\n", __FILE__, __LINE__, t); exit(1); } }
 #define VERIFYEQUAL(x, y, n) {                                         \
         VERIFY(x.rand_u64() == y.rand_u64(), "Rand() equality");       \
         VERIFY(x.rand_range(n) == y.rand_range(n), "Rand() equality"); \

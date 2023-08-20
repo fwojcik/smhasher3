@@ -322,7 +322,7 @@ std::vector<SortTestFn> PACKEXPANDER() {
     return { &test_blobsort_type<TEST_SIZE, TEST_ITER, T>... };
 }
 
-auto SortTestFns  = PACKEXPANDER<  100000,  1, HASHTYPELIST>();
+auto SortTestFns  = PACKEXPANDER<   16000,  1, HASHTYPELIST>();
 auto SortBenchFns = PACKEXPANDER< 4000000,100, HASHTYPELIST>();
 
 void BlobsortTest( void ) {
