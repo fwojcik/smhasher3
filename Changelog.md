@@ -1,16 +1,20 @@
 [[_TOC_]]
 
-Differences from beta2 to beta3
-===============================
+Differences from beta2
+======================
 
 General changes
 ---------------
 - Fixed some compilation problems on non-Linux platforms
+- Fixed build consistency issue when removing hashes
 - Fixed some UB and other problems on 32-bit platforms
 - Many performance increases and memory-use reductions
 - More testing aspects now support threading/using multiple CPUs
-- RNG has been updated to Threefry, and RNG API has been rewritten
+- RNG has been updated to Threefry, and RNG API has been completely rewritten
+- External RNG test utility has been added
 - Code is now compiled with "-Wall" on non-MSVC compilers
+- Numerous small changes based on compiler warnings
+- "make test" improved, and enabled on all platforms
 - "C" locale is now explicitly set internally
 - Many code cleanups and readability improvements
 - Added documentation on what each test does
@@ -20,6 +24,9 @@ Testing changes
 - BIC and SeedBIC tests have been reorganized
    - The same input data is now used for each input bit, to reduce
      memory usage and be consistent with other test suites
+- Intra-test overlap due to random chance has been eliminated
+   - This is via the new RNG API for generating random sequences
+   - This also allows for better DiffDist and SeedDiffDist testing
 - SanityTest error messages have been improved
 - SpeedTest fidelity has been improved
 - Expected collision estimation has been improved
@@ -28,13 +35,18 @@ Testing changes
 
 General hash changes
 --------------------
+- Mathmult functions now in their own MathMult:: namespace
 - Mathmult implementations improved and made consistent
    - Should produce faster code in hashes which use them
    - Clang ASM workarounds now exist for all Mathmult functions
      which need them
+- Add enum for HashInfo::Seed() to better self-document the API
+- Handled hashes with SeedFixFns more consistently in some tests
 
 Specific hash changes
 ---------------------
+- aesrng
+   - Simplified somewhat, and fixed some threading issues
 - beamsplitter
    - Made byteswapping changes be clearer
 - blake2
@@ -43,17 +55,28 @@ Specific hash changes
    - Improved readability of implementation
 - discohash
    - Made byteswapping changes be clearer
+- farsh
+   - Fixed compilation on 32-bit platforms
+- floppsyhash
+   - Fixed compilation on non-UNIX platforms
 - fnv-mulvey
    - Added
 - hasshe2
    - Altered tweaked version to be streamable
 - khashv
    - Updated to latest revision
+   - Fixed compilation on 32-bit platforms
+- multiply_shift
+   - Fixed operation on 32-bit platforms
+- nmhash
+   - Fixed operation on 32-bit platforms
+- pearson
+   - Fixed operation on 32-bit platforms
 - pmp_multilinear
    - Hash has been temporarily disabled
 - xxh3
    - Fixed bug in AVX-512 implementation
-   
+
 
 Differences from beta1 to beta2
 ===============================

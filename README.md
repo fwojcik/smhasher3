@@ -52,7 +52,17 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2023-02-10, SMHasher3 is at its beta2 release.
+As of 2023-08-20, SMHasher3 is nearing a beta3 release. There is about a
+50% chance this will happen before approx 2023-09-25. If it does not happen
+by then, it will very likely take until late October or November 2023.
+
+There are two big things that I want to accomplish before declaring another
+stable point. One is a new feature which should improve the hash
+development/debugging process, and the other is to add a number of existing
+hash algorithms as well as refresh the existing suite with any updated
+versions. There are a number of other smaller things too, of course. Most
+of those can be tracked at
+https://gitlab.com/fwojcik/smhasher3/-/milestones/3.
 
 This code has compiled and run successfully on Linux x64, arm, and powerpc using gcc
 and clang. Importantly, I do not have the ability to test on Mac or Windows
@@ -67,7 +77,7 @@ How to build
 - `mkdir build`
 - `cd build`
 - `cmake ..` or `C=mycc CXX=mycxx CXXFLAGS="-foo bar" cmake ..` as needed for your system
-- `make -j4`
+- `make -j4` or `make -j4 all test`
 
 How to use
 ----------
@@ -222,10 +232,17 @@ on a fast hash function (wyhash) with --extra but without BadSeed testing
 takes 1578 seconds and finds 40 failing tests, while smhasher-rurban takes
 2860 seconds and finds 2 failing tests.
 
-The next biggest opportunity for perfomance gains is to add threading
-support to several tests. **By far**, the most important code which I have
-not yet been able to optimize is the histogram code in `TestDistribution()`
-in `util/Analyze.cpp`.
+For beta3, or shortly thereafter, I plan on publishing some explicit data
+from performance profiling, to show the places that I think are the best to
+look for more performance gains, or at least would have the highest impact.
+
+Right now, there are 3 places that already have work underway. First, I
+have more ways to improve blobsort() performance significantly, I'm pretty
+sure. Second, another contributor is working on improving the bit
+correlation histogram code (util/Histogram.h _and_ the related code in the
+BIC and SeedBIC tests). Third, a number of tests can be augmented to use
+threads. I have a number of thoughts on this issue, so please reach out if
+you decide to start on that.
 
 Goals and non-goals
 -------------------
