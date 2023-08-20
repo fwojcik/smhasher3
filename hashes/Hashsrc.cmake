@@ -57,6 +57,7 @@ set(HASH_SRC_FILES
   hashes/khash.cpp
   hashes/floppsyhash.cpp
   hashes/seahash.cpp
+  hashes/rainbow.cpp
   hashes/falcon_oaat.cpp
   hashes/lookup3.cpp
   hashes/fasthash.cpp
