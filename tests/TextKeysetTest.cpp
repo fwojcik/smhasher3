@@ -61,6 +61,39 @@
 #include <math.h>
 
 //-----------------------------------------------------------------------------
+// Keyset 'Num' - generate all keys from 0 through numcount-1 in string form,
+// either with or without commas.
+
+template <typename hashtype, bool commas>
+static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount, bool verbose ) {
+    std::vector<hashtype> hashes;
+    hashes.resize(numcount);
+
+    printf("Keyset 'TextNum' - numbers in text form %s commas - %ld keys\n", commas ? "with" : "without", numcount);
+
+    for (uint64_t n = 0; n < numcount; n++) {
+        std::string nstr = std::to_string(n);
+        if (commas) {
+            for (size_t i = nstr.length(); i > 3; i -= 3) {
+                nstr.insert(i - 3, ",");
+            }
+        }
+        hash(nstr.c_str(), nstr.length(), seed, &hashes[n]);
+        addVCodeInput(nstr.c_str(), nstr.length());
+    }
+
+    //----------
+    bool result = TestHashList(hashes).drawDiagram(verbose);
+    printf("\n");
+
+    recordTestResult(result, "TextNum", commas ? "with commas" : "without commas");
+
+    addVCodeResult(result);
+
+    return result;
+}
+
+//-----------------------------------------------------------------------------
 // Keyset 'Text' - generate all keys of the form "prefix"+"core"+"suffix",
 // where "core" consists of all possible combinations of the given character
 // set of length N.
@@ -277,6 +310,10 @@ bool TextKeyTest( const HashInfo * hinfo, const bool verbose ) {
 
     // Dictionary words
     result &= WordsDictImpl<hashtype>(hash, seed, verbose);
+
+    // Numbers in text form, without and with commas
+    result &= TextNumImpl<hashtype, false>(hash, seed, 10000000, verbose);
+    result &= TextNumImpl<hashtype,  true>(hash, seed, 10000000, verbose);
 
     // 6-byte keys, varying only in middle 4 bytes
     result &= TextKeyImpl<hashtype>(hash, seed, "F" , alnum, 4, "B" , verbose);
