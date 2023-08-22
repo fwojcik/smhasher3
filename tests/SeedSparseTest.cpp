@@ -49,6 +49,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
+#include "Stats.h" // For chooseUpToK
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -58,21 +59,21 @@
 #define MAXLEN (1024 + 32)
 
 //-----------------------------------------------------------------------------
-// Keyset 'Seed' - hash "the quick brown fox..." using different seeds
+// Keyset 'SeedSparse' - hash "sphinx of black quartz..." using seeds with few
+// bits set
 
-template <typename hashtype, uint32_t seedbits, bool bigseed>
-static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiagram ) {
-    assert(seedbits <= 31 );
+template <typename hashtype, uint32_t maxbits, bool bigseed>
+static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiagram ) {
+    assert(maxbits < 16   );
     assert(keylen < MAXLEN);
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
-    const int    totalkeys = 1 << seedbits;
-    const int    hibits    = seedbits >> 1;
-    const int    lobits    = seedbits - hibits;
-    const int    shiftbits = bigseed ? (64 - hibits) : (32 - hibits);
+    uint64_t     totalkeys = 1 + chooseUpToK(bigseed ? 64 : 32, maxbits);
+    uint64_t     cnt       = 0;
 
-    printf("Keyset 'Seed' - %3d-byte keys - %d seeds\n", keylen, totalkeys);
+    printf("Keyset 'SeedSparse' - %3d-byte keys - seeds with up to %2d bits set - %" PRId64 " seeds\n",
+            keylen, maxbits, totalkeys);
 
-    const char text[]      = "The quick brown fox jumps over the lazy dog";
+    const char text[64]    = "Sphinx of black quartz, judge my vow";
     const int  textlen     = (int)strlen(text);
     char       key[MAXLEN] = { 0 };
     for (size_t i = 0; i < keylen / textlen; i++) {
@@ -86,21 +87,33 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
     //----------
 
     std::vector<hashtype> hashes;
-
     hashes.resize(totalkeys);
 
-    for (seed_t i = 0; i < (1 << hibits); i++) {
-        for (seed_t j = 0; j < (1 << lobits); j++) {
-            const seed_t seed  = (i << shiftbits) + j;
-            const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
-            hash(key, keylen, hseed, &hashes[(i << lobits) + j]);
-        }
+    seed_t seed;
+
+    seed = hinfo->Seed(0, HashInfo::SEED_FORCED);
+    hash(key, keylen, seed, &hashes[cnt++]);
+
+    for (seed_t i = 1; i <= maxbits; i++) {
+        uint64_t seed = (UINT64_C(1) << i) - 1;
+        bool     done;
+
+        do {
+            seed_t hseed;
+            hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
+            hash(key, keylen, hseed, &hashes[cnt++]);
+
+            /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
+            uint64_t t = (seed | (seed - 1)) + 1;
+            seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
+            done = bigseed ? (seed == ~UINT64_C(0)) : ((seed >> 32) != 0);
+        } while (!done);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1 << lobits);
+    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1);
     printf("\n");
 
-    recordTestResult(result, "Seed", keylen);
+    recordTestResult(result, "SeedSparse", keylen);
 
     addVCodeResult(result);
 
@@ -110,20 +123,20 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedTest( const HashInfo * hinfo, const bool verbose ) {
+bool SeedSparseTest( const HashInfo * hinfo, const bool verbose ) {
     bool result = true;
 
-    printf("[[[ Keyset 'Seed' Tests ]]]\n\n");
+    printf("[[[ Keyset 'SeedSparse' Tests ]]]\n\n");
 
     const std::set<uint32_t> testkeylens = { 2, 3, 6, 15, 18, 31, 52, 80, 200, 1025 };
 
     if (hinfo->is32BitSeed()) {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedTestImpl      <hashtype, 22, false>(hinfo, testkeylen, verbose);
+            result &= SeedSparseTestImpl<hashtype,  7, false>(hinfo, testkeylen, verbose);
         }
     } else {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedTestImpl      <hashtype, 22,  true>(hinfo, testkeylen, verbose);
+            result &= SeedSparseTestImpl<hashtype,  5,  true>(hinfo, testkeylen, verbose);
         }
     }
 
@@ -132,4 +145,4 @@ bool SeedTest( const HashInfo * hinfo, const bool verbose ) {
     return result;
 }
 
-INSTANTIATE(SeedTest, HASHTYPELIST);
+INSTANTIATE(SeedSparseTest, HASHTYPELIST);
