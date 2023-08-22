@@ -124,7 +124,11 @@ std::vector<std::pair<const char *, char *>> g_testFailures;
 // Locally-visible configuration
 static bool g_drawDiagram = false;
 
-// excessive torture tests: Sparse, Avalanche, DiffDist, scan all seeds
+// Setting to test more thoroughly.
+//
+// Default settings find most hash problems. For testing a new hash,
+// consider testing without --extra until that passes completely, and then
+// move to testing with --extra.
 static bool g_testExtra = false;
 
 static bool g_testAll;
