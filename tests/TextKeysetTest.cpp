@@ -132,16 +132,17 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
     std::unordered_set<std::string> words; // need to be unique, otherwise we report collisions
     std::vector<hashtype>           hashes;
     hashes.resize(keycount);
-    Rand r( 483723 + minlen, maxlen );
+    Rand r1( 483723 + minlen, maxlen );
 
     char *      key = new char[std::min(maxlen + 1, 64)];
     std::string key_str;
 
     for (long i = 0; i < keycount; i++) {
-        const int len = minlen + r.rand_range(maxlen - minlen + 1);
+        Rand r2( r1.rand_u64() );
+        const int len = minlen + r1.rand_range(maxlen - minlen + 1);
         key[len] = 0;
         for (int j = 0; j < len; j++) {
-            key[j] = coreset[r.rand_range(corecount)];
+            key[j] = coreset[r2.rand_range(corecount)];
         }
         key_str = key;
         if (words.count(key_str) > 0) { // not unique
@@ -191,14 +192,15 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
 
     std::vector<hashtype> hashes;
     hashes.resize(totalkeys);
-    Rand r( 425379 + 604 * varyprefix + minlen, maxlen );
+    Rand r1( 425379 + 604 * varyprefix + minlen, maxlen );
     size_t cnt = 0;
 
     for (long i = 0; i < keycount; i++) {
-        const int len = minlen + r.rand_range(maxlen - minlen + 1);
+        Rand r2( r1.rand_u64() );
+        const int len = minlen + r1.rand_range(maxlen - minlen + 1);
         key[len] = 0;
         for (int j = 0; j < len; j++) {
-            key[j] = coreset[r.rand_range(corecount)];
+            key[j] = coreset[r2.rand_range(corecount)];
         }
 
         for (int offset = 0; offset < varylen; offset++) {
