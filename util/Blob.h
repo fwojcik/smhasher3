@@ -201,8 +201,12 @@ class Blob {
         return _getbit(bit, bytes, _bytes);
     }
 
-    FORCE_INLINE void printhex( const char * prefix = "" ) const {
-        _printhex(prefix, bytes, _bytes);
+    FORCE_INLINE void printhex( const char * prefix = "", size_t validbits = _bits, bool flipbits = false ) const {
+        if (flipbits) {
+            _printhex_flip(prefix, validbits, bytes, _bytes);
+        } else {
+            _printhex(prefix, validbits, bytes, _bytes);
+        }
     }
 
     FORCE_INLINE void printbits( const char * prefix = "" ) const {
@@ -241,17 +245,81 @@ class Blob {
         return (bytes[byte] >> bit) & UINT32_C(1);
     }
 
-    static void _printhex( const char * prefix, const uint8_t * bytes, const size_t len ) {
+    static void _printhex( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
         char   buf[2 * len + (len + 3) / 4 + 1];
         char * p = buf;
         size_t i = len;
+        size_t r = validbits;
 
         // Print using MSB-first notation
         while (i--) {
-            uint8_t vh = (bytes[i] >> 4);
-            uint8_t vl = (bytes[i] & 15);
-            *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
-            *p++       = vl + (vl <= 9 ? '0' : 'a' - 10);
+            if (r >= 8) {
+                uint8_t v  = bytes[i];
+                uint8_t vh = v >> 4;
+                uint8_t vl = v & 15;
+                *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
+                *p++       = vl + (vl <= 9 ? '0' : 'a' - 10);
+                r -= 8;
+            } else if (r >= 1) {
+                uint8_t m  = 0xFF00 >> r;
+                uint8_t v  = bytes[i] & m;
+                uint8_t vh = v >> 4;
+                uint8_t vl = v & 15;
+                *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
+                if (r >= 5) {
+                    *p++   = vl + (vl <= 9 ? '0' : 'a' - 10);
+                } else {
+                    *p++   = '.';
+                }
+                r = 0;
+            } else {
+                *p++       = '.';
+                *p++       = '.';
+            }
+            if ((i & 3) == 0) {
+                *p++ = ' ';
+            }
+        }
+        *p = '\0';
+
+        if (prefix == NULL) {
+            printf("[ %s]", buf);
+        } else {
+            printf("%s[ %s]\n", prefix, buf);
+        }
+    }
+
+    static void _printhex_flip( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
+        char   buf[2 * len + (len + 3) / 4 + 1];
+        char * p = buf;
+        size_t i = len;
+        size_t r = len * 8 - validbits;
+
+        // Print using MSB-first notation
+        while (i--) {
+            if (r >= 8) {
+                *p++       = '.';
+                *p++       = '.';
+                r -= 8;
+            } else if (r >= 1) {
+                uint8_t m  = 0xFF >> r;
+                uint8_t v  = _byterev(bytes[len - i - 1]) & m;
+                uint8_t vh = v >> 4;
+                uint8_t vl = v & 15;
+                if (r >= 4) {
+                    *p++   = '.';
+                } else {
+                    *p++   = vh + (vh <= 9 ? '0' : 'a' - 10);
+                }
+                *p++       = vl + (vl <= 9 ? '0' : 'a' - 10);
+                r = 0;
+            } else {
+                uint8_t v  = _byterev(bytes[len - i - 1]);
+                uint8_t vh = v >> 4;
+                uint8_t vl = v & 15;
+                *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
+                *p++       = vl + (vl <= 9 ? '0' : 'a' - 10);
+            }
             if ((i & 3) == 0) {
                 *p++ = ' ';
             }
@@ -571,8 +639,14 @@ class ExtBlob : private Blob<0> {
         return _getbit(bit, ptr, len);
     }
 
-    FORCE_INLINE void printhex( const char * prefix = "" ) const {
-        _printhex(prefix, ptr, len);
+    FORCE_INLINE void printhex( const char * prefix = "", size_t validbits = 0xffffffff,
+            bool flipbits = false ) const {
+        validbits = std::min(validbits, len * 8);
+        if (flipbits) {
+            _printhex_flip(prefix, validbits, ptr, len);
+        } else {
+            _printhex(prefix, validbits, ptr, len);
+        }
     }
 
     FORCE_INLINE void printbits( const char * prefix = "" ) const {
