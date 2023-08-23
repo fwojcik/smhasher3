@@ -111,14 +111,13 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 template <typename hashtype>
 static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybits,
         const unsigned reps, bool drawDiagram, bool drawdots ) {
-    Rand r( 48273 + keybits );
-
     assert((keybits & 7) == 0);
 
     const unsigned keybytes  = keybits / 8;
     const unsigned hashbits  = hashtype::bitlen;
     const unsigned arraysize = keybits * hashbits;
 
+    Rand r( {402562, keybits} );
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
     RandSeq rs = r.get_seq(seqtype, keybytes);
 

@@ -76,7 +76,7 @@ typedef phmap::flat_hash_map<std::string, int,
 
 static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string> words,
         const int trials, bool verbose ) {
-    Rand r( 82762 );
+    Rand r( 358512 );
 
     const HashFn hash     = hinfo->hashFn(g_hashEndian);
     const seed_t seed     = hinfo->Seed(g_seed ^ r.rand_u64());

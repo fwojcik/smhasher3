@@ -152,7 +152,7 @@ std::map<std::pair<int, int>, std::vector<double>> times;
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
         const int bufalign, const int maxvarysize, const int maxvaryalign ) {
     static uint64_t callcount = 0;
-    Rand r( 444793 + (callcount++));
+    Rand r( {256765, callcount++} );
 
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
     uint8_t * abuf = buf + (-reinterpret_cast<uintptr_t>(buf) % 256) + bufalign;
@@ -318,7 +318,7 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
 //-----------------------------------------------------------------------------
 bool SpeedTest( const HashInfo * hinfo ) {
     bool result = true;
-    Rand r( 633692 );
+    Rand r( 164200 );
 
     printf("[[[ Speed Tests ]]]\n\n");
 
@@ -358,7 +358,7 @@ void ShortSpeedTestHeader( bool verbose ) {
 
 void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
-    Rand         r( 321321 );
+    Rand r( 20265 );
 
     const int maxvaryalign    = 7;
     const int basealignoffset = 0;

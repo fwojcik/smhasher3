@@ -613,23 +613,23 @@ void RandTest( const unsigned runs ) {
         testRands1.emplace_back(Rand(WEAKRAND(i)));
         testRands2.emplace_back(Rand(WEAKRAND(i)));
 
-        testRands1.emplace_back(Rand(i, 123));
-        testRands2.emplace_back(Rand(i, 123));
+        testRands1.emplace_back(Rand( {i, 123} ));
+        testRands2.emplace_back(Rand( {i, 123} ));
 
-        testRands1.emplace_back(Rand(123, i));
-        testRands2.emplace_back(Rand(123, i));
+        testRands1.emplace_back(Rand( {123, i} ));
+        testRands2.emplace_back(Rand( {123, i} ));
 
-        testRands1.emplace_back(Rand(i, i));
-        testRands2.emplace_back(Rand(i, i));
+        testRands1.emplace_back(Rand( {i, i} ));
+        testRands2.emplace_back(Rand( {i, i} ));
 
-        testRands1.emplace_back(Rand(WEAKRAND(i), i));
-        testRands2.emplace_back(Rand(WEAKRAND(i), i));
+        testRands1.emplace_back(Rand( {WEAKRAND(i), i} ));
+        testRands2.emplace_back(Rand( {WEAKRAND(i), i} ));
 
-        testRands1.emplace_back(Rand(i, WEAKRAND(i)));
-        testRands2.emplace_back(Rand(i, WEAKRAND(i)));
+        testRands1.emplace_back(Rand( {i, WEAKRAND(i)} ));
+        testRands2.emplace_back(Rand( {i, WEAKRAND(i)} ));
 
-        testRands1.emplace_back(Rand(WEAKRAND(2 * i), WEAKRAND(2 * i + 1)));
-        testRands2.emplace_back(Rand(WEAKRAND(2 * i), WEAKRAND(2 * i + 1)));
+        testRands1.emplace_back(Rand( {WEAKRAND(2 * i), WEAKRAND(2 * i + 1)} ));
+        testRands2.emplace_back(Rand( {WEAKRAND(2 * i), WEAKRAND(2 * i + 1)} ));
 
         size_t Randcount = std::min(testRands1.size(), Maxrange);
 
@@ -648,23 +648,26 @@ void RandTest( const unsigned runs ) {
         ignored = A2.rand_u64(); (void)ignored;
         A2.reseed((uint64_t)(WEAKRAND(5 * i)));
         VERIFYEQUAL(A1, A2, 999);
-        Rand B1(WEAKRAND(7 * i), WEAKRAND(9 * i));
-        Rand B2(123, 456);
+        Rand B1( {WEAKRAND(7 * i), WEAKRAND(9 * i)} );
+        Rand B2( {123, 456} );
         ignored = B2.rand_u64(); (void)ignored;
-        B2.reseed((uint64_t)(WEAKRAND(7 * i)), (uint64_t)(WEAKRAND(9 * i)));
+        B2.reseed({(WEAKRAND(7 * i)), (WEAKRAND(9 * i))});
         VERIFYEQUAL(B1, B2, 999);
 
-        // Ensure Rand() and substream() work the same
-        Rand C1(WEAKRAND(11 * i), WEAKRAND(13 * i));
-        Rand C2(WEAKRAND(11 * i));
+        Rand C1( {WEAKRAND(11 * i), WEAKRAND(13 * i)} );
+        Rand C2( WEAKRAND(11 * i) );
         ignored = C2.rand_u64(); (void)ignored;
-        C2.substream((uint64_t)(WEAKRAND(13 * i)));
+        C2.reseed({WEAKRAND(11 * i), WEAKRAND(13 * i)});
         VERIFYEQUAL(C1, C2, 999);
-        Rand D1(0, WEAKRAND(15 * i));
-        Rand D2(0, WEAKRAND(17 * i));
+        Rand D1( {0, WEAKRAND(15 * i)} );
+        Rand D2( {0, WEAKRAND(17 * i)} );
         ignored = D2.rand_u64(); (void)ignored;
-        D2.substream((uint64_t)(WEAKRAND(15 * i)));
+        D2.reseed({0, WEAKRAND(15 * i)});
         VERIFYEQUAL(D1, D2, 999);
+
+        // Ensure multiple seeds work sanely
+        // Seed(x) != Seed(x,0) != Seed(x,1) != Seed(x+1,0)
+        // RNG of each !=
 
         progress("Seeking");
 
@@ -1063,7 +1066,7 @@ void RandBenchmark( void ) {
     for (size_t i = 0; i < TEST_ITER; i++) {
         Rand r1;
         uint64_t begin = timer_start();
-        r1.reseed(i, i);
+        r1.reseed({i, i});
         uint64_t end   = timer_start();
         deltat = std::min(deltat, (double)(end - begin));
     }
@@ -1074,7 +1077,7 @@ void RandBenchmark( void ) {
     for (size_t i = 0; i < TEST_ITER; i++) {
         Rand r2b;
         uint64_t begin = timer_start();
-        r2b.reseed(i, i);
+        r2b.reseed({i, i});
         val = r2b.rand_u64(); (void)val;
         uint64_t end =   timer_start();
         deltat = std::min(deltat, (double)(end - begin));
@@ -1123,7 +1126,7 @@ void RandBenchmark( void ) {
     for (uint64_t szelem = 1; szelem <= 16; szelem++) {
         printf("RandSeq(SEQ_DIST_1, %2d).........", (int)szelem);
         deltat = UINT64_C(1) << 53;
-        Rand r6(6, szelem);
+        Rand r6( {6, szelem} );
         numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_1, szelem));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {
@@ -1167,7 +1170,7 @@ void RandBenchmark( void ) {
     for (uint64_t szelem = 1; szelem <= 16; szelem++) {
         printf("RandSeq(SEQ_DIST_2, %2d).........", (int)szelem);
         deltat = UINT64_C(1) << 53;
-        Rand r7(7, szelem);
+        Rand r7( {7, szelem} );
         numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_2, szelem));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {
@@ -1211,7 +1214,7 @@ void RandBenchmark( void ) {
     for (uint64_t szelem = 1; szelem <= 16; szelem++) {
         printf("RandSeq(SEQ_DIST_3, %2d).........", (int)szelem);
         deltat = UINT64_C(1) << 53;
-        Rand r8(8, szelem);
+        Rand r8( {8, szelem} );
         numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_3, szelem));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {
@@ -1256,7 +1259,7 @@ void RandBenchmark( void ) {
         printf("RandSeq(SEQ_NUM, (1<<%2d)-1).....", (int)maxelemP);
         const uint64_t maxelem = UINT64_C(1) << maxelemP;
         deltat = UINT64_C(1) << 53;
-        Rand r9(9, maxelemP);
+        Rand r9( {9, maxelemP} );
         numgen = std::min(maxelem, (uint64_t)(sizeof(buf) / sizeof(uint64_t)));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {
@@ -1301,7 +1304,7 @@ void RandBenchmark( void ) {
         printf("RandSeq(SEQ_NUM, (1<<%2d)).......", (int)maxelemP);
         const uint64_t maxelem = UINT64_C(1) << maxelemP;
         deltat = UINT64_C(1) << 53;
-        Rand rA(10, maxelemP);
+        Rand rA( {10, maxelemP} );
         numgen = std::min(maxelem, (uint64_t)(sizeof(buf) / sizeof(uint64_t)));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {

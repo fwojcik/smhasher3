@@ -134,7 +134,7 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
 
     printf("Testing %4zd-byte keys, %7zd reps", keybytes, reps);
 
-    Rand r( 4557191 + keybytes );
+    Rand r( {209036, keybytes} );
 
     RandSeq rsK = r.get_seq(SEQ_DIST_1, keybytes);
 

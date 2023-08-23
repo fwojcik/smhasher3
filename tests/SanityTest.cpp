@@ -107,7 +107,7 @@ static bool verify_hashmatch( const uint8_t * buf1, const uint8_t * buf2, size_t
 //
 // This test can halt early, so don't add input bytes to the VCode.
 bool SanityTest1( const HashInfo * hinfo, bool verbose ) {
-    Rand r( 883743 );
+    Rand r( 763849 );
     bool result            = true;
     bool danger            = false;
 
@@ -214,7 +214,7 @@ bool SanityTest1( const HashInfo * hinfo, bool verbose ) {
 //
 // This test can halt early, so don't add input bytes to the VCode.
 bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
-    Rand r( 883744 );
+    Rand r( 104125 );
     bool result            = true;
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
@@ -388,7 +388,7 @@ static void hashthings( const HashInfo * hinfo, seed_t seed, uint32_t reps, uint
     std::vector<uint32_t> idxs( reps );
 
     if (order != 0) {
-        Rand r( 46742 + order );
+        Rand r( {583015, order} );
         for (uint32_t i = 0; i < reps; i++) { idxs[i] = i; }
         for (uint32_t i = reps - 1; i > 0; i--) {
             std::swap(idxs[i], idxs[r.rand_range(i + 1)]);
@@ -409,7 +409,7 @@ static void hashthings( const HashInfo * hinfo, seed_t seed, uint32_t reps, uint
 }
 
 static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose ) {
-    Rand r( 609163 );
+    Rand r( 955165 );
 
     const uint32_t       hashbytes = hinfo->bits / 8;
     const uint32_t       reps      = 1024 * 16;
@@ -495,7 +495,7 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
 // Appending zero bytes to a key should always cause it to produce a different
 // hash value
 bool AppendedZeroesTest( const HashInfo * hinfo, bool verbose ) {
-    Rand r( 173994 );
+    Rand r( 434201 );
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;
@@ -560,7 +560,7 @@ bool AppendedZeroesTest( const HashInfo * hinfo, bool verbose ) {
 // Prepending zero bytes to a key should also always cause it to
 // produce a different hash value
 bool PrependedZeroesTest( const HashInfo * hinfo, bool verbose ) {
-    Rand r( 534281 );
+    Rand r( 14465 );
 
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     const int    hashbytes = hinfo->bits / 8;

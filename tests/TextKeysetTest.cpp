@@ -183,8 +183,8 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
             minlen, maxlen, name, keycount - remaining);
 
     std::vector<hashtype> hashes(keycount - remaining);
+    Rand     r( {708218, minlen, maxlen} );
     char *   key = new char[maxlen];
-    Rand     r( 483723 + minlen, maxlen );
     uint64_t itemnum;
     uint32_t cnt = 0;
     for (uint32_t len = minlen; len <= maxlen; len++) {
@@ -246,7 +246,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
 
     std::vector<hashtype> hashes;
     hashes.resize(totalkeys);
-    Rand r( 425379 + 604 * varyprefix + minlen, maxlen );
+    Rand r( {312318, varyprefix, minlen, maxlen} );
     size_t cnt = 0;
 
     for (long i = 0; i < keycount; i++) {

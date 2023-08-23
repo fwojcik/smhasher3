@@ -20,9 +20,10 @@
  * Random number and sequence generation via CBRNG.
  *
  * The Rand object uses the Threefry algorithm as the base RNG. This
- * configures it such that a single 64-bit seed value gives 2^64
- * independent substreams of 2^64 random numbers. It passes
- * TestU01/BigCrush for both forward and bit-reversed outputs.
+ * configures it such that a single 64-bit seed value (either explicitly
+ * specified, or derived from user-supplied data) gives a stream of 2^64
+ * random numbers. It passes TestU01/BigCrush for both forward and
+ * bit-reversed outputs.
  *
  * The important feature of Threefry is that it is fully seekable. This is
  * because it is fundamentally counter-based: instead of storing the output
@@ -45,18 +46,14 @@
  *
  * Public Rand seeking/seeding APIs:
  *
- *   Rand takes a 64-bit seed, and an optional 64-bit substream number. The
- *   substream number is intended to allow for multiple independent streams
- *   of random numbers from the same seed value. A seed must be supplied at
- *   construction, and can be changed later via the reseed() method. A
- *   substream number can be supplied at construction time (default value
- *   is 0), or changed later via the substream() method.
+ *   Rand takes a 64-bit seed, or a series of 64-bit values which get
+ *   condensed into a 64-bit seed. A seed must be supplied at construction,
+ *   and can be changed later via the reseed() method.
  *
- *   For a given (seed, substream) tuple, the seek(N) method can update the
- *   state of the Rand object to be the same as it would be after N random
- *   numbers have been generated from the initial state. This is much
- *   faster than starting with the initial state and generating and
- *   discarding N numbers.
+ *   For a given seed, the seek(N) method can update the state of the Rand
+ *   object to be the same as it would be after N random numbers have been
+ *   generated from the initial state. This is much faster than starting
+ *   with the initial state and generating and discarding N numbers.
  *
  *   The getoffset() method will return a value N such that the N'th random
  *   number is about to be generated. In this way, the value of getoffset()
@@ -174,6 +171,8 @@
  * This value ONLY affects performance. It does not alter any random values
  * that are returned from these objects.
  */
+#include <initializer_list>
+
 #define PARALLEL 4
 
 //-----------------------------------------------------------------------------
@@ -198,23 +197,23 @@ class Rand {
     uint64_t  rngbuf[BUFLEN];  // Always in LE byte order
     uint64_t  xseed[RNG_KEYS]; // Threefry keys (xseed[0] is the counter)
     uint64_t  bufidx;          // The next rngbuf[] index to be given out
-    uint64_t  rseed, rstream;  // The user-supplied seed and stream numbers
+    uint64_t  rseed;           // The actual seed value
     void refill_buf( void * buf );
 
     //-----------------------------------------------------------------------------
 
     inline void update_xseed( void ) {
-        // Init keys 1-3 from seed and stream values. This derivation of 3
-        // random-ish 64-bit keys from 2 64-bit inputs is completely
+        // Init keys 1-3 from seed value. This derivation of 3
+        // random-ish 64-bit keys from 1 64-bit inputs is completely
         // arbitrary, but is also aesthetically pleasing.
         //
         // Key 0 is the counter, which is left untouched here.
         const uint64_t M1 = UINT64_C(0x9E3779B97F4A7C15);
         const uint64_t M2 = UINT64_C(0x6A09E667F3BCC909);
 
-        xseed[1] = ((ROTR64(rseed, 21) | 1) * M1) + ((ROTR64(rstream, 21) | 1) * M2);
-        xseed[2] = ((rseed             | 1) * M1) + ((ROTR64(rstream, 42) | 1) * M2);
-        xseed[3] = ((ROTR64(rseed, 42) | 1) * M1) + ((rstream             | 1) * M2);
+        xseed[1] = ((ROTR64(rseed, 21) | 1) * M1) + ((ROTR64(rseed, 42) | 1) * M2);
+        xseed[2] = ((rseed             | 1) * M1) + ((ROTR64(rseed, 21) | 1) * M2);
+        xseed[3] = ((ROTR64(rseed, 42) | 1) * M1) + ((rseed             | 1) * M2);
         // Init key 4 from the Threefish specification.
         const uint64_t K1 = UINT64_C(0x1BD11BDAA9FC1A22);
         xseed[4] = K1 ^ xseed[1] ^ xseed[2] ^ xseed[3];
@@ -222,20 +221,40 @@ class Rand {
 
     //-----------------------------------------------------------------------------
 
+    static inline uint64_t mix( uint64_t a, uint64_t b ) {
+        const uint64_t M1 = UINT64_C(0x9E3779B97F4A7C15);
+        const uint64_t M2 = UINT64_C(0x6A09E667F3BCC909);
+        // Ensure c values in a' = ax + c are odd
+        const uint64_t k1 = 1 | ((b & 0xFFFFFFFF) << 1);
+        const uint64_t k2 = 1 | (b >> 31);
+        a = M1 * a + M2 * k1;
+        a = M1 * a + M2 * k2;
+        return a;
+    }
+
+    //-----------------------------------------------------------------------------
+
   public:
-    Rand( uint64_t seed = 0, uint64_t stream = 0 ) {
-        reseed(seed, stream);
+    Rand( uint64_t seed = 0 ) {
+        reseed(seed);
     }
 
-    inline void reseed( uint64_t seed, uint64_t stream = 0 ) {
+    Rand( std::initializer_list<uint64_t> seeds ) {
+        reseed(seeds);
+    }
+
+    inline void reseed( uint64_t seed ) {
         rseed = seed;
-        substream(stream);
-    }
-
-    inline void substream( uint64_t stream ) {
-        rstream = stream;
         seek(0);
         update_xseed();
+    }
+
+    inline void reseed( std::initializer_list<uint64_t> seeds ) {
+        rseed = 1;
+        for (uint64_t next: seeds) {
+            rseed = mix(rseed, next);
+        }
+        reseed(rseed);
     }
 
     inline void seek( uint64_t offset ) {
@@ -279,9 +298,6 @@ class Rand {
             return false;
         }
         if (rseed != k.rseed) {
-            return false;
-        }
-        if (rstream != k.rstream) {
             return false;
         }
         if (getoffset() != k.getoffset()) {

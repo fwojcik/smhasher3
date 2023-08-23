@@ -77,7 +77,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_
 
     std::vector<uint8_t> keys( keycount * keybytes );
 
-    Rand r( 857374 + keybytes );
+    Rand r( {84574, keybytes} );
 
     bool result = true;
 

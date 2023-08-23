@@ -194,7 +194,7 @@ static bool DiffTestImpl( HashFn hash, const seed_t seed, unsigned diffbits, uns
             diffcount, diffbits, keybits, hashbits);
     printf("%d reps, %0.f total tests, expecting %2.2f random collisions", reps, testcount, expected);
 
-    Rand r( 100 );
+    Rand r( {60794, diffbits, keybits, hashbits} );
     std::vector<uint8_t> keys( reps * keybytes );
 
     r.rand_n(&keys[0], reps * keybytes);

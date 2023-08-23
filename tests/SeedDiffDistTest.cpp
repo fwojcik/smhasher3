@@ -79,7 +79,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, unsigned keybits, bool dra
     std::vector<uint8_t>  seeds( keycount * seedbytes );
     hashtype h1, h2;
 
-    Rand r( 482813 + keybytes );
+    Rand r( {44057, keybytes} );
 
     bool result = true;
 
