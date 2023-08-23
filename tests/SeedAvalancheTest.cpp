@@ -60,9 +60,9 @@
 
 #if defined(HAVE_THREADS)
   #include <atomic>
-typedef std::atomic<int> a_int;
+typedef std::atomic<unsigned> a_uint;
 #else
-typedef int a_int;
+typedef unsigned a_uint;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -73,13 +73,13 @@ typedef int a_int;
 // cause "echoes" of the patterns in the output, which in turn can cause the
 // hash function to fail to create an even, random distribution of hash values.
 
-template <typename hashtype, int seedbytes>
-static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins, const int keybytes,
-        const uint8_t * keys, const uint8_t * seeds, a_int & irepp, const int reps, const bool verbose ) {
+template <typename hashtype, unsigned seedbytes>
+static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins, const unsigned keybytes,
+        const uint8_t * keys, const uint8_t * seeds, a_uint & irepp, const unsigned reps, const bool verbose ) {
     const HashFn hash    = hinfo->hashFn(g_hashEndian);
 
     hashtype A, B;
-    int      irep;
+    unsigned irep;
     seed_t   iseed;
     uint64_t baseseed = 0;
 
@@ -96,7 +96,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
         hash(keyptr, keybytes, hseed, &A);
 
         uint32_t * cursor = &bins[0];
-        for (int iBit = 0; iBit < 8 * seedbytes; iBit++) {
+        for (unsigned iBit = 0; iBit < 8 * seedbytes; iBit++) {
             iseed ^= UINT64_C(1) << iBit;
             hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED, 1);
             hash(keyptr, keybytes, hseed, &B);
@@ -111,18 +111,15 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
 //-----------------------------------------------------------------------------
 
-template <typename hashtype, int seedbits>
-static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
-        const int reps, bool drawDiagram, bool drawdots ) {
+template <typename hashtype, unsigned seedbits>
+static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
+        const unsigned reps, bool drawDiagram, bool drawdots ) {
+    const unsigned seedbytes = seedbits / 8;
+    const unsigned hashbits  = hashtype::bitlen;
+    const unsigned arraysize = seedbits * hashbits;
+
     Rand r( 48273 + keybytes );
-
-    const int seedbytes = seedbits / 8;
-
-    const int hashbits  = hashtype::bitlen;
-
-    const int arraysize = seedbits * hashbits;
-
-    enum RandSeqType seqtype = (uint64_t)reps > r.seq_maxelem(SEQ_DIST_3, seedbytes) ? SEQ_DIST_2 : SEQ_DIST_3;
+    enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, seedbytes) ? SEQ_DIST_2 : SEQ_DIST_3;
     RandSeq rs = r.get_seq(seqtype, seedbytes);
 
     printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
@@ -135,7 +132,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
     rs.write(&seeds[0], 0, reps);
     addVCodeInput(&seeds[0], reps * seedbytes);
 
-    a_int irep( 0 );
+    a_uint irep( 0 );
 
     std::vector<std::vector<uint32_t>> bins( g_NCPU );
     for (unsigned i = 0; i < g_NCPU; i++) {
@@ -157,7 +154,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const int keybytes,
             t[i].join();
         }
         for (unsigned i = 1; i < g_NCPU; i++) {
-            for (int b = 0; b < arraysize; b++) {
+            for (unsigned b = 0; b < arraysize; b++) {
                 bins[0][b] += bins[i][b];
             }
         }
@@ -184,17 +181,17 @@ bool SeedAvalancheTest( const HashInfo * hinfo, const bool verbose, const bool e
 
     printf("[[[ Seed Avalanche Tests ]]]\n\n");
 
-    std::set<int> keyBytesvec = { 4, 8, 16, 24, 32, 64, 128 };
+    std::set<unsigned> keyBytesvec = { 4, 8, 16, 24, 32, 64, 128 };
     if (extra) {
         keyBytesvec.insert({ 3, 6, 12, 20, 28 });
     }
 
     if (hinfo->is32BitSeed()) {
-        for (int keyBytes: keyBytesvec) {
+        for (unsigned keyBytes: keyBytesvec) {
             result &= SeedAvalancheImpl<hashtype, 32>(hinfo, keyBytes, 300000, verbose, drawdots);
         }
     } else {
-        for (int keyBytes: keyBytesvec) {
+        for (unsigned keyBytes: keyBytesvec) {
             result &= SeedAvalancheImpl<hashtype, 64>(hinfo, keyBytes, 300000, verbose, drawdots);
         }
     }

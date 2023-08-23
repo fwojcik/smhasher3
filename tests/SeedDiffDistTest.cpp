@@ -61,13 +61,13 @@
 // hash differentials
 
 template <typename hashtype, bool bigseed>
-static bool SeedDiffDistTest( const HashInfo * hinfo, int keybits, bool drawDiagram ) {
+static bool SeedDiffDistTest( const HashInfo * hinfo, unsigned keybits, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
 
-    int       seedbytes = bigseed ? 8 : 4;
-    int       seedbits  = seedbytes * 8;
-    int       keybytes  = keybits / 8;
-    const int keycount  = 512 * 1024 * 3;
+    unsigned       seedbytes = bigseed ? 8 : 4;
+    unsigned       seedbits  = seedbytes * 8;
+    unsigned       keybytes  = keybits / 8;
+    const unsigned keycount  = 512 * 1024 * 3;
 
     std::vector<hashtype> worsthashes;
     int worstlogp    = -1;
@@ -87,7 +87,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, int keybits, bool drawDiag
         printf("Testing %3d-byte keys, %2d-bit seeds, %d reps", keybytes, seedbits, keycount);
     }
 
-    for (int seedbit = 0; seedbit < seedbits; seedbit++) {
+    for (unsigned seedbit = 0; seedbit < seedbits; seedbit++) {
         if (drawDiagram) {
             printf("Testing seed bit %d / %d - %3d-byte keys - %d keys\n",
                     seedbit, seedbits, keybytes, keycount);
@@ -106,7 +106,7 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, int keybits, bool drawDiag
         const uint8_t * seedptr = &seeds[0];
         uint64_t baseseed = 0;
         seed_t curseed;
-        for (int i = 0; i < keycount; i++) {
+        for (unsigned i = 0; i < keycount; i++) {
             memcpy(&baseseed, seedptr, seedbytes);
 
             curseed = hinfo->getFixedSeed((seed_t)baseseed);

@@ -60,9 +60,9 @@
 
 #if defined(HAVE_THREADS)
   #include <atomic>
-typedef std::atomic<int> a_int;
+typedef std::atomic<unsigned> a_uint;
 #else
-typedef int a_int;
+typedef unsigned a_uint;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -74,13 +74,13 @@ typedef int a_int;
 // hash function to fail to create an even, random distribution of hash values.
 
 template <typename hashtype>
-static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uint32_t> & bins, const int keybytes,
-        const uint8_t * keys, a_int & irepp, const int reps, const bool verbose ) {
-    const int keybits = keybytes * 8;
+static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uint32_t> & bins, const unsigned keybytes,
+        const uint8_t * keys, a_uint & irepp, const unsigned reps, const bool verbose ) {
+    const unsigned keybits = keybytes * 8;
 
     uint8_t  buf[keybytes];
     hashtype A, B;
-    int      irep;
+    unsigned irep;
 
     while ((irep = irepp++) < reps) {
         if (verbose) {
@@ -92,7 +92,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 
         uint32_t * cursor = &bins[0];
 
-        for (int iBit = 0; iBit < keybits; iBit++) {
+        for (unsigned iBit = 0; iBit < keybits; iBit++) {
             prefetch(cursor);
 
             K.flipbit(iBit);
@@ -109,19 +109,17 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
-        const int reps, bool drawDiagram, bool drawdots ) {
+static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybits,
+        const unsigned reps, bool drawDiagram, bool drawdots ) {
     Rand r( 48273 + keybits );
 
     assert((keybits & 7) == 0);
 
-    const int keybytes  = keybits / 8;
+    const unsigned keybytes  = keybits / 8;
+    const unsigned hashbits  = hashtype::bitlen;
+    const unsigned arraysize = keybits * hashbits;
 
-    const int hashbits  = hashtype::bitlen;
-
-    const int arraysize = keybits * hashbits;
-
-    enum RandSeqType seqtype = (uint64_t)reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
+    enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
     RandSeq rs = r.get_seq(seqtype, keybytes);
 
     printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
@@ -130,7 +128,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
     rs.write(&keys[0], 0, reps);
     addVCodeInput(&keys[0], reps * keybytes);
 
-    a_int irep( 0 );
+    a_uint irep( 0 );
 
     std::vector<std::vector<uint32_t>> bins( g_NCPU );
     for (unsigned i = 0; i < g_NCPU; i++) {
@@ -152,7 +150,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const int keybits,
             t[i].join();
         }
         for (unsigned i = 1; i < g_NCPU; i++) {
-            for (int b = 0; b < arraysize; b++) {
+            for (unsigned b = 0; b < arraysize; b++) {
                 bins[0][b] += bins[i][b];
             }
         }
@@ -182,7 +180,7 @@ bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra
 
     const seed_t seed = hinfo->Seed(g_seed, HashInfo::SEED_ALLOWFIX, 1);
 
-    std::set<int> testBitsvec = { 24, 32, 40, 48, 56, 64, 72, 80, 96, 128, 160 };
+    std::set<unsigned> testBitsvec = { 24, 32, 40, 48, 56, 64, 72, 80, 96, 128, 160 };
     if (hinfo->bits <= 128) {
         testBitsvec.insert({ 512, 1024 });
     }
@@ -190,7 +188,7 @@ bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra
         testBitsvec.insert({ 192, 224, 256, 320, 384, 448, 512, 1024, 1280, 1536 });
     }
 
-    for (int testBits: testBitsvec) {
+    for (unsigned testBits: testBitsvec) {
         result &= AvalancheImpl<hashtype>(hash, seed, testBits, 300000, verbose, drawdots);
     }
 

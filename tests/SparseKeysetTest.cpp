@@ -50,6 +50,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
+#include "Stats.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -60,7 +61,7 @@
 // Keyset 'Sparse' - generate all possible N-bit keys with up to K bits set
 
 template <typename keytype, typename hashtype>
-static void SparseKeygenRecurse( HashFn hash, const seed_t seed, int start, int bitsleft,
+static void SparseKeygenRecurse( HashFn hash, const seed_t seed, unsigned start, unsigned bitsleft,
         bool inclusive, keytype & k, std::vector<hashtype> & hashes ) {
     hashtype h;
 
@@ -83,16 +84,18 @@ static void SparseKeygenRecurse( HashFn hash, const seed_t seed, int start, int 
 
 //----------
 template <int keybits, typename hashtype>
-static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bool inclusive, bool verbose ) {
-    const int keybytes = keybits / 8;
-
-    printf("Keyset 'Sparse' - %d-byte keys with %s %d bits set - ", keybytes, inclusive ? "up to" : "exactly", setbits);
-
+static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbits, bool inclusive, bool verbose ) {
     typedef Blob<keybits> keytype;
 
     std::vector<hashtype> hashes;
 
     keytype k(0);
+
+    const unsigned keybytes  = keybits / 8;
+    const unsigned totalkeys = inclusive ? 1 + chooseUpToK(keybits, setbits) : chooseK(keybits, setbits);
+
+    printf("Keyset 'Sparse' - %d-byte keys with %s %d bits set - %d keys\n",
+            keybytes, inclusive ? "up to" : "exactly", setbits, totalkeys);
 
     if (inclusive) {
         hashes.resize(1);
@@ -100,8 +103,6 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const int setbits, bo
     }
 
     SparseKeygenRecurse(hash, seed, 0, setbits, inclusive, k, hashes);
-
-    printf("%d keys\n", (int)hashes.size());
 
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).testDistribution(false);
     printf("\n");

@@ -63,27 +63,26 @@
 //
 // (This keyset type is designed to make MurmurHash2 fail)
 
-template <typename hashtype, int cycleLen>
-static bool CyclicKeyImpl( HashFn hash, const seed_t seed, int cycleReps, const int keycount, bool drawDiagram ) {
+template <typename hashtype, unsigned cycleLen>
+static bool CyclicKeyImpl( HashFn hash, const seed_t seed, unsigned cycleReps,
+        const unsigned keycount, bool drawDiagram ) {
     printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n", cycleReps, cycleLen, keycount);
 
+    std::vector<hashtype> hashes( keycount );
+    std::vector<uint8_t>  cycles( keycount * cycleLen );
+
     Rand r( 483723 + cycleLen, cycleReps );
-
-    std::vector<hashtype> hashes;
-    hashes.resize(keycount);
-
-    std::vector<uint8_t> cycles( cycleLen * keycount );
     RandSeq rs = r.get_seq(SEQ_DIST_1, cycleLen);
     rs.write(&cycles[0], 0, keycount);
 
-    int       keyLen = cycleLen * cycleReps;
+    unsigned  keyLen = cycleLen * cycleReps;
     uint8_t * cycle  = new uint8_t[cycleLen];
     uint8_t * key    = new uint8_t[keyLen  ];
 
     //----------
 
-    for (int i = 0; i < keycount; i++) {
-        for (int j = 0; j < cycleReps; j++) {
+    for (unsigned i = 0; i < keycount; i++) {
+        for (unsigned j = 0; j < cycleReps; j++) {
             memcpy(&key[j * cycleLen], &cycles[i * cycleLen], cycleLen);
         }
 
@@ -117,10 +116,10 @@ bool CyclicKeyTest( const HashInfo * hinfo, const bool verbose ) {
 
     printf("[[[ Keyset 'Cyclic' Tests ]]]\n\n");
 
-    const int    reps = hinfo->isVerySlow() ? 100000 : 1000000;
-    const seed_t seed = hinfo->Seed(g_seed);
+    const unsigned reps = hinfo->isVerySlow() ? 100000 : 1000000;
+    const seed_t   seed = hinfo->Seed(g_seed);
 
-    for (int count = 4; count <= 16; count += 4) {
+    for (unsigned count = 4; count <= 16; count += 4) {
         result &= CyclicKeyImpl<hashtype, 3>(hash, seed, count, reps, verbose);
         result &= CyclicKeyImpl<hashtype, 4>(hash, seed, count, reps, verbose);
         result &= CyclicKeyImpl<hashtype, 5>(hash, seed, count, reps, verbose);

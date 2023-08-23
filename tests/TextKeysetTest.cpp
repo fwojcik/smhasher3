@@ -99,35 +99,30 @@ static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount
 
 template <typename hashtype>
 static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, const char * coreset,
-        const int corelen, const char * suffix, bool verbose ) {
-    const int prefixlen = (int)strlen(prefix);
-    const int suffixlen = (int)strlen(suffix);
-    const int corecount = (int)strlen(coreset);
+        const unsigned corelen, const char * suffix, bool verbose ) {
+    const unsigned prefixlen = (unsigned)strlen(prefix);
+    const unsigned suffixlen = (unsigned)strlen(suffix);
+    const unsigned corecount = (unsigned)strlen(coreset);
 
-    const int keybytes  = prefixlen + corelen + suffixlen;
-    long      keycount  = (long)pow(double(corecount), double(corelen));
+    const unsigned keybytes  = prefixlen + corelen + suffixlen;
+    unsigned       keycount  = std::min((uint64_t)pow(double(corecount), double(corelen)), (uint64_t)(INT32_MAX / 8));
 
-    if (keycount > INT32_MAX / 8) {
-        keycount = INT32_MAX / 8;
-    }
-
-    uint8_t * key = new uint8_t[std::min(keybytes + 1, 64)];
+    uint8_t * key = new uint8_t[std::min(keybytes + 1, (unsigned)64)];
     memcpy(key, prefix, prefixlen);
     memset(key + prefixlen, 'X', corelen);
     memcpy(key + prefixlen + corelen, suffix, suffixlen);
     key[keybytes] = 0;
 
-    printf("Keyset 'Text' - keys of form \"%s\" - %ld keys\n", key, keycount);
+    printf("Keyset 'Text' - keys of form \"%s\" - %d keys\n", key, keycount);
 
     //----------
-
     std::vector<hashtype> hashes;
     hashes.resize(keycount);
 
-    for (int i = 0; i < (int)keycount; i++) {
-        int t = i;
+    for (unsigned i = 0; i < keycount; i++) {
+        uint32_t t = i;
 
-        for (int j = 0; j < corelen; j++) {
+        for (unsigned j = 0; j < corelen; j++) {
             key[prefixlen + j] = coreset[t % corecount]; t /= corecount;
         }
 
@@ -237,11 +232,12 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
 // Keyset 'Long' - hash very long strings of text with small changes
 
 template <typename hashtype, bool varyprefix>
-static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, const int varylen, const int minlen,
-        const int maxlen, const char * coreset, const char * name, bool verbose ) {
-    const int    corecount = (int)strlen(coreset);
-    const size_t totalkeys = keycount * (corecount - 1) * varylen;
-    char *       key       = new char[maxlen + 1];
+static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
+        const unsigned varylen, const unsigned minlen, const unsigned maxlen,
+        const char * coreset, const char * name, bool verbose ) {
+    const unsigned corecount = (unsigned)strlen(coreset);
+    const size_t   totalkeys = keycount * (corecount - 1) * varylen;
+    char *         key       = new char[maxlen + 1];
 
     printf("Keyset 'Long' - %d-%d random chars from %s charset - varying %s %d chars - %ld keys\n",
             minlen, maxlen, name, varyprefix ? "first" : "last", varylen, totalkeys);
@@ -257,16 +253,16 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
         r.seek(i * (maxlen + 1));
 
         // These words are long enough that we don't explicitly avoid collisions.
-        const int len = minlen + r.rand_range(maxlen - minlen + 1);
+        const unsigned len = minlen + r.rand_range(maxlen - minlen + 1);
         key[len] = 0;
-        for (int j = 0; j < len; j++) {
+        for (unsigned j = 0; j < len; j++) {
             key[j] = coreset[r.rand_range(corecount)];
         }
 
-        for (int offset = 0; offset < varylen; offset++) {
+        for (unsigned offset = 0; offset < varylen; offset++) {
             size_t j = offset + (varyprefix ? 0 : (len - varylen));
             uint8_t prv = key[j];
-            for (int k = 0; k < corecount; k++) {
+            for (unsigned k = 0; k < corecount; k++) {
                 if (prv == coreset[k]) {
                     continue;
                 }
@@ -306,8 +302,8 @@ static bool WordsDictImpl( HashFn hash, const seed_t seed, bool verbose ) {
     hashes.resize(wordscount);
 
     for (size_t i = 0; i < wordscount; i++) {
-        const int    len = words[i].length();
-        const char * key = words[i].c_str();
+        const unsigned len = words[i].length();
+        const char *   key = words[i].c_str();
         hash(key, len, seed, &hashes[i]);
         addVCodeInput(key, len);
     }

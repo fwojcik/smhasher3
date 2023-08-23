@@ -54,7 +54,7 @@ static const char * teststr[SORT_TESTS] = {
 };
 
 template <typename blobtype, uint32_t TEST_SIZE>
-static void blobfill( std::vector<blobtype> & blobs, size_t testnum, int iternum ) {
+static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iternum ) {
     if (testnum >= SORT_TESTS) { return; }
 
     Rand r( testnum, iternum );

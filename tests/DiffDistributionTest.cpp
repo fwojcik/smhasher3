@@ -61,11 +61,11 @@
 // hash differentials
 
 template <typename hashtype>
-static bool DiffDistTest2( const HashInfo * hinfo, int keybits, const seed_t seed, bool drawDiagram ) {
+static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_t seed, bool drawDiagram ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
 
-    int       keybytes = keybits / 8;
-    const int keycount = 512 * 1024 * ((hinfo->bits <= 64) ? 3 : 4);
+    unsigned       keybytes = keybits / 8;
+    const unsigned keycount = 512 * 1024 * ((hinfo->bits <= 64) ? 3 : 4);
 
     std::vector<hashtype> worsthashes;
     int worstlogp   = -1;
@@ -85,7 +85,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, int keybits, const seed_t see
         printf("Testing %3d-byte keys, %d reps", keybytes, keycount);
     }
 
-    for (int keybit = 0; keybit < keybits; keybit++) {
+    for (unsigned keybit = 0; keybit < keybits; keybit++) {
         if (drawDiagram) {
             printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
         }
@@ -94,7 +94,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, int keybits, const seed_t see
         RandSeq rs = r.get_seq(SEQ_DIST_2, keybytes);
         rs.write(&keys[0], 0, keycount);
 
-        for (int i = 0; i < keycount; i++) {
+        for (unsigned i = 0; i < keycount; i++) {
             ExtBlob k( &keys[i * keybytes], keybytes );
             hash(k, keybytes, seed, &h1);
             addVCodeInput(k, keybytes);

@@ -61,9 +61,9 @@
 
 #if defined(HAVE_THREADS)
   #include <atomic>
-typedef std::atomic<int> a_int;
+typedef std::atomic<unsigned> a_uint;
 #else
-typedef int a_int;
+typedef unsigned a_uint;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -72,9 +72,9 @@ typedef int a_int;
 // hash counts of 3 or more (2+ collisions), the differential test fails.
 
 template <class keytype>
-static bool ProcessDifferentials( std::map<keytype, uint32_t> & diffcounts, int reps, bool dumpCollisions ) {
-    int totalcount = 0;
-    int ignore     = 0;
+static bool ProcessDifferentials( std::map<keytype, uint32_t> & diffcounts, unsigned reps, bool dumpCollisions ) {
+    unsigned totalcount = 0;
+    unsigned ignore     = 0;
 
     bool result    = true;
 
@@ -122,11 +122,11 @@ static bool ProcessDifferentials( std::map<keytype, uint32_t> & diffcounts, int 
 
 template <bool recursemore, typename keytype, typename hashtype>
 static void DiffTestRecurse( const HashFn hash, const seed_t seed, keytype & k1, keytype & k2, hashtype & h1,
-        hashtype & h2, int start, int bitsleft, std::map<keytype, uint32_t> & diffcounts ) {
-    const int bits = keytype::bitlen;
+        hashtype & h2, unsigned start, unsigned bitsleft, std::map<keytype, uint32_t> & diffcounts ) {
+    const unsigned bits = keytype::bitlen;
 
     assume(start < bits);
-    for (int i = start; i < bits; i++) {
+    for (unsigned i = start; i < bits; i++) {
         keytype k2_prev = k2;
 
         k2.flipbit(i);
@@ -157,15 +157,15 @@ static void DiffTestRecurse( const HashFn hash, const seed_t seed, keytype & k1,
 
 template <typename keytype, typename hashtype>
 static void DiffTestImplThread( const HashFn hash, const seed_t seed, std::map<keytype, uint32_t> & diffcounts,
-        const uint8_t * keys, int diffbits, a_int & irepp, const int reps ) {
-    const int keybytes = keytype::len;
+        const uint8_t * keys, unsigned diffbits, a_uint & irepp, const unsigned reps ) {
+    const unsigned keybytes = keytype::len;
 
     keytype  k1, k2;
     hashtype h1, h2;
 
     h1 = h2 = 0;
 
-    int irep;
+    unsigned irep;
     while ((irep = irepp++) < reps) {
         progressdots(irep, 0, reps - 1, 10);
 
@@ -181,10 +181,10 @@ static void DiffTestImplThread( const HashFn hash, const seed_t seed, std::map<k
 //-----------------------------------------------------------------------------
 
 template <typename keytype, typename hashtype>
-static bool DiffTestImpl( HashFn hash, const seed_t seed, int diffbits, int reps, bool dumpCollisions ) {
-    const int keybytes = keytype::len;
-    const int keybits  = keytype::bitlen;
-    const int hashbits = hashtype::bitlen;
+static bool DiffTestImpl( HashFn hash, const seed_t seed, unsigned diffbits, unsigned reps, bool dumpCollisions ) {
+    const unsigned keybytes = keytype::len;
+    const unsigned keybits  = keytype::bitlen;
+    const unsigned hashbits = hashtype::bitlen;
 
     double diffcount   = chooseUpToK(keybits, diffbits);
     double testcount   = (diffcount * double(reps));
@@ -200,7 +200,7 @@ static bool DiffTestImpl( HashFn hash, const seed_t seed, int diffbits, int reps
     r.rand_n(&keys[0], reps * keybytes);
     addVCodeInput(&keys[0], reps * keybytes);
 
-    a_int irep( 0 );
+    a_uint irep( 0 );
 
     std::vector<std::map<keytype, uint32_t>> diffcounts( g_NCPU );
 
@@ -251,8 +251,8 @@ bool DiffTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     bool         result         = true;
 
     // Do fewer reps with slow or very bad hashes
-    bool slowhash = hinfo->bits > 128 || hinfo->isSlow();
-    int  reps     = hinfo->isMock() ? 2 : ((slowhash && !extra) ? 100 : 1000);
+    bool     slowhash = hinfo->bits > 128 || hinfo->isSlow();
+    unsigned reps     = hinfo->isMock() ? 2 : ((slowhash && !extra) ? 100 : 1000);
 
     printf("[[[ Diff 'Differential' Tests (deprecated) ]]]\n\n");
 
