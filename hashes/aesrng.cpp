@@ -184,18 +184,18 @@ static void rng_keyseq( struct content_t * s, const void * key, size_t len, uint
 //------------------------------------------------------------
 // The RNG core code
 
-static uint64_t aesrng64( uint64_t * ctr ) {
+static uint64_t aesrng64( uint64_t * ctrs ) {
     uint8_t result[16];
 
-    ctr[0] += INCR1;
-    ctr[1] += INCR2;
+    ctrs[0] += INCR1;
+    ctrs[1] += INCR2;
 
     if (isLE()) {
-        PUT_U64<false>(ctr[0], result, 0);
-        PUT_U64<false>(ctr[1], result, 8);
+        PUT_U64<false>(ctrs[0], result, 0);
+        PUT_U64<false>(ctrs[1], result, 8);
     } else {
-        PUT_U64<true>(ctr[0], result, 0);
-        PUT_U64<true>(ctr[1], result, 8);
+        PUT_U64<true>(ctrs[0], result, 0);
+        PUT_U64<true>(ctrs[1], result, 8);
     }
 
     AES_Encrypt<10>(round_keys, result, result);
@@ -206,31 +206,31 @@ static uint64_t aesrng64( uint64_t * ctr ) {
 }
 
 template <uint32_t nbytes>
-static void rng_impl( uint64_t * ctr, void * out ) {
+static void rng_impl( uint64_t * ctrs, void * out ) {
     assert((nbytes >= 0) && (nbytes <= 39));
     uint8_t * result = (uint8_t *)out;
     if (nbytes >= 8) {
-        uint64_t r = aesrng64(ctr);
+        uint64_t r = aesrng64(ctrs);
         memcpy(result, &r, 8);
         result += 8;
     }
     if (nbytes >= 16) {
-        uint64_t r = aesrng64(ctr);
+        uint64_t r = aesrng64(ctrs);
         memcpy(result, &r, 8);
         result += 8;
     }
     if (nbytes >= 24) {
-        uint64_t r = aesrng64(ctr);
+        uint64_t r = aesrng64(ctrs);
         memcpy(result, &r, 8);
         result += 8;
     }
     if (nbytes >= 32) {
-        uint64_t r = aesrng64(ctr);
+        uint64_t r = aesrng64(ctrs);
         memcpy(result, &r, 8);
         result += 8;
     }
     if ((nbytes % 8) != 0) {
-        uint64_t r = aesrng64(ctr);
+        uint64_t r = aesrng64(ctrs);
         memcpy(result, &r, nbytes % 8);
     }
 }

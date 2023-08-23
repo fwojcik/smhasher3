@@ -1249,16 +1249,16 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                     // but this makes this report explicitly show which bits cause
                     // overall warnings/failures, so I'm doing it for now.
                     const double chisq   = ChiSqIndepValue(boxes, testcount);
-                    const double p_value = ScalePValue(ChiSqPValue(chisq, 1), keybits * realhashbitpairs);
+                    const double p_val   = ScalePValue(ChiSqPValue(chisq, 1), keybits * realhashbitpairs);
 
                     // This first threshhold is basically "take the distance between
                     // warning and failure, and move that much further past failure".
                     // So an 'X' shows a much-more-than-marginal failure.
-                    if (p_value < FAILURE_PBOUND / WARNING_PBOUND * FAILURE_PBOUND) {
+                    if (p_val < FAILURE_PBOUND / WARNING_PBOUND * FAILURE_PBOUND) {
                         putchar('X');
-                    } else if (p_value < FAILURE_PBOUND) {
+                    } else if (p_val < FAILURE_PBOUND) {
                         putchar('O');
-                    } else if (p_value < WARNING_PBOUND) {
+                    } else if (p_val < WARNING_PBOUND) {
                         putchar('o');
                     } else {
                         putchar('.');

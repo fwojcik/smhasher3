@@ -89,20 +89,17 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
     std::vector<hashtype> hashes;
     hashes.resize(totalkeys);
 
-    seed_t seed;
-
-    seed = hinfo->Seed(0, HashInfo::SEED_FORCED);
-    hash(key, keylen, seed, &hashes[cnt++]);
+    seed_t hseed = hinfo->Seed(0, HashInfo::SEED_FORCED);
+    hash(key, keylen, hseed, &hashes[cnt++]);
 
     for (seed_t i = 1; i <= maxbits; i++) {
-        uint64_t seed = (UINT64_C(1) << i) - 1;
+        uint64_t iseed = (UINT64_C(1) << i) - 1;
 
         do {
-            seed_t hseed;
-            hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
+            hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
             hash(key, keylen, hseed, &hashes[cnt++]);
-            seed = nextlex(seed, bigseed ? 64 : 32);
-        } while (seed != 0);
+            iseed = nextlex(iseed, bigseed ? 64 : 32);
+        } while (iseed != 0);
     }
 
     bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1);

@@ -65,10 +65,10 @@ class Blob {
 
     Blob() {}
 
-    Blob( const void * p, size_t len ) {
-        len = std::min(len, _bytes);
-        memcpy(bytes, p, len);
-        memset(&bytes[len], 0, _bytes - len);
+    Blob( const void * p, size_t plen ) {
+        plen = std::min(plen, _bytes);
+        memcpy(bytes, p, plen);
+        memset(bytes + plen, 0, _bytes - plen);
     }
 
     Blob( uint64_t x ) :
@@ -88,11 +88,11 @@ class Blob {
     }
 
     Blob & operator = ( const uint64_t & x ) {
-        const uint64_t y   = COND_BSWAP(x, isBE());
-              size_t   len = std::min(sizeof(y), _bytes);
+        const uint64_t y    = COND_BSWAP(x, isBE());
+              size_t   ylen = std::min(sizeof(y), _bytes);
 
-        memcpy(bytes, &y, len);
-        memset(bytes + len, 0, _bytes - len);
+        memcpy(bytes, &y, ylen);
+        memset(bytes + ylen, 0, _bytes - ylen);
 
         return *this;
     }
