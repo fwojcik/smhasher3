@@ -750,10 +750,10 @@ void RandTest( const unsigned runs ) {
                 double   score      = calcScore(sumsq, j, Testcount_lg);
                 double   p_value    = GetStdNormalPValue(score);
                 int      logp_value = GetLog2PValue(p_value);
-                VERIFY(logp_value <= LogpFail, "Rand.rand_range(N) is equally distributed");
                 if (logp_value > LogpPrint) {
                     printf("%zd %zd: %e %e %d\n", j, k, score, p_value, logp_value);
                 }
+                VERIFY(logp_value <= LogpFail, "Rand.rand_range(N) is equally distributed");
             }
         }
 
@@ -817,10 +817,10 @@ void RandTest( const unsigned runs ) {
                     double   score      = calcScore(sumsq, j, Testcount_lg);
                     double   p_value    = GetStdNormalPValue(score);
                     int      logp_value = GetLog2PValue(p_value);
-                    VERIFY(logp_value <= LogpFail, "RandSeq SEQ_NUM(N) is equally distributed");
                     if (logp_value > LogpPrint) {
                         printf("%zd %zd: %e %e %d\n", j, l, score, p_value, logp_value);
                     }
+                    VERIFY(logp_value <= LogpFail, "RandSeq SEQ_NUM(N) is equally distributed");
                 }
             }
         }
@@ -883,10 +883,10 @@ void RandTest( const unsigned runs ) {
                 double   score      = calcScore(sumsq, 256, Testcount_lg);
                 double   p_value    = GetStdNormalPValue(score);
                 int      logp_value = GetLog2PValue(p_value);
-                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_1(N) is equally distributed");
                 if (logp_value > LogpPrint) {
                     printf("%d %zd: %e %e %d\n", 256, l, score, p_value, logp_value);
                 }
+                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_1(N) is equally distributed");
             }
         }
 
@@ -948,10 +948,10 @@ void RandTest( const unsigned runs ) {
                 double   score      = calcScore(sumsq, 256, Testcount_lg);
                 double   p_value    = GetStdNormalPValue(score);
                 int      logp_value = GetLog2PValue(p_value);
-                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_2(N) is equally distributed");
                 if (logp_value > LogpPrint) {
                     printf("%d %zd: %e %e %d\n", 256, l, score, p_value, logp_value);
                 }
+                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_2(N) is equally distributed");
             }
         }
 
@@ -1013,10 +1013,10 @@ void RandTest( const unsigned runs ) {
                 double   score      = calcScore(sumsq, 256, Testcount_lg);
                 double   p_value    = GetStdNormalPValue(score);
                 int      logp_value = GetLog2PValue(p_value);
-                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_3(N) is equally distributed");
                 if (logp_value > LogpPrint) {
                     printf("%d %zd: %e %e %d\n", 256, l, score, p_value, logp_value);
                 }
+                VERIFY(logp_value <= LogpFail, "RandSeq SEQ_DIST_3(N) is equally distributed");
             }
         }
 
