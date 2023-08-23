@@ -65,11 +65,12 @@ std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
         std::string  str( ptr, end - ptr );
         if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyz") != std::string::npos) {
             skip_char++;
+            continue;
         } else if (wordset.count(str) > 0) {
             skip_dup++;
-        } else {
-            wordvec.push_back(str);
+            continue;
         }
+        wordvec.push_back(str);
         if (addSingleCap) {
             std::transform(str.begin(), str.begin() + 1, str.begin(), ::toupper);
             wordvec.push_back(str);
