@@ -126,3 +126,18 @@ static void progressdots( int cur, int min, int max, int totaldots ) {
         printf(".");
     }
 }
+
+//----------------------------------------------------------------------------
+// Helper for iterating through all possible ways of arranging N bits in an
+// integer. This is basically the formula for computing the next
+// lexicographic bit pattern, from "Bit Twiddling Hacks".
+
+static inline uint64_t nextlex( const uint64_t in, const size_t bits ) {
+    uint64_t tmp = (in | (in - 1)) + 1;
+    uint64_t out = tmp | ((((tmp & -tmp) / (in & -in)) >> 1) - 1);
+    assert(bits <= 64);
+    if (bits == 64) {
+        return (out == ~UINT64_C(0)) ? 0 : out;
+    }
+    return ((out >> bits) != 0) ? 0 : out;
+}

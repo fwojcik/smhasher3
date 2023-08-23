@@ -81,33 +81,21 @@ static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hasht
         size_t keylen_max, size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits ) {
     const HashFn hash    = hinfo->hashFn(g_hashEndian);
     uint8_t *    hashptr = (uint8_t *)&hashes[0];
-    uint64_t     numseed, numblock;
 
     for (size_t seedbits = 1; seedbits <= seedmaxbits; seedbits++) {
-        bool seeddone;
-        numseed = (UINT64_C(1) << seedbits) - 1;
+        uint64_t numseed = (UINT64_C(1) << seedbits) - 1;
         do {
             const seed_t seed = hinfo->Seed(numseed, HashInfo::SEED_ALLOWFIX);
-
             for (size_t blockbits = 1; blockbits <= blockmaxbits; blockbits++) {
-                bool blockdone;
-                numblock = (UINT64_C(1) << blockbits) - 1;
+                uint64_t numblock = (UINT64_C(1) << blockbits) - 1;
                 do {
                     hashptr = SeedBlockOffsetTest_Impl3<hashtype, blocklen>(hash, hashptr,
                             keylen_min, keylen_max, blockoffset, seed, numblock);
-
-                    /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
-                    uint64_t t = (numblock | (numblock - 1)) + 1;
-                    numblock  = t | ((((t & -t) / (numblock & -numblock)) >> 1) - 1);
-                    blockdone = (blocklen == 8) ? (numblock == ~0) : ((numblock >> 32) != 0);
-                } while (!blockdone);
+                    numblock = nextlex(numblock, blocklen * 8);
+                } while (numblock != 0);
             }
-
-            /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
-            uint64_t t = (numseed | (numseed - 1)) + 1;
-            numseed  = t | ((((t & -t) / (numseed & -numseed)) >> 1) - 1);
-            seeddone = bigseed ? (numseed == ~UINT64_C(0)) : ((numseed >> 32) != 0);
-        } while (!seeddone);
+            numseed = nextlex(numseed, bigseed ? 64 : 32);
+        } while (numseed != 0);
     }
 }
 

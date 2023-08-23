@@ -84,7 +84,6 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
 
     for (size_t j = 1; j <= maxbits; j++) {
         uint64_t seed = (UINT64_C(1) << j) - 1;
-        bool     done;
 
         do {
             hseed = hinfo->Seed(seed, HashInfo::SEED_ALLOWFIX);
@@ -97,11 +96,8 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
                 hash(nullblock, i, hseed, &hashes[cnt++]);
             }
 
-            /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
-            uint64_t t = (seed | (seed - 1)) + 1;
-            seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
-            done = bigseed ? (seed == ~UINT64_C(0)) : ((seed >> 32) != 0);
-        } while (!done);
+            seed = nextlex(seed, bigseed ? 64 : 32);
+        } while (seed != 0);
     }
 
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(2 * keycount);

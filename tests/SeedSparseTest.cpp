@@ -96,18 +96,13 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
 
     for (seed_t i = 1; i <= maxbits; i++) {
         uint64_t seed = (UINT64_C(1) << i) - 1;
-        bool     done;
 
         do {
             seed_t hseed;
             hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
             hash(key, keylen, hseed, &hashes[cnt++]);
-
-            /* Next lexicographic bit pattern, from "Bit Twiddling Hacks" */
-            uint64_t t = (seed | (seed - 1)) + 1;
-            seed = t | ((((t & -t) / (seed & -seed)) >> 1) - 1);
-            done = bigseed ? (seed == ~UINT64_C(0)) : ((seed >> 32) != 0);
-        } while (!done);
+            seed = nextlex(seed, bigseed ? 64 : 32);
+        } while (seed != 0);
     }
 
     bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1);
