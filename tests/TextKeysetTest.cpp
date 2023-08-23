@@ -56,7 +56,6 @@
 #include "VCode.h"
 #include "Wordlist.h"
 
-#include <unordered_set>
 #include <string>
 #include <math.h>
 
@@ -154,46 +153,70 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
 // Keyset 'Words' - pick random chars from coreset (alnum or password chars)
 
 template <typename hashtype>
-static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, const int minlen,
-        const int maxlen, const char * coreset, const char * name, bool verbose ) {
-    const int corecount = (int)strlen(coreset);
+static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycount, const uint32_t minlen,
+        const uint32_t maxlen, const char * coreset, const char * name, bool verbose ) {
+    const uint32_t corecount = strlen(coreset);
+    assert(maxlen >= minlen);
+    assert(corecount <= 256);
 
-    printf("Keyset 'Words' - %d-%d random chars from %s charset - %ld keys\n", minlen, maxlen, name, keycount);
-    assert(minlen >= 0    );
-    assert(maxlen > minlen);
-
-    std::unordered_set<std::string> words; // need to be unique, otherwise we report collisions
-    std::vector<hashtype>           hashes;
-    hashes.resize(keycount);
-    Rand r1( 483723 + minlen, maxlen );
-
-    char *      key = new char[std::min(maxlen + 1, 64)];
-    std::string key_str;
-
-    for (long i = 0; i < keycount; i++) {
-        Rand r2( r1.rand_u64() );
-        const int len = minlen + r1.rand_range(maxlen - minlen + 1);
-        key[len] = 0;
-        for (int j = 0; j < len; j++) {
-            key[j] = coreset[r2.rand_range(corecount)];
+    // Compute how many of each key length to do by dividing keys among
+    // lengths evenly, except when there aren't enough keys of a given
+    // length to take on their fair share.
+    //
+    // This could be done "in line" in the for() loop below, but this makes
+    // things clearer, and can catch some parameter errors early.
+    //
+    // maxprefix is the highest key length where the number of possible
+    // keys can fit into a 64-bit integer.
+    const uint32_t maxprefix = floor(64.0 / log2(corecount));
+    uint32_t *     lencount  = new uint32_t[maxlen + 1];
+    uint32_t       remaining = keycount;
+    double         maxkeys   = pow((double)corecount, (double)minlen);
+    for (unsigned len = minlen; len <= maxlen; len++) {
+        lencount[len] = lround(std::min(maxkeys, (double)remaining / (double)(maxlen - len + 1)));
+        remaining    -= lencount[len];
+        if (len < maxprefix) {
+            maxkeys  *= corecount;
         }
-        key_str = key;
-        if (words.count(key_str) > 0) { // not unique
-            i--;
-            continue;
-        }
-        words.insert(key_str);
-
-        hash(key, len, seed, &hashes[i]);
-        addVCodeInput(key, len);
-
-#if 0 && defined DEBUG
-        uint64_t h;
-        memcpy(&h, &hashes[i], std::max(hashtype::len, 8));
-        printf("%d %s %lx\n", i, (char *)key, h);
-#endif
+        //printf("Len %2d == %d; remaining = %d\n", len, lencount[len], remaining);
     }
-    delete [] key;
+    if (remaining > 0) {
+        printf("WARNING: skipping %d keys; maxlen and/or coreset parameters are bad\n", remaining);
+    }
+
+    printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n",
+            minlen, maxlen, name, keycount - remaining);
+
+    std::vector<hashtype> hashes(keycount - remaining);
+    char *   key = new char[maxlen];
+    Rand     r1( 483723 + minlen, maxlen );
+    uint64_t itemnum;
+    uint32_t cnt = 0;
+    for (uint32_t len = minlen; len <= maxlen; len++) {
+        // Generate lencount[len] keys of this length. For the first
+        // prefixlen characters, convert a random numeric sequence element
+        // into characters from coreset. This prevents duplicate random
+        // words from being generated. If there are remaining characters,
+        // just pick any random ones from coreset.
+        const uint32_t prefixlen = std::min(len, maxprefix);
+        const uint64_t curcount  = pow((double)corecount, (double)prefixlen);
+
+        RandSeq rs = r1.get_seq(SEQ_NUM, curcount - 1);
+        Rand r2( r1.rand_u64() );
+        for (uint32_t i = 0; i < lencount[len]; i++) {
+            rs.write(&itemnum, i, 1);
+            for (unsigned j = 0; j < prefixlen; j++) {
+                key[j] = coreset[itemnum % corecount]; itemnum /= corecount;
+            }
+            for (unsigned j = prefixlen; j < len; j++) {
+                key[j] = coreset[r2.rand_range(corecount)];
+            }
+
+            hash(key, len, seed, &hashes[cnt++]);
+            addVCodeInput(key, len);
+            //fprintf(stderr, "%ld\t%d:%ld\t%.*s\n", i, len, nnn, len, key);
+        }
+    }
 
     //----------
     bool result = TestHashList(hashes).drawDiagram(verbose);
@@ -204,6 +227,9 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const long keycount, c
     recordTestResult(result, "Text", buf);
 
     addVCodeResult(result);
+
+    delete [] lencount;
+    delete [] key;
 
     return result;
 }
