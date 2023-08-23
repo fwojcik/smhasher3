@@ -258,7 +258,11 @@ class Blob {
         }
         *p = '\0';
 
-        printf("%s[ %s]\n", prefix, buf);
+        if (prefix == NULL) {
+            printf("[ %s]", buf);
+        } else {
+            printf("%s[ %s]\n", prefix, buf);
+        }
     }
 
     static void _printbits( const char * prefix, const uint8_t * bytes, const size_t len ) {
@@ -280,7 +284,11 @@ class Blob {
         }
         *p = 0;
 
-        printf("%s[ %s]\n", prefix, buf);
+        if (prefix == NULL) {
+            printf("[ %s]", buf);
+        } else {
+            printf("%s[ %s]\n", prefix, buf);
+        }
     }
 
     static FORCE_INLINE uint32_t _highzerobits( const uint8_t * bytes, const size_t len ) {
