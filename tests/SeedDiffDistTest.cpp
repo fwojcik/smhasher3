@@ -93,12 +93,12 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, int keybits, bool drawDiag
                     seedbit, seedbits, keybytes, keycount);
         }
 
-        r.substream(seedbit);
-
+        // Use a new sequence of keys for every seed bit tested
         RandSeq rsK = r.get_seq(SEQ_DIST_1, keybytes);
         rsK.write(&keys[0], 0, keycount);
         addVCodeInput(&keys[0], keycount * keybytes);
 
+        // Use a new sequence of seeds for every seed bit tested also
         RandSeq rsS = r.get_seq(SEQ_DIST_2, seedbytes);
         rsS.write(&seeds[0], 0, keycount);
 

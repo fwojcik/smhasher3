@@ -189,7 +189,7 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
 
     std::vector<hashtype> hashes(keycount - remaining);
     char *   key = new char[maxlen];
-    Rand     r1( 483723 + minlen, maxlen );
+    Rand     r( 483723 + minlen, maxlen );
     uint64_t itemnum;
     uint32_t cnt = 0;
     for (uint32_t len = minlen; len <= maxlen; len++) {
@@ -201,15 +201,14 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
         const uint32_t prefixlen = std::min(len, maxprefix);
         const uint64_t curcount  = pow((double)corecount, (double)prefixlen);
 
-        RandSeq rs = r1.get_seq(SEQ_NUM, curcount - 1);
-        Rand r2( r1.rand_u64() );
+        RandSeq rs = r.get_seq(SEQ_NUM, curcount - 1);
         for (uint32_t i = 0; i < lencount[len]; i++) {
             rs.write(&itemnum, i, 1);
             for (unsigned j = 0; j < prefixlen; j++) {
                 key[j] = coreset[itemnum % corecount]; itemnum /= corecount;
             }
             for (unsigned j = prefixlen; j < len; j++) {
-                key[j] = coreset[r2.rand_range(corecount)];
+                key[j] = coreset[r.rand_range(corecount)];
             }
 
             hash(key, len, seed, &hashes[cnt++]);
@@ -251,17 +250,17 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
 
     std::vector<hashtype> hashes;
     hashes.resize(totalkeys);
-    Rand r2, r1( 425379 + 604 * varyprefix + minlen, maxlen );
+    Rand r( 425379 + 604 * varyprefix + minlen, maxlen );
     size_t cnt = 0;
 
     for (long i = 0; i < keycount; i++) {
-        r2.reseed(r1.rand_u64());
+        r.seek(i * (maxlen + 1));
 
         // These words are long enough that we don't explicitly avoid collisions.
-        const int len = minlen + r2.rand_range(maxlen - minlen + 1);
+        const int len = minlen + r.rand_range(maxlen - minlen + 1);
         key[len] = 0;
         for (int j = 0; j < len; j++) {
-            key[j] = coreset[r2.rand_range(corecount)];
+            key[j] = coreset[r.rand_range(corecount)];
         }
 
         for (int offset = 0; offset < varylen; offset++) {

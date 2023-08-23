@@ -90,7 +90,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, int keybits, const seed_t see
             printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
         }
 
-        r.substream(keybit);
+        // Use a new sequence of keys for every key bit tested
         RandSeq rs = r.get_seq(SEQ_DIST_2, keybytes);
         rs.write(&keys[0], 0, keycount);
 
