@@ -59,24 +59,24 @@
 //-----------------------------------------------------------------------------
 // Keyset 'TwoBytesLen' - generate all keys with length N with one or two non-zero bytes
 
-static constexpr int MAX_TWOBYTES = 56;
+static constexpr size_t MAX_TWOBYTES = 56;
 
 template <typename hashtype>
-static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, int keylen, std::vector<hashtype> & hashes ) {
+static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, size_t keylen, std::vector<hashtype> & hashes ) {
     //----------
     // Compute # of keys
-    int keycount = 0;
+    size_t keycount = 0;
 
     if (keylen < MAX_TWOBYTES) {
-        keycount += (int)chooseK(keylen, 2);
+        keycount += (size_t)chooseK(keylen, 2);
         keycount *= 255 * 255;
     }
     keycount += keylen * 255;
 
     if (keylen < MAX_TWOBYTES) {
-        printf("Keyset 'TwoBytes' - all %d-byte keys with 1 or 2 non-zero bytes - %d keys\n", keylen, keycount);
+        printf("Keyset 'TwoBytes' - all %zd-byte keys with 1 or 2 non-zero bytes - %zd keys\n", keylen, keycount);
     } else {
-        printf("Keyset 'OneByte ' - all %d-byte keys with 1 non-zero byte  - %d keys\n", keylen, keycount);
+        printf("Keyset 'OneByte ' - all %zd-byte keys with 1 non-zero byte  - %zd keys\n", keylen, keycount);
     }
 
     //----------
@@ -85,8 +85,8 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, int keylen, std::
     memset(key, 0, keylen);
     hashes.reserve(keycount);
 
-    for (int byteA = 0; byteA < keylen; byteA++) {
-        for (int valA = 1; valA <= 255; valA++) {
+    for (size_t byteA = 0; byteA < keylen; byteA++) {
+        for (unsigned valA = 1; valA <= 255; valA++) {
             hashtype h;
             key[byteA] = (uint8_t)valA;
             hash(key, keylen, seed, &h);
@@ -102,11 +102,11 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, int keylen, std::
 
     //----------
     // Add all keys with two non-zero bytes
-    for (int byteA = 0; byteA < keylen - 1; byteA++) {
-        for (int byteB = byteA + 1; byteB < keylen; byteB++) {
-            for (int valA = 1; valA <= 255; valA++) {
+    for (size_t byteA = 0; byteA < keylen - 1; byteA++) {
+        for (size_t byteB = byteA + 1; byteB < keylen; byteB++) {
+            for (unsigned valA = 1; valA <= 255; valA++) {
                 key[byteA] = (uint8_t)valA;
-                for (int valB = 1; valB <= 255; valB++) {
+                for (unsigned valB = 1; valB <= 255; valB++) {
                     hashtype h;
                     key[byteB] = (uint8_t)valB;
                     hash(key, keylen, seed, &h);
@@ -121,7 +121,7 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, int keylen, std::
 }
 
 template <typename hashtype>
-static bool TwoBytesTestLen( HashFn hash, const seed_t seed, int keylen, bool verbose, const bool extra ) {
+static bool TwoBytesTestLen( HashFn hash, const seed_t seed, size_t keylen, bool verbose, const bool extra ) {
     std::vector<hashtype> hashes;
 
     TwoBytesLenKeygen(hash, seed, keylen, hashes);
@@ -140,20 +140,20 @@ static bool TwoBytesTestLen( HashFn hash, const seed_t seed, int keylen, bool ve
 // Keyset 'TwoBytesUpToLen' - generate all keys up to length N with one or two non-zero bytes
 
 template <typename hashtype>
-static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, int maxlen, std::vector<hashtype> & hashes ) {
+static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, size_t maxlen, std::vector<hashtype> & hashes ) {
     //----------
     // Compute # of keys
-    int keycount = 0;
+    size_t keycount = 0;
 
-    for (int i = 2; i <= maxlen; i++) {
-        keycount += (int)chooseK(i, 2);
+    for (size_t i = 2; i <= maxlen; i++) {
+        keycount += (size_t)chooseK(i, 2);
     }
     keycount *= 255 * 255;
-    for (int i = 2; i <= maxlen; i++) {
+    for (size_t i = 2; i <= maxlen; i++) {
         keycount += i * 255;
     }
 
-    printf("Keyset 'TwoBytes' - all [2, %d]-byte keys with 1 or 2 non-zero bytes - %d keys\n", maxlen, keycount);
+    printf("Keyset 'TwoBytes' - all [2, %zd]-byte keys with 1 or 2 non-zero bytes - %zd keys\n", maxlen, keycount);
 
     //----------
     // Add all keys with one non-zero byte
@@ -161,9 +161,9 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, int maxlen, s
     memset(key, 0, maxlen);
     hashes.reserve(keycount);
 
-    for (int keylen = 2; keylen <= maxlen; keylen++) {
-        for (int byteA = 0; byteA < keylen; byteA++) {
-            for (int valA = 1; valA <= 255; valA++) {
+    for (size_t keylen = 2; keylen <= maxlen; keylen++) {
+        for (size_t byteA = 0; byteA < keylen; byteA++) {
+            for (unsigned valA = 1; valA <= 255; valA++) {
                 hashtype h;
                 key[byteA] = (uint8_t)valA;
                 hash(key, keylen, seed, &h);
@@ -176,12 +176,12 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, int maxlen, s
 
     //----------
     // Add all keys with two non-zero bytes
-    for (int keylen = 2; keylen <= maxlen; keylen++) {
-        for (int byteA = 0; byteA < keylen - 1; byteA++) {
-            for (int byteB = byteA + 1; byteB < keylen; byteB++) {
-                for (int valA = 1; valA <= 255; valA++) {
+    for (size_t keylen = 2; keylen <= maxlen; keylen++) {
+        for (size_t byteA = 0; byteA < keylen - 1; byteA++) {
+            for (size_t byteB = byteA + 1; byteB < keylen; byteB++) {
+                for (unsigned valA = 1; valA <= 255; valA++) {
                     key[byteA] = (uint8_t)valA;
-                    for (int valB = 1; valB <= 255; valB++) {
+                    for (unsigned valB = 1; valB <= 255; valB++) {
                         hashtype h;
                         key[byteB] = (uint8_t)valB;
                         hash(key, keylen, seed, &h);
@@ -197,7 +197,7 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, int maxlen, s
 }
 
 template <typename hashtype>
-static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, int maxlen, bool verbose, const bool extra ) {
+static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, size_t maxlen, bool verbose, const bool extra ) {
     std::vector<hashtype> hashes;
 
     TwoBytesUpToLenKeygen(hash, seed, maxlen, hashes);
