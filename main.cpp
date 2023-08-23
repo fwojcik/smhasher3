@@ -710,7 +710,7 @@ int main( int argc, const char ** argv ) {
 
 #if defined(DEBUG)
     BlobsortTest();
-    RandTest(4);
+    RandTest(1);
 #endif
 
     set_default_tests(true);
@@ -822,7 +822,11 @@ int main( int argc, const char ** argv ) {
             }
             if (strcmp(arg, "--InternalTests") == 0) {
                 BlobsortTest();
+#if defined(DEBUG)
+                RandTest(5);
+#else
                 RandTest(1);
+#endif
                 exit(0);
             }
             if (strcmp(arg, "--SortBench") == 0) {
