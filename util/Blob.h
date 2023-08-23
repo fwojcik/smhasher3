@@ -201,11 +201,11 @@ class Blob {
         return _getbit(bit, bytes, _bytes);
     }
 
-    FORCE_INLINE void printhex( const char * prefix = "", size_t validbits = _bits, bool flipbits = false ) const {
+    FORCE_INLINE uint32_t printhex( const char * prefix = "", size_t validbits = _bits, bool flipbits = false ) const {
         if (flipbits) {
-            _printhex_flip(prefix, validbits, bytes, _bytes);
+            return _printhex_flip(prefix, validbits, bytes, _bytes);
         } else {
-            _printhex(prefix, validbits, bytes, _bytes);
+            return _printhex(prefix, validbits, bytes, _bytes);
         }
     }
 
@@ -245,7 +245,7 @@ class Blob {
         return (bytes[byte] >> bit) & UINT32_C(1);
     }
 
-    static void _printhex( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
+    static uint32_t _printhex( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
         char   buf[2 * len + (len + 3) / 4 + 1];
         char * p = buf;
         size_t i = len;
@@ -282,14 +282,16 @@ class Blob {
         }
         *p = '\0';
 
+        int written;
         if (prefix == NULL) {
-            printf("[ %s]", buf);
+            printf("[ %s]%n", buf, &written);
         } else {
-            printf("%s[ %s]\n", prefix, buf);
+            printf("%s[ %s]\n%n", prefix, buf, &written);
         }
+        return (uint32_t)written;
     }
 
-    static void _printhex_flip( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
+    static uint32_t _printhex_flip( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
         char   buf[2 * len + (len + 3) / 4 + 1];
         char * p = buf;
         size_t i = len;
@@ -326,11 +328,13 @@ class Blob {
         }
         *p = '\0';
 
+        int written;
         if (prefix == NULL) {
-            printf("[ %s]", buf);
+            printf("[ %s]%n", buf, &written);
         } else {
-            printf("%s[ %s]\n", prefix, buf);
+            printf("%s[ %s]\n%n", prefix, buf, &written);
         }
+        return (uint32_t)written;
     }
 
     static void _printbits( const char * prefix, const uint8_t * bytes, const size_t len ) {
@@ -639,13 +643,13 @@ class ExtBlob : private Blob<0> {
         return _getbit(bit, ptr, len);
     }
 
-    FORCE_INLINE void printhex( const char * prefix = "", size_t validbits = 0xffffffff,
+    FORCE_INLINE uint32_t printhex( const char * prefix = "", size_t validbits = 0xffffffff,
             bool flipbits = false ) const {
         validbits = std::min(validbits, len * 8);
         if (flipbits) {
-            _printhex_flip(prefix, validbits, ptr, len);
+            return _printhex_flip(prefix, validbits, ptr, len);
         } else {
-            _printhex(prefix, validbits, ptr, len);
+            return _printhex(prefix, validbits, ptr, len);
         }
     }
 
