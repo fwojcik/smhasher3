@@ -225,12 +225,14 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
 
     std::vector<hashtype> hashes;
     hashes.resize(totalkeys);
-    Rand r1( 425379 + 604 * varyprefix + minlen, maxlen );
+    Rand r2, r1( 425379 + 604 * varyprefix + minlen, maxlen );
     size_t cnt = 0;
 
     for (long i = 0; i < keycount; i++) {
-        Rand r2( r1.rand_u64() );
-        const int len = minlen + r1.rand_range(maxlen - minlen + 1);
+        r2.reseed(r1.rand_u64());
+
+        // These words are long enough that we don't explicitly avoid collisions.
+        const int len = minlen + r2.rand_range(maxlen - minlen + 1);
         key[len] = 0;
         for (int j = 0; j < len; j++) {
             key[j] = coreset[r2.rand_range(corecount)];
