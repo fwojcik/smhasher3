@@ -270,7 +270,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
 
 template <typename hashtype>
 static bool WordsDictImpl( HashFn hash, const seed_t seed, bool verbose ) {
-    std::vector<std::string> words = GetWordlist(false, verbose);
+    std::vector<std::string> words = GetWordlist(CASE_LOWER_UPPER, verbose);
     const size_t wordscount = words.size();
 
     printf("Keyset 'Dict' - dictionary words - %zd keys\n", wordscount);

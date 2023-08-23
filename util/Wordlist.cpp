@@ -52,7 +52,7 @@
 #include "Wordlist.h"
 #include "words/array.h"
 
-std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
+std::vector<std::string> GetWordlist( wordlist_case_t cases, bool verbose ) {
     std::vector<std::string> wordvec;
     std::unordered_set<std::string> wordset; // words need to be unique, otherwise we report collisions
     unsigned sum = 0, skip_dup = 0, skip_char = 0;
@@ -71,12 +71,14 @@ std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
             continue;
         }
         wordvec.push_back(str);
-        if (addSingleCap) {
+        if ((cases == CASE_LOWER_SINGLE) || (cases == CASE_ALL)) {
             std::transform(str.begin(), str.begin() + 1, str.begin(), ::toupper);
             wordvec.push_back(str);
         }
-        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-        wordvec.push_back(str);
+        if ((cases == CASE_LOWER_UPPER) || (cases == CASE_ALL)) {
+            std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+            wordvec.push_back(str);
+        }
         sum += end - ptr;
         ptr  = end + 1;
     }
@@ -87,7 +89,8 @@ std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose ) {
     }
 
     if (verbose) {
-        unsigned cnt = (double)wordvec.size() / (addSingleCap ? 3.0 : 2.0);
+        unsigned cnt = (double)wordvec.size() /
+            ((cases == CASE_ALL) ? 3.0 : (cases == CASE_LOWER) ? 1.0 : 2.0);
         printf("Read %d words from internal list, ", cnt);
         printf("avg len: %0.3f\n\n", (double)(sum) / (double)(cnt));
     }

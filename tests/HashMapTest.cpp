@@ -244,7 +244,7 @@ bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra )
         return result;
     }
 
-    std::vector<std::string> words = GetWordlist(true, verbose);
+    std::vector<std::string> words = GetWordlist(CASE_ALL, verbose);
     if (!words.size()) {
         printf("WARNING: Hashmap initialization failed! Skipping Hashmap test.\n");
         return result;

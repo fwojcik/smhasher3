@@ -17,4 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-std::vector<std::string> GetWordlist( bool addSingleCap, bool verbose );
+// The list of words in all lower-case are always returned. In addition,
+// the list may include the same words in all upper-case and/or the same
+// words with only their first letter in upper-case, as specified.
+typedef enum {
+    CASE_LOWER        = 0,
+    CASE_LOWER_UPPER  = 1,
+    CASE_LOWER_SINGLE = 2,
+    CASE_ALL          = 3
+} wordlist_case_t;
+
+std::vector<std::string> GetWordlist( wordlist_case_t cases, bool verbose );
