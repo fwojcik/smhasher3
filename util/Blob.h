@@ -154,6 +154,20 @@ class Blob {
         return *this;
     }
 
+    Blob operator & ( const Blob & k ) const {
+        Blob t;
+
+        _and_restrict(t.bytes, bytes, k.bytes, _bytes);
+
+        return t;
+    }
+
+    Blob & operator &= ( const Blob & k ) {
+        _and(bytes, bytes, k.bytes, _bytes);
+
+        return *this;
+    }
+
     //----------
     // interface
 
@@ -414,6 +428,35 @@ class Blob {
         while (len >= 1) {
             len -= 1;
             out[len] = in1[len] ^ in2[len];
+        }
+    }
+
+    static FORCE_INLINE void _and_restrict( uint8_t RESTRICT * out, const uint8_t RESTRICT * in1,
+            const uint8_t RESTRICT * in2, size_t len ) {
+        _and(out, in1, in2, len);
+    }
+
+    static FORCE_INLINE void _and( uint8_t * out, const uint8_t * in1,
+            const uint8_t * in2, size_t len ) {
+        while (len >= 8) {
+            uint64_t a, b;
+            len -= 8;
+            memcpy(&a, &in1[len], 8);
+            memcpy(&b, &in2[len], 8);
+            a &= b;
+            memcpy(&out[len], &a, 8);
+        }
+        while (len >= 4) {
+            uint32_t a, b;
+            len -= 4;
+            memcpy(&a, &in1[len], 4);
+            memcpy(&b, &in2[len], 4);
+            a &= b;
+            memcpy(&out[len], &a, 4);
+        }
+        while (len >= 1) {
+            len -= 1;
+            out[len] = in1[len] & in2[len];
         }
     }
 
