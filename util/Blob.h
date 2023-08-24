@@ -138,58 +138,18 @@ class Blob {
     }
 
     //----------
-    // bitwise operations
+    // bitwise operators
 
     Blob operator ^ ( const Blob & k ) const {
         Blob t;
 
-        size_t i = _bytes;
-        while (i >= 8) {
-            uint64_t a, b;
-            i -= 8;
-            memcpy(&a, &bytes[i], 8);
-            memcpy(&b, &k.bytes[i], 8);
-            a ^= b;
-            memcpy(&t.bytes[i], &a, 8);
-        }
-        while (i >= 4) {
-            uint32_t a, b;
-            i -= 4;
-            memcpy(&a, &bytes[i], 4);
-            memcpy(&b, &k.bytes[i], 4);
-            a ^= b;
-            memcpy(&t.bytes[i], &a, 4);
-        }
-        while (i >= 1) {
-            i -= 1;
-            t.bytes[i] = bytes[i] ^ k.bytes[i];
-        }
+        _xor_restrict(t.bytes, bytes, k.bytes, _bytes);
 
         return t;
     }
 
     Blob & operator ^= ( const Blob & k ) {
-        size_t i = _bytes;
-        while (i >= 8) {
-            uint64_t a, b;
-            i -= 8;
-            memcpy(&a, &bytes[i], 8);
-            memcpy(&b, &k.bytes[i], 8);
-            a ^= b;
-            memcpy(&bytes[i], &a, 8);
-        }
-        while (i >= 4) {
-            uint32_t a, b;
-            i -= 4;
-            memcpy(&a, &bytes[i], 4);
-            memcpy(&b, &k.bytes[i], 4);
-            a ^= b;
-            memcpy(&bytes[i], &a, 4);
-        }
-        while (i >= 1) {
-            i -= 1;
-            bytes[i] = bytes[i] ^ k.bytes[i];
-        }
+        _xor(bytes, bytes, k.bytes, _bytes);
 
         return *this;
     }
@@ -426,6 +386,35 @@ class Blob {
             }
         }
         return v & mask;
+    }
+
+    static FORCE_INLINE void _xor_restrict( uint8_t * RESTRICT out, const uint8_t * RESTRICT in1,
+            const uint8_t RESTRICT * in2, size_t len ) {
+        _xor(out, in1, in2, len);
+    }
+
+    static FORCE_INLINE void _xor( uint8_t * out, const uint8_t * in1,
+            const uint8_t * in2, size_t len ) {
+        while (len >= 8) {
+            uint64_t a, b;
+            len -= 8;
+            memcpy(&a, &in1[len], 8);
+            memcpy(&b, &in2[len], 8);
+            a ^= b;
+            memcpy(&out[len], &a, 8);
+        }
+        while (len >= 4) {
+            uint32_t a, b;
+            len -= 4;
+            memcpy(&a, &in1[len], 4);
+            memcpy(&b, &in2[len], 4);
+            a ^= b;
+            memcpy(&out[len], &a, 4);
+        }
+        while (len >= 1) {
+            len -= 1;
+            out[len] = in1[len] ^ in2[len];
+        }
     }
 
     static FORCE_INLINE void _flipbit( size_t bit, uint8_t * bytes, const size_t len ) {
