@@ -207,6 +207,12 @@ class Blob {
         _lrot(c, bytes, _bytes);
     }
 
+    // Cannot be called with c==0!
+    FORCE_INLINE void sethighbits( size_t c ) {
+        //assert(c > 0);
+        _sethighbits(bytes, _bits, c);
+    }
+
   protected:
     //----------
     // implementations
@@ -517,6 +523,15 @@ class Blob {
             }
         }
     }
+
+    static void _sethighbits( uint8_t * bytes, const size_t bitlen, const size_t highbits ) {
+        const uint32_t zerobytes = (bitlen - highbits) / 8;
+        const uint32_t zerobits  = (bitlen - highbits) & 7;
+
+        memset(&bytes[0], 0, zerobytes);
+        bytes[zerobytes] = 0xff << zerobits;
+        memset(&bytes[zerobytes + 1], 0xff, (bitlen / 8) - zerobytes - 1);
+    }
 }; // class Blob
 
 template <>
@@ -628,6 +643,20 @@ FORCE_INLINE void Blob<64>::reversebits( void ) {
     // swap 4-byte long pairs
     v = ((v >> 32)                               ) | ((v                               ) << 32);
     PUT_U64<false>(v, bytes, 0);
+}
+
+template <>
+FORCE_INLINE void Blob<32>::sethighbits( size_t c ) {
+    //assert(c > 0);
+    uint32_t v = UINT32_C(-1) << (32 - c);
+    memcpy(bytes, &v, 4);
+}
+
+template <>
+FORCE_INLINE void Blob<64>::sethighbits( size_t c ) {
+    //assert(c > 0);
+    uint64_t v = UINT64_C(-1) << (64 - c);
+    memcpy(bytes, &v, 8);
 }
 
 //-----------------------------------------------------------------------------
