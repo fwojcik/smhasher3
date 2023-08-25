@@ -183,6 +183,14 @@ class Blob {
         }
     }
 
+    FORCE_INLINE uint32_t printbytes( const char * prefix = "", size_t validbits = _bits, bool flipbits = false ) const {
+        if (flipbits) {
+            return _printhex_flip<true>(prefix, validbits, bytes, _bytes);
+        } else {
+            return _printhex<true>(prefix, validbits, bytes, _bytes);
+        }
+    }
+
     FORCE_INLINE void printbits( const char * prefix = "" ) const {
         _printbits(prefix, bytes, _bytes);
     }
@@ -225,16 +233,18 @@ class Blob {
         return (bytes[byte] >> bit) & UINT32_C(1);
     }
 
+    template <bool bytewise = false>
     static uint32_t _printhex( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
-        char   buf[2 * len + (len + 3) / 4 + 1];
+        char   buf[3 * len + 1];
         char * p = buf;
         size_t i = len;
         size_t r = validbits;
 
-        // Print using MSB-first notation
+        // Word-wise printing is done using MSB-first notation. Byte-wise
+        // is just done index[0]-first.
         while (i--) {
             if (r >= 8) {
-                uint8_t v  = bytes[i];
+                uint8_t v  = bytewise ? bytes[len - i - 1] : bytes[i];
                 uint8_t vh = v >> 4;
                 uint8_t vl = v & 15;
                 *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
@@ -242,7 +252,7 @@ class Blob {
                 r -= 8;
             } else if (r >= 1) {
                 uint8_t m  = 0xFF00 >> r;
-                uint8_t v  = bytes[i] & m;
+                uint8_t v  = (bytewise ? bytes[len - i - 1] : bytes[i]) & m;
                 uint8_t vh = v >> 4;
                 uint8_t vl = v & 15;
                 *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
@@ -256,7 +266,7 @@ class Blob {
                 *p++       = '.';
                 *p++       = '.';
             }
-            if ((i & 3) == 0) {
+            if (bytewise || ((i & 3) == 0)) {
                 *p++ = ' ';
             }
         }
@@ -271,13 +281,15 @@ class Blob {
         return (uint32_t)written;
     }
 
+    template <bool bytewise = false>
     static uint32_t _printhex_flip( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
-        char   buf[2 * len + (len + 3) / 4 + 1];
+        char   buf[3 * len + 1];
         char * p = buf;
         size_t i = len;
         size_t r = len * 8 - validbits;
 
-        // Print using MSB-first notation
+        // Word-wise printing is done using MSB-first notation. Byte-wise
+        // is just done index[0]-first.
         while (i--) {
             if (r >= 8) {
                 *p++       = '.';
@@ -285,7 +297,7 @@ class Blob {
                 r -= 8;
             } else if (r >= 1) {
                 uint8_t m  = 0xFF >> r;
-                uint8_t v  = _byterev(bytes[len - i - 1]) & m;
+                uint8_t v  = _byterev(bytewise ? bytes[i] : bytes[len - i - 1]) & m;
                 uint8_t vh = v >> 4;
                 uint8_t vl = v & 15;
                 if (r >= 4) {
@@ -296,7 +308,7 @@ class Blob {
                 *p++       = vl + (vl <= 9 ? '0' : 'a' - 10);
                 r = 0;
             } else {
-                uint8_t v  = _byterev(bytes[len - i - 1]);
+                uint8_t v  = _byterev(bytewise ? bytes[i] : bytes[len - i - 1]);
                 uint8_t vh = v >> 4;
                 uint8_t vl = v & 15;
                 *p++       = vh + (vh <= 9 ? '0' : 'a' - 10);
@@ -711,6 +723,16 @@ class ExtBlob : private Blob<0> {
             return _printhex_flip(prefix, validbits, ptr, len);
         } else {
             return _printhex(prefix, validbits, ptr, len);
+        }
+    }
+
+    FORCE_INLINE uint32_t printbytes( const char * prefix = "", size_t validbits = 0xffffffff,
+            bool flipbits = false ) const {
+        validbits = std::min(validbits, len * 8);
+        if (flipbits) {
+            return _printhex_flip<true>(prefix, validbits, ptr, len);
+        } else {
+            return _printhex<true>(prefix, validbits, ptr, len);
         }
     }
 
