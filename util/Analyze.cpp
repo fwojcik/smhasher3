@@ -667,56 +667,15 @@ static void TestDistributionBatch( const std::vector<hashtype> & hashes, const u
     *tests = testcount;
 }
 
-template <typename hashtype>
-static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool verbose, bool drawDiagram ) {
-    const int      hashbits = hashtype::bitlen;
-    const size_t   nbH      = hashes.size();
-    int            maxwidth = MaxDistBits(nbH);
-    int            minwidth = 8;
-
-    if (maxwidth < minwidth) {
-        if (logpp != NULL) {
-            *logpp = 0;
-        }
-        return true;
-    }
-
-    if (verbose) {
-        printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
-    }
-
-    std::vector<double> worst_scores(hashbits * (maxwidth - minwidth + 1));
-    a_int istartbit( 0 );
-    int tests;
-
-    if (g_NCPU == 1) {
-        TestDistributionBatch<hashtype>(hashes, nbH, istartbit, hashbits,
-                maxwidth, minwidth, &tests, &worst_scores[0]);
-    } else {
-#if defined(HAVE_THREADS)
-        std::thread t[g_NCPU];
-        int ttests[g_NCPU];
-        for (unsigned i = 0; i < g_NCPU; i++) {
-            t[i] = std::thread {
-                TestDistributionBatch<hashtype>, std::ref(hashes), nbH, std::ref(istartbit),
-                hashbits/16, maxwidth, minwidth, &ttests[i], &worst_scores[0]
-            };
-        }
-        tests = 0;
-        for (unsigned i = 0; i < g_NCPU; i++) {
-            t[i].join();
-            tests += ttests[i];
-        }
-#endif
-    }
-
+static bool ReportDistribution( const std::vector<double> & worst_scores, int tests, int hashbits,
+        int maxwidth, int minwidth, int * logpp, bool verbose, bool drawDiagram ) {
     // Find the startbit with the worst bias. Only report on biases above 0.
     double worstN     = 0;
     int    worstStart = -1;
     int    worstWidth = -1;
 
     for (int startbit = 0; startbit < hashbits; startbit++) {
-        double * worstptr = &worst_scores[startbit * (maxwidth - minwidth + 1)];
+        const double * worstptr = &worst_scores[startbit * (maxwidth - minwidth + 1)];
         for (int width = maxwidth; width >= minwidth; width--) {
             double n = *worstptr++;
 
@@ -781,6 +740,54 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
     }
 
     return !failure;
+}
+
+template <typename hashtype>
+static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool verbose, bool drawDiagram ) {
+    const int      hashbits = hashtype::bitlen;
+    const size_t   nbH      = hashes.size();
+    int            maxwidth = MaxDistBits(nbH);
+    int            minwidth = 8;
+
+    if (maxwidth < minwidth) {
+        if (logpp != NULL) {
+            *logpp = 0;
+        }
+        return true;
+    }
+
+    if (verbose) {
+        printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
+    }
+
+    std::vector<double> worst_scores(hashbits * (maxwidth - minwidth + 1));
+    a_int istartbit( 0 );
+    int tests;
+
+    if (g_NCPU == 1) {
+        TestDistributionBatch<hashtype>(hashes, nbH, istartbit, hashbits,
+                maxwidth, minwidth, &tests, &worst_scores[0]);
+    } else {
+#if defined(HAVE_THREADS)
+        std::thread t[g_NCPU];
+        int ttests[g_NCPU];
+        for (unsigned i = 0; i < g_NCPU; i++) {
+            t[i] = std::thread {
+                TestDistributionBatch<hashtype>, std::ref(hashes), nbH, std::ref(istartbit),
+                hashbits/16, maxwidth, minwidth, &ttests[i], &worst_scores[0]
+            };
+        }
+        tests = 0;
+        for (unsigned i = 0; i < g_NCPU; i++) {
+            t[i].join();
+            tests += ttests[i];
+        }
+#endif
+    }
+
+    bool result = ReportDistribution(worst_scores, tests, hashbits, maxwidth, minwidth, logpp, verbose, drawDiagram);
+
+    return result;
 }
 
 //-----------------------------------------------------------------------------
