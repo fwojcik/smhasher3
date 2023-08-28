@@ -67,7 +67,6 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
 // template type of the class can be inferred from the type of the hash
 // vector. This is needed since we are on C++11, and class types can't be
 // automatically inferred from constructor parameters until C++17.
-
 template <typename hashtype>
 class TestHashListWrapper {
   private:
