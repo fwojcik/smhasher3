@@ -50,6 +50,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
+#include "Reporting.h"
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"

@@ -191,6 +191,7 @@ add_library(
   util/Analyze.cpp
   util/Blob.cpp
   util/Blobsort.cpp
+  util/Reporting.cpp
   util/Random.cpp
   util/Stats.cpp
   util/VCode.cpp

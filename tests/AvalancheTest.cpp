@@ -49,7 +49,7 @@
 #include "Hashinfo.h"
 #include "TestGlobals.h"
 #include "Random.h"
-#include "Analyze.h"
+#include "Reporting.h"
 #include "Histogram.h"
 #include "Instantiate.h"
 #include "VCode.h"

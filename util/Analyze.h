@@ -50,18 +50,9 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
-        const int hashbits, const bool drawDiagram );
-
-bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
-        size_t hashbits, size_t testcount, bool drawDiagram );
-
 template <typename hashtype>
 int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
         int maxCollisions = 1000, bool drawDiagram = false );
-
-template <typename hashtype>
-void PrintCollisions( std::set<hashtype> & collisions );
 
 //-----------------------------------------------------------------------------
 // This is not intended to be used directly; see below
