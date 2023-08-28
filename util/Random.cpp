@@ -18,13 +18,11 @@
  */
 #include "Platform.h"
 #include "Random.h"
-#include "TestGlobals.h"
-#include "Stats.h"
+#include "TestGlobals.h" // For Stats.h
+#include "Stats.h"       // For distribution testing
 #include "Timing.h"
 
-#include <vector>
 #include <algorithm>
-#include <cassert>
 
 //-----------------------------------------------------------------------------
 // Fill a buffer with 4 * PARALLEL random uint64_t values, updating the

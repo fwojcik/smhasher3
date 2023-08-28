@@ -58,7 +58,6 @@
 
 #include <string>
 #include <functional>
-#include <map>
 #include <limits>
 
 constexpr int BULK_RUNS   = 160;

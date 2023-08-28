@@ -59,7 +59,6 @@
 #include "Instantiate.h"
 #include "VCode.h"
 
-#include <set>
 #include <cstring> // for memset
 #include <math.h>
 

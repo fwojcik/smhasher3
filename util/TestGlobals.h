@@ -19,6 +19,8 @@
 
 //-----------------------------------------------------------------------------
 // Basic infrastructure that basically all tests use
+#include <map>
+#include <set>
 #include <vector>
 #include <cassert>
 #include "Blob.h"
