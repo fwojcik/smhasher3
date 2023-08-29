@@ -757,13 +757,13 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
         printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth, drawDiagram ? "\n[" : " - ");
     }
 
-    std::vector<double> worst_scores(hashbits * (maxwidth - minwidth + 1));
+    std::vector<double> scores(hashbits * (maxwidth - minwidth + 1));
     a_int istartbit( 0 );
     int tests;
 
     if (g_NCPU == 1) {
         TestDistributionBatch<hashtype>(hashes, istartbit, hashbits,
-                maxwidth, minwidth, &tests, &worst_scores[0]);
+                maxwidth, minwidth, &tests, &scores[0]);
     } else {
 #if defined(HAVE_THREADS)
         std::thread t[g_NCPU];
@@ -771,7 +771,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 TestDistributionBatch<hashtype>, std::ref(hashes), std::ref(istartbit),
-                hashbits/16, maxwidth, minwidth, &ttests[i], &worst_scores[0]
+                hashbits/16, maxwidth, minwidth, &ttests[i], &scores[0]
             };
         }
         tests = 0;
@@ -783,7 +783,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
     }
 
     int curlogp, bitstart, bitwidth;
-    bool result = ReportDistribution(worst_scores, tests, hashbits, maxwidth, minwidth,
+    bool result = ReportDistribution(scores, tests, hashbits, maxwidth, minwidth,
             &curlogp, &bitstart, &bitwidth, verbose, drawDiagram);
 
     if (logpSumPtr != NULL) {
