@@ -740,11 +740,14 @@ static void TestDistributionBatch( const std::vector<hashtype> & hashes, a_int &
 }
 
 template <typename hashtype>
-static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool verbose, bool drawDiagram ) {
-    const int      hashbits = hashtype::bitlen;
-    const size_t   nbH      = hashes.size();
-    int            maxwidth = MaxDistBits(nbH);
-    int            minwidth = 8;
+static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs,
+        int * logpp, KeyFn keyprint, int testDeltaNum, bool verbose, bool drawDiagram ) {
+    const int      hashbits  = hashtype::bitlen;
+    const size_t   nbH       = hashes.size();
+    const uint32_t maxEnt    = drawDiagram ? 1000 : 0;
+    const uint32_t maxPerEnt = drawDiagram ? 100 : 0;
+    int            maxwidth  = MaxDistBits(nbH);
+    int            minwidth  = 8;
 
     if (maxwidth < minwidth) {
         if (logpp != NULL) {
@@ -785,6 +788,10 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
     int bitstart, bitwidth;
     bool result = ReportDistribution(worst_scores, tests, hashbits, maxwidth, minwidth,
             logpp, &bitstart, &bitwidth, verbose, drawDiagram);
+
+    if (!result && drawDiagram) {
+        ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, maxEnt, maxPerEnt, bitstart, bitwidth);
+    }
 
     return result;
 }
@@ -856,7 +863,8 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * l
 
     if (testDist) {
         int curlogp;
-        result &= TestDistribution(hashes, &curlogp, verbose, drawDiagram);
+        result &= TestDistribution(hashes, hashidxs, &curlogp, keyprint, -testDeltaNum,
+                verbose, drawDiagram);
         if (logpSumPtr != NULL) {
             *logpSumPtr += curlogp;
         }

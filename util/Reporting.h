@@ -56,6 +56,10 @@ void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxColli
         bool reversebits = false, const std::vector<hidx_t> & idxs = {},
         KeyFn keyprint = NULL, uint32_t maxPerCollision = 0, int delta = 0 );
 
+template <typename hashtype>
+void ShowOutliers( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, KeyFn keyprint, int delta,
+        const uint32_t maxEntries, const uint32_t maxPerEntry, const uint32_t bitOffset, const uint32_t bitWidth );
+
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
         const int hashbits, const bool drawDiagram );
 

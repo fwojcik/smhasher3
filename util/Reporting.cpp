@@ -146,6 +146,127 @@ void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxColli
 INSTANTIATE(PrintCollisions, HASHTYPELIST);
 
 //-----------------------------------------------------------------------------
+template <typename hashtype>
+void ShowOutliers( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, KeyFn keyprint, int delta,
+        const uint32_t maxEntries, const uint32_t maxPerEntry, const uint32_t bitOffset, const uint32_t bitWidth ) {
+
+    // This count data could be gathered during TestDistribution, but
+    // plumbing that in seems more invasive than I want to be right now. If
+    // this ends up being a bottleneck, that can be revisited.
+    const uint32_t nbH = hashes.size();
+    const uint32_t nbC = 1 << bitWidth;
+    std::vector<uint32_t> counts(nbC);
+    for (uint32_t i = 0; i < nbH; i++) {
+        prefetch(&hashes[i + 4]);
+        uint32_t index = hashes[i].window(bitOffset, bitWidth);
+        counts[index]++;
+    }
+
+    // Find the top 10 bin counts, including duplicates, and the number of
+    // empty bins.
+    constexpr unsigned nOutliers = 10;
+    std::vector<uint32_t> maxcounts(nOutliers);
+    uint32_t zerocount;
+    for (unsigned i = 0; i < nOutliers; i++) {
+        maxcounts[i] = counts[0];
+        zerocount   = (counts[0] == 0) ? 1 : 0;
+    }
+    for (size_t i = 1; i < nbC; i++) {
+        if (counts[i] == 0) {
+            zerocount++;
+            continue;
+        }
+        if (counts[i] > maxcounts[0]) {
+            std::pop_heap(maxcounts.begin(), maxcounts.end(), std::greater<uint32_t>());
+            maxcounts.back() = counts[i];
+            std::push_heap(maxcounts.begin(), maxcounts.end(), std::greater<uint32_t>());
+        }
+    }
+
+    // Find every hash which ended up in a bin with a count in the top
+    // 10. This won't record more than maxPerEntry hashes per bin, nor any
+    // hashes from more than maxEntries of those bins.
+    const uint32_t maxbound = maxcounts[0];
+    std::multimap<uint32_t, hidx_t> entries;
+    for (uint32_t i = 0; i < nbH; i++) {
+        prefetch(&hashes[i + 4]);
+        uint32_t index = hashes[i].window(bitOffset, bitWidth);
+        if (counts[index] < maxbound) {
+            continue;
+        }
+        size_t count = entries.count(index);
+        if (((count == 0) && (entries.size() < maxEntries)) ||
+                (count < maxPerEntry)) {
+            entries.insert({index, i});
+        }
+    }
+
+    printf("Most common hash values for %d-bits slice @ offset %d (expected count == %f):\n",
+            bitWidth, bitOffset, ldexp((double)nbH, -bitWidth));
+    uint32_t prevhash = 0xffffffff;
+    if (keyprint == NULL) {
+        for (auto const e: entries) {
+            if ((e.first == prevhash) || (counts[e.first] < maxbound)) {
+                continue;
+            }
+            prevhash = e.first;
+            printf("\t\t%8dx 0x%-8x\n", counts[e.first], e.first);
+        }
+    } else {
+        for (auto const e: entries) {
+            if (e.first != prevhash) {
+                const uint32_t keycount = counts[e.first];
+                if (keycount < maxbound) {
+                    continue;
+                }
+                if (keycount > maxPerEntry) {
+                    printf("\tfirst %d (of %d) results for ", maxPerEntry, keycount);
+                } else {
+                    printf("\t%d results for ", keycount);
+                }
+                if (delta > 0) {
+                    printf("hash value XOR delta slice 0x%-8x\n", e.first);
+                } else {
+                    printf("hash value slice 0x%-8x\n", e.first);
+                }
+                printf("\t\tSeed            \tKey\n");
+                printf("\t\t--------------------------------------------------\n");
+                prevhash = e.first;
+            }
+            printf("\t\t");
+            keyprint(hashidxs[e.second]);
+            if (delta > 0) {
+                printf("\tXOR\t");
+                keyprint(hashidxs[e.second] + delta);
+            }
+            printf("\n");
+        }
+    }
+
+    if (zerocount > 0) {
+        printf("Never-seen hash values for %d-bits slice @ offset %d ", bitWidth, bitOffset);
+        if (zerocount > maxEntries) {
+            printf("(first %d of %d values):\n", maxPerEntry, zerocount);
+            zerocount = maxEntries;
+        } else {
+            printf("(%d values):\n", zerocount);
+        }
+        for (size_t i = 0; i < nbC; i++) {
+            if (counts[i] != 0) {
+                continue;
+            }
+            // The spaces here are so this matches the "\t\t%8dx 0x%-8x\n" above
+            printf("\t\t          0x%-8zx\n", i);
+            if (--zerocount == 0) {
+                break;
+            }
+        }
+    }
+}
+
+INSTANTIATE(ShowOutliers, HASHTYPELIST);
+
+//-----------------------------------------------------------------------------
 // Report on the fact that, in each of the specified number of trials,
 // a fair coin was "flipped" coinflips times, and the worst bias
 // (number of excess "heads" or "tails") over all those trials was the
