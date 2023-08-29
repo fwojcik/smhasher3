@@ -175,6 +175,46 @@ int FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t>
 
 INSTANTIATE(FindCollisions, HASHTYPELIST);
 
+// Look through the pre-sorted hash list for collisions in the first
+// prefixLen bits, count them, and return the first N collisions for
+// further processing. This also allows for excluding collisions in the
+// first prevPrefixLen bits, for the case where they were reported on
+// previously.
+//
+// This will eventually be different enough from FindCollisions() to fully
+// re-implement here, instead of diving further into template madness.
+template <typename hashtype>
+static int FindCollisionsPrefixes( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
+        size_t maxCollisions, uint32_t prefixLen, uint32_t prevPrefixLen ) {
+    int collcount = 0;
+    hashtype mask;
+
+    assert(prefixLen > 0);
+    mask.sethighbits(prefixLen);
+
+    const size_t nbH = hashes.size();
+    for (size_t hnb = 1; hnb < nbH; hnb++) {
+        // Search until we find a collision in the first [prefixLen, prevPrefixLen) bits
+        hashtype hdiff = hashes[hnb - 1] ^ hashes[hnb];
+        uint32_t hzb   = hdiff.highzerobits();
+        if ((hzb < prefixLen) || (hzb >= prevPrefixLen)) {
+            continue;
+        }
+
+        collcount++;
+
+        hashtype colliding_bits = hashes[hnb] & mask;
+        auto it = collisions.find(colliding_bits);
+        if (it != collisions.end()) {
+            it->second++;
+        } else if (collisions.size() < maxCollisions) {
+            collisions.emplace(std::pair<hashtype, uint32_t>{colliding_bits, 2});
+        }
+    }
+
+    return collcount;
+}
+
 //-----------------------------------------------------------------------------
 // If calcmax is false, then this tallies the total number of collisions
 // across all given hashes for each bit window in the range of [minHBits,
