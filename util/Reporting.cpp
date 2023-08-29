@@ -90,8 +90,8 @@ static void plot( double n ) {
 // Print a list of collisions
 template <typename hashtype>
 void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions,
-        uint32_t nbBits, uint32_t prevBits, bool reversebits, const std::vector<hidx_t> & idxs,
-        KeyFn keyprint, uint32_t maxPerCollision, int delta ) {
+        uint32_t maxPerCollision, const std::vector<hidx_t> & idxs, KeyFn keyprint,
+        int delta, uint32_t nbBits, uint32_t prevBits, bool reversebits ) {
     if (prevBits != nbBits) {
         printf("\n%d-bit or more collisions (excluding %d-bit or more) ", nbBits, prevBits);
     } else {

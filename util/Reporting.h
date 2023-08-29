@@ -52,9 +52,9 @@
  */
 template <typename hashtype>
 void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions,
-        uint32_t nbBits = sizeof(hashtype) * 8, uint32_t prevBits = sizeof(hashtype) * 8,
-        bool reversebits = false, const std::vector<hidx_t> & idxs = {},
-        KeyFn keyprint = NULL, uint32_t maxPerCollision = 0, int delta = 0 );
+        uint32_t maxPerCollision = 0, const std::vector<hidx_t> & idxs = {}, KeyFn keyprint = NULL,
+        int delta = 0, uint32_t nbBits = sizeof(hashtype) * 8, uint32_t prevBits = sizeof(hashtype) * 8,
+        bool reversebits = false );
 
 template <typename hashtype>
 void ShowOutliers( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, KeyFn keyprint, int delta,

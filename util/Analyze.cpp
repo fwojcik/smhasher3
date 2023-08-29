@@ -537,8 +537,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
         *logpSumPtr += curlogp;
     }
     if (!result && drawDiagram) {
-        PrintCollisions(collisions, MAX_ENTRIES, hashbits, hashbits, false,
-                collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
+        PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs, keyprint, testDeltaNum);
     }
 
     // Report on partial collisions, if requested
@@ -562,8 +561,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                     collisionidxs.clear();
                     FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, nbBits,
                             prevBitsH, collisionidxs, hashidxs, MAX_PER_ENTRY);
-                    PrintCollisions(collisions, MAX_ENTRIES, nbBits, prevBitsH, false,
-                            collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
+                    PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
+                            keyprint, testDeltaNum, nbBits, prevBitsH, false);
                     prevBitsH = nbBits;
                 }
                 result &= thisresult;
@@ -579,8 +578,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                     collisionidxs.clear();
                     FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, nbBits,
                             prevBitsL, collisionidxs, hashidxs_rev, MAX_PER_ENTRY);
-                    PrintCollisions(collisions, MAX_ENTRIES, nbBits, prevBitsL, true,
-                            collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
+                    PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
+                            keyprint, testDeltaNum, nbBits, prevBitsL, true);
                     prevBitsL = nbBits;
                 }
                 result &= thisresult;
@@ -600,8 +599,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 collisionidxs.clear();
                 FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, maxBits,
                         hashbits + 1, collisionidxs, hashidxs, MAX_PER_ENTRY);
-                PrintCollisions(collisions, MAX_ENTRIES, maxBits, maxBits, false,
-                        collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
+                PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
+                        keyprint, testDeltaNum, maxBits, maxBits, false);
             }
             result &= thisresult;
         }
@@ -617,8 +616,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 collisionidxs.clear();
                 FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, maxBits,
                         hashbits + 1, collisionidxs, hashidxs_rev, MAX_PER_ENTRY);
-                PrintCollisions(collisions, MAX_ENTRIES, maxBits, maxBits, true,
-                        collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
+                PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
+                        keyprint, testDeltaNum, maxBits, maxBits, true);
             }
             result &= thisresult;
         }
