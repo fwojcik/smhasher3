@@ -56,13 +56,12 @@
 #include "Blobsort.h"
 #include "Stats.h"
 #include "Reporting.h"
+#include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
 #include <cstring> // for memset
 #include <math.h>
-
-#include "Analyze.h"
 
 #if defined(HAVE_THREADS)
   #include <atomic>
@@ -146,11 +145,11 @@ static void FindCollBitBounds( std::set<int> & nbBitsvec, int origBits, uint64_t
 }
 
 //-----------------------------------------------------------------------------
-// Sort the hash list, count the total number of collisions and return
-// the first N collisions for further processing
+// Sort the hash list, count the total number of collisions and return the
+// first N collisions for further processing. If requested, also count the
+// number of times each collision occurs.
 template <typename hashtype>
-int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisions,
-        int maxCollisions, bool drawDiagram ) {
+int FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, size_t maxCollisions ) {
     int collcount = 0;
 
     blobsort(hashes.begin(), hashes.end());
@@ -159,10 +158,14 @@ int FindCollisions( std::vector<hashtype> & hashes, std::set<hashtype> & collisi
     for (size_t hnb = 1; hnb < sz; hnb++) {
         if (hashes[hnb] == hashes[hnb - 1]) {
             collcount++;
-            if (collcount < maxCollisions) {
-                if (drawDiagram) {
-                    collisions.insert(hashes[hnb]);
-                }
+            if (maxCollisions == 0) {
+                continue;
+            }
+            auto it = collisions.find(hashes[hnb]);
+            if (it != collisions.end()) {
+                it->second++;
+            } else if (collisions.size() < maxCollisions) {
+                collisions.emplace(std::pair<hashtype, uint32_t>{hashes[hnb], 2});
             }
         }
     }
@@ -293,8 +296,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
     addVCodeOutput(&hashes[0], hashtype::len * nbH);
 
     // Note that FindCollisions sorts the list of hashes!
-    std::set<hashtype> collisions;
-    int collcount = FindCollisions(hashes, collisions, 1000, drawDiagram);
+    std::map<hashtype, uint32_t> collisions;
+    int collcount = FindCollisions(hashes, collisions, drawDiagram ? 1000 : 0);
     addVCodeResult(collcount);
 
     // If analysis of partial collisions is requested, figure out which bit

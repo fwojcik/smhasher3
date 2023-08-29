@@ -56,7 +56,6 @@
 #include "Blobsort.h"
 #include "Stats.h"
 #include "Reporting.h"
-#include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
 
@@ -90,12 +89,13 @@ static void plot( double n ) {
 //-----------------------------------------------------------------------------
 // Print a list of collisions
 template <typename hashtype>
-void PrintCollisions( std::set<hashtype> & collisions ) {
+void PrintCollisions( std::map<hashtype, uint32_t> & collisions ) {
     printf("\nCollisions:\n");
 
     for (auto it = collisions.begin(); it != collisions.end(); ++it) {
-        const hashtype & hash = *it;
-        hash.printhex("  ");
+        const hashtype & hash = it->first;
+        printf("%6dx", it->second);
+        hash.printhex(" ");
     }
     printf("\n");
 }

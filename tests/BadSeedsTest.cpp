@@ -88,7 +88,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
     const seed_t             last  = hi | endlow;
     const hashtype           zero  = { 0 };
     std::vector<hashtype>    hashes( numtestbytes * numtestlens );
-    std::set<hashtype>       collisions;
+    std::map<hashtype, uint32_t> collisions;
 
     const char * progress_fmt =
             (last <= UINT64_C(0xffffffff)) ?
@@ -142,7 +142,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         }
 
         /* Report if any collisions were found */
-        if (FindCollisions(hashes, collisions, numtestbytes * numtestlens, true) > 0) {
+        if (FindCollisions(hashes, collisions, numtestbytes * numtestlens) > 0) {
 #if defined(HAVE_THREADS)
             std::lock_guard<std::mutex> lock( print_mutex );
 #endif
@@ -167,7 +167,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
                 for (size_t i = 0; i < numtestbytes; i++) {
                     for (int len: testlens) {
                         hash(&keys[i][0], len, hseed, &v);
-                        if (std::find(collisions.begin(), collisions.end(), v) != collisions.end()) {
+                        if (collisions.find(v) != collisions.end()) {
                             printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
                         }
                     }
@@ -304,10 +304,10 @@ static bool BadSeedsFind( const HashInfo * hinfo ) {
 
 template <typename hashtype>
 static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    const HashFn          hash = hinfo->hashFn(g_hashEndian);
     const hashtype        zero = { 0 };
     std::vector<hashtype> hashes( numtestbytes * numtestlens );
-    std::set<hashtype>    collisions;
+    std::map<hashtype, uint32_t> collisions;
     bool result = true;
 
     if (hinfo->is32BitSeed() && (seed > UINT64_C(0xffffffff))) {
@@ -331,7 +331,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
         }
     }
 
-    if (FindCollisions(hashes, collisions, numtestbytes * numtestlens, true) > 0) {
+    if (FindCollisions(hashes, collisions, numtestbytes * numtestlens) > 0) {
         printf("Confirmed bad seed 0x%" PRIx64 "\n", seed);
         PrintCollisions(collisions);
 #if 0
@@ -340,7 +340,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
         for (size_t i = 0; i < numtestbytes; i++) {
             for (int len: testlens) {
                 hash(&keys[i][0], len, hseed, &v);
-                if (std::find(collisions.begin(), collisions.end(), v) != collisions.end()) {
+                if (collisions.find(v) != collisions.end()) {
                     printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
                 }
             }
