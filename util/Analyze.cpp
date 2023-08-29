@@ -373,8 +373,8 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, int minHBit
 //----------------------------------------------------------------------------
 
 template <typename hashtype>
-static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bool willTestDist,
-        bool testMaxColl, bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
+static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn keyprint, int testDeltaNum,
+        bool willTestDist, bool testMaxColl, bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
     const unsigned hashbits   = hashtype::bitlen;
     const uint64_t nbH        = hashes.size();
     const uint32_t maxColl    = drawDiagram ? 1000 : 0;
@@ -534,7 +534,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
         *logpSumPtr += curlogp;
     }
     if (!result && drawDiagram) {
-        PrintCollisions(collisions, maxColl);
+        PrintCollisions(collisions, maxColl, hashbits, hashbits, false,
+                collisionidxs, keyprint, maxPerColl, testDeltaNum);
     }
 
     // Report on partial collisions, if requested
@@ -558,7 +559,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                     collisionidxs.clear();
                     FindCollisionsPrefixesIndices(hashes, collisions, maxColl, nbBits,
                             prevBitsH, collisionidxs, hashidxs, maxPerColl);
-                    PrintCollisions(collisions, maxColl, nbBits, prevBitsH, false);
+                    PrintCollisions(collisions, maxColl, nbBits, prevBitsH, false,
+                            collisionidxs, keyprint, maxPerColl, testDeltaNum);
                     prevBitsH = nbBits;
                 }
                 result &= thisresult;
@@ -574,7 +576,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                     collisionidxs.clear();
                     FindCollisionsPrefixesIndices(hashes_rev, collisions, maxColl, nbBits,
                             prevBitsL, collisionidxs, hashidxs_rev, maxPerColl);
-                    PrintCollisions(collisions, maxColl, nbBits, prevBitsL, true);
+                    PrintCollisions(collisions, maxColl, nbBits, prevBitsL, true,
+                            collisionidxs, keyprint, maxPerColl, testDeltaNum);
                     prevBitsL = nbBits;
                 }
                 result &= thisresult;
@@ -594,7 +597,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                 collisionidxs.clear();
                 FindCollisionsPrefixesIndices(hashes, collisions, maxColl, maxBits,
                         hashbits + 1, collisionidxs, hashidxs, maxPerColl);
-                PrintCollisions(collisions, maxColl, maxBits, maxBits, false);
+                PrintCollisions(collisions, maxColl, maxBits, maxBits, false,
+                        collisionidxs, keyprint, maxPerColl, testDeltaNum);
             }
             result &= thisresult;
         }
@@ -610,7 +614,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                 collisionidxs.clear();
                 FindCollisionsPrefixesIndices(hashes_rev, collisions, maxColl, maxBits,
                         hashbits + 1, collisionidxs, hashidxs_rev, maxPerColl);
-                PrintCollisions(collisions, maxColl, maxBits, maxBits, true);
+                PrintCollisions(collisions, maxColl, maxBits, maxBits, true,
+                        collisionidxs, keyprint, maxPerColl, testDeltaNum);
             }
             result &= thisresult;
         }
@@ -803,6 +808,10 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * l
     // between each hash and the hash testDeltaNum hashes back and test
     // those deltas also.
     //
+    // Note that child calls of TestHashListImpl() get _negative_ values of
+    // testDeltaNum, so that they both know what delta value they test, and
+    // aren't fooled into calling TestHashListImpl() yet again.
+    //
     // This must be done before the list of hashes is sorted below inside
     // TestCollisions(). The calls to test the list(s) of deltas come at
     // the bottom of this function.
@@ -836,8 +845,8 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * l
     //----------
 
     if (testCollision) {
-        result &= TestCollisions(hashes, logpSumPtr, testDist, testMaxColl,
-                testHighBits, testLowBits, verbose, drawDiagram);
+        result &= TestCollisions(hashes, logpSumPtr, keyprint, -testDeltaNum, testDist,
+                testMaxColl, testHighBits, testLowBits, verbose, drawDiagram);
     }
 
     //----------
