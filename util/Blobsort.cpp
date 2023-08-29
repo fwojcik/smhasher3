@@ -208,9 +208,8 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
 }
 
 template <typename blobtype>
-static bool blobverify( std::vector<blobtype> & blobs ) {
+static bool blobverify( std::vector<blobtype> & blobs, std::vector<blobtype> & orig ) {
     bool passed     = true;
-
     const size_t sz = blobs.size();
 
     for (size_t nb = 1; nb < sz; nb++) {
@@ -222,6 +221,30 @@ static bool blobverify( std::vector<blobtype> & blobs ) {
             passed = false;
         }
     }
+
+    std::sort(orig.begin(), orig.end());
+
+    for (size_t nb = 0; nb < sz; nb++) {
+        if (blobs[nb] != orig[nb]) {
+            passed = false;
+        }
+    }
+
+    return passed;
+}
+
+template <typename blobtype>
+static bool blobverify( std::vector<blobtype> & blobs, std::vector<blobtype> & orig, std::vector<hidx_t> & idxs ) {
+    bool passed     = true;
+    const size_t sz = blobs.size();
+
+    for (size_t nb = 0; nb < sz; nb++) {
+        if (blobs[nb] != orig[idxs[nb]]) {
+            passed = false;
+        }
+    }
+
+    passed &= blobverify(blobs, orig);
 
     return passed;
 }
@@ -249,13 +272,14 @@ const static int baseline_idx2[SORT_TESTS] = {
     +4, -1, -1, -1, -1, +5, +6, -1, -1, +7
 };
 
-template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype>
-bool test_blobsort_type( void ) {
-    bool passed = true;
-    std::vector<blobtype> blobs( TEST_SIZE );
+template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype, bool track_idxs>
+bool test_blobsort_type_idx( void ) {
+    std::vector<blobtype> blobs( TEST_SIZE ), orig( TEST_SIZE );
+    std::vector<hidx_t> idxs;
     std::vector<size_t> testnums;
     uint64_t timetotal = 0;
     double   basesum   = 0.0;
+    bool     passed    = true;
 
     if (TEST_ITER > 1) {
         testnums = { 4, 6, 8, 9, 10, 15, 16, 19 };
@@ -273,15 +297,26 @@ bool test_blobsort_type( void ) {
         }
         for (size_t j = 0; j < TEST_ITER; j++) {
             blobfill<blobtype, TEST_SIZE>(blobs, i, j);
+            orig = blobs;
+
             uint64_t timeBegin = monotonic_clock();
-            blobsort(blobs.begin(), blobs.end());
+            if (track_idxs) {
+                blobsort(blobs.begin(), blobs.end(), idxs);
+            } else {
+                blobsort(blobs.begin(), blobs.end());
+            }
             uint64_t timeEnd   = monotonic_clock();
 
             uint64_t timesum   = timeEnd - timeBegin;
             if (mintime > timesum) {
                 mintime = timesum;
             }
-            thispassed &= blobverify(blobs);
+            if (track_idxs) {
+                thispassed &= blobverify(blobs, orig, idxs);
+                idxs.clear();
+            } else {
+                thispassed &= blobverify(blobs, orig);
+            }
             if (TEST_ITER > 1) {
                 progressdots(j, 0, TEST_ITER - 1, 16);
             }
@@ -313,6 +348,16 @@ bool test_blobsort_type( void ) {
         printf("%3lu bits, %-60s                \t%8.1f ms ( %+6.1f ms )\n\n",
                 blobtype::bitlen, "SUM TOTAL", thistime, delta);
     }
+
+    return passed;
+}
+
+template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype>
+bool test_blobsort_type( void ) {
+    bool passed = true;
+
+    passed &= test_blobsort_type_idx<TEST_SIZE, TEST_ITER, blobtype, false>();
+    passed &= test_blobsort_type_idx<TEST_SIZE, TEST_ITER, blobtype, true>();
 
     return passed;
 }

@@ -25,6 +25,10 @@
 #include <cassert>
 #include "Blob.h"
 
+// A type for indexing into lists of hashes. Using 32-bits saves time and
+// memory but limits tests to 2^32 hashes. This should be fine.
+typedef uint32_t hidx_t;
+
 //-----------------------------------------------------------------------------
 // Global variables from main.cpp
 
