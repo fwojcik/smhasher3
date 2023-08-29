@@ -627,7 +627,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
 // NB: This function is not intended to be used directly; see
 // TestHashList() and class TestHashListWrapper in Analyze.h.
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, int * logpSumPtr, bool drawDiagram,
+bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * logpSumPtr, bool drawDiagram,
         bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits, bool verbose ) {
     uint64_t const nbH    = hashes.size();
     bool           result = true;
@@ -691,14 +691,14 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, in
         if (verbose) {
             printf("---Analyzing hash deltas\n");
         }
-        result &= TestHashListImpl(hashdeltas_1, 0, logpSumPtr, drawDiagram, testCollision,
+        result &= TestHashListImpl(hashdeltas_1, -1, logpSumPtr, drawDiagram, testCollision,
                 testMaxColl, testDist, testHighBits, testLowBits, verbose);
 
         if (testDeltaNum >= 2) {
             if (verbose) {
                 printf("---Analyzing additional hash deltas\n");
             }
-            result &= TestHashListImpl(hashdeltas_N, 0, logpSumPtr, drawDiagram, testCollision,
+            result &= TestHashListImpl(hashdeltas_N, -testDeltaNum, logpSumPtr, drawDiagram, testCollision,
                     testMaxColl, testDist, testHighBits, testLowBits, verbose);
         }
     }

@@ -56,7 +56,7 @@ int FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t>
 //-----------------------------------------------------------------------------
 // This is not intended to be used directly; see below
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, unsigned testDeltaNum, int * logpSumPtr, bool drawDiagram,
+bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * logpSumPtr, bool drawDiagram,
         bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
 
 // This provides a user-friendly wrapper to TestHashListImpl<>() by using
@@ -70,7 +70,7 @@ template <typename hashtype>
 class TestHashListWrapper {
   private:
     std::vector<hashtype> & hashes_;
-    unsigned  deltaNum_;
+    int       deltaNum_;
     int *     logpSumPtr_;
     bool      testCollisions_;
     bool      testMaxCollisions_;
@@ -95,7 +95,7 @@ class TestHashListWrapper {
 
     inline TestHashListWrapper & testDistribution( bool s ) { testDistribution_ = s; return *this; }
 
-    inline TestHashListWrapper & testDeltas( unsigned n )   { deltaNum_         = n; return *this; }
+    inline TestHashListWrapper & testDeltas( int n )        { assert(n > 0); deltaNum_ = n; return *this; }
 
     inline TestHashListWrapper & testHighBits( bool s )     { testHighBits_     = s; return *this; }
 
