@@ -373,14 +373,16 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, int minHBit
 //----------------------------------------------------------------------------
 
 template <typename hashtype>
-static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn keyprint, int testDeltaNum,
-        bool willTestDist, bool testMaxColl, bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
+static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs,
+        int * logpSumPtr, KeyFn keyprint, int testDeltaNum, bool willTestDist, bool testMaxColl,
+        bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
     const unsigned hashbits   = hashtype::bitlen;
     const uint64_t nbH        = hashes.size();
     const uint32_t maxColl    = drawDiagram ? 1000 : 0;
     const uint32_t maxPerColl = drawDiagram ? 100 : 0;
-    int  curlogp;
-    bool result = true;
+    hidx_t collcount;
+    int    curlogp;
+    bool   result = true;
 
     if (verbose) {
         printf("Testing all collisions (     %3i-bit)", hashbits);
@@ -394,8 +396,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, Ke
     // Note that FindCollisions sorts the list of hashes!
     std::map<hashtype, uint32_t> collisions;
     std::vector<hidx_t>          collisionidxs;
-    std::vector<hidx_t>          hashidxs;
-    hidx_t                       collcount;
     if (drawDiagram) {
         collcount = FindCollisionsIndices(hashes, collisions, maxColl, collisionidxs, hashidxs, maxPerColl);
     } else {
@@ -822,6 +822,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * l
     // up slower. Not a huge deal, but this is a hot spot.
     std::vector<hashtype> hashdeltas_1;
     std::vector<hashtype> hashdeltas_N;
+    std::vector<hidx_t>   hashidxs;
 
     if (testDeltaNum >= 1) {
         hashdeltas_1.reserve(nbH - 1);
@@ -845,8 +846,8 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * l
     //----------
 
     if (testCollision) {
-        result &= TestCollisions(hashes, logpSumPtr, keyprint, -testDeltaNum, testDist,
-                testMaxColl, testHighBits, testLowBits, verbose, drawDiagram);
+        result &= TestCollisions(hashes, hashidxs, logpSumPtr, keyprint, -testDeltaNum,
+                testDist, testMaxColl, testHighBits, testLowBits, verbose, drawDiagram);
     }
 
     //----------
