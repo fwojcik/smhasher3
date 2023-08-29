@@ -36,6 +36,9 @@ extern seed_t g_seed;
 // What each test suite prints upon failure
 extern const char * g_failstr;
 
+// A string with 128 spaces, used for aligning text outputs
+extern const char * g_manyspaces;
+
 // By rights, the HAVE_HASHINFO #define shouldn't exist, but C++11
 // doesn't allow forward declaration of class enums (enum classes,
 // yes, but not class enums) for no good reason, and we definitely

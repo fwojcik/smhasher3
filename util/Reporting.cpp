@@ -465,13 +465,10 @@ bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxB
     }
 
     if (verbose) {
-        const char * spaces = "                ";
         int          i_maxCollDevExp = (int)round(maxCollDevExp);
         spacelen -= printf("Worst is %2i bits: %i/%i ", maxCollDevBits, maxCollDevNb, i_maxCollDevExp);
         if (spacelen < 0) {
             spacelen = 0;
-        } else if (spacelen > (int)strlen(spaces)) {
-            spacelen = strlen(spaces);
         }
 
         if (maxCollDev >= 999.95) {
@@ -479,11 +476,11 @@ bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxB
         }
 
         if (!isfinite(maxCollDev)) {
-            printf("%.*s(------) ", spacelen, spaces);
+            printf("%.*s(------) ", spacelen, g_manyspaces);
         } else if (maxCollDev < 9.0) {
-            printf("%.*s(%5.3fx) ", spacelen, spaces, maxCollDev);
+            printf("%.*s(%5.3fx) ", spacelen, g_manyspaces, maxCollDev);
         } else {
-            printf("%.*s(%#.4gx) ", spacelen, spaces, maxCollDev);
+            printf("%.*s(%#.4gx) ", spacelen, g_manyspaces, maxCollDev);
         }
 
         if (drawDiagram) {

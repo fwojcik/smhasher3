@@ -78,3 +78,9 @@ const char * g_failstr = "*********FAIL*********\n";
 uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE + 2];
 uint32_t g_testPass, g_testFail;
 std::vector<std::pair<const char *, char *>> g_testFailures;
+
+//--------
+// A string with 128 spaces, useful for aligning text outputs
+const char * g_manyspaces =
+    "                                                                "  \
+    "                                                                ";
