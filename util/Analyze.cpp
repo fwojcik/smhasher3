@@ -475,17 +475,17 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
             if ((nbBits < minBits) || (nbBits > maxBits)) {
                 continue;
             }
-            bool maxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
+            bool reportMaxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
             if (testHighBits) {
                 result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits], nbBits,
-                        &curlogp, maxcoll, true, true, verbose, drawDiagram);
+                        &curlogp, reportMaxcoll, true, true, verbose, drawDiagram);
                 if (logpSumPtr != NULL) {
                     *logpSumPtr += curlogp;
                 }
             }
             if (testLowBits) {
                 result &= ReportCollisions(nbH, collcounts_rev[nbBits - minBits], nbBits,
-                        &curlogp, maxcoll, false, true, verbose, drawDiagram);
+                        &curlogp, reportMaxcoll, false, true, verbose, drawDiagram);
                 if (logpSumPtr != NULL) {
                     *logpSumPtr += curlogp;
                 }
