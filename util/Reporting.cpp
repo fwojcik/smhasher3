@@ -89,8 +89,13 @@ static void plot( double n ) {
 //-----------------------------------------------------------------------------
 // Print a list of collisions
 template <typename hashtype>
-void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions ) {
-    printf("\nCollisions: ");
+void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions,
+        uint32_t nbBits, uint32_t prevBits, bool reversebits ) {
+    if (prevBits != nbBits) {
+        printf("\n%d-bit or more collisions (excluding %d-bit or more) ", nbBits, prevBits);
+    } else {
+        printf("\n%d-bit collisions ", nbBits);
+    }
     if (collisions.size() >= maxCollisions) {
         printf("(first %zd):\n", maxCollisions);
     } else {
@@ -100,7 +105,7 @@ void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxColli
     for (auto const coll: collisions) {
         const hashtype & hash = coll.first;
         printf("%6dx", coll.second);
-        hash.printhex(" ");
+        hash.printhex(" ", nbBits, reversebits);
     }
     printf("\n");
 }
