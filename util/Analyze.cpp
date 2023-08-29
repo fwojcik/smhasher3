@@ -73,6 +73,11 @@ typedef int a_int;
 #endif
 
 //----------------------------------------------------------------------------
+// Some reporting limits, which should be tunable if needed
+static const uint32_t MAX_ENTRIES   = 1000;
+static const uint32_t MAX_PER_ENTRY = 100;
+
+//----------------------------------------------------------------------------
 // Compute the highest number of hash bits that makes sense to use for
 // testing how evenly the hash distributes entries over all hash bins.
 static int MaxDistBits( const uint64_t nbH ) {
@@ -378,8 +383,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
         bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
     const unsigned hashbits   = hashtype::bitlen;
     const uint64_t nbH        = hashes.size();
-    const uint32_t maxColl    = drawDiagram ? 1000 : 0;
-    const uint32_t maxPerColl = drawDiagram ? 100 : 0;
     hidx_t         collcount;
 
     if (verbose) {
@@ -395,9 +398,9 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
     std::map<hashtype, uint32_t> collisions;
     std::vector<hidx_t>          collisionidxs;
     if (drawDiagram) {
-        collcount = FindCollisionsIndices(hashes, collisions, maxColl, collisionidxs, hashidxs, maxPerColl);
+        collcount = FindCollisionsIndices(hashes, collisions, MAX_ENTRIES, collisionidxs, hashidxs, MAX_PER_ENTRY);
     } else {
-        collcount = FindCollisions(hashes, collisions, maxColl);
+        collcount = FindCollisions(hashes, collisions, 0);
     }
     addVCodeResult(collcount);
 
@@ -534,8 +537,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
         *logpSumPtr += curlogp;
     }
     if (!result && drawDiagram) {
-        PrintCollisions(collisions, maxColl, hashbits, hashbits, false,
-                collisionidxs, keyprint, maxPerColl, testDeltaNum);
+        PrintCollisions(collisions, MAX_ENTRIES, hashbits, hashbits, false,
+                collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
     }
 
     // Report on partial collisions, if requested
@@ -557,10 +560,10 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 if (!thisresult && drawDiagram) {
                     collisions.clear();
                     collisionidxs.clear();
-                    FindCollisionsPrefixesIndices(hashes, collisions, maxColl, nbBits,
-                            prevBitsH, collisionidxs, hashidxs, maxPerColl);
-                    PrintCollisions(collisions, maxColl, nbBits, prevBitsH, false,
-                            collisionidxs, keyprint, maxPerColl, testDeltaNum);
+                    FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, nbBits,
+                            prevBitsH, collisionidxs, hashidxs, MAX_PER_ENTRY);
+                    PrintCollisions(collisions, MAX_ENTRIES, nbBits, prevBitsH, false,
+                            collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
                     prevBitsH = nbBits;
                 }
                 result &= thisresult;
@@ -574,10 +577,10 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 if (!thisresult && drawDiagram) {
                     collisions.clear();
                     collisionidxs.clear();
-                    FindCollisionsPrefixesIndices(hashes_rev, collisions, maxColl, nbBits,
-                            prevBitsL, collisionidxs, hashidxs_rev, maxPerColl);
-                    PrintCollisions(collisions, maxColl, nbBits, prevBitsL, true,
-                            collisionidxs, keyprint, maxPerColl, testDeltaNum);
+                    FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, nbBits,
+                            prevBitsL, collisionidxs, hashidxs_rev, MAX_PER_ENTRY);
+                    PrintCollisions(collisions, MAX_ENTRIES, nbBits, prevBitsL, true,
+                            collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
                     prevBitsL = nbBits;
                 }
                 result &= thisresult;
@@ -595,10 +598,10 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             if (!thisresult && drawDiagram) {
                 collisions.clear();
                 collisionidxs.clear();
-                FindCollisionsPrefixesIndices(hashes, collisions, maxColl, maxBits,
-                        hashbits + 1, collisionidxs, hashidxs, maxPerColl);
-                PrintCollisions(collisions, maxColl, maxBits, maxBits, false,
-                        collisionidxs, keyprint, maxPerColl, testDeltaNum);
+                FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, maxBits,
+                        hashbits + 1, collisionidxs, hashidxs, MAX_PER_ENTRY);
+                PrintCollisions(collisions, MAX_ENTRIES, maxBits, maxBits, false,
+                        collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
             }
             result &= thisresult;
         }
@@ -612,10 +615,10 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             if (!thisresult && drawDiagram) {
                 collisions.clear();
                 collisionidxs.clear();
-                FindCollisionsPrefixesIndices(hashes_rev, collisions, maxColl, maxBits,
-                        hashbits + 1, collisionidxs, hashidxs_rev, maxPerColl);
-                PrintCollisions(collisions, maxColl, maxBits, maxBits, true,
-                        collisionidxs, keyprint, maxPerColl, testDeltaNum);
+                FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, maxBits,
+                        hashbits + 1, collisionidxs, hashidxs_rev, MAX_PER_ENTRY);
+                PrintCollisions(collisions, MAX_ENTRIES, maxBits, maxBits, true,
+                        collisionidxs, keyprint, MAX_PER_ENTRY, testDeltaNum);
             }
             result &= thisresult;
         }
@@ -744,8 +747,6 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
         int * logpSumPtr, KeyFn keyprint, int testDeltaNum, bool verbose, bool drawDiagram ) {
     const int      hashbits  = hashtype::bitlen;
     const size_t   nbH       = hashes.size();
-    const uint32_t maxEnt    = drawDiagram ? 1000 : 0;
-    const uint32_t maxPerEnt = drawDiagram ? 100 : 0;
     int            maxwidth  = MaxDistBits(nbH);
     int            minwidth  = 8;
 
@@ -790,7 +791,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
         *logpSumPtr += curlogp;
     }
     if (!result && drawDiagram) {
-        ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, maxEnt, maxPerEnt, bitstart, bitwidth);
+        ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, MAX_ENTRIES, MAX_PER_ENTRY, bitstart, bitwidth);
     }
 
     return result;
