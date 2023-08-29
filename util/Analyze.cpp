@@ -303,9 +303,10 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
 
     // If analysis of partial collisions is requested, figure out which bit
     // widths make sense to test, and then test them.
+    std::vector<hashtype>            hashes_rev;
     std::set<int, std::greater<int>> nbBitsvec;
-    std::vector<int> collcounts_fwd;
-    std::vector<int> collcounts_rev;
+    std::vector<int>                 collcounts_fwd;
+    std::vector<int>                 collcounts_rev;
     int minBits = 0, maxBits = 0, threshBits = 0, minTBits = 0, maxTBits = 0;
 
     if (testHighBits || testLowBits) {
@@ -382,22 +383,38 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
 
         if (testLowBits && (maxBits > 0)) {
             collcounts_rev.resize(maxBits - minBits + 1);
-            for (size_t hnb = 0; hnb < nbH; hnb++) {
-                hashes[hnb].reversebits();
-            }
-            blobsort(hashes.begin(), hashes.end());
 
-            CountRangedNbCollisions(hashes, minBits, maxBits, threshBits, &collcounts_rev[0]);
-
-            for (size_t hnb = 0; hnb < nbH; hnb++) {
-                hashes[hnb].reversebits();
+            if (drawDiagram) {
+                hashes_rev.resize(nbH);
+                for (size_t hnb = 0; hnb < nbH; hnb++) {
+                    hashes_rev[hnb] = hashes[hnb];
+                    hashes_rev[hnb].reversebits();
+                }
+            } else {
+                hashes_rev = std::move(hashes);
+                hashes.clear();
+                for (size_t hnb = 0; hnb < nbH; hnb++) {
+                    hashes_rev[hnb].reversebits();
+                }
             }
-            // No need to re-sort, since TestDistribution doesn't care
+
+            blobsort(hashes_rev.begin(), hashes_rev.end());
+
+            CountRangedNbCollisions(hashes_rev, minBits, maxBits, threshBits, &collcounts_rev[0]);
 
             if (collcounts_rev.size() != 0) {
                 addVCodeResult(&collcounts_rev[0], sizeof(collcounts_rev[0]) *
                         collcounts_rev.size());
             }
+
+            if (!drawDiagram) {
+                for (size_t hnb = 0; hnb < nbH; hnb++) {
+                    hashes_rev[hnb].reversebits();
+                }
+                hashes = std::move(hashes_rev);
+                hashes_rev.clear();
+            }
+            // No need to re-sort, since TestDistribution doesn't care
         }
     }
 
