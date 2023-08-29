@@ -333,7 +333,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
 
     if (FindCollisions(hashes, collisions, numtestbytes * numtestlens) > 0) {
         printf("Confirmed bad seed 0x%" PRIx64 "\n", seed);
-        PrintCollisions(collisions);
+        PrintCollisions(collisions, -1);
 #if 0
         hashtype v;
         cnt = 0;

@@ -283,6 +283,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
         bool testMaxColl, bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
     const unsigned hashbits = hashtype::bitlen;
     const uint64_t nbH      = hashes.size();
+    const size_t   maxColl  = drawDiagram ? 1000 : 0;
     int  curlogp;
     bool result = true;
 
@@ -297,7 +298,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
 
     // Note that FindCollisions sorts the list of hashes!
     std::map<hashtype, uint32_t> collisions;
-    int collcount = FindCollisions(hashes, collisions, drawDiagram ? 1000 : 0);
+    int collcount = FindCollisions(hashes, collisions, maxColl);
     addVCodeResult(collcount);
 
     // If analysis of partial collisions is requested, figure out which bit
@@ -406,7 +407,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
         *logpSumPtr += curlogp;
     }
     if (!result && drawDiagram) {
-        PrintCollisions(collisions);
+        PrintCollisions(collisions, maxColl);
     }
 
     // Report on partial collisions, if requested

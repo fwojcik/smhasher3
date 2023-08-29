@@ -51,7 +51,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 template <typename hashtype>
-void PrintCollisions( std::map<hashtype, uint32_t> & collisions );
+void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions );
 
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
         const int hashbits, const bool drawDiagram );

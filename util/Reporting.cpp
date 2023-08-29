@@ -89,12 +89,17 @@ static void plot( double n ) {
 //-----------------------------------------------------------------------------
 // Print a list of collisions
 template <typename hashtype>
-void PrintCollisions( std::map<hashtype, uint32_t> & collisions ) {
-    printf("\nCollisions:\n");
+void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions ) {
+    printf("\nCollisions: ");
+    if (collisions.size() >= maxCollisions) {
+        printf("(first %zd):\n", maxCollisions);
+    } else {
+        printf("(%zu):\n", collisions.size());
+    }
 
-    for (auto it = collisions.begin(); it != collisions.end(); ++it) {
-        const hashtype & hash = it->first;
-        printf("%6dx", it->second);
+    for (auto const coll: collisions) {
+        const hashtype & hash = coll.first;
+        printf("%6dx", coll.second);
         hash.printhex(" ");
     }
     printf("\n");
