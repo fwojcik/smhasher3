@@ -380,9 +380,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
     const uint64_t nbH        = hashes.size();
     const uint32_t maxColl    = drawDiagram ? 1000 : 0;
     const uint32_t maxPerColl = drawDiagram ? 100 : 0;
-    hidx_t collcount;
-    int    curlogp;
-    bool   result = true;
+    hidx_t         collcount;
 
     if (verbose) {
         printf("Testing all collisions (     %3i-bit)", hashbits);
@@ -529,6 +527,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
     }
 
     // Report on complete collisions, now that the heavy lifting is complete
+    bool result = true;
+    int  curlogp;
     result &= ReportCollisions(nbH, collcount, hashbits, &curlogp, false, false, false, verbose, drawDiagram);
     if (logpSumPtr != NULL) {
         *logpSumPtr += curlogp;
@@ -741,7 +741,7 @@ static void TestDistributionBatch( const std::vector<hashtype> & hashes, a_int &
 
 template <typename hashtype>
 static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs,
-        int * logpp, KeyFn keyprint, int testDeltaNum, bool verbose, bool drawDiagram ) {
+        int * logpSumPtr, KeyFn keyprint, int testDeltaNum, bool verbose, bool drawDiagram ) {
     const int      hashbits  = hashtype::bitlen;
     const size_t   nbH       = hashes.size();
     const uint32_t maxEnt    = drawDiagram ? 1000 : 0;
@@ -750,9 +750,6 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
     int            minwidth  = 8;
 
     if (maxwidth < minwidth) {
-        if (logpp != NULL) {
-            *logpp = 0;
-        }
         return true;
     }
 
@@ -785,10 +782,13 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
 #endif
     }
 
-    int bitstart, bitwidth;
+    int curlogp, bitstart, bitwidth;
     bool result = ReportDistribution(worst_scores, tests, hashbits, maxwidth, minwidth,
-            logpp, &bitstart, &bitwidth, verbose, drawDiagram);
+            &curlogp, &bitstart, &bitwidth, verbose, drawDiagram);
 
+    if (logpSumPtr != NULL) {
+        *logpSumPtr += curlogp;
+    }
     if (!result && drawDiagram) {
         ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, maxEnt, maxPerEnt, bitstart, bitwidth);
     }
@@ -862,12 +862,8 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * l
     //----------
 
     if (testDist) {
-        int curlogp;
-        result &= TestDistribution(hashes, hashidxs, &curlogp, keyprint, -testDeltaNum,
+        result &= TestDistribution(hashes, hashidxs, logpSumPtr, keyprint, -testDeltaNum,
                 verbose, drawDiagram);
-        if (logpSumPtr != NULL) {
-            *logpSumPtr += curlogp;
-        }
     }
 
     //----------
