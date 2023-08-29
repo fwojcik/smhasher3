@@ -61,8 +61,9 @@ hidx_t FindCollisionsIndices( std::vector<hashtype> & hashes, std::map<hashtype,
 //-----------------------------------------------------------------------------
 // This is not intended to be used directly; see below
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * logpSumPtr, bool drawDiagram,
-        bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits, bool verbose );
+bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * logpSumPtr, KeyFn keyprint,
+        bool drawDiagram, bool testCollision, bool testMaxColl, bool testDist,
+        bool testHighBits, bool testLowBits, bool verbose );
 
 // This provides a user-friendly wrapper to TestHashListImpl<>() by using
 // the Named Parameter Idiom.
@@ -77,6 +78,7 @@ class TestHashListWrapper {
     std::vector<hashtype> & hashes_;
     int       deltaNum_;
     int *     logpSumPtr_;
+    KeyFn     keyPrint_;
     bool      testCollisions_;
     bool      testMaxCollisions_;
     bool      testDistribution_;
@@ -87,7 +89,7 @@ class TestHashListWrapper {
 
   public:
     inline TestHashListWrapper( std::vector<hashtype> & hashes ) :
-        hashes_( hashes ), deltaNum_( 0 ), logpSumPtr_( NULL ),
+        hashes_( hashes ), deltaNum_( 0 ), logpSumPtr_( NULL ), keyPrint_( NULL ),
         testCollisions_( true ), testMaxCollisions_( false ), testDistribution_( true ),
         testHighBits_( true ), testLowBits_( true ),
         verbose_( true ), drawDiagram_( false ) {}
@@ -106,6 +108,8 @@ class TestHashListWrapper {
 
     inline TestHashListWrapper & testLowBits( bool s )      { testLowBits_      = s; return *this; }
 
+    inline TestHashListWrapper & dumpFailKeys( KeyFn p )    { keyPrint_         = std::move(p); return *this; }
+
     inline TestHashListWrapper & verbose( bool s )          { verbose_          = s; return *this; }
 
     inline TestHashListWrapper & drawDiagram( bool s )      { drawDiagram_      = s; return *this; }
@@ -114,7 +118,7 @@ class TestHashListWrapper {
     // "bool result = TestHashList()" to Just Work(tm),
     // even if that allows other, nonsensical uses of TestHashList().
     inline operator bool () const {
-        return TestHashListImpl(hashes_, deltaNum_, logpSumPtr_, drawDiagram_,
+        return TestHashListImpl(hashes_, deltaNum_, logpSumPtr_, keyPrint_, drawDiagram_,
                 testCollisions_, testMaxCollisions_, testDistribution_,
                 testHighBits_, testLowBits_, verbose_);
     }
