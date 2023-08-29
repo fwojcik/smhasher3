@@ -90,7 +90,8 @@ static void plot( double n ) {
 // Print a list of collisions
 template <typename hashtype>
 void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions,
-        uint32_t nbBits, uint32_t prevBits, bool reversebits ) {
+        uint32_t nbBits, uint32_t prevBits, bool reversebits, const std::vector<hidx_t> & idxs,
+        KeyFn keyprint, uint32_t maxPerCollision, int delta ) {
     if (prevBits != nbBits) {
         printf("\n%d-bit or more collisions (excluding %d-bit or more) ", nbBits, prevBits);
     } else {
@@ -102,11 +103,43 @@ void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxColli
         printf("(%zu):\n", collisions.size());
     }
 
-    for (auto const coll: collisions) {
-        const hashtype & hash = coll.first;
-        printf("%6dx", coll.second);
-        hash.printhex(" ", nbBits, reversebits);
+    if (keyprint == NULL) {
+        for (auto const coll: collisions) {
+            const hashtype & hash = coll.first;
+            printf("%6dx", coll.second);
+            hash.printhex(" ", nbBits, reversebits);
+        }
+    } else {
+        auto idxiter = idxs.begin();
+        for (auto const coll: collisions) {
+            const hashtype & hash = coll.first;
+            const uint32_t collcount = coll.second;
+            const uint32_t printcoll = std::min(collcount, maxPerCollision);
+            if (collcount > maxPerCollision) {
+                printf("\tfirst %d (of %d) results for ", maxPerCollision, collcount);
+            } else {
+                printf("\t%d results for ", collcount);
+            }
+            if (delta > 0) {
+                hash.printhex("hash value XOR delta ", nbBits, reversebits);
+            } else {
+                hash.printhex("hash value ", nbBits, reversebits);
+            }
+            printf("\t\tSeed            \tKey\n");
+            printf("\t\t--------------------------------------------------\n");
+            for (uint32_t i = 0; i < printcoll; i++) {
+                const hidx_t cur = *idxiter++;
+                printf("\t\t");
+                keyprint(cur);
+                if (delta > 0) {
+                    printf("\tXOR\t");
+                    keyprint(cur + delta);
+                }
+                printf("\n");
+            }
+        }
     }
+
     printf("\n");
 }
 

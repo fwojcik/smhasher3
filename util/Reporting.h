@@ -53,7 +53,8 @@
 template <typename hashtype>
 void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions,
         uint32_t nbBits = sizeof(hashtype) * 8, uint32_t prevBits = sizeof(hashtype) * 8,
-        bool reversebits = false );
+        bool reversebits = false, const std::vector<hidx_t> & idxs = {},
+        KeyFn keyprint = NULL, uint32_t maxPerCollision = 0, int delta = 0 );
 
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
         const int hashbits, const bool drawDiagram );
