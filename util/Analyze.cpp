@@ -148,24 +148,54 @@ static void FindCollBitBounds( std::set<int> & nbBitsvec, int origBits, uint64_t
 // Sort the hash list, count the total number of collisions and return the
 // first N collisions for further processing. If requested, also count the
 // number of times each collision occurs.
-template <typename hashtype>
-hidx_t FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, hidx_t maxCollisions ) {
-    hidx_t collcount = 0;
+template <typename hashtype, bool indices>
+hidx_t FindCollisionsImpl( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
+        hidx_t maxCollisions, std::vector<hidx_t> & collisionidxs, std::vector<hidx_t> & hashidxs,
+        uint32_t maxPerCollision ) {
+    hidx_t collcount = 0, curcollcount = 0;
 
-    blobsort(hashes.begin(), hashes.end());
+    if (indices) {
+        blobsort(hashes.begin(), hashes.end(), hashidxs);
+    } else {
+        blobsort(hashes.begin(), hashes.end());
+    }
 
     const hidx_t sz = hashes.size();
     for (hidx_t hnb = 1; hnb < sz; hnb++) {
-        if (hashes[hnb] == hashes[hnb - 1]) {
-            collcount++;
-            if (maxCollisions == 0) {
-                continue;
+        // Search until we find a collision
+        if (hashes[hnb] != hashes[hnb - 1]) {
+            continue;
+        }
+
+        // If we're only counting collisions, do that and move on
+        collcount++;
+        if (maxCollisions == 0) {
+            continue;
+        }
+
+        // Otherwise, if this collision was already seen, then just
+        // increment its count. Also record this key index if too many have
+        // not yet been recorded.
+        //
+        // If the collision is new and if too many have not yet been
+        // recorded, then record this one. The initial number of times this
+        // colliding value was seen is 2; if it didn't occur twice, how
+        // could it be a collision? :)
+        auto it = collisions.find(hashes[hnb]);
+        if (it != collisions.end()) {
+            it->second++;
+            if (indices) {
+                if (curcollcount < maxPerCollision) {
+                    collisionidxs.push_back(hashidxs[hnb]);
+                    curcollcount++;
+                }
             }
-            auto it = collisions.find(hashes[hnb]);
-            if (it != collisions.end()) {
-                it->second++;
-            } else if ((hidx_t)collisions.size() < maxCollisions) {
-                collisions.emplace(std::pair<hashtype, uint32_t>{hashes[hnb], 2});
+        } else if ((hidx_t)collisions.size() < maxCollisions) {
+            collisions.emplace(std::pair<hashtype, uint32_t>{hashes[hnb], 2});
+            if (indices) {
+                collisionidxs.push_back(hashidxs[hnb - 1]);
+                collisionidxs.push_back(hashidxs[hnb]);
+                curcollcount = 2;
             }
         }
     }
@@ -173,7 +203,23 @@ hidx_t FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32
     return collcount;
 }
 
+template <typename hashtype>
+hidx_t FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, hidx_t maxCollisions ) {
+    std::vector<uint32_t> dummy;
+    return FindCollisionsImpl<hashtype, false>(hashes, collisions, maxCollisions, dummy, dummy, 0);
+}
+
 INSTANTIATE(FindCollisions, HASHTYPELIST);
+
+template <typename hashtype>
+hidx_t FindCollisionsIndices( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
+        hidx_t maxCollisions, std::vector<hidx_t> & collisionidxs, std::vector<hidx_t> & hashidxs,
+        uint32_t maxPerCollision ) {
+    return FindCollisionsImpl<hashtype, true>(hashes, collisions, maxCollisions,
+            collisionidxs, hashidxs, maxPerCollision);
+}
+
+INSTANTIATE(FindCollisionsIndices, HASHTYPELIST);
 
 // Look through the pre-sorted hash list for collisions in the first
 // prefixLen bits, count them, and return the first N collisions for
@@ -181,12 +227,13 @@ INSTANTIATE(FindCollisions, HASHTYPELIST);
 // first prevPrefixLen bits, for the case where they were reported on
 // previously.
 //
-// This will eventually be different enough from FindCollisions() to fully
+// This is just different enough from FindCollisions() to fully
 // re-implement here, instead of diving further into template madness.
 template <typename hashtype>
-static hidx_t FindCollisionsPrefixes( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
-        hidx_t maxCollisions, uint32_t prefixLen, uint32_t prevPrefixLen ) {
-    hidx_t collcount = 0;
+static hidx_t FindCollisionsPrefixesIndices( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
+        hidx_t maxCollisions, uint32_t prefixLen, uint32_t prevPrefixLen, std::vector<hidx_t> & collisionidxs,
+        const std::vector<hidx_t> & hashidxs, uint32_t maxPerCollision ) {
+    hidx_t collcount = 0, curcollcount = 0;
     hashtype mask;
 
     assert(prefixLen > 0);
@@ -207,8 +254,15 @@ static hidx_t FindCollisionsPrefixes( std::vector<hashtype> & hashes, std::map<h
         auto it = collisions.find(colliding_bits);
         if (it != collisions.end()) {
             it->second++;
+            if (curcollcount < maxPerCollision) {
+                collisionidxs.push_back(hashidxs[hnb]);
+                curcollcount++;
+            }
         } else if ((hidx_t)collisions.size() < maxCollisions) {
             collisions.emplace(std::pair<hashtype, uint32_t>{colliding_bits, 2});
+            collisionidxs.push_back(hashidxs[hnb - 1]);
+            collisionidxs.push_back(hashidxs[hnb]);
+            curcollcount = 2;
         }
     }
 
@@ -321,9 +375,10 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, int minHBit
 template <typename hashtype>
 static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bool willTestDist,
         bool testMaxColl, bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
-    const unsigned hashbits = hashtype::bitlen;
-    const uint64_t nbH      = hashes.size();
-    const size_t   maxColl  = drawDiagram ? 1000 : 0;
+    const unsigned hashbits   = hashtype::bitlen;
+    const uint64_t nbH        = hashes.size();
+    const uint32_t maxColl    = drawDiagram ? 1000 : 0;
+    const uint32_t maxPerColl = drawDiagram ? 100 : 0;
     int  curlogp;
     bool result = true;
 
@@ -338,11 +393,19 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
 
     // Note that FindCollisions sorts the list of hashes!
     std::map<hashtype, uint32_t> collisions;
-    hidx_t collcount = FindCollisions(hashes, collisions, maxColl);
+    std::vector<hidx_t>          collisionidxs;
+    std::vector<hidx_t>          hashidxs;
+    hidx_t                       collcount;
+    if (drawDiagram) {
+        collcount = FindCollisionsIndices(hashes, collisions, maxColl, collisionidxs, hashidxs, maxPerColl);
+    } else {
+        collcount = FindCollisions(hashes, collisions, maxColl);
+    }
     addVCodeResult(collcount);
 
     // If analysis of partial collisions is requested, figure out which bit
     // widths make sense to test, and then test them.
+    std::vector<hidx_t>              hashidxs_rev;
     std::vector<hashtype>            hashes_rev;
     std::set<int, std::greater<int>> nbBitsvec;
     std::vector<int>                 collcounts_fwd;
@@ -430,15 +493,20 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                     hashes_rev[hnb] = hashes[hnb];
                     hashes_rev[hnb].reversebits();
                 }
+                hashidxs_rev = hashidxs;
+
+                blobsort(hashes_rev.begin(), hashes_rev.end(), hashidxs_rev);
             } else {
-                hashes_rev = std::move(hashes);
+                hashes_rev   = std::move(hashes);
+                hashidxs_rev = std::move(hashidxs);
                 hashes.clear();
+                hashidxs.clear();
                 for (size_t hnb = 0; hnb < nbH; hnb++) {
                     hashes_rev[hnb].reversebits();
                 }
-            }
 
-            blobsort(hashes_rev.begin(), hashes_rev.end());
+                blobsort(hashes_rev.begin(), hashes_rev.end());
+            }
 
             CountRangedNbCollisions(hashes_rev, minBits, maxBits, threshBits, &collcounts_rev[0]);
 
@@ -451,8 +519,10 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                 for (size_t hnb = 0; hnb < nbH; hnb++) {
                     hashes_rev[hnb].reversebits();
                 }
-                hashes = std::move(hashes_rev);
+                hashes   = std::move(hashes_rev);
+                hashidxs = std::move(hashidxs_rev);
                 hashes_rev.clear();
+                hashidxs_rev.clear();
             }
             // No need to re-sort, since TestDistribution doesn't care
         }
@@ -485,7 +555,9 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                 }
                 if (!thisresult && drawDiagram) {
                     collisions.clear();
-                    FindCollisionsPrefixes(hashes, collisions, maxColl, nbBits, prevBitsH);
+                    collisionidxs.clear();
+                    FindCollisionsPrefixesIndices(hashes, collisions, maxColl, nbBits,
+                            prevBitsH, collisionidxs, hashidxs, maxPerColl);
                     PrintCollisions(collisions, maxColl, nbBits, prevBitsH, false);
                     prevBitsH = nbBits;
                 }
@@ -499,7 +571,9 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
                 }
                 if (!thisresult && drawDiagram) {
                     collisions.clear();
-                    FindCollisionsPrefixes(hashes_rev, collisions, maxColl, nbBits, prevBitsL);
+                    collisionidxs.clear();
+                    FindCollisionsPrefixesIndices(hashes_rev, collisions, maxColl, nbBits,
+                            prevBitsL, collisionidxs, hashidxs_rev, maxPerColl);
                     PrintCollisions(collisions, maxColl, nbBits, prevBitsL, true);
                     prevBitsL = nbBits;
                 }
@@ -517,7 +591,9 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
             }
             if (!thisresult && drawDiagram) {
                 collisions.clear();
-                FindCollisionsPrefixes(hashes, collisions, maxColl, maxBits, hashbits + 1);
+                collisionidxs.clear();
+                FindCollisionsPrefixesIndices(hashes, collisions, maxColl, maxBits,
+                        hashbits + 1, collisionidxs, hashidxs, maxPerColl);
                 PrintCollisions(collisions, maxColl, maxBits, maxBits, false);
             }
             result &= thisresult;
@@ -531,7 +607,9 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
             }
             if (!thisresult && drawDiagram) {
                 collisions.clear();
-                FindCollisionsPrefixes(hashes_rev, collisions, maxColl, maxBits, hashbits + 1);
+                collisionidxs.clear();
+                FindCollisionsPrefixesIndices(hashes_rev, collisions, maxColl, maxBits,
+                        hashbits + 1, collisionidxs, hashidxs_rev, maxPerColl);
                 PrintCollisions(collisions, maxColl, maxBits, maxBits, true);
             }
             result &= thisresult;
