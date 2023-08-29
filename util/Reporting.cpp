@@ -423,7 +423,7 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
 
 //-----------------------------------------------------------------------------
 bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxBits,
-        int * logpp, bool highbits, bool verbose, bool drawDiagram ) {
+        int * logpp, int * maxbitsp, bool highbits, bool verbose, bool drawDiagram ) {
     if ((maxBits <= 1) || (minBits > maxBits)) { return true; }
 
     int spacelen = 80;
@@ -457,10 +457,14 @@ bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxB
     double p_value    = ScalePValue(maxPValue, maxBits - minBits + 1);
     int    logp_value = GetLog2PValue(p_value);
 
+    recordLog2PValue(logp_value);
+
     if (logpp != NULL) {
         *logpp = logp_value;
     }
-    recordLog2PValue(logp_value);
+    if (maxbitsp != NULL) {
+        *maxbitsp = maxCollDevBits;
+    }
 
     bool warning = false, failure = false;
     if (p_value <  FAILURE_PBOUND) {

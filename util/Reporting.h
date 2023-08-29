@@ -63,7 +63,7 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
         bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram );
 
 bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxBits,
-        int * logpp, bool highbits, bool verbose, bool drawDiagram );
+        int * logpp, int * maxbitsp, bool highbits, bool verbose, bool drawDiagram );
 
 bool ReportDistribution( const std::vector<double> & worst_score, int tests, int hashbits,
         int maxwidth, int minwidth, int * logpp, bool verbose, bool drawDiagram );

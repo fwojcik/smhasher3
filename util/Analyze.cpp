@@ -455,14 +455,14 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
         // Report a summary of the bit widths in the range [minTBits, maxTBits]
         if (testHighBits) {
             result &= ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
-                    minTBits, maxTBits, &curlogp, true, verbose, drawDiagram);
+                    minTBits, maxTBits, &curlogp, NULL, true, verbose, drawDiagram);
             if (logpSumPtr != NULL) {
                 *logpSumPtr += curlogp;
             }
         }
         if (testLowBits) {
             result &= ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
-                    minTBits, maxTBits, &curlogp, false, verbose, drawDiagram);
+                    minTBits, maxTBits, &curlogp, NULL, false, verbose, drawDiagram);
             if (logpSumPtr != NULL) {
                 *logpSumPtr += curlogp;
             }
