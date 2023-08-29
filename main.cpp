@@ -106,21 +106,6 @@
 #include <clocale>
 
 //-----------------------------------------------------------------------------
-// Globally-visible configuration
-HashInfo::endianness g_hashEndian = HashInfo::ENDIAN_DEFAULT;
-uint64_t g_seed = 0;
-
-//--------
-// What each test suite prints upon failure
-const char * g_failstr = "*********FAIL*********\n";
-
-//--------
-// Overall log2-p-value statistics and test pass/fail counts
-uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE + 2];
-uint32_t g_testPass, g_testFail;
-std::vector<std::pair<const char *, char *>> g_testFailures;
-
-//-----------------------------------------------------------------------------
 // Locally-visible configuration
 static bool g_drawDiagram = false;
 

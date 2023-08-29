@@ -196,6 +196,7 @@ add_library(
   util/Stats.cpp
   util/VCode.cpp
   util/Wordlist.cpp
+  util/TestGlobals.cpp
 #
   tests/SanityTest.cpp
   tests/AvalancheTest.cpp
