@@ -155,8 +155,8 @@ static void FindCollBitBounds( std::set<int> & nbBitsvec, int origBits, uint64_t
 // number of times each collision occurs.
 template <typename hashtype, bool indices>
 hidx_t FindCollisionsImpl( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
-        hidx_t maxCollisions, std::vector<hidx_t> & collisionidxs, std::vector<hidx_t> & hashidxs,
-        uint32_t maxPerCollision ) {
+        hidx_t maxCollisions, uint32_t maxPerCollision, std::vector<hidx_t> & collisionidxs,
+        std::vector<hidx_t> & hashidxs ) {
     hidx_t collcount = 0, curcollcount = 0;
 
     if (indices) {
@@ -211,17 +211,17 @@ hidx_t FindCollisionsImpl( std::vector<hashtype> & hashes, std::map<hashtype, ui
 template <typename hashtype>
 hidx_t FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, hidx_t maxCollisions ) {
     std::vector<uint32_t> dummy;
-    return FindCollisionsImpl<hashtype, false>(hashes, collisions, maxCollisions, dummy, dummy, 0);
+    return FindCollisionsImpl<hashtype, false>(hashes, collisions, maxCollisions, 0, dummy, dummy);
 }
 
 INSTANTIATE(FindCollisions, HASHTYPELIST);
 
 template <typename hashtype>
 hidx_t FindCollisionsIndices( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
-        hidx_t maxCollisions, std::vector<hidx_t> & collisionidxs, std::vector<hidx_t> & hashidxs,
-        uint32_t maxPerCollision ) {
+        hidx_t maxCollisions, uint32_t maxPerCollision, std::vector<hidx_t> & collisionidxs,
+        std::vector<hidx_t> & hashidxs ) {
     return FindCollisionsImpl<hashtype, true>(hashes, collisions, maxCollisions,
-            collisionidxs, hashidxs, maxPerCollision);
+            maxPerCollision, collisionidxs, hashidxs);
 }
 
 INSTANTIATE(FindCollisionsIndices, HASHTYPELIST);
@@ -236,8 +236,8 @@ INSTANTIATE(FindCollisionsIndices, HASHTYPELIST);
 // re-implement here, instead of diving further into template madness.
 template <typename hashtype>
 static hidx_t FindCollisionsPrefixesIndices( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
-        hidx_t maxCollisions, uint32_t prefixLen, uint32_t prevPrefixLen, std::vector<hidx_t> & collisionidxs,
-        const std::vector<hidx_t> & hashidxs, uint32_t maxPerCollision ) {
+        hidx_t maxCollisions, uint32_t maxPerCollision, std::vector<hidx_t> & collisionidxs,        
+        const std::vector<hidx_t> & hashidxs, uint32_t prefixLen, uint32_t prevPrefixLen ) {
     hidx_t collcount = 0, curcollcount = 0;
     hashtype mask;
 
@@ -398,7 +398,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
     std::map<hashtype, uint32_t> collisions;
     std::vector<hidx_t>          collisionidxs;
     if (drawDiagram) {
-        collcount = FindCollisionsIndices(hashes, collisions, MAX_ENTRIES, collisionidxs, hashidxs, MAX_PER_ENTRY);
+        collcount = FindCollisionsIndices(hashes, collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs, hashidxs);
     } else {
         collcount = FindCollisions(hashes, collisions, 0);
     }
@@ -559,8 +559,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 if (!thisresult && drawDiagram) {
                     collisions.clear();
                     collisionidxs.clear();
-                    FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, nbBits,
-                            prevBitsH, collisionidxs, hashidxs, MAX_PER_ENTRY);
+                    FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
+                            collisionidxs, hashidxs, nbBits, prevBitsH);
                     PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
                             keyprint, testDeltaNum, nbBits, prevBitsH, false);
                     prevBitsH = nbBits;
@@ -576,8 +576,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 if (!thisresult && drawDiagram) {
                     collisions.clear();
                     collisionidxs.clear();
-                    FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, nbBits,
-                            prevBitsL, collisionidxs, hashidxs_rev, MAX_PER_ENTRY);
+                    FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
+                            collisionidxs, hashidxs_rev, nbBits, prevBitsL);
                     PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
                             keyprint, testDeltaNum, nbBits, prevBitsL, true);
                     prevBitsL = nbBits;
@@ -597,8 +597,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             if (!thisresult && drawDiagram) {
                 collisions.clear();
                 collisionidxs.clear();
-                FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, maxBits,
-                        hashbits + 1, collisionidxs, hashidxs, MAX_PER_ENTRY);
+                FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
+                        collisionidxs, hashidxs, maxBits, hashbits + 1);
                 PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
                         keyprint, testDeltaNum, maxBits, maxBits, false);
             }
@@ -614,8 +614,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             if (!thisresult && drawDiagram) {
                 collisions.clear();
                 collisionidxs.clear();
-                FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, maxBits,
-                        hashbits + 1, collisionidxs, hashidxs_rev, MAX_PER_ENTRY);
+                FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
+                        collisionidxs, hashidxs_rev, maxBits, hashbits + 1);
                 PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
                         keyprint, testDeltaNum, maxBits, maxBits, true);
             }
