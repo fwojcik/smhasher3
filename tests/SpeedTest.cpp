@@ -57,7 +57,6 @@
 #include "SpeedTest.h"
 
 #include <string>
-#include <functional>
 #include <limits>
 
 constexpr int BULK_RUNS   = 160;

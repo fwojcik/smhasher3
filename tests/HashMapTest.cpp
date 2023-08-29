@@ -57,8 +57,6 @@
 #include <unordered_map>
 #undef prefetch
 #include <parallel_hashmap/phmap.h>
-#include <functional>
-
 
 //-----------------------------------------------------------------------------
 // This is functionally a speed test, and so will not inform VCodes,

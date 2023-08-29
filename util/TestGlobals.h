@@ -22,12 +22,16 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <functional>
 #include <cassert>
 #include "Blob.h"
 
 // A type for indexing into lists of hashes. Using 32-bits saves time and
 // memory but limits tests to 2^32 hashes. This should be fine.
 typedef uint32_t hidx_t;
+
+// A type for a function that displays the given key and seed.
+typedef std::function <void (hidx_t)> KeyFn;
 
 //-----------------------------------------------------------------------------
 // Global variables from main.cpp
