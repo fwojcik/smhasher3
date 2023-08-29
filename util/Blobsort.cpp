@@ -228,6 +228,7 @@ static bool blobverify( std::vector<blobtype> & blobs ) {
 
 //-----------------------------------------------------------------------------
 
+static const uint32_t BASELINE_TEST_ITER = 4000000;
 double baseline_timing[6][9] = {
     { 37.0,  34.3, 44.8, 41.8,  8.1,  34.3,  8.4, 42.8 },
     { 76.3,  76.2, 85.1, 83.9, 11.7,  76.3, 11.6, 84.2 },
@@ -236,9 +237,13 @@ double baseline_timing[6][9] = {
     { 26.2, 201.9, 33.8, 30.1, 16.9, 202.0, 16.9, 48.5 },
     { 29.4, 194.7, 30.9, 32.8, 18.0, 194.9, 18.0, 49.5 },
 };
+// Converts number of 32-bit words in the hash to the row of
+// baseline_timing. Row 0 is 32-bits, row 1 is 64, etc.
 const static int baseline_idx1[] = {
     -1, +0, +1, -1, +2, +3, -1, +4, +5
 };
+// Converts test number to the columns of baseline_timing. Column 0 is
+// "Random numbers, sorted", column 1 is "Random numbers, scrambled", etc.
 const static int baseline_idx2[SORT_TESTS] = {
     -1, -1, -1, -1, +0, -1, +1, -1, +2, +3,
     +4, -1, -1, -1, -1, +5, +6, -1, -1, +7
@@ -283,13 +288,17 @@ bool test_blobsort_type( void ) {
         }
         if (TEST_ITER > 1) {
             double thistime = (double)mintime / (double)(NSEC_PER_SEC / 1000);
-            double basetime = baseline_timing[baseline_idx1[blobtype::len / 4]][baseline_idx2[i]];
-            double delta    = thistime - basetime;
-            if ((delta >= -0.05) && (delta <= 0.05)) {
-                delta = 0.0;
+            if ((TEST_ITER != BASELINE_TEST_ITER) || (baseline_idx1[blobtype::len / 4] < 0) || (baseline_idx2[i] < 0)) {
+                printf("\t %7.1f ms               %s\n", thistime, thispassed ? "ok" : "NO");
+            } else {
+                double basetime = baseline_timing[baseline_idx1[blobtype::len / 4]][baseline_idx2[i]];
+                double delta    = thistime - basetime;
+                if ((delta >= -0.05) && (delta <= 0.05)) {
+                    delta = 0.0;
+                }
+                basesum += basetime;
+                printf("\t %7.1f ms ( %+6.1f ms ) %s\n", thistime, delta, thispassed ? "ok" : "NO");
             }
-            basesum += basetime;
-            printf("\t %7.1f ms ( %+6.1f ms ) %s\n", thistime, delta, thispassed ? "ok" : "NO");
         }
         timetotal += mintime;
         passed &= thispassed;
