@@ -553,8 +553,8 @@ bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxB
 }
 
 //-----------------------------------------------------------------------------
-bool ReportDistribution( const std::vector<double> & worst_scores, int tests, int hashbits,
-        int maxwidth, int minwidth, int * logpp, bool verbose, bool drawDiagram ) {
+bool ReportDistribution( const std::vector<double> & worst_scores, int tests, int hashbits, int maxwidth, int minwidth,
+        int * logpp, int * worstStartp, int * worstWidthp, bool verbose, bool drawDiagram ) {
     // Find the startbit with the worst bias. Only report on biases above 0.
     double worstN     = 0;
     int    worstStart = -1;
@@ -588,6 +588,12 @@ bool ReportDistribution( const std::vector<double> & worst_scores, int tests, in
     recordLog2PValue(logp_value);
     if (logpp != NULL) {
         *logpp = logp_value;
+    }
+    if (worstStartp != NULL) {
+        *worstStartp = worstStart;
+    }
+    if (worstWidthp != NULL) {
+        *worstWidthp = worstWidth;
     }
 
     bool warning = false, failure = false;

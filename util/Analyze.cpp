@@ -782,7 +782,9 @@ static bool TestDistribution( std::vector<hashtype> & hashes, int * logpp, bool 
 #endif
     }
 
-    bool result = ReportDistribution(worst_scores, tests, hashbits, maxwidth, minwidth, logpp, verbose, drawDiagram);
+    int bitstart, bitwidth;
+    bool result = ReportDistribution(worst_scores, tests, hashbits, maxwidth, minwidth,
+            logpp, &bitstart, &bitwidth, verbose, drawDiagram);
 
     return result;
 }
