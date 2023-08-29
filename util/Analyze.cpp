@@ -471,41 +471,70 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
     if (testHighBits || testLowBits) {
 
         // Report explicitly on each bit width in nbBitsvec
+        uint32_t prevBitsH = hashbits, prevBitsL = hashbits;
         for (const int nbBits: nbBitsvec) {
             if ((nbBits < minBits) || (nbBits > maxBits)) {
                 continue;
             }
             bool reportMaxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
             if (testHighBits) {
-                result &= ReportCollisions(nbH, collcounts_fwd[nbBits - minBits], nbBits,
+                bool thisresult = ReportCollisions(nbH, collcounts_fwd[nbBits - minBits], nbBits,
                         &curlogp, reportMaxcoll, true, true, verbose, drawDiagram);
                 if (logpSumPtr != NULL) {
                     *logpSumPtr += curlogp;
                 }
+                if (!thisresult && drawDiagram) {
+                    collisions.clear();
+                    FindCollisionsPrefixes(hashes, collisions, maxColl, nbBits, prevBitsH);
+                    PrintCollisions(collisions, maxColl, nbBits, prevBitsH, false);
+                    prevBitsH = nbBits;
+                }
+                result &= thisresult;
             }
             if (testLowBits) {
-                result &= ReportCollisions(nbH, collcounts_rev[nbBits - minBits], nbBits,
+                bool thisresult = ReportCollisions(nbH, collcounts_rev[nbBits - minBits], nbBits,
                         &curlogp, reportMaxcoll, false, true, verbose, drawDiagram);
                 if (logpSumPtr != NULL) {
                     *logpSumPtr += curlogp;
                 }
+                if (!thisresult && drawDiagram) {
+                    collisions.clear();
+                    FindCollisionsPrefixes(hashes_rev, collisions, maxColl, nbBits, prevBitsL);
+                    PrintCollisions(collisions, maxColl, nbBits, prevBitsL, true);
+                    prevBitsL = nbBits;
+                }
+                result &= thisresult;
             }
         }
 
         // Report a summary of the bit widths in the range [minTBits, maxTBits]
         if (testHighBits) {
-            result &= ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
-                    minTBits, maxTBits, &curlogp, NULL, true, verbose, drawDiagram);
+            int maxBits;
+            bool thisresult = ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
+                    minTBits, maxTBits, &curlogp, &maxBits, true, verbose, drawDiagram);
             if (logpSumPtr != NULL) {
                 *logpSumPtr += curlogp;
             }
+            if (!thisresult && drawDiagram) {
+                collisions.clear();
+                FindCollisionsPrefixes(hashes, collisions, maxColl, maxBits, hashbits + 1);
+                PrintCollisions(collisions, maxColl, maxBits, maxBits, false);
+            }
+            result &= thisresult;
         }
         if (testLowBits) {
-            result &= ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
-                    minTBits, maxTBits, &curlogp, NULL, false, verbose, drawDiagram);
+            int maxBits;
+            bool thisresult = ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
+                    minTBits, maxTBits, &curlogp, &maxBits, false, verbose, drawDiagram);
             if (logpSumPtr != NULL) {
                 *logpSumPtr += curlogp;
             }
+            if (!thisresult && drawDiagram) {
+                collisions.clear();
+                FindCollisionsPrefixes(hashes_rev, collisions, maxColl, maxBits, hashbits + 1);
+                PrintCollisions(collisions, maxColl, maxBits, maxBits, true);
+            }
+            result &= thisresult;
         }
     }
 
