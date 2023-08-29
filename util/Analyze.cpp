@@ -149,13 +149,13 @@ static void FindCollBitBounds( std::set<int> & nbBitsvec, int origBits, uint64_t
 // first N collisions for further processing. If requested, also count the
 // number of times each collision occurs.
 template <typename hashtype>
-int FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, size_t maxCollisions ) {
-    int collcount = 0;
+hidx_t FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, hidx_t maxCollisions ) {
+    hidx_t collcount = 0;
 
     blobsort(hashes.begin(), hashes.end());
 
-    const size_t sz = hashes.size();
-    for (size_t hnb = 1; hnb < sz; hnb++) {
+    const hidx_t sz = hashes.size();
+    for (hidx_t hnb = 1; hnb < sz; hnb++) {
         if (hashes[hnb] == hashes[hnb - 1]) {
             collcount++;
             if (maxCollisions == 0) {
@@ -164,7 +164,7 @@ int FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t>
             auto it = collisions.find(hashes[hnb]);
             if (it != collisions.end()) {
                 it->second++;
-            } else if (collisions.size() < maxCollisions) {
+            } else if ((hidx_t)collisions.size() < maxCollisions) {
                 collisions.emplace(std::pair<hashtype, uint32_t>{hashes[hnb], 2});
             }
         }
@@ -184,9 +184,9 @@ INSTANTIATE(FindCollisions, HASHTYPELIST);
 // This will eventually be different enough from FindCollisions() to fully
 // re-implement here, instead of diving further into template madness.
 template <typename hashtype>
-static int FindCollisionsPrefixes( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
-        size_t maxCollisions, uint32_t prefixLen, uint32_t prevPrefixLen ) {
-    int collcount = 0;
+static hidx_t FindCollisionsPrefixes( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
+        hidx_t maxCollisions, uint32_t prefixLen, uint32_t prevPrefixLen ) {
+    hidx_t collcount = 0;
     hashtype mask;
 
     assert(prefixLen > 0);
@@ -207,7 +207,7 @@ static int FindCollisionsPrefixes( std::vector<hashtype> & hashes, std::map<hash
         auto it = collisions.find(colliding_bits);
         if (it != collisions.end()) {
             it->second++;
-        } else if (collisions.size() < maxCollisions) {
+        } else if ((hidx_t)collisions.size() < maxCollisions) {
             collisions.emplace(std::pair<hashtype, uint32_t>{colliding_bits, 2});
         }
     }
@@ -338,7 +338,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, int * logpSumPtr, bo
 
     // Note that FindCollisions sorts the list of hashes!
     std::map<hashtype, uint32_t> collisions;
-    int collcount = FindCollisions(hashes, collisions, maxColl);
+    hidx_t collcount = FindCollisions(hashes, collisions, maxColl);
     addVCodeResult(collcount);
 
     // If analysis of partial collisions is requested, figure out which bit

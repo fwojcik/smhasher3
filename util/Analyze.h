@@ -51,7 +51,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 template <typename hashtype>
-int FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, size_t maxCollisions );
+hidx_t FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, hidx_t maxCollisions );
 
 //-----------------------------------------------------------------------------
 // This is not intended to be used directly; see below
