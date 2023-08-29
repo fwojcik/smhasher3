@@ -41,3 +41,16 @@
     }                                                  \
     template void * FN ## _instantiator<TYPELIST>();
 #endif
+
+// If you get a compiler error from this macro that looks like:
+//
+// SomeFile.cpp: In instantiation of 'void* SomeFunction_instantiator() [with Types = {Blob<32>, Blob<64>, Blob<128>, Blob<160>, Blob<224>, Blob<256>}]':
+// SomeFile.cpp:176:1:   required from here
+// Instantiate.h:39:30: error: insufficient contextual information to determine type
+//   39 |             std::make_tuple(((void *)(FN<Types>))...);
+//      |                             ~^~~~~~~~~~~~~~~~~~~~
+// SomeFile.cpp:176:1: note: in expansion of macro 'INSTANTIATE'
+//  176 | INSTANTIATE(SomeFunction, HASHTYPELIST);
+//
+// then the most common cause is a mismatch between the types in the
+// definition of SomeFunction() versus its declaration.
