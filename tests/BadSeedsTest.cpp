@@ -66,7 +66,7 @@
 //-----------------------------------------------------------------------------
 // Find bad seeds, and test against the known secrets/bad seeds.
 
-const std::set<int>        testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
+const std::vector<int>     testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
 const std::vector<uint8_t> testbytes = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
 const size_t numtestbytes = testbytes.size();
 const size_t numtestlens  = testlens.size();
@@ -99,12 +99,14 @@ static void PrintZeroes( const HashFn hash, const seed_t hseed, const hashtype &
 template <typename hashtype>
 static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, const uint32_t start,
         const uint32_t endlow, bool & result, bool & newresult ) {
-    const std::set<seed_t> & seeds = hinfo->badseeds;
-    const HashFn             hash  = hinfo->hashFn(g_hashEndian);
-    const seed_t             last  = hi | endlow;
-    const hashtype           zero  = { 0 };
-    std::vector<hashtype>    hashes( numtests );
+    const std::set<seed_t> &     seeds = hinfo->badseeds;
+    const HashFn                 hash  = hinfo->hashFn(g_hashEndian);
+    const seed_t                 last  = hi | endlow;
+    const hashtype               zero  = { 0 };
+    std::vector<hashtype>        hashes( numtests );
     std::map<hashtype, uint32_t> collisions;
+    std::vector<hidx_t>          collisionidxs;
+    std::vector<hidx_t>          hashidxs;
 
     const char * progress_fmt =
             (last <= UINT64_C(0xffffffff)) ?
@@ -131,6 +133,8 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
 
     seed_t seed = (hi | start);
     do {
+        bool thisresult = true;
+
         /*
          * Print out progress using *one* printf() statement (for
          * thread friendliness). Add newlines periodically to make
@@ -158,7 +162,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         }
 
         /* Report if any collisions were found */
-        if (FindCollisions(hashes, collisions, numtests) > 0) {
+        if (FindCollisionsIndices(hashes, collisions, numtests, numtests, collisionidxs, hashidxs) > 0) {
 #if defined(HAVE_THREADS)
             std::lock_guard<std::mutex> lock( print_mutex );
 #endif
@@ -177,20 +181,14 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
                 goto out;
             }
             if (!known_seed && (fails < 32)) { // don't print too many lines
-                // Can't just print hashes vector because it's now sorted
-                hashtype v;
-                printf("Colliding hashes:\n");
-                for (size_t i = 0; i < numtestbytes; i++) {
-                    for (int len: testlens) {
-                        hash(&keys[i][0], len, hseed, &v);
-                        if (collisions.find(v) != collisions.end()) {
-                            printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
-                        }
-                    }
-                }
+                PrintCollisions(collisions, numtests, numtests, collisionidxs,
+                        [seed, &keys](hidx_t idx){
+                            const unsigned lenidx  = idx % numtestbytes;
+                            const unsigned byteidx = idx / numtestbytes;
+                            printf("0x%016" PRIx64 "\t%2d copies of 0x%02x", seed, testlens[lenidx], keys[byteidx][0]);
+                        });
             }
-            collisions.clear();
-            result = false;
+            thisresult = false;
             if (!known_seed) {
                 newresult = true;
             }
@@ -211,10 +209,17 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
             if (!known_seed && (fails < 32)) { // don't print too many lines
                 PrintZeroes(hash, hseed, zero, &keys[0][0]);
             }
-            result = false;
+            thisresult = false;
             if (!known_seed) {
                 newresult = true;
             }
+        }
+
+        if (!thisresult) {
+            result     = false;
+            collisions.clear();
+            collisionidxs.clear();
+            hashidxs.clear();
         }
     } while (seed++ != last);
 
@@ -311,11 +316,13 @@ static bool BadSeedsFind( const HashInfo * hinfo ) {
 
 template <typename hashtype>
 static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
-    const HashFn          hash = hinfo->hashFn(g_hashEndian);
-    const hashtype        zero = { 0 };
-    std::vector<hashtype> hashes( numtests );
+    std::vector<hashtype>        hashes( numtests );
     std::map<hashtype, uint32_t> collisions;
-    bool result = true;
+    std::vector<hidx_t>          collisionidxs;
+    std::vector<hidx_t>          hashidxs;
+    const HashFn   hash = hinfo->hashFn(g_hashEndian);
+    const hashtype zero = { 0 };
+    bool           result = true;
 
     if (hinfo->is32BitSeed() && (seed > UINT64_C(0xffffffff))) {
         return true;
@@ -337,21 +344,14 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
         }
     }
 
-    if (FindCollisions(hashes, collisions, numtests) > 0) {
+    if (FindCollisionsIndices(hashes, collisions, numtests, numtests, collisionidxs, hashidxs) > 0) {
         printf("Confirmed bad seed 0x%" PRIx64 "\n", seed);
-        PrintCollisions(collisions, -1);
-#if 0
-        hashtype v;
-        cnt = 0;
-        for (size_t i = 0; i < numtestbytes; i++) {
-            for (int len: testlens) {
-                hash(&keys[i][0], len, hseed, &v);
-                if (collisions.find(v) != collisions.end()) {
-                    printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
-                }
-            }
-        }
-#endif
+        PrintCollisions(collisions, numtests, numtests, collisionidxs,
+                [seed,&keys](hidx_t idx){
+                    const unsigned lenidx  = idx % numtestbytes;
+                    const unsigned byteidx = idx / numtestbytes;
+                    printf("0x%016" PRIx64 "\t%2d copies of 0x%02x", seed, testlens[lenidx], keys[byteidx][0]);
+                });
         result = false;
     }
 
