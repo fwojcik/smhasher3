@@ -321,7 +321,6 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
         memset(&keys[i][0], testbytes[i], 128);
     }
 
-    printf("0x%" PRIx64 "\n", seed);
     const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
 
     memset((void *)&hashes[0], 0, numtests * sizeof(hashtype));
@@ -359,7 +358,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
 }
 
 template <typename hashtype>
-static bool BadSeedsKnown( const HashInfo * hinfo ) {
+static bool BadSeedsKnown( const HashInfo * hinfo, const bool extra ) {
     bool result = true;
     const std::set<seed_t> & seeds = hinfo->badseeds;
 
@@ -372,22 +371,24 @@ static bool BadSeedsKnown( const HashInfo * hinfo ) {
     }
 
     if (!seeds.size()) {
-        printf("No known bad seeds to test. Use --extra to search for them.\n");
+        if (extra) {
+            printf("No known bad seeds to test.\n");
+        } else {
+            printf("No known bad seeds to test. Use --extra to search for them.\n");
+        }
         return result;
     }
 
-    printf("Testing %" PRIu64 " known bad seeds:\n", seeds.size());
+    printf("Testing %" PRIu64 " known bad seed(s):\n", seeds.size());
 
     for (seed_t seed: seeds) {
         bool thisresult = true;
         thisresult &= TestSingleSeed<hashtype>(hinfo, seed);
         if (thisresult) {
-            printf("Huh! \"Known\" bad seed %016lx isn't bad\n", seed);
+            printf("Huh! \"Known\" bad seed %" PRIx64 " isn't bad\n", seed);
         }
         result &= thisresult;
     }
-
-    printf("\n%s\n", result ? "PASS" : g_failstr);
 
     return result;
 }
@@ -396,11 +397,6 @@ static bool BadSeedsKnown( const HashInfo * hinfo ) {
 template <typename hashtype>
 bool BadSeedsTest( const HashInfo * hinfo, bool find_new_seeds ) {
     bool result = true;
-
-    // Never find new bad seeds for mock hashes, except for aesrng
-    if (hinfo->isMock() && (strncmp(hinfo->name, "aesrng", 6) != 0)) {
-        find_new_seeds = false;
-    }
 
     printf("[[[ BadSeeds Tests ]]]\n\n");
 
@@ -418,8 +414,12 @@ bool BadSeedsTest( const HashInfo * hinfo, bool find_new_seeds ) {
 
     hinfo->Seed(0);
 
-    result &= BadSeedsKnown<hashtype>(hinfo);
-    if (find_new_seeds) {
+    result &= BadSeedsKnown<hashtype>(hinfo, find_new_seeds);
+
+    // Never find new bad seeds for mock hashes, except for aesrng
+    if (hinfo->isMock() && (strncmp(hinfo->name, "aesrng", 6) != 0)) {
+        printf("Refusing to find new bad seeds for mock hash.\n");
+    } else if (find_new_seeds) {
         result &= BadSeedsFind<hashtype>(hinfo);
     }
 
