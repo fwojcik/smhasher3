@@ -63,28 +63,12 @@
 
 //-----------------------------------------------------------------------------
 // If score exceeds this improbability of happening, note a failing result
-static const double FAILURE_PBOUND = exp2(-17); // 2**-17 == 1/131,072 =~ 0.000763%
+static constexpr double FAILURE_PBOUND = exp2(-17); // 2**-17 == 1/131,072 =~ 0.000763%
 // If score exceeds this improbability of happening, note a warning
-static const double WARNING_PBOUND = exp2(-14); // 2**-14 == 1/16,384  =~ 0.0061%, 8x as much as failure
+static constexpr double WARNING_PBOUND = exp2(-14); // 2**-14 == 1/16,384  =~ 0.0061%, 8x as much as failure
 // If these bounds seem overly generous, remember that SMHasher3 uses
 // about 8,000 tests, so a 1/8,000 chance event will hit once per run on
 // average, even with a perfect-quality hash function.
-
-//----------------------------------------------------------------------------
-static void plot( double n ) {
-    int ni = (int)floor(n);
-
-    // Less than [0,3) sigma is fine, [3, 12) sigma is notable, 12+ sigma is pretty bad
-    if (ni <= 2) {
-        putchar('.');
-    } else if (ni <= 11) {
-        putchar('1' + ni - 3);
-    } else if (ni <= 17) {
-        putchar('a' + ni - 12);
-    } else {
-        putchar('X');
-    }
-}
 
 //-----------------------------------------------------------------------------
 // Print a list of collisions
@@ -267,6 +251,35 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
 
 INSTANTIATE(ShowOutliers, HASHTYPELIST);
 
+//----------------------------------------------------------------------------
+// Graphically show individual log2(p_value) results.
+//
+// I'm not 100% sure if scaling should be applied to these values. Right
+// now they aren't scaled. If it is ever decided they should be, the
+// "trials" parameter can be passed to ScalePValue(). Maybe make this a
+// command-line option? Probably not; there probably is a correct answer.
+//
+// This uses dots for numbers well below failure, numbers for p-values
+// leading up to failure, and letters for p-values at or a bit beyond
+// failure, and X for p-values well beyond failure.
+static void plot( const double p_value, const size_t trials ) {
+    const int OFFSET   = GetLog2PValue(FAILURE_PBOUND);
+    const int DIGITS   = 9; // Use [1-9]
+    const int CHARS    = 6; // Use [a-f]
+
+    if (p_value > ldexp(FAILURE_PBOUND, DIGITS)) {
+        putchar('.');
+    } else if (p_value > FAILURE_PBOUND) {
+        const int log2p = GetLog2PValue(p_value);
+        putchar('1' + log2p + DIGITS - OFFSET);
+    } else if (p_value > ldexp(FAILURE_PBOUND, -CHARS)) {
+        const int log2p = GetLog2PValue(p_value);
+        putchar('a' + log2p - OFFSET);
+    } else {
+        putchar('X');
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Report on the fact that, in each of the specified number of trials,
 // a fair coin was "flipped" coinflips times, and the worst bias
@@ -318,10 +331,10 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
                 pct, worstbiasKeybit, worstbiasHashbit, logp_value);
     }
 
-    if (p_value < FAILURE_PBOUND) {
+    if (p_value <= FAILURE_PBOUND) {
         printf(" !!!!!\n");
         result = false;
-    } else if (p_value < WARNING_PBOUND) {
+    } else if (p_value <= WARNING_PBOUND) {
         printf(" !\n");
     } else {
         printf("\n");
@@ -333,8 +346,7 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
             int    thisbias  = abs((int)counts[i] - expected);
             double thisratio = (double)thisbias / (double)coinflips;
             double thisp     = 2.0 * exp(-(double)thisbias * 2.0 * thisratio);
-            double thislogp  = GetLog2PValue(thisp);
-            plot(thislogp);
+            plot(thisp, trials);
             if (((i % hashbits) == (hashbits - 1)) && (i < (trials - 1))) {
                 printf("]\n[");
             }
@@ -401,10 +413,10 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     recordLog2PValue(logp_value);
     printf("max %6.4f at bit %4zd -> out (%3zd,%3zd)  (^%2d)", cramer_v, maxKeybit, maxOutbitA, maxOutbitB, logp_value);
 
-    if (p_value < FAILURE_PBOUND) {
+    if (p_value <= FAILURE_PBOUND) {
         printf(" !!!!!\n");
         result = false;
-    } else if (p_value < WARNING_PBOUND) {
+    } else if (p_value <= WARNING_PBOUND) {
         printf(" !\n");
         result = true;
     } else {
@@ -432,24 +444,9 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
                     boxes[1] = pop_cursor[out1] - boxes[3];
                     boxes[0] = testcount - boxes[3] - boxes[2] - boxes[1];
 
-                    // I'm not 100% sure that this p_value _should_ be scaled here,
-                    // but this makes this report explicitly show which bits cause
-                    // overall warnings/failures, so I'm doing it for now.
-                    const double chisq   = ChiSqIndepValue(boxes, testcount);
-                    const double p_val   = ScalePValue(ChiSqPValue(chisq, 1), keybits * realhashbitpairs);
-
-                    // This first threshhold is basically "take the distance between
-                    // warning and failure, and move that much further past failure".
-                    // So an 'X' shows a much-more-than-marginal failure.
-                    if (p_val < FAILURE_PBOUND / WARNING_PBOUND * FAILURE_PBOUND) {
-                        putchar('X');
-                    } else if (p_val < FAILURE_PBOUND) {
-                        putchar('O');
-                    } else if (p_val < WARNING_PBOUND) {
-                        putchar('o');
-                    } else {
-                        putchar('.');
-                    }
+                    const double chisq = ChiSqIndepValue(boxes, testcount);
+                    const double p_val = ChiSqPValue(chisq, 1);
+                    plot(p_val, keybits * realhashbitpairs);
                 }
                 // Finished keybit
                 printf("\n");
@@ -529,9 +526,9 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
     }
 
     bool warning = false, failure = false;
-    if (p_value <  FAILURE_PBOUND) {
+    if (p_value <= FAILURE_PBOUND) {
         failure = true;
-    } else if (p_value < WARNING_PBOUND) {
+    } else if (p_value <= WARNING_PBOUND) {
         warning = true;
     } else if (isnan(ratio)) {
         warning = true;
@@ -627,9 +624,9 @@ bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, in
     }
 
     bool warning = false, failure = false;
-    if (p_value <  FAILURE_PBOUND) {
+    if (p_value <= FAILURE_PBOUND) {
         failure = true;
-    } else if (p_value < WARNING_PBOUND) {
+    } else if (p_value <= WARNING_PBOUND) {
         warning = true;
     }
 
@@ -687,7 +684,7 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
         for (int width = maxwidth; width >= minwidth; width--) {
             double n = *worstptr++;
 
-            if (drawDiagram) { plot(n); }
+            if (drawDiagram) { plot(GetStdNormalPValue(n), tests); }
 
             if (worstN    <= n) {
                 worstN     = n;
@@ -719,9 +716,9 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
     }
 
     bool warning = false, failure = false;
-    if (p_value <  FAILURE_PBOUND) {
+    if (p_value <= FAILURE_PBOUND) {
         failure = true;
-    } else if (p_value < WARNING_PBOUND) {
+    } else if (p_value <= WARNING_PBOUND) {
         warning = true;
     }
 
