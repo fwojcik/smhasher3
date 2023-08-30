@@ -80,6 +80,21 @@ static std::mutex            print_mutex;
 static unsigned seed_progress;
 #endif
 
+template <typename hashtype>
+static void PrintZeroes( const HashFn hash, const seed_t hseed, const hashtype & zero, const uint8_t * keys) {
+    hashtype v;
+
+    printf("Zero hashes:\n");
+    for (size_t i = 0; i < numtestbytes; i++) {
+        for (int len: testlens) {
+            hash(&keys[i * numtestbytes], len, hseed, &v);
+            if (v == zero) {
+                printf("keybyte %02x len %2d:", keys[i * numtestbytes], len); v.printhex(" ");
+            }
+        }
+    }
+}
+
 // Process part of a 2^32 range, split into g_NCPU threads
 template <typename hashtype>
 static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, const uint32_t start,
@@ -194,16 +209,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
             }
             fails++;
             if (!known_seed && (fails < 32)) { // don't print too many lines
-                hashtype v;
-                printf("Zero hashes:\n");
-                for (size_t i = 0; i < numtestbytes; i++) {
-                    for (int len: testlens) {
-                        hash(&keys[i][0], len, hseed, &v);
-                        if (v == zero) {
-                            printf("keybyte %02x len %2d:", keys[i][0], len); v.printhex(" ");
-                        }
-                    }
-                }
+                PrintZeroes(hash, hseed, zero, &keys[0][0]);
             }
             result = false;
             if (!known_seed) {
@@ -351,6 +357,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
 
     if (hashes[0] == zero) {
         printf("Confirmed broken seed 0x%" PRIx64 " => 0 hash value\n", seed);
+        PrintZeroes(hash, hseed, zero, &keys[0][0]);
         result = false;
     }
 
