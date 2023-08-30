@@ -51,14 +51,15 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 template <typename hashtype>
-void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions,
-        uint32_t maxPerCollision = 0, const std::vector<hidx_t> & idxs = {}, KeyFn keyprint = NULL,
-        int delta = 0, uint32_t nbBits = sizeof(hashtype) * 8, uint32_t prevBits = sizeof(hashtype) * 8,
-        bool reversebits = false );
+void PrintCollisions( const std::map<hashtype, uint32_t> & collisions, const size_t maxCollisions,
+        const uint32_t maxPerCollision = 0, const std::vector<hidx_t> & idxs = {}, const KeyFn keyprint = NULL,
+        const int delta = 0, const uint32_t nbBits = sizeof(hashtype) * 8,
+        const uint32_t prevBits = sizeof(hashtype) * 8, const bool reversebits = false );
 
 template <typename hashtype>
-void ShowOutliers( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, KeyFn keyprint, int delta,
-        const uint32_t maxEntries, const uint32_t maxPerEntry, const uint32_t bitOffset, const uint32_t bitWidth );
+void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_t> & hashidxs, const KeyFn keyprint,
+        const int delta, const uint32_t maxEntries, const uint32_t maxPerEntry,
+        const uint32_t bitOffset, const uint32_t bitWidth );
 
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
         const int hashbits, const bool drawDiagram );
@@ -69,7 +70,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
 bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int * logpp,
         bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram );
 
-bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxBits,
+bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, int maxBits,
         int * logpp, int * maxbitsp, bool highbits, bool verbose, bool drawDiagram );
 
 bool ReportDistribution( const std::vector<double> & score, int tests, int hashbits, int maxwidth, int minwidth,

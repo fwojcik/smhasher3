@@ -89,9 +89,9 @@ static void plot( double n ) {
 //-----------------------------------------------------------------------------
 // Print a list of collisions
 template <typename hashtype>
-void PrintCollisions( std::map<hashtype, uint32_t> & collisions, size_t maxCollisions,
-        uint32_t maxPerCollision, const std::vector<hidx_t> & idxs, KeyFn keyprint,
-        int delta, uint32_t nbBits, uint32_t prevBits, bool reversebits ) {
+void PrintCollisions( const std::map<hashtype, uint32_t> & collisions, const size_t maxCollisions,
+        const uint32_t maxPerCollision, const std::vector<hidx_t> & idxs, const KeyFn keyprint,
+        const int delta, const uint32_t nbBits, const uint32_t prevBits, const bool reversebits ) {
     if (prevBits != nbBits) {
         printf("\n%d-bit or more collisions (excluding %d-bit or more) ", nbBits, prevBits);
     } else {
@@ -147,8 +147,9 @@ INSTANTIATE(PrintCollisions, HASHTYPELIST);
 
 //-----------------------------------------------------------------------------
 template <typename hashtype>
-void ShowOutliers( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, KeyFn keyprint, int delta,
-        const uint32_t maxEntries, const uint32_t maxPerEntry, const uint32_t bitOffset, const uint32_t bitWidth ) {
+void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_t> & hashidxs, const KeyFn keyprint,
+        const int delta, const uint32_t maxEntries, const uint32_t maxPerEntry,
+        const uint32_t bitOffset, const uint32_t bitWidth ) {
 
     // This count data could be gathered during TestDistribution, but
     // plumbing that in seems more invasive than I want to be right now. If
@@ -581,7 +582,7 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
 }
 
 //-----------------------------------------------------------------------------
-bool ReportBitsCollisions( uint64_t nbH, int * collcounts, int minBits, int maxBits,
+bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, int maxBits,
         int * logpp, int * maxbitsp, bool highbits, bool verbose, bool drawDiagram ) {
     if ((maxBits <= 1) || (minBits > maxBits)) { return true; }
 
