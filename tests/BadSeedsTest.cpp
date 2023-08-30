@@ -70,6 +70,7 @@ const std::set<int>        testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
 const std::vector<uint8_t> testbytes = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
 const size_t numtestbytes = testbytes.size();
 const size_t numtestlens  = testlens.size();
+const size_t numtests     = numtestbytes * numtestlens;
 
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
@@ -87,7 +88,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
     const HashFn             hash  = hinfo->hashFn(g_hashEndian);
     const seed_t             last  = hi | endlow;
     const hashtype           zero  = { 0 };
-    std::vector<hashtype>    hashes( numtestbytes * numtestlens );
+    std::vector<hashtype>    hashes( numtests );
     std::map<hashtype, uint32_t> collisions;
 
     const char * progress_fmt =
@@ -133,7 +134,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         /* Test the next seed against each test byte */
         const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED, 1);
 
-        memset((void *)&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
+        memset((void *)&hashes[0], 0, numtests * sizeof(hashtype));
         unsigned cnt = 0;
         for (size_t i = 0; i < numtestbytes; i++) {
             for (int len: testlens) {
@@ -142,7 +143,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         }
 
         /* Report if any collisions were found */
-        if (FindCollisions(hashes, collisions, numtestbytes * numtestlens) > 0) {
+        if (FindCollisions(hashes, collisions, numtests) > 0) {
 #if defined(HAVE_THREADS)
             std::lock_guard<std::mutex> lock( print_mutex );
 #endif
@@ -306,7 +307,7 @@ template <typename hashtype>
 static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
     const HashFn          hash = hinfo->hashFn(g_hashEndian);
     const hashtype        zero = { 0 };
-    std::vector<hashtype> hashes( numtestbytes * numtestlens );
+    std::vector<hashtype> hashes( numtests );
     std::map<hashtype, uint32_t> collisions;
     bool result = true;
 
@@ -323,7 +324,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
     printf("0x%" PRIx64 "\n", seed);
     const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
 
-    memset((void *)&hashes[0], 0, numtestbytes * numtestlens * sizeof(hashtype));
+    memset((void *)&hashes[0], 0, numtests * sizeof(hashtype));
     unsigned cnt = 0;
     for (size_t i = 0; i < numtestbytes; i++) {
         for (int len: testlens) {
@@ -331,7 +332,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
         }
     }
 
-    if (FindCollisions(hashes, collisions, numtestbytes * numtestlens) > 0) {
+    if (FindCollisions(hashes, collisions, numtests) > 0) {
         printf("Confirmed bad seed 0x%" PRIx64 "\n", seed);
         PrintCollisions(collisions, -1);
 #if 0
