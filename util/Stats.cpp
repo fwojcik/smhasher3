@@ -1183,6 +1183,29 @@ double EstimateMaxCollPValue( const unsigned long nbH, const int nbBits, const i
 }
 
 /*
+ * This is the same Peizer and Pratt transformation as above, except
+ * hardcoded to p = 0.5, and this returns the two-tailed value.
+ */
+double GetCoinflipBinomialPValue( const unsigned long coinflips, const unsigned long delta ) {
+    //assert(coinflips >= 2 * delta);
+    const double n     = coinflips;
+    const double two_s = coinflips + 2 * delta;
+    const double two_t = coinflips - 2 * delta;
+
+    const double d2    = delta + 0.02 * (1.0 / (two_s + 1.0) - 1.0 / (two_t + 1.0));
+
+    const double num   = 2.0 + GFunc_PeizerPratt(two_s / n) + GFunc_PeizerPratt(two_t / n);
+    const double denom = n / 2.0 + 1.0 / 12.0;
+    const double z2    = d2 * sqrt(num / denom);
+
+    const double p_value = 2.0 * GetStdNormalPValue(z2);
+    //printf("\nPr(Xi > %ld; %ld, 0.5) ~= 1.0 - N(%f) ~= %e (Cbound %e)\n",
+    //        (unsigned long)(two_s / 2.0), coinflips, z2, p_value, 2.0 * exp(-(double)delta * 2.0 / n * delta));
+
+    return p_value;
+}
+
+/*
  * For estimating the maximum value, we could get the normal value
  * with p=0.5 and back-convert, but the C standard library doesn't
  * have an inverse erf(), and I don't want to add an external

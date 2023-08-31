@@ -66,6 +66,7 @@ double ScalePValue( double p_value, unsigned testcount );
 double ScalePValue2N( double p_value, int testbits );
 int GetLog2PValue( double p_value );
 double GetStdNormalPValue( const double variable );
+double GetCoinflipBinomialPValue( const unsigned long coinflips, const unsigned long delta );
 double EstimateMaxCollPValue( const unsigned long nbH, const int nbBits, const int maxColl );
 double EstimateMaxCollisions( const unsigned long nbH, const int nbBits );
 double GetBoundedPoissonPValue( const double expected, const uint64_t collisions );

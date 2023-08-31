@@ -308,11 +308,10 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
     addVCodeResult(worstbias );
     addVCodeResult(worstbiasN);
 
-    // p1value is using two-tailed Chernoff Bound
-    double ratio      = (double)worstbias / (double)coinflips;
-    double p1value    = 2.0 * exp(-(double)worstbias * 2.0 * ratio);
+    double p1value    = GetCoinflipBinomialPValue(coinflips, worstbias);
     double p_value    = ScalePValue(p1value, trials);
     int    logp_value = GetLog2PValue(p_value);
+    double ratio      = (double)worstbias / (double)coinflips;
     double pct        = (ratio <= (5e-7)) ? 0.0 : ratio * 200.0;
     int    pctdigits  = (pct >= 99.995) ? 1 : (pct >= 9.995) ? 2 : 3;
     bool   result     = true;
@@ -344,8 +343,7 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
         printf("[");
         for (int i = 0; i < trials; i++) {
             int    thisbias  = abs((int)counts[i] - expected);
-            double thisratio = (double)thisbias / (double)coinflips;
-            double thisp     = 2.0 * exp(-(double)thisbias * 2.0 * thisratio);
+            double thisp     = GetCoinflipBinomialPValue(coinflips, thisbias);
             plot(thisp, trials);
             if (((i % hashbits) == (hashbits - 1)) && (i < (trials - 1))) {
                 printf("]\n[");
