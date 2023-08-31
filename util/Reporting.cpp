@@ -476,10 +476,10 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
 
     if (maxcoll) {
         expected = EstimateMaxCollisions(nbH, hashsize);
-        p_value  = EstimatedBinomialPValue(nbH, hashsize, collcount);
+        p_value  = EstimateMaxCollPValue(nbH, hashsize, collcount);
     } else {
         expected = EstimateNbCollisions(nbH, hashsize);
-        p_value  = BoundedPoissonPValue(expected, collcount);
+        p_value  = GetBoundedPoissonPValue(expected, collcount);
     }
     int logp_value = GetLog2PValue(p_value);
     if (logpp != NULL) {
@@ -600,7 +600,7 @@ bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, in
         double const expected = EstimateNbCollisions(nbH, b);
         assert(expected > 0.0);
         double const dev      = (double)nbColls / expected;
-        double const p_value  = BoundedPoissonPValue(expected, nbColls);
+        double const p_value  = GetBoundedPoissonPValue(expected, nbColls);
         // printf("%d bits, %d/%f, p %f\n", b, nbColls, expected, p_value);
         if (p_value < maxPValue) {
             maxPValue      = p_value;

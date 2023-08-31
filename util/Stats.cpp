@@ -1155,10 +1155,10 @@ static double GFunc_PeizerPratt( const double x ) {
  *   "APPROXIMATIONS TO THE BINOMIAL", by MYRTLE ANNA BRUCE
  *   https://core.ac.uk/download/pdf/33362622.pdf
  */
-double EstimatedBinomialPValue( const unsigned long nbH, const int nbBits, const int maxColl ) {
-    const double s     = maxColl + 1;
+double EstimateMaxCollPValue( const unsigned long nbH, const int nbBits, const int maxColl ) {
+    const double s     = (double)maxColl + 0.5;
     const double n     = nbH;
-    const double t     = nbH - maxColl;
+    const double t     = n - s;
     const double p     = exp2(-nbBits);
     const double q     = 1.0 - p;
 
@@ -1224,7 +1224,7 @@ double EstimateMaxCollisions( const unsigned long nbH, const int nbBits ) {
  * computing real p-values for lower-than-expected collision counts,
  * since that is never a failure condition.
  */
-double BoundedPoissonPValue( const double expected, const uint64_t collisions ) {
+double GetBoundedPoissonPValue( const double expected, const uint64_t collisions ) {
     if (collisions < expected) {
         return 1.0;
     }
