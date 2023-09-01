@@ -336,9 +336,6 @@ class RandSeq {
     void fill_elem( uint8_t * out, const uint64_t elem_lo, const uint64_t elem_hi, const uint64_t elem_stride );
 
     // A bare RandSeq() object is unusable; initialize via Rand::get_seq().
-    // It would be nicer if the constructor here could be deleted, but this
-    // setup allows for code which has a bare RandSeq object which then can
-    // get conditionally initialized later.
     RandSeq() {}
 
   public:
