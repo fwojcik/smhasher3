@@ -65,11 +65,11 @@
 
 template <typename hashtype, bool commas>
 static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount, bool verbose ) {
-    std::vector<hashtype> hashes;
-    hashes.resize(numcount);
+    std::vector<hashtype> hashes(numcount);
 
     printf("Keyset 'TextNum' - numbers in text form %s commas - %ld keys\n", commas ? "with" : "without", numcount);
 
+    //----------
     for (uint64_t n = 0; n < numcount; n++) {
         std::string nstr = std::to_string(n);
         if (commas) {
@@ -107,7 +107,9 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
     const unsigned keybytes  = prefixlen + corelen + suffixlen;
     unsigned       keycount  = std::min((uint64_t)pow(double(corecount), double(corelen)), (uint64_t)(INT32_MAX / 8));
 
-    uint8_t * key = new uint8_t[std::min(keybytes + 1, (unsigned)64)];
+    std::vector<hashtype> hashes(keycount);
+
+    char * key = new char[keybytes + 1];
     memcpy(key, prefix, prefixlen);
     memset(key + prefixlen, 'X', corelen);
     memcpy(key + prefixlen + corelen, suffix, suffixlen);
@@ -116,9 +118,6 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
     printf("Keyset 'Text' - keys of form \"%s\" - %d keys\n", key, keycount);
 
     //----------
-    std::vector<hashtype> hashes;
-    hashes.resize(keycount);
-
     for (unsigned i = 0; i < keycount; i++) {
         uint32_t t = i;
 
@@ -179,14 +178,16 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
         printf("WARNING: skipping %d keys; maxlen and/or coreset parameters are bad\n", remaining);
     }
 
-    printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n",
-            minlen, maxlen, name, keycount - remaining);
-
     std::vector<hashtype> hashes(keycount - remaining);
     Rand     r( {708218, minlen, maxlen} );
     char *   key = new char[maxlen];
     uint64_t itemnum;
     uint32_t cnt = 0;
+
+    printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n",
+            minlen, maxlen, name, keycount - remaining);
+
+    //----------
     for (uint32_t len = minlen; len <= maxlen; len++) {
         // Generate lencount[len] keys of this length. For the first
         // prefixlen characters, convert a random numeric sequence element
@@ -237,7 +238,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
         const char * coreset, const char * name, bool verbose ) {
     const unsigned corecount = (unsigned)strlen(coreset);
     const size_t   totalkeys = keycount * (corecount - 1) * varylen;
-    char *         key       = new char[maxlen + 1];
+    char *         key       = new char[maxlen];
 
     printf("Keyset 'Long' - %d-%d random chars from %s charset - varying %s %d chars - %ld keys\n",
             minlen, maxlen, name, varyprefix ? "first" : "last", varylen, totalkeys);
@@ -254,7 +255,6 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
 
         // These words are long enough that we don't explicitly avoid collisions.
         const unsigned len = minlen + r.rand_range(maxlen - minlen + 1);
-        key[len] = 0;
         for (unsigned j = 0; j < len; j++) {
             key[j] = coreset[r.rand_range(corecount)];
         }
