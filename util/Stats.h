@@ -57,6 +57,10 @@ void FilterOutliers( std::vector<double> & v );
 
 uint64_t chooseK( int b, int k );
 uint64_t chooseUpToK( int n, int k );
+uint32_t Sum1toN( uint32_t n );
+uint32_t InverseSum1toN( uint32_t sum );
+void GetDoubleLoopIndices(uint32_t m, uint32_t sum, uint32_t & i, uint32_t & j);
+uint64_t nthlex( uint64_t rank, const uint64_t setbits );
 
 double EstimateNbCollisions( const unsigned long nbH, const int nbBits );
 void ReportCollisionEstimates( void );

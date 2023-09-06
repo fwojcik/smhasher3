@@ -72,6 +72,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
+// Means, standard deviations, and outlier removal
 
 double CalcMean( std::vector<double> & v ) {
     double sum = std::accumulate(v.begin(), v.end(), 0.0);
@@ -146,6 +147,7 @@ void FilterOutliers( std::vector<double> & v ) {
 }
 
 //-----------------------------------------------------------------------------
+// Some combinatoric math
 
 uint64_t chooseK( int n, int k ) {
     if ((k <  0) || (k >  n)) { return 0; }
@@ -169,6 +171,79 @@ uint64_t chooseUpToK( int n, int k ) {
     }
 
     return c;
+}
+
+uint32_t Sum1toN( uint32_t n ) {
+    return n * (n + 1) / 2;
+}
+
+// Returns largest N such that Sum1toN(N) <= sum.
+uint32_t InverseSum1toN( uint32_t sum ) {
+    return (uint32_t)(floor((sqrt(1.0 + 8.0 * sum) - 1.0) / 2.0));
+}
+
+// This is a numeric expression to calculate:
+// SUM(a = 0..x-1)(SUM(b = a+1..m-1)(1)), or, in ASCII:
+//
+//  x-1   m-1
+//  ---   ---
+//  \     \    1
+//  /     /
+//  ---   ---
+//  a=0  b=a+1
+//
+// This computes how many times a nested loop like:
+// for (int a = 0; a < m - 1; a++) {
+//     for (int b = a + 1; b < m; b++) {
+//         do_one_thing();
+//     }
+//     ...expression valid here...
+// }
+// has run so far for given values of m and a at the
+// indicated place in the code.
+static uint32_t DoubleSum(uint32_t m, uint32_t x) {
+    return (2 * m * x - x * x - x) / 2;
+}
+
+// This computes the inverse of DoubleSum(). That is, it finds the largest
+// value of x for which DoubleSum(m, x) < n. This allows computing how many
+// times the outer loop in the DoubleSum() example has run for a given
+// count of how many times do_one_thing() has been called.
+static uint32_t InverseDoubleSum(uint32_t m, uint32_t n) {
+    return (2 * m - 1 - sqrt(4 * m * m - 4 * m - 8 * n + 1)) / 2;
+}
+
+// This finds the inner and outer loop indices for the code in the
+// DoubleSum() examples, given the value of m and the count of how many
+// times do_one_thing() has been called.
+//
+// It first finds the largest number of outer loops which could have been
+// done, then finds how many times do_one_thing() was called during all
+// those full outer loops, and subtracts that from the number of times it
+// was done to find the number of times the inner loop was done during the
+// current partial outer loop. It then converts that count into an index by
+// adding "i + 1", since the values for j start there in the for() loop.
+void GetDoubleLoopIndices(uint32_t m, uint32_t sum, uint32_t & i, uint32_t & j) {
+    i = InverseDoubleSum(m, sum);
+    j = sum - DoubleSum(m, i) + i + 1;
+}
+
+// This computes the value gotten by repeating nextlex() N times when
+// starting with the smallest value with setbits set.
+uint64_t nthlex( uint64_t N, const uint64_t setbits ) {
+    uint64_t out = 0;
+    int64_t i = setbits - 1;
+    while (i >= 0) {
+        uint64_t l = i, t;
+        while ((t = chooseK(l, i + 1)) <= N) {
+            l++;
+        }
+        //printf("r %ld, C(%ld,%ld)=%ld\t", N, l, i+1, t);
+        out |= UINT64_C(1) << (l - 1);
+        N -= chooseK(l - 1, i + 1);
+        i--;
+    }
+    return out;
 }
 
 //-----------------------------------------------------------------------------
@@ -1042,6 +1117,7 @@ void ReportCollisionEstimates( void ) {
 }
 
 //-----------------------------------------------------------------------------
+// p-value formulas for various distributions, and related utility functions
 
 /*
  * Compute the lowest number of hash bits (n) such that there are
