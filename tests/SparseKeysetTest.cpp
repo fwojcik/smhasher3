@@ -86,20 +86,22 @@ static void SparseKeygenRecurse( HashFn hash, const seed_t seed, unsigned start,
 template <int keybits, typename hashtype>
 static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbits, bool inclusive, bool verbose ) {
     typedef Blob<keybits> keytype;
-
-    std::vector<hashtype> hashes;
-
     keytype k(0);
 
     const unsigned keybytes  = keybits / 8;
     const unsigned totalkeys = inclusive ? 1 + chooseUpToK(keybits, setbits) : chooseK(keybits, setbits);
 
+    std::vector<hashtype> hashes;
+    hashes.reserve(totalkeys);
+
     printf("Keyset 'Sparse' - %d-byte keys with %s %d bits set - %d keys\n",
             keybytes, inclusive ? "up to" : "exactly", setbits, totalkeys);
 
     if (inclusive) {
-        hashes.resize(1);
-        hash(&k, k.len, seed, &hashes[0]);
+        hashtype h;
+        hash(&k, k.len, seed, &h);
+        addVCodeInput(&k, k.len);
+        hashes.push_back(h);
     }
 
     SparseKeygenRecurse(hash, seed, 0, setbits, inclusive, k, hashes);
@@ -107,7 +109,9 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbit
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).testDistribution(false);
     printf("\n");
 
-    recordTestResult(result, "Sparse", keybytes);
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%d/%d", setbits, keybytes);
+    recordTestResult(result, "Sparse", buf);
 
     addVCodeResult(result);
 
