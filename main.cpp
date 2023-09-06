@@ -107,7 +107,8 @@
 
 //-----------------------------------------------------------------------------
 // Locally-visible configuration
-static bool g_drawDiagram = false;
+static bool g_drawDiagram  = false;
+static bool g_forceSummary = false;
 
 // Setting to test more thoroughly.
 //
@@ -606,7 +607,7 @@ static bool test( const HashInfo * hInfo ) {
     //-----------------------------------------------------------------------------
     // If All material tests were done, show a final summary of testing
 
-    if (g_testAll) {
+    if (g_testAll || g_forceSummary) {
         printf("-------------------------------------------------------------------------------\n");
         print_pvaluecounts();
         printf("-------------------------------------------------------------------------------\n");
@@ -741,6 +742,10 @@ int main( int argc, const char ** argv ) {
             }
             if (strcmp(arg, "--verbose") == 0) {
                 g_drawDiagram = true;
+                continue;
+            }
+            if (strcmp(arg, "--force-summary") == 0) {
+                g_forceSummary = true;
                 continue;
             }
             if (strcmp(arg, "--extra") == 0) {
