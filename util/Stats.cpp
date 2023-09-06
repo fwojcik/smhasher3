@@ -147,22 +147,22 @@ void FilterOutliers( std::vector<double> & v ) {
 
 //-----------------------------------------------------------------------------
 
-double chooseK( int n, int k ) {
-    if (k > (n - k)) { k = n - k; }
+uint64_t chooseK( int n, int k ) {
+    if ((k <  0) || (k >  n)) { return 0; }
+    if ((k == 0) || (k == n)) { return 1; }
+    if (k > (n - k))          { k = n - k; }
 
     double c = 1;
 
     for (int i = 0; i < k; i++) {
-        double t = double(n - i) / double(i + 1);
-
-        c *= t;
+        c *= double(n - i) / double(i + 1);
     }
 
-    return c;
+    return (uint64_t)round(c);
 }
 
-double chooseUpToK( int n, int k ) {
-    double c = 0;
+uint64_t chooseUpToK( int n, int k ) {
+    uint64_t c = 0;
 
     for (int i = 1; i <= k; i++) {
         c += chooseK(n, i);

@@ -55,8 +55,8 @@ double CalcMean( std::vector<double> & v );
 double CalcStdv( std::vector<double> & v );
 void FilterOutliers( std::vector<double> & v );
 
-double chooseK( int b, int k );
-double chooseUpToK( int n, int k );
+uint64_t chooseK( int b, int k );
+uint64_t chooseUpToK( int n, int k );
 
 double EstimateNbCollisions( const unsigned long nbH, const int nbBits );
 void ReportCollisionEstimates( void );
