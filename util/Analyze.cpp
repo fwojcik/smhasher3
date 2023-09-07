@@ -491,6 +491,14 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             }
         }
 
+        // For testing low bits, reverse all the hash values and test them
+        // as if they were high bits, modulo bit numbers.
+        //
+        // If reporting on failing hashes wasn't requested, then the
+        // original hashes and their indices aren't needed any longer, so
+        // just reuse the original memory. Otherwise, copy the data before
+        // manipulating it. The *_rev versions of the variables make it
+        // clear what data is being used.
         if (testLowBits && (maxBits > 0)) {
             collcounts_rev.resize(maxBits - minBits + 1);
 
@@ -522,6 +530,9 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                         collcounts_rev.size());
             }
 
+            // The data is restored to original bit ordering for other
+            // reporting beyond TestCollisions(). There is no need to
+            // re-sort it, though, since TestDistribution doesn't care.
             if (!drawDiagram) {
                 for (size_t hnb = 0; hnb < nbH; hnb++) {
                     hashes_rev[hnb].reversebits();
@@ -531,7 +542,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 hashes_rev.clear();
                 hashidxs_rev.clear();
             }
-            // No need to re-sort, since TestDistribution doesn't care
         }
     }
 
