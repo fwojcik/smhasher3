@@ -193,6 +193,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
                 newresult = true;
             }
         }
+        hashidxs.clear();
 
         /* Check for a broken seed */
         if (hashes[0] == zero) {
@@ -215,12 +216,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
             }
         }
 
-        if (!thisresult) {
-            result     = false;
-            collisions.clear();
-            collisionidxs.clear();
-            hashidxs.clear();
-        }
+        result &= thisresult;
     } while (seed++ != last);
 
   out:

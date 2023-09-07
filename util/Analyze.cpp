@@ -159,6 +159,9 @@ hidx_t FindCollisionsImpl( std::vector<hashtype> & hashes, std::map<hashtype, ui
         std::vector<hidx_t> & hashidxs ) {
     hidx_t collcount = 0, curcollcount = 0;
 
+    collisions.clear();
+    collisionidxs.clear();
+
     if (indices) {
         blobsort(hashes.begin(), hashes.end(), hashidxs);
     } else {
@@ -243,6 +246,9 @@ static hidx_t FindCollisionsPrefixesIndices( std::vector<hashtype> & hashes, std
 
     assert(prefixLen > 0);
     mask.sethighbits(prefixLen);
+
+    collisions.clear();
+    collisionidxs.clear();
 
     const size_t nbH = hashes.size();
     for (size_t hnb = 1; hnb < nbH; hnb++) {
@@ -557,8 +563,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                     *logpSumPtr += curlogp;
                 }
                 if (!thisresult && drawDiagram) {
-                    collisions.clear();
-                    collisionidxs.clear();
                     FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                             collisionidxs, hashidxs, nbBits, prevBitsH);
                     PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
@@ -574,8 +578,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                     *logpSumPtr += curlogp;
                 }
                 if (!thisresult && drawDiagram) {
-                    collisions.clear();
-                    collisionidxs.clear();
                     FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                             collisionidxs, hashidxs_rev, nbBits, prevBitsL);
                     PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
@@ -595,8 +597,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 *logpSumPtr += curlogp;
             }
             if (!thisresult && drawDiagram) {
-                collisions.clear();
-                collisionidxs.clear();
                 FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                         collisionidxs, hashidxs, maxBits, hashbits + 1);
                 PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
@@ -612,8 +612,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 *logpSumPtr += curlogp;
             }
             if (!thisresult && drawDiagram) {
-                collisions.clear();
-                collisionidxs.clear();
                 FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                         collisionidxs, hashidxs_rev, maxBits, hashbits + 1);
                 PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
