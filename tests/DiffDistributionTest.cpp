@@ -107,7 +107,17 @@ static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_
         }
 
         int curlogp = 0;
-        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).sumLogp(&curlogp);
+        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).
+            sumLogp(&curlogp).dumpFailKeys([&]( hidx_t i ) {
+                    ExtBlob k( &keys[i * keybytes], keybytes );
+                    hashtype v1, v2;
+
+                    printf("0x%016" PRIx64 "\t", g_seed);
+                    hash(k, keybytes, seed, &v1); k.printbytes(NULL); k.flipbit(keybit); printf(" vs. ");
+                    hash(k, keybytes, seed, &v2); k.printbytes(NULL); k.flipbit(keybit); printf("\t");
+                    v1.printhex(NULL); printf(" XOR "); v2.printhex(NULL); printf(" == "); v2 ^= v1; v2.printhex(NULL);
+                });
+
         if (drawDiagram) {
             printf("\n");
         } else {

@@ -76,26 +76,83 @@ static void CombinationKeygenRecurse( uint8_t * key, int len, int maxlen, const 
 }
 
 template <typename hashtype>
-static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen, const uint8_t * blocks,
+static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen, const uint8_t * blocks,
         uint32_t blockcount, uint32_t blocksz, const char * testdesc, bool verbose ) {
-    printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - ", testdesc, maxlen, blockcount);
+    uint8_t * key     = new uint8_t[maxlen * blocksz];
+    uint64_t * counts = new uint64_t[maxlen + 1];
+
+    // Compute how many keys exist for each possible length, up to and
+    // including maxlen. For a given length, each key which is one block
+    // smaller in length can be prefixed by each block, which is the
+    // "counts[i - 1] * blockcount" term, and each block can also appear on
+    // its own, which is the "+ blockcount" term.
+    //
+    // There is a closed-form solution for this (counts[i] = blockcount *
+    // (pow(blockcount, i) - 1) / (blockcount - 1)), but that pow() term
+    // really hurts, so we just use this array instead.
+    counts[0] = 0;
+    for (unsigned i = 1; i <= maxlen; i++) {
+        counts[i] = counts[i - 1] * blockcount + blockcount;
+    }
+
+    printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - %ld keys\n",
+            testdesc, maxlen, blockcount, counts[maxlen]);
 
     //----------
 
     std::vector<hashtype> hashes;
 
-    uint8_t * key = new uint8_t[maxlen * blocksz];
-
     CombinationKeygenRecurse(key, 0, maxlen, blocks, blockcount, blocksz, hash, seed, hashes);
-
-    delete [] key;
-
-    printf("%d keys\n", (int)hashes.size());
 
     //----------
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1);
+    // This computation exactly reflects the recursive key generation loop
+    // above, except this has been unrolled into an iterative form. To
+    // explain it, assume the possible blocks are numbered 0, 1, 2, etc., a
+    // dot represents any possible block, and maxlen is 5.
+    //
+    // If all block combinations of the form "0...." have been processed,
+    // that was counts[4] + 1 hashes. If n is at least that value, then it
+    // refers to a key after all of those keys, so we subtract off that key
+    // count; we now know the key we're interested in can't start with
+    // block 0, and how far after that point in the key-generation space
+    // the original value of n refers to. In this way, we can keep peeling
+    // off counts[4] + 1 from n to determine the index of the first block.
+    //
+    // The key of the form "1" is generated before any key of the form "1."
+    // or "1...." (etc.). So the first key after "0...."  is "1". This is
+    // why one key is subtracted from n before checking the next length
+    // value (the "n--" at the top of the loop).
+    //
+    // From there, we "recurse"/iterate down to longer lengths, peeling off
+    // indices to find the next first key index, and deciding to stop
+    // recursing when n hits 0. When that happens, the complete list of
+    // indices for the nth combination has been found, and the "recursion
+    // depth" is the length of that list.
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).dumpFailKeys([&]( hidx_t n ) {
+            uint32_t blocknums[maxlen] = { 0 };
+            hidx_t   curlen = 0;
+            n++; // Because the empty block isn't hashed
+            while (n > 0) {
+                curlen++;
+                n--;
+                while (n >= counts[maxlen - curlen] + 1) {
+                    n -= counts[maxlen - curlen] + 1;
+                    blocknums[curlen - 1]++;
+                }
+            }
+            for (size_t i = 0; i < curlen; i++) {
+                memcpy(&key[i * blocksz], &blocks[blocknums[i] * blocksz], blocksz);
+            }
+            ExtBlob xb( key, curlen * blocksz); uint32_t spacecnt = 3 * maxlen * blocksz + 4;
+            printf("0x%016" PRIx64 "\t", g_seed); spacecnt -= xb.printbytes(NULL);
+            printf("%.*s\t", spacecnt, g_manyspaces);
+            hashtype v; hash(key, curlen * blocksz, seed, &v); v.printhex(NULL);
+        });
     printf("\n");
+
+    delete [] counts;
+    delete [] key;
 
     return result;
 }
@@ -104,7 +161,7 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, int maxlen, cons
 
 const struct {
     const char *                desc;
-    const int                   maxlen;
+    const unsigned              maxlen;
     const uint32_t              nrBlocks;
     const uint32_t              szBlock; // Verify nrBlocks * szBlock == blocks.size()
     const std::vector<uint8_t>  blocks;

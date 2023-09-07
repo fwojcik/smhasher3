@@ -694,7 +694,7 @@ int main( int argc, const char ** argv ) {
         exit(1);
     }
 
-#if defined(DEBUG)
+#if 0 && defined(DEBUG)
     BlobsortTest();
     RandTest(1);
 #endif

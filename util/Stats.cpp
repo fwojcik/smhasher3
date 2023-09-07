@@ -173,6 +173,34 @@ uint64_t chooseUpToK( int n, int k ) {
     return c;
 }
 
+// Returns largest K such that ChooseUpToK(N,K) < count, where
+// minK<=K<=maxK. The value of input is set to the remainder (count -
+// chooseUpToK(N,K)). If ChooseUpToK(N,maxK) >= count, then maxK is
+// returned with the remainder set correctly.
+uint32_t InverseKChooseUpToK( uint32_t & count, const uint32_t minK, const uint32_t maxK, const uint32_t N ) {
+    uint64_t K;
+    for (K = minK; K <= maxK; K++) {
+        uint64_t curcount = chooseK(N, K);
+        if (count < curcount) { break; }
+        count -= curcount;
+    }
+    return K;
+}
+
+// Returns largest N such that ChooseUpToK(N,K) < count, where
+// minN<=N<=maxN. The value of input is set to the remainder (count -
+// chooseUpToK(N,K)). If ChooseUpToK(maxN,K) >= count, then maxN is
+// returned with the remainder set correctly.
+uint32_t InverseNChooseUpToK( uint32_t & count, const uint32_t minN, const uint32_t maxN, const uint32_t K ) {
+    uint64_t N;
+    for (N = minN; N <= maxN; N++) {
+        uint64_t curcount = chooseK(N, K);
+        if (count < curcount) { break; }
+        count -= curcount;
+    }
+    return N;
+}
+
 uint32_t Sum1toN( uint32_t n ) {
     return n * (n + 1) / 2;
 }

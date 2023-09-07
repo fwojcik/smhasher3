@@ -102,7 +102,14 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
         } while (iseed != 0);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1);
+    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1).dumpFailKeys([&]( hidx_t i ) {
+            seed_t setbits = InverseKChooseUpToK(i, 0, maxbits, bigseed ? 64 : 32);
+            seed_t iseed   = nthlex(i, setbits);
+            seed_t hseed   = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+
+            printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
+            hashtype v; hash(key, keylen, hseed, &v); v.printhex(NULL);
+        });
     printf("\n");
 
     recordTestResult(result, "SeedSparse", keylen);

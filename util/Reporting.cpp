@@ -188,14 +188,15 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
 
     printf("Most common hash values for %d-bits slice @ offset %d (expected count == %f):\n",
             bitWidth, bitOffset, ldexp((double)nbH, -bitWidth));
-    uint32_t prevhash = 0xffffffff;
+    uint32_t prevhash  = 0xffffffff;
+    int      hexdigits = (bitWidth + 3) / 4;
     if (keyprint == NULL) {
         for (auto const e: entries) {
             if ((e.first == prevhash) || (counts[e.first] < maxbound)) {
                 continue;
             }
             prevhash = e.first;
-            printf("\t\t%8dx 0x%-8x\n", counts[e.first], e.first);
+            printf("\t\t%8dx 0x%0*x\n", counts[e.first], hexdigits, e.first);
         }
     } else {
         for (auto const e: entries) {
@@ -210,9 +211,9 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
                     printf("\t%d results for ", keycount);
                 }
                 if (delta > 0) {
-                    printf("hash value XOR delta slice 0x%-8x\n", e.first);
+                    printf("hash value XOR delta slice 0x%0*x\n", hexdigits, e.first);
                 } else {
-                    printf("hash value slice 0x%-8x\n", e.first);
+                    printf("hash value slice 0x%0*x\n", hexdigits, e.first);
                 }
                 printf("\t\tSeed            \tKey\n");
                 printf("\t\t--------------------------------------------------\n");
@@ -240,8 +241,8 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
             if (counts[i] != 0) {
                 continue;
             }
-            // The spaces here are so this matches the "\t\t%8dx 0x%-8x\n" above
-            printf("\t\t          0x%-8zx\n", i);
+            // The spaces here are so this matches the "\t\t%8dx 0x%0*x\n" above
+            printf("\t\t          0x%0*zx\n", hexdigits, i);
             if (--zerocount == 0) {
                 break;
             }

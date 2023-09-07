@@ -59,6 +59,14 @@
 #include <string>
 #include <math.h>
 
+template <typename hashtype>
+static void PrintTextKeyHash( HashFn hash, seed_t seed, const char * key, const uint32_t len ) {
+    hashtype v;
+    printf("0x%016" PRIx64 "\t\"%.*s\"\t", g_seed, len, key);
+    hash(key, len, seed, &v);
+    v.printhex(NULL);
+}
+
 //-----------------------------------------------------------------------------
 // Keyset 'Num' - generate all keys from 0 through numcount-1 in string form,
 // either with or without commas.
@@ -82,7 +90,13 @@ static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount
     }
 
     //----------
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).dumpFailKeys([&]( hidx_t n ) {
+            std::string nstr = std::to_string(n);
+            if (commas) {
+                for (size_t i = nstr.length(); i > 3; i -= 3) { nstr.insert(i - 3, ","); }
+            }
+            PrintTextKeyHash<hashtype>(hash, seed, nstr.c_str(), nstr.length());
+        });
     printf("\n");
 
     recordTestResult(result, "TextNum", commas ? "with commas" : "without commas");
@@ -130,7 +144,12 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
     }
 
     //----------
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).dumpFailKeys([&]( hidx_t i ) {
+            for (unsigned j = 0; j < corelen; j++) {
+                key[prefixlen + j] = coreset[i % corecount]; i /= corecount;
+            }
+            PrintTextKeyHash<hashtype>(hash, seed, key, keybytes);
+        });
     printf("\n");
 
     memset(key + prefixlen, 'X', corelen);
@@ -214,7 +233,26 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
     }
 
     //----------
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).dumpFailKeys([&]( hidx_t n ) {
+            uint32_t len, prefixlen = std::min(minlen, maxprefix), rngpos = 0;
+            for (len = minlen; len <= maxlen; len++) {
+                prefixlen = std::min(len, maxprefix);
+                if (n < lencount[len]) { break; }
+                n      -= lencount[len];
+                rngpos += lencount[len] * (len - prefixlen) + RandSeq::RNGU64_USED;
+            }
+            r.seek(rngpos);
+            const uint64_t curcount = pow((double)corecount, (double)prefixlen);
+            RandSeq rs = r.get_seq(SEQ_NUM, curcount - 1); rs.write(&itemnum, n, 1);
+            for (unsigned j = 0; j < prefixlen; j++) {
+                key[j] = coreset[itemnum % corecount]; itemnum /= corecount;
+            }
+            r.seek(rngpos + n * (len - prefixlen) + RandSeq::RNGU64_USED);
+            for (unsigned j = prefixlen; j < len; j++) {
+                key[j] = coreset[r.rand_range(corecount)];
+            }
+            PrintTextKeyHash<hashtype>(hash, seed, key, len);
+        });
     printf("\n");
 
     char buf[32];
@@ -273,10 +311,25 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
             key[j] = prv;
         }
     }
-    delete [] key;
 
     //----------
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(true).testDeltas(1);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(true).
+        testDeltas(1).dumpFailKeys([&]( hidx_t n ) {
+            unsigned l3 = n % (corecount - 1); n /= (corecount - 1);
+            unsigned l2 = n % varylen;         n /= varylen;
+            r.seek(n * (maxlen + 1));
+            const unsigned len = minlen + r.rand_range(maxlen - minlen + 1);
+            for (unsigned j = 0; j < len; j++) {
+                key[j] = coreset[r.rand_range(corecount)];
+            }
+            size_t j = l2 + (varyprefix ? 0 : (len - varylen));
+            for (unsigned k = 0; k <= l3; k++) {
+                if (key[j] == coreset[k]) { l3++; break; }
+            }
+            key[j] = coreset[l3];
+            PrintTextKeyHash<hashtype>(hash, seed, key, len);
+            printf("  [key[%zd]=\'%c\']", j, key[j]);
+        });
     printf("\n");
 
     char buf[64];
@@ -284,6 +337,8 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
     recordTestResult(result, "Text", buf);
 
     addVCodeResult(result);
+
+    delete [] key;
 
     return result;
 }
@@ -309,7 +364,9 @@ static bool WordsDictImpl( HashFn hash, const seed_t seed, bool verbose ) {
     }
 
     //----------
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).dumpFailKeys([&](hidx_t i) {
+            PrintTextKeyHash<hashtype>(hash, seed, words[i].c_str(), words[i].length());
+        });
     printf("\n");
 
     recordTestResult(result, "Text", "dictionary");

@@ -128,7 +128,22 @@ static bool SeedDiffDistTest( const HashInfo * hinfo, unsigned keybits, bool dra
         }
 
         int curlogp = 0;
-        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).sumLogp(&curlogp);
+        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).
+            sumLogp(&curlogp).dumpFailKeys([&]( hidx_t i ) {
+                    ExtBlob k( &keys[keybytes * i], keybytes );
+                    hashtype v1, v2;
+                    seed_t iseed, hseed;
+
+                    memcpy(&iseed, &seeds[seedbytes * i], seedbytes);
+                    hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED); hash(k, keybytes, hseed, &v1);
+                    iseed ^= (UINT64_C(1) << seedbit);
+                    hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED); hash(k, keybytes, hseed, &v2);
+
+                    printf("0x%016" PRIx64 "\t", (uint64_t)(iseed ^ (UINT64_C(1) << seedbit))); k.printhex(NULL);
+                    printf("\tvs. 0x%016" PRIx64 "\t\t", (uint64_t)iseed);
+                    v1.printhex(NULL); printf(" XOR "); v2.printhex(NULL); printf(" == "); v2 ^= v1; v2.printhex(NULL);
+                });
+
         if (drawDiagram) {
             printf("\n");
         } else {

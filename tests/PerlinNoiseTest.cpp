@@ -94,7 +94,17 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
         }
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra).testDeltas(xMax);
+    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra).testDeltas(xMax).
+        dumpFailKeys([&]( hidx_t i ) {
+                uint64_t x = i % xMax;
+                uint32_t y = i / xMax;
+
+                ExtBlob xb(key, inputLen); memcpy(key, &x, sizeof(x));
+                printf("0x%08" PRIx32 "        \t", y); xb.printbytes(NULL); printf("\t");
+                const seed_t seed = hinfo->Seed(y, HashInfo::SEED_FORCED);
+                hashtype v; hash(key, inputLen, seed, &v); v.printhex(NULL);
+            });
+
     printf("\n");
 
     recordTestResult(result, "PerlinNoise", inputLen);

@@ -57,6 +57,8 @@ void FilterOutliers( std::vector<double> & v );
 
 uint64_t chooseK( int b, int k );
 uint64_t chooseUpToK( int n, int k );
+uint32_t InverseKChooseUpToK( uint32_t & count, const uint32_t minK, const uint32_t maxK, const uint32_t N );
+uint32_t InverseNChooseUpToK( uint32_t & count, const uint32_t minN, const uint32_t maxN, const uint32_t K );
 uint32_t Sum1toN( uint32_t n );
 uint32_t InverseSum1toN( uint32_t sum );
 void GetDoubleLoopIndices(uint32_t m, uint32_t sum, uint32_t & i, uint32_t & j);

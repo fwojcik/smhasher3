@@ -49,7 +49,7 @@
 #include "Platform.h"
 #include "Hashinfo.h"
 #include "TestGlobals.h"
-#include "Stats.h" // For chooseUpToK
+#include "Stats.h" // For combinatorics
 #include "Analyze.h"
 #include "Instantiate.h"
 #include "VCode.h"
@@ -155,7 +155,24 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
                 blockoffset_incr, blockoffset_max, seedmaxbits, blockmaxbits);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose);
+    bool result = TestHashList(hashes).drawDiagram(verbose).dumpFailKeys([&]( hidx_t i ) {
+            size_t   blockoffset = blockoffset_min + (i % testkeys) * blockoffset_incr; i /= testkeys;
+            uint32_t blockidx    = (i % testblocks);                                    i /= testblocks;
+            uint32_t seedidx     = i;
+            uint32_t blockbits   = InverseKChooseUpToK(blockidx, 1, blockmaxbits, blocklen * 8);
+            uint32_t seedbits    = InverseKChooseUpToK(seedidx, 1, seedmaxbits, hinfo->is32BitSeed() ? 32 : 64);
+            uint64_t numblock    = nthlex(blockidx, blockbits);
+            uint64_t iseed       = nthlex(seedidx, seedbits);
+            seed_t   hseed       = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
+
+            uint8_t  buf[blockoffset_max - blockoffset_min + keylen] = { 0 };
+            uint8_t * const blockbase = buf + blockoffset_max;
+            memcpy(blockbase, &numblock, blocklen);
+            uint8_t * key = blockbase - blockoffset; ExtBlob xb( key, keylen );
+            printf("0x%016" PRIx64 "\t", iseed); xb.printbytes(NULL); printf("\t");
+            const HashFn hash = hinfo->hashFn(g_hashEndian);
+            hashtype v; hash(key, keylen, hseed, &v); v.printhex(NULL);
+        });
     printf("\n");
 
     recordTestResult(result, "SeedBlockLen", keylen);
