@@ -28,7 +28,8 @@ The major differences from rurban's fork are:
 - Fix several critical bugs
 - Several new tests and test methods added
 - Significant performance increases
-- Report on p-values for almost all tests
+- Report on p-values for all supported tests
+- Detailed reporting on hashes when test failures occur
 - Better statistical foundations for some tests
 - Overhauled all hash implementations to be more consistent
 
@@ -52,13 +53,13 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2023-08-20, SMHasher3 is nearing a beta3 release. There is about a
-50% chance this will happen before approx 2023-09-25. If it does not happen
-by then, it will very likely take until late October or November 2023.
+As of 2023-09-07, SMHasher3 is nearing a beta3 release. There is about a
+80% chance this will happen before approx 2023-10-12. If it does not happen
+by then, it will very likely take until late November 2023.
 
-There are two big things that I want to accomplish before declaring another
-stable point. One is a new feature which should improve the hash
-development/debugging process, and the other is to add a number of existing
+The major features I wanted to include before declaring another stable
+point are nearly all done, now that I've added detailed hash reporting on
+test failure. The last big unfinished one is to add a number of existing
 hash algorithms as well as refresh the existing suite with any updated
 versions. There are a number of other smaller things too, of course. Most
 of those can be tracked at
@@ -181,8 +182,7 @@ see a result at least that bad if you have 19 tries to get it than if you just h
 try, and so the improbability is much lower. Indeed, 19 is around 2^4, and the first
 reported result is about 4 powers of 2 worse than the second (7 - 3), as expected.
 
-Unfortunately, not all tests in SMHasher3 support p-value reporting yet, although
-most do. I hope to fix this in the future.
+All non-deprecated tests in SMHasher3 support p-value reporting.
 
 Performance
 -----------

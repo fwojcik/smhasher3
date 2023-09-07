@@ -12,24 +12,45 @@ General changes
 - More testing aspects now support threading/using multiple CPUs
 - RNG has been updated to Threefry, and RNG API has been completely rewritten
 - External RNG test utility has been added
+- Some code has been made more self-documenting
 - Code is now compiled with "-Wall" on non-MSVC compilers
 - Numerous small changes based on compiler warnings
 - "make test" improved, and enabled on all platforms
 - "C" locale is now explicitly set internally
 - Many code cleanups and readability improvements
-- Added documentation on what each test does
 
 Testing changes
 ---------------
+- Tests now display colliding and/or partially colliding hash inputs when
+  failures are detected and --verbose is given on the command-line
+   - This includes hash seed and key inputs, as well as hash value results
+   - This also includes tests which test XORs of two hash results
+   - Some tests don't support this, as it wouldn't make sense to do so,
+     such as Avalanche-based and BIC-based tests
 - BIC and SeedBIC tests have been reorganized
    - The same input data is now used for each input bit, to reduce
      memory usage and be consistent with other test suites
+   - This may be altered again in the future
+- Avalanche and SeedAvalanche tests use better p-value algorithm
+   - The previous bound was not very tight in practice, so a better
+     Binomial approximation was added
 - Intra-test overlap due to random chance has been eliminated
    - This is via the new RNG API for generating random sequences
    - This also allows for better DiffDist and SeedDiffDist testing
+- A new Text test has been added
+   - It hashes the string representation of numbers from 0 to 9,999,999,
+     both with and without commas
+- SeedSparse test is now separated out from the Seed test
+- Reporting code is now separated out from Analysis code
+   - There will likely be more minor changes like this in the future
+- BadSeeds reporting has been improved
 - SanityTest error messages have been improved
 - SpeedTest fidelity has been improved
+- Sparse test now reports set bit count in summaries
 - Expected collision estimation has been improved
+- Plots of per-bit results have been improved and made consistent
+   - This includes bias graphs in Avalanche-based and BIC-based tests, as
+     well as hash bucket distribution graphs in Keyset-based tests
 - Some progress indicators have been made more granular
 - Some display errors have been fixed
 
