@@ -1,5 +1,5 @@
 /*
- * CityHash, by Geoff Pike and Jyrki Alakuijala
+ * CityHash family v1.1.1, by Geoff Pike and Jyrki Alakuijala
  *
  * Copyright (C) 2022 Frank J. T. Wojcik
  * Copyright (c) 2014-2015 Reini Urban
@@ -27,6 +27,10 @@
  */
 #include "Platform.h"
 #include "Hashlib.h"
+
+// CityHash128WithSeed is no longer enabled in this family. This is because
+// this exact same hash function is part of the (later) FarmHash family,
+// and there's no point in testing them twice.
 
 #if defined(HAVE_X86_64_CRC32C)
   #include "Intrinsics.h"
@@ -82,27 +86,12 @@ static inline uint64_t Fetch64( const uint8_t * p ) {
 static const uint64_t k0 = UINT64_C(0xc3a5c85c97cb3127);
 static const uint64_t k1 = UINT64_C(0xb492b66fbe98f273);
 static const uint64_t k2 = UINT64_C(0x9ae16a3b2f90404f);
-static const uint64_t k3 = UINT64_C(0xc949d7c7509e6557);
 
 // Magic numbers for 32-bit hashing.  Copied from Murmur3.
 static const uint32_t c1 = 0xcc9e2d51;
 static const uint32_t c2 = 0x1b873593;
 
 //------------------------------------------------------------
-// Hash 128 input bits down to 64 bits of output.
-// This is intended to be a reasonably good hash function.
-static inline uint64_t Hash128to64( const uint128_t & x ) {
-    // Murmur-inspired hashing.
-    const uint64_t kMul = UINT64_C(0x9ddfea08eb382d69);
-    uint64_t       a    = (Uint128Low64(x)  ^ Uint128High64(x)) * kMul;
-
-    a ^= (a >> 47);
-    uint64_t b =          (Uint128High64(x) ^ a) * kMul;
-    b ^= (b >> 47);
-    b *= kMul;
-    return b;
-}
-
 // A 32-bit to 32-bit integer hash copied from Murmur3.
 static uint32_t fmix( uint32_t h ) {
     h ^= h >> 16;
@@ -123,37 +112,12 @@ static uint32_t Mur( uint32_t a, uint32_t h ) {
     return h * 5 + 0xe6546b64;
 }
 
-static uint64_t ShiftMix( uint64_t val ) {
-    return val ^ (val >> 47);
-}
-
-static uint64_t HashLen16( uint64_t u, uint64_t v ) {
-    return Hash128to64(Uint128(u, v));
-}
-
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
-// Callers do best to use "random-looking" values for a and b.
-static pair<uint64_t, uint64_t> WeakHashLen32WithSeeds( uint64_t w, uint64_t x,
-        uint64_t y, uint64_t z, uint64_t a, uint64_t b ) {
-    a += w;
-    b  = ROTR64(b + a + z, 21);
-    uint64_t c = a;
-    a += x;
-    a += y;
-    b += ROTR64(a        , 44);
-    return make_pair(a + z, b + c);
-}
-
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
-template <bool bswap>
-static pair<uint64_t, uint64_t> WeakHashLen32WithSeeds( const uint8_t * s, uint64_t a, uint64_t b ) {
-    return WeakHashLen32WithSeeds(Fetch64<bswap>(s), Fetch64<bswap>(
-            s + 8), Fetch64<bswap>(s + 16), Fetch64<bswap>(s + 24), a, b);
-}
-
 #define PERMUTE3(a, b, c) do { std::swap(a, b); std::swap(a, c); } while (0)
 
 //------------------------------------------------------------
+// All seeding for these 32-bit functions is unofficial and home-grown for
+// SMHasher3
+
 static uint32_t Hash32Len0to4( const uint8_t * s, size_t len, uint32_t seed ) {
     uint32_t b = seed;
     uint32_t c = 9;
@@ -167,7 +131,7 @@ static uint32_t Hash32Len0to4( const uint8_t * s, size_t len, uint32_t seed ) {
 
 template <bool bswap>
 static uint32_t Hash32Len5to12( const uint8_t * s, size_t len, uint32_t seed ) {
-    uint32_t a = len + seed, b = len * 5, c = 9, d = b;
+    uint32_t a = len + seed, b = a * 5, c = 9, d = b;
 
     a += Fetch32<bswap>(s);
     b += Fetch32<bswap>(s + len - 4);
@@ -199,7 +163,7 @@ static uint32_t CityHash32WithSeed( const uint8_t * s, size_t len, uint32_t seed
     }
 
     // len > 24
-    uint32_t h = len + seed, g = c1 * len, f = g;
+    uint32_t h = len + seed, g = c1 * h, f = g;
     uint32_t a0 = ROTR32(Fetch32<bswap>(s + len -  4) * c1, 17) * c2;
     uint32_t a1 = ROTR32(Fetch32<bswap>(s + len -  8) * c1, 17) * c2;
     uint32_t a2 = ROTR32(Fetch32<bswap>(s + len - 16) * c1, 17) * c2;
@@ -247,38 +211,98 @@ static uint32_t CityHash32WithSeed( const uint8_t * s, size_t len, uint32_t seed
         PERMUTE3(f, h, g);
         s += 20;
     } while (--iters != 0);
-    g = ROTR32(g    , 11) * c1;
-    g = ROTR32(g    , 17) * c1;
-    f = ROTR32(f    , 11) * c1;
-    f = ROTR32(f    , 17) * c1;
-    h = ROTR32(h + g, 19);
+    g = ROTR32(g, 11) * c1;
+    g = ROTR32(g, 17) * c1;
+    f = ROTR32(f, 11) * c1;
+    f = ROTR32(f, 17) * c1;
+    h = h + g;
+    h = ROTR32(h, 19);
     h = h * 5 + 0xe6546b64;
-    h = ROTR32(h    , 17) * c1;
-    h = ROTR32(h + f, 19);
+    h = ROTR32(h, 17) * c1;
+    h = h + f;
+    h = ROTR32(h, 19);
     h = h * 5 + 0xe6546b64;
-    h = ROTR32(h    , 17) * c1;
+    h = ROTR32(h, 17) * c1;
     return h;
+}
+
+//------------------------------------------------------------
+// Hash 128 input bits down to 64 bits of output.
+// This is intended to be a reasonably good hash function.
+static inline uint64_t Hash128to64( const uint128_t & x ) {
+    // Murmur-inspired hashing.
+    const uint64_t kMul = UINT64_C(0x9ddfea08eb382d69);
+    uint64_t       a    = (Uint128Low64(x)  ^ Uint128High64(x)) * kMul;
+
+    a ^= (a >> 47);
+    uint64_t b =          (Uint128High64(x) ^ a) * kMul;
+    b ^= (b >> 47);
+    b *= kMul;
+    return b;
+}
+
+static uint64_t HashLen16( uint64_t u, uint64_t v ) {
+    return Hash128to64(Uint128(u, v));
+}
+
+static uint64_t HashLen16( uint64_t u, uint64_t v, uint64_t mul ) {
+    // Murmur-inspired hashing.
+    uint64_t a = (u ^ v) * mul;
+    a ^= (a >> 47);
+    uint64_t b = (v ^ a) * mul;
+    b ^= (b >> 47);
+    b *= mul;
+    return b;
+}
+
+static uint64_t ShiftMix( uint64_t val ) {
+    return val ^ (val >> 47);
+}
+
+// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Callers do best to use "random-looking" values for a and b.
+static pair<uint64_t, uint64_t> WeakHashLen32WithSeeds( uint64_t w, uint64_t x,
+        uint64_t y, uint64_t z, uint64_t a, uint64_t b ) {
+    a += w;
+    uint64_t c = a;
+    b  = b + a + z;
+    b  = ROTR64(b, 21);
+    a += x;
+    a += y;
+    b += ROTR64(a, 44);
+    return make_pair(a + z, b + c);
+}
+
+// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+template <bool bswap>
+static pair<uint64_t, uint64_t> WeakHashLen32WithSeeds( const uint8_t * s, uint64_t a, uint64_t b ) {
+    return WeakHashLen32WithSeeds(Fetch64<bswap>(s), Fetch64<bswap>(
+            s + 8), Fetch64<bswap>(s + 16), Fetch64<bswap>(s + 24), a, b);
 }
 
 //------------------------------------------------------------
 template <bool bswap>
 static uint64_t HashLen0to16( const uint8_t * s, size_t len ) {
-    if (len > 8) {
-        uint64_t a = Fetch64<bswap>(s);
-        uint64_t b = Fetch64<bswap>(s + len - 8);
-        return HashLen16(a, ROTR64(b + len, len)) ^ b;
+    if (len >= 8) {
+        uint64_t mul = k2 + len * 2;
+        uint64_t a   = Fetch64<bswap>(s) + k2;
+        uint64_t b   = Fetch64<bswap>(s + len - 8);
+        uint64_t c   = ROTR64(b, 37) * mul + a;
+        uint64_t d   = (ROTR64(a, 25) + b) * mul;
+        return HashLen16(c, d, mul);
     }
     if (len >= 4) {
-        uint64_t a = Fetch32<bswap>(s);
-        return HashLen16(len + (a << 3), Fetch32<bswap>(s + len - 4));
+        uint64_t mul = k2 + len * 2;
+        uint64_t a   = Fetch32<bswap>(s);
+        return HashLen16(len + (a << 3), Fetch32<bswap>(s + len - 4), mul);
     }
     if (len > 0) {
         uint8_t  a = s[0];
         uint8_t  b = s[len >> 1];
         uint8_t  c = s[len  - 1];
-        uint32_t y = static_cast<uint32_t>(a) + (static_cast<uint32_t>(b) << 8);
-        uint32_t z = len + (static_cast<uint32_t>(c) << 2);
-        return ShiftMix(y * k2 ^ z * k3) * k2;
+        uint32_t y = static_cast<uint32_t>(a)   + (static_cast<uint32_t>(b) << 8);
+        uint32_t z = static_cast<uint32_t>(len) + (static_cast<uint32_t>(c) << 2);
+        return ShiftMix(y * k2 ^ z * k0) * k2;
     }
     return k2;
 }
@@ -287,38 +311,36 @@ static uint64_t HashLen0to16( const uint8_t * s, size_t len ) {
 // in that case.
 template <bool bswap>
 static uint64_t HashLen17to32( const uint8_t * s, size_t len ) {
-    uint64_t a = Fetch64<bswap>(s           ) * k1;
-    uint64_t b = Fetch64<bswap>(s + 8       );
-    uint64_t c = Fetch64<bswap>(s + len -  8) * k2;
-    uint64_t d = Fetch64<bswap>(s + len - 16) * k0;
+    uint64_t mul = k2 + len * 2;
+    uint64_t a   = Fetch64<bswap>(s           ) * k1;
+    uint64_t b   = Fetch64<bswap>(s + 8       );
+    uint64_t c   = Fetch64<bswap>(s + len -  8) * mul;
+    uint64_t d   = Fetch64<bswap>(s + len - 16) * k2;
 
-    return HashLen16(ROTR64(a - b, 43) + ROTR64(c, 30) + d, a + ROTR64(b ^ k3, 20) - c + len);
+    return HashLen16(ROTR64(a + b, 43) + ROTR64(c, 30) + d, a + ROTR64(b + k2, 18) + c, mul);
 }
 
 // Return an 8-byte hash for 33 to 64 bytes.
 template <bool bswap>
 static uint64_t HashLen33to64( const uint8_t * s, size_t len ) {
-    uint64_t z = Fetch64<bswap>(s + 24);
-    uint64_t a = Fetch64<bswap>(s     ) + (len + Fetch64<bswap>(s + len - 16)) * k0;
-    uint64_t b = ROTR64(a + z, 52);
-    uint64_t c = ROTR64(a    , 37);
-
-    a += Fetch64<bswap>(s +  8      );
-    c += ROTR64(a, 7);
-    a += Fetch64<bswap>(s + 16      );
-    uint64_t vf = a + z;
-    uint64_t vs = b + ROTR64(a, 31) + c;
-    a  = Fetch64<bswap>(s + 16      ) + Fetch64<bswap>(s + len - 32);
-    z  = Fetch64<bswap>(s + len -  8);
-    b  = ROTR64(a + z, 52);
-    c  = ROTR64(a    , 37);
-    a += Fetch64<bswap>(s + len - 24);
-    c += ROTR64(a, 7);
-    a += Fetch64<bswap>(s + len - 16);
-    uint64_t wf = a + z;
-    uint64_t ws = b + ROTR64(a, 31) + c;
-    uint64_t r  = ShiftMix((vf + ws) * k2 + (wf + vs) * k0);
-    return ShiftMix(r * k0 + vs) * k2;
+    uint64_t mul = k2 + len * 2;
+    uint64_t a   = Fetch64<bswap>(s    ) * k2;
+    uint64_t b   = Fetch64<bswap>(s + 8);
+    uint64_t c   = Fetch64<bswap>(s + len - 24);
+    uint64_t d   = Fetch64<bswap>(s + len - 32);
+    uint64_t e   = Fetch64<bswap>(s + 16) * k2;
+    uint64_t f   = Fetch64<bswap>(s + 24) * 9;
+    uint64_t g   = Fetch64<bswap>(s + len -  8);
+    uint64_t h   = Fetch64<bswap>(s + len - 16) * mul;
+    uint64_t u   = ROTR64(a + g, 43) + (ROTR64(b, 30) + c) * 9;
+    uint64_t v   = ((a + g) ^ d) + f + 1;
+    uint64_t w   = BSWAP((u + v) * mul) + h;
+    uint64_t x   = ROTR64(e + f, 42) + c;
+    uint64_t y   = (BSWAP((v + w) * mul) + g) * mul;
+    uint64_t z   = e + f + c;
+    a = BSWAP((x + z) * mul + y) + b;
+    b = ShiftMix((z + a) * mul + d + h) * mul;
+    return b + x;
 }
 
 template <bool bswap>
@@ -376,26 +398,26 @@ static uint128_t CityMurmur( const uint8_t * s, size_t len, uint128_t seed ) {
     uint64_t    b = Uint128High64(seed);
     uint64_t    c = 0;
     uint64_t    d = 0;
-    signed long l = len - 16;
 
-    if (l <= 0) { // len <= 16
+    if (len <= 16) {
         a = ShiftMix(a * k1) * k1;
         c = b * k1 + HashLen0to16<bswap>(s, len);
         d = ShiftMix(a + (len >= 8 ? Fetch64<bswap>(s) : c));
-    } else { // len > 16
+    } else {
         c  = HashLen16(Fetch64<bswap>(s + len - 8) + k1, a      );
         d  = HashLen16(b + len, c + Fetch64<bswap>(s + len - 16));
         a += d;
+        // len > 16 here, so do...while is safe
         do {
-            a ^= ShiftMix(Fetch64<bswap>(s)     * k1) * k1;
-            a *= k1;
-            b ^= a;
-            c ^= ShiftMix(Fetch64<bswap>(s + 8) * k1) * k1;
-            c *= k1;
-            d ^= c;
-            s += 16;
-            l -= 16;
-        } while (l > 0);
+            a   ^= ShiftMix(Fetch64<bswap>(s)     * k1) * k1;
+            a   *= k1;
+            b   ^= a;
+            c   ^= ShiftMix(Fetch64<bswap>(s + 8) * k1) * k1;
+            c   *= k1;
+            d   ^= c;
+            s   += 16;
+            len -= 16;
+        } while (len > 16);
     }
     a = HashLen16(a, c);
     b = HashLen16(d, b);
@@ -431,7 +453,7 @@ static uint128_t CityHash128WithSeed( const uint8_t * s, size_t len, uint128_t s
         std::swap(z, x);
         s   += 64;
         x    = ROTR64(x + y        + v.first + Fetch64<bswap>(s +  8), 37) * k1;
-        y    = ROTR64(y + v.second + Fetch64          <bswap>(s + 48), 42) * k1;
+        y    = ROTR64(y + v.second +           Fetch64<bswap>(s + 48), 42) * k1;
         x   ^= w.second;
         y   += v.first + Fetch64<bswap>(s + 40);
         z    = ROTR64(z + w.first, 33) * k1;
@@ -442,7 +464,10 @@ static uint128_t CityHash128WithSeed( const uint8_t * s, size_t len, uint128_t s
         len -= 128;
     } while (likely(len >= 128));
     x += ROTR64(v.first + z, 49) * k0;
-    z += ROTR64(w.first    , 37) * k0;
+    y  = y * k0 + ROTR64(w.second, 37);
+    z  = z * k0 + ROTR64(w.first,  27);
+    w.first *= 9;
+    v.first *= k0;
     // If 0 < len < 128, hash up to 4 chunks of 32 bytes each from the end of s.
     for (size_t tail_done = 0; tail_done < len;) {
         tail_done += 32;
@@ -452,6 +477,7 @@ static uint128_t CityHash128WithSeed( const uint8_t * s, size_t len, uint128_t s
         z         += w.second +     Fetch64<bswap>(s + len - tail_done);
         w.second  += v.first;
         v          = WeakHashLen32WithSeeds<bswap>(s + len - tail_done, v.first + z, v.second);
+        v.first   *= k0;
     }
     // At this point our 56 bytes of state should contain more than
     // enough information for a strong 128-bit hash.  We use two
@@ -463,14 +489,10 @@ static uint128_t CityHash128WithSeed( const uint8_t * s, size_t len, uint128_t s
 
 template <bool bswap>
 static uint128_t CityHash128( const char * s, size_t len ) {
-    if (len >= 16) {
-        return CityHash128WithSeed<bswap>(s + 16, len - 16, Uint128(Fetch64<bswap>(s) ^ k3, Fetch64<bswap>(s + 8)));
-    } else if (len >= 8) {
-        return CityHash128WithSeed<bswap>(NULL, 0, Uint128(Fetch64<bswap>(
-                s) ^ (len * k0), Fetch64<bswap>(s + len - 8) ^ k1));
-    } else {
-        return CityHash128WithSeed<bswap>(s, len, Uint128(k0, k1));
-    }
+    return len >= 16 ?
+        CityHash128WithSeed<bswap>(s + 16, len - 16,
+                Uint128(Fetch64<bswap>(s), Fetch64<bswap>(s + 8) + k0)) :
+        CityHash128WithSeed<bswap>(s, len, Uint128(k0, k1));
 }
 
 //------------------------------------------------------------
@@ -478,18 +500,18 @@ static uint128_t CityHash128( const char * s, size_t len ) {
 
 // Requires len >= 240.
 template <bool bswap>
-static void CityHashCrc256Long( const uint8_t * s, size_t len, uint64_t seed, uint64_t * result ) {
+static void CityHashCrc256Long( const uint8_t * s, size_t len, uint32_t seed, uint64_t * result ) {
     uint64_t a = Fetch64<bswap>(s +  56) + k0;
     uint64_t b = Fetch64<bswap>(s +  96) + k0;
     uint64_t c = HashLen16(b, len);
     uint64_t d = Fetch64<bswap>(s + 120) * k0 + len;
     uint64_t e = Fetch64<bswap>(s + 184) + seed;
-    uint64_t f = seed;
+    uint64_t f = 0;
     uint64_t g = 0;
-    uint64_t h = 0;
-    uint64_t i = 0;
-    uint64_t j = 0;
-    uint64_t t = c + d;
+    uint64_t h = c + d;
+    uint64_t x = seed;
+    uint64_t y = 0;
+    uint64_t z = 0;
 
     result[0] = c;
     result[1] = d;
@@ -498,53 +520,72 @@ static void CityHashCrc256Long( const uint8_t * s, size_t len, uint64_t seed, ui
     size_t iters = len / 240;
     len -= iters * 240;
     do {
-#define CHUNK(multiplier, z)                                           \
-      {                                                                \
-          uint64_t old_a = a;                                          \
-          a = ROTR64(b, 41 ^ z) * multiplier + Fetch64<bswap>(s);      \
-          b = ROTR64(c, 27 ^ z) * multiplier + Fetch64<bswap>(s + 8);  \
-          c = ROTR64(d, 41 ^ z) * multiplier + Fetch64<bswap>(s + 16); \
-          d = ROTR64(e, 33 ^ z) * multiplier + Fetch64<bswap>(s + 24); \
-          e = ROTR64(t, 25 ^ z) * multiplier + Fetch64<bswap>(s + 32); \
-          t = old_a;                                                   \
-      }                                                                \
-      f = _mm_crc32_u64(f, a);                                         \
-      g = _mm_crc32_u64(g, b);                                         \
-      h = _mm_crc32_u64(h, c);                                         \
-      i = _mm_crc32_u64(i, d);                                         \
-      j = _mm_crc32_u64(j, e);                                         \
-      s += 40
+#undef CHUNK
+#define CHUNK(r) \
+        PERMUTE3(x, z, y);                             \
+        b += Fetch64<bswap>(s);                        \
+        c += Fetch64<bswap>(s + 8);                    \
+        d += Fetch64<bswap>(s + 16);                   \
+        e += Fetch64<bswap>(s + 24);                   \
+        f += Fetch64<bswap>(s + 32);                   \
+        a += b;                                        \
+        h += f;                                        \
+        b += c;                                        \
+        f += d;                                        \
+        g += e;                                        \
+        e += z;                                        \
+        g += x;                                        \
+        z  = _mm_crc32_u64(z, b + g);                  \
+        y  = _mm_crc32_u64(y, e + h);                  \
+        x  = _mm_crc32_u64(x, f + a);                  \
+        e  = ROTR64(e, r);                             \
+        c += e;                                        \
+        s += 40
 
-        CHUNK(1, 1); CHUNK(k0, 0);
-        CHUNK(1, 1); CHUNK(k0, 0);
-        CHUNK(1, 1); CHUNK(k0, 0);
+        CHUNK( 0); PERMUTE3(a, h, c);
+        CHUNK(33); PERMUTE3(a, h, f);
+        CHUNK( 0); PERMUTE3(b, h, f);
+        CHUNK(42); PERMUTE3(b, h, d);
+        CHUNK( 0); PERMUTE3(b, h, e);
+        CHUNK(33); PERMUTE3(a, h, e);
     } while (--iters > 0);
 
     while (len >= 40) {
-        CHUNK(k0, 0);
+        CHUNK(29);
+        e ^= ROTR64(a, 20);
+        h += ROTR64(b, 30);
+        g ^= ROTR64(c, 40);
+        f += ROTR64(d, 34);
+        PERMUTE3(c, h, g);
         len -= 40;
     }
     if (len > 0) {
         s = s + len - 40;
-        CHUNK(k0, 0);
+        CHUNK(33);
+        e ^= ROTR64(a, 43);
+        h += ROTR64(b, 42);
+        g ^= ROTR64(c, 41);
+        f += ROTR64(d, 40);
     }
-    j += i << 32;
-    a  = HashLen16(a, j);
-    h += g << 32;
-    b += h;
-    c  = HashLen16(c, f) + i;
-    d  = HashLen16(d, e + result[0]);
-    j += e;
-    i += HashLen16(h, t);
-    e  = HashLen16(a, d) + j;
-    f  = HashLen16(b, c) + a;
-    g  = HashLen16(j, i) + c;
+    result[0] ^= h;
+    result[1] ^= g;
 
-    //
-    result[0]  = e + f     + g + h;
-    a          = ShiftMix((a + g) * k0) * k0 + b;
+    g += h;
+    a  = HashLen16(a, g + z);
+    x += y << 32;
+    b += x;
+    c  = HashLen16(c, z) + h;
+    d  = HashLen16(d, e + result[0]);
+    g += e;
+    h += HashLen16(x, f);
+    e  = HashLen16(a, d) + g;
+    z  = HashLen16(b, c) + a;
+    y  = HashLen16(g, h) + c;
+
+    result[0]  = e + z + y + x;
+    a          = ShiftMix((a + y) * k0) * k0 + b;
     result[1] += a + result[0];
-    a          = ShiftMix(a       * k0) * k0 + c;
+    a          = ShiftMix(a * k0) * k0 + c;
     result[2]  = a + result[1];
     a          = ShiftMix((a + e) * k0) * k0;
     result[3]  = a + result[2];
@@ -557,7 +598,7 @@ static void CityHashCrc256Short( const uint8_t * s, size_t len, uint64_t * resul
 
     memcpy(buf, s, len);
     memset(buf + len, 0, 240 - len);
-    CityHashCrc256Long<bswap>(buf, 240, ~static_cast<uint64_t>(len), result);
+    CityHashCrc256Long<bswap>(buf, 240, ~static_cast<uint32_t>(len), result);
 }
 
 template <bool bswap>
@@ -572,17 +613,17 @@ static void CityHashCrc256( const uint8_t * s, size_t len, uint64_t * result ) {
 // Requires len < 240.
 // Unofficial homegrown seeding for SMHasher3
 template <bool bswap>
-static void CityHashCrc256ShortWithSeed( const uint8_t * s, size_t len, uint64_t seed, uint64_t * result ) {
+static void CityHashCrc256ShortWithSeed( const uint8_t * s, size_t len, uint32_t seed, uint64_t * result ) {
     uint8_t buf[240];
 
     memcpy(buf, s, len);
     memset(buf + len, 0, 240 - len);
-    CityHashCrc256Long<bswap>(buf, 240, HashLen16(seed, ~static_cast<uint64_t>(len)), result);
+    CityHashCrc256Long<bswap>(buf, 240, HashLen16(seed, ~static_cast<uint32_t>(len)), result);
 }
 
 // Unofficial
 template <bool bswap>
-static void CityHashCrc256WithSeed( const uint8_t * s, size_t len, uint64_t seed, uint64_t * result ) {
+static void CityHashCrc256WithSeed( const uint8_t * s, size_t len, uint32_t seed, uint64_t * result ) {
     if (likely(len >= 240)) {
         CityHashCrc256Long<bswap>(s, len, seed, result);
     } else {
@@ -633,6 +674,7 @@ static void City64( const void * in, const size_t len, const seed_t seed, void *
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
+#if 0
 template <bool bswap, uint32_t seedmode>
 static void City128( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint128_t seed128;
@@ -650,8 +692,6 @@ static void City128( const void * in, const size_t len, const seed_t seed, void 
     PUT_U64<bswap>(Uint128High64(h), (uint8_t *)out, 8);
 }
 
-// This version is slightly different than the one in Farmhash, so it
-// is tested also.
 template <bool bswap, uint32_t seedmode>
 static void CityMurmur_128( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint128_t seed128;
@@ -668,6 +708,7 @@ static void CityMurmur_128( const void * in, const size_t len, const seed_t seed
     PUT_U64<bswap>(Uint128Low64(h) , (uint8_t *)out, 0);
     PUT_U64<bswap>(Uint128High64(h), (uint8_t *)out, 8);
 }
+#endif
 
 #if defined(HAVE_X86_64_CRC32C)
 
@@ -708,16 +749,17 @@ REGISTER_FAMILY(cityhash,
  );
 
 REGISTER_HASH(CityHash_32,
-   $.desc       = "Google CityHash32WithSeed",
+   $.desc       = "Google CityHash32 (modified seeding)",
    $.hash_flags =
+         FLAG_HASH_NO_SEED         |
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
-   $.verification_LE = 0x5C28AD62,
-   $.verification_BE = 0x79F1F814,
+   $.verification_LE = 0xEDED9084,
+   $.verification_BE = 0x2E033380,
    $.hashfn_native   = City32<false>,
    $.hashfn_bswap    = City32<true>
  );
@@ -731,23 +773,24 @@ REGISTER_HASH(CityHash_64,
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
-   $.verification_LE = 0x25A20825,
-   $.verification_BE = 0x5698D8C4,
+   $.verification_LE = 0x5FABC5C5,
+   $.verification_BE = 0x355FC63A,
    $.hashfn_native   = City64<false>,
    $.hashfn_bswap    = City64<true>
  );
 
+#if 0
 REGISTER_HASH(CityHash_128__seed1,
    $.desc       = "Google CityHash128WithSeed (seeded low 64 bits)",
    $.hash_flags =
-         0,
+         FLAG_HASH_XL_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0x6531F54E,
-   $.verification_BE = 0x595FC28D,
+   $.verification_LE = 0x305C0D9A,
+   $.verification_BE = 0,
    $.hashfn_native   = City128<false, 1>,
    $.hashfn_bswap    = City128<true, 1>
  );
@@ -755,14 +798,14 @@ REGISTER_HASH(CityHash_128__seed1,
 REGISTER_HASH(CityHash_128__seed2,
    $.desc       = "Google CityHash128WithSeed (seeded high 64 bits)",
    $.hash_flags =
-         0,
+         FLAG_HASH_XL_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0x33E4ECD1,
-   $.verification_BE = 0xE7A9C3FD,
+   $.verification_LE = 0x0DB4D383,
+   $.verification_BE = 0,
    $.hashfn_native   = City128<false, 2>,
    $.hashfn_bswap    = City128<true, 2>
  );
@@ -770,18 +813,20 @@ REGISTER_HASH(CityHash_128__seed2,
 REGISTER_HASH(CityHash_128__seed3,
    $.desc       = "Google CityHash128WithSeed (seeded low+high 64 bits)",
    $.hash_flags =
-         0,
+         FLAG_HASH_XL_SEED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0x1C03D5B9,
-   $.verification_BE = 0xCE532972,
+   $.verification_LE = 0xA93EBF71,
+   $.verification_BE = 0,
    $.hashfn_native   = City128<false, 3>,
    $.hashfn_bswap    = City128<true, 3>
  );
+#endif
 
+#if 0
 REGISTER_HASH(CityMurmur__seed1,
    $.desc       = "CityMurmur (seeded low 64 bits)",
    $.hash_flags =
@@ -791,8 +836,8 @@ REGISTER_HASH(CityMurmur__seed1,
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0x47EE6507,
-   $.verification_BE = 0x646575E0,
+   $.verification_LE = 0x6593FD6D,
+   $.verification_BE = 0,
    $.hashfn_native   = CityMurmur_128<false, 1>,
    $.hashfn_bswap    = CityMurmur_128<true, 1>
  );
@@ -806,8 +851,8 @@ REGISTER_HASH(CityMurmur__seed2,
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0xAD2F2840,
-   $.verification_BE = 0x9677E1F6,
+   $.verification_LE = 0xF1483884,
+   $.verification_BE = 0,
    $.hashfn_native   = CityMurmur_128<false, 2>,
    $.hashfn_bswap    = CityMurmur_128<true, 2>
  );
@@ -821,11 +866,12 @@ REGISTER_HASH(CityMurmur__seed3,
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0xE0FECCA8,
-   $.verification_BE = 0x2DA46BE3,
+   $.verification_LE = 0x6D028510,
+   $.verification_BE = 0,
    $.hashfn_native   = CityMurmur_128<false, 3>,
    $.hashfn_bswap    = CityMurmur_128<true, 3>
  );
+#endif
 
 #if defined(HAVE_X86_64_CRC32C)
 
@@ -833,14 +879,15 @@ REGISTER_HASH(CityHashCrc_128__seed1,
    $.desc       = "Google CityHashCrc128WithSeed (seeded low 64 bits)",
    $.impl       = "hwcrc_x64",
    $.hash_flags =
+         FLAG_HASH_XL_SEED         |
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0xD4389C97,
-   $.verification_BE = 0x561D03B3,
+   $.verification_LE = 0x98C09AB4,
+   $.verification_BE = 0xF3DF4378,
    $.hashfn_native   = CityCrc128<false, 1>,
    $.hashfn_bswap    = CityCrc128<true, 1>
  );
@@ -849,14 +896,15 @@ REGISTER_HASH(CityHashCrc_128__seed2,
    $.desc       = "Google CityHashCrc128WithSeed (seeded high 64 bits)",
    $.impl       = "hwcrc_x64",
    $.hash_flags =
+         FLAG_HASH_XL_SEED         |
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0xD627AF5F,
-   $.verification_BE = 0x45FB4A4B,
+   $.verification_LE = 0xDA655B2C,
+   $.verification_BE = 0x8CF5BD76,
    $.hashfn_native   = CityCrc128<false, 2>,
    $.hashfn_bswap    = CityCrc128<true, 2>
  );
@@ -865,14 +913,15 @@ REGISTER_HASH(CityHashCrc_128__seed3,
    $.desc       = "Google CityHashCrc128WithSeed (seeded low+high 64 bits)",
    $.impl       = "hwcrc_x64",
    $.hash_flags =
+         FLAG_HASH_XL_SEED         |
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
          FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0x1DA45069,
-   $.verification_BE = 0x9AFFB28F,
+   $.verification_LE = 0x85279D96,
+   $.verification_BE = 0xFBB049D5,
    $.hashfn_native   = CityCrc128<false, 3>,
    $.hashfn_bswap    = CityCrc128<true, 3>
  );
@@ -882,6 +931,7 @@ REGISTER_HASH(CityHashCrc_256,
    $.impl       = "hwcrc_x64",
    $.hash_flags =
          FLAG_HASH_NO_SEED         |
+         FLAG_HASH_SMALL_SEED      |
          FLAG_HASH_CRC_BASED,
    $.impl_flags =
          FLAG_IMPL_MULTIPLY_64_64  |
@@ -889,8 +939,8 @@ REGISTER_HASH(CityHashCrc_256,
          FLAG_IMPL_SLOW            |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 256,
-   $.verification_LE = 0x1193B94A,
-   $.verification_BE = 0x2FC3BEA9,
+   $.verification_LE = 0xB5F99A90,
+   $.verification_BE = 0xD5FEE0A0,
    $.hashfn_native   = CityCrc256<false>,
    $.hashfn_bswap    = CityCrc256<true>
  );
