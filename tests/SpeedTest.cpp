@@ -59,6 +59,8 @@
 #include <string>
 #include <limits>
 
+#define SHOW_STDDEV 0
+
 constexpr int BULK_RUNS   = 160;
 constexpr int BULK_TRIALS = 960*2;
 // constexpr int BULK_SAMPLES = 2;
@@ -253,8 +255,13 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
         double bestbps = (bestbpc * 3500000000.0 / 1073741824.0);
+#if SHOW_STDDEV
         printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f %10.6f stdv%8.4f%%)\n",
                 align, bestbpc, bestbps, cycles, stddev, 100.0 * stddev / cycles);
+#else
+        printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n",
+                align, bestbpc, bestbps);
+#endif
         sumbpc += bestbpc;
     }
 
@@ -271,8 +278,12 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
         double bestbps = (bestbpc * 3500000000.0 / 1073741824.0);
+#if SHOW_STDDEV
         printf("Alignment rnd - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f stdv%8.4f%%)\n",
                 bestbpc, bestbps, stddev, 100.0 * stddev / cycles);
+#else
+        printf("Alignment rnd - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n", bestbpc, bestbps);
+#endif
     }
 
     fflush(NULL);
@@ -293,8 +304,12 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
         volatile int j      = i;
         double       cycles = SpeedTest(hash, seed, TINY_TRIALS, j, 0, 0, 0);
         if (verbose) {
+#if SHOW_STDDEV
             printf("  %2d-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
                     j, cycles, stddev, 100.0 * stddev / cycles);
+#else
+            printf("  %2d-byte keys - %8.2f cycles/hash\n", j, cycles);
+#endif
         }
         sum += cycles;
     }
@@ -306,7 +321,11 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
     if (include_vary) {
         double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0);
         if (verbose) {
+#if SHOW_STDDEV
             printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n", cycles, stddev, 100.0 * stddev / cycles);
+#else
+            printf(" rnd-byte keys - %8.2f cycles/hash\n", cycles);
+#endif
         }
     }
 
