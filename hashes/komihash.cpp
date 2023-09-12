@@ -1,7 +1,7 @@
 /*
- * komihash version 4.7
+ * komihash version 5.7
  * Copyright (C) 2021-2023  Frank J. T. Wojcik
- * Copyright (c) 2021-2022 Aleksey Vaneev
+ * Copyright (c) 2021-2023 Aleksey Vaneev
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -41,21 +41,21 @@
  * @param fb Final byte used for padding.
  */
 template <bool bswap>
-static inline uint64_t kh_lpu64ec_l3( const uint8_t * const Msg, const size_t MsgLen ) {
-    const int ml8 = -(int)(MsgLen * 8);
+static FORCE_INLINE uint64_t kh_lpu64ec_l3( const uint8_t * const Msg, const size_t MsgLen ) {
+    const int ml8 = (int)(MsgLen * 8);
 
     if (MsgLen < 4) {
         const uint8_t * const Msg3 = Msg + MsgLen - 3;
         const uint64_t m = (uint64_t)Msg3[0] | (uint64_t)Msg3[1] << 8 |
                 (uint64_t)Msg3[2] << 16;
 
-        return (UINT64_C(1) << ((Msg3[2] >> 7) - ml8)) | (m >> (24 + ml8));
+        return((uint64_t)1 << ml8 | m >> ( 24 - ml8 ));
     }
 
     const uint64_t mh = GET_U32<bswap>(Msg + MsgLen - 4, 0);
     const uint64_t ml = GET_U32<bswap>(Msg             , 0);
 
-    return (UINT64_C(1) << ((int)(mh >> 31) - ml8)) | ml | ((mh >> (64 + ml8)) << 32);
+    return((uint64_t)1 << ml8 | ml | (mh >> (64 - ml8)) << 32);
 }
 
 /*
@@ -69,28 +69,27 @@ static inline uint64_t kh_lpu64ec_l3( const uint8_t * const Msg, const size_t Ms
  * @param fb Final byte used for padding.
  */
 template <bool bswap>
-static inline uint64_t kh_lpu64ec_nz( const uint8_t * const Msg, const size_t MsgLen ) {
-    const int ml8 = -(int)(MsgLen * 8);
+static FORCE_INLINE uint64_t kh_lpu64ec_nz( const uint8_t * const Msg, const size_t MsgLen ) {
+    const int ml8 = (int)(MsgLen * 8);
 
     if (MsgLen < 4) {
-        const uint8_t mf = Msg[MsgLen - 1];
-        uint64_t      m  = Msg[0];
+        uint64_t m = Msg[0];
 
         if (MsgLen > 1) {
             m |= (uint64_t)Msg[1] << 8;
 
             if (MsgLen > 2) {
-                m |= (uint64_t)mf << 16;
+                m |= (uint64_t)Msg[2] << 16;
             }
         }
 
-        return (UINT64_C(1) << ((mf >> 7) - ml8)) | m;
+        return((uint64_t)1 << ml8 | m);
     }
 
     const uint64_t mh = (uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0);
     const uint64_t ml = (uint64_t)GET_U32<bswap>(Msg             , 0);
 
-    return (UINT64_C(1) << ((mh >> 31) - ml8)) | ml | (mh >> (64 + ml8)) << 32;
+    return( (uint64_t) 1 << ml8 | ml | ( mh >> ( 64 - ml8 )) << 32 );
 }
 
 /*
@@ -104,20 +103,20 @@ static inline uint64_t kh_lpu64ec_nz( const uint8_t * const Msg, const size_t Ms
  * @param fb Final byte used for padding.
  */
 template <bool bswap>
-static inline uint64_t kh_lpu64ec_l4( const uint8_t * const Msg, const size_t MsgLen ) {
-    const int ml8 = -(int)(MsgLen * 8);
+static FORCE_INLINE uint64_t kh_lpu64ec_l4( const uint8_t * const Msg, const size_t MsgLen ) {
+    const int ml8 = (int)(MsgLen * 8);
 
     if (MsgLen < 5) {
         const uint64_t m = (uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0);
-        return (UINT64_C(1) << ((m >> 31) - ml8)) | (m >> (32 + ml8));
+        return( (uint64_t) 1 << ml8 | m >> ( 32 - ml8 ));
     }
     const uint64_t m = GET_U64<bswap>(Msg + MsgLen - 8, 0);
-    return (UINT64_C(1) << ((m >> 63) - ml8)) | (m >> (64 + ml8));
+    return( (uint64_t) 1 << ml8 | m >> ( 64 - ml8 ));
 }
 
 //------------------------------------------------------------
 // Wrapper around Mathmult.h routine
-static inline void kh_m128( const uint64_t m1, const uint64_t m2, uint64_t * const rl, uint64_t * const rh ) {
+static FORCE_INLINE void kh_m128( const uint64_t m1, const uint64_t m2, uint64_t * const rl, uint64_t * const rh ) {
     uint64_t rlo, rhi;
 
     MathMult::mult64_128(rlo, rhi, m1, m2);
@@ -153,10 +152,8 @@ static inline void kh_m128( const uint64_t m1, const uint64_t m2, uint64_t * con
 // KOMIHASH hash function
 
 template <bool bswap>
-static inline uint64_t komihash_epi( const uint8_t * Msg, size_t MsgLen, uint64_t Seed1, uint64_t Seed5 ) {
+static FORCE_INLINE uint64_t komihash_epi( const uint8_t * Msg, size_t MsgLen, uint64_t Seed1, uint64_t Seed5 ) {
     uint64_t r1h, r2h;
-
-    prefetch(Msg);
 
     if (likely(MsgLen > 31)) {
         KOMIHASH_HASH16(Msg     );
@@ -197,7 +194,7 @@ static inline uint64_t komihash_epi( const uint8_t * Msg, size_t MsgLen, uint64_
  * little-endian systems.
  */
 template <bool bswap>
-static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, const uint64_t UseSeed ) {
+static FORCE_INLINE uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, const uint64_t UseSeed ) {
     const uint8_t * Msg = (const uint8_t *)Msg0;
 
     // The seeds are initialized to the first mantissa bits of PI.
@@ -206,13 +203,13 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
     uint64_t r1h, r2h;
 
     // The three instructions in the "KOMIHASH_HASHROUND" macro represent the
-    // simplest constant-less PRNG, scalable to any even-sized state
+    // simplest constantless PRNG, scalable to any even-sized state
     // variables, with the `Seed1` being the PRNG output (2^64 PRNG period).
     // It passes `PractRand` tests with rare non-systematic "unusual"
     // evaluations.
     //
     // To make this PRNG reliable, self-starting, and eliminate a risk of
-    // stopping, the following variant can be used, which is a "register
+    // stopping, the following variant can be used, which adds a "register
     // checker-board", a source of raw entropy. The PRNG is available as the
     // komirand() function. Not required for hashing (but works for it) since
     // the input entropy is usually available in abundance during hashing.
@@ -223,11 +220,11 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
     // it is a replication of the `10` bit-pair; it is not an arbitrary
     // constant).
 
+    prefetch(Msg);
+
     KOMIHASH_HASHROUND(); // Required for PerlinNoise.
 
     if (likely(MsgLen < 16)) {
-        prefetch(Msg);
-
         r1h = Seed1;
         r2h = Seed5;
 
@@ -249,8 +246,6 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
     }
 
     if (likely(MsgLen < 32)) {
-        prefetch(Msg);
-
         KOMIHASH_HASH16(Msg);
 
         if (MsgLen > 23) {
@@ -278,13 +273,13 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
         do {
             prefetch(Msg);
 
-            kh_m128(Seed1 ^ GET_U64<bswap>(Msg, 0) , Seed5 ^ GET_U64<bswap>(Msg, 8) , &Seed1, &r1h);
+            kh_m128(Seed1 ^ GET_U64<bswap>(Msg,  0), Seed5 ^ GET_U64<bswap>(Msg, 32), &Seed1, &r1h);
 
-            kh_m128(Seed2 ^ GET_U64<bswap>(Msg, 16), Seed6 ^ GET_U64<bswap>(Msg, 24), &Seed2, &r2h);
+            kh_m128(Seed2 ^ GET_U64<bswap>(Msg,  8), Seed6 ^ GET_U64<bswap>(Msg, 40), &Seed2, &r2h);
 
-            kh_m128(Seed3 ^ GET_U64<bswap>(Msg, 32), Seed7 ^ GET_U64<bswap>(Msg, 40), &Seed3, &r3h);
+            kh_m128(Seed3 ^ GET_U64<bswap>(Msg, 16), Seed7 ^ GET_U64<bswap>(Msg, 48), &Seed3, &r3h);
 
-            kh_m128(Seed4 ^ GET_U64<bswap>(Msg, 48), Seed8 ^ GET_U64<bswap>(Msg, 56), &Seed4, &r4h);
+            kh_m128(Seed4 ^ GET_U64<bswap>(Msg, 24), Seed8 ^ GET_U64<bswap>(Msg, 56), &Seed4, &r4h);
 
             Msg    += 64;
             MsgLen -= 64;
@@ -293,8 +288,7 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
             // individual SeedN's PRNG period beyond 2^64, but reduces a
             // chance of any occassional synchronization between PRNG lanes
             // happening. Practically, Seed1-4 together become a single
-            // "fused" 256-bit PRNG value, having a summary PRNG period of
-            // 2^66.
+            // "fused" 256-bit PRNG value, having 2^66 summary PRNG period.
 
             Seed5 += r1h;
             Seed6 += r2h;
@@ -317,7 +311,6 @@ static inline uint64_t komihash_impl( const void * const Msg0, size_t MsgLen, co
 template <bool bswap>
 static void komihash( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = komihash_impl<bswap>(in, len, (uint64_t)seed);
-
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
@@ -328,7 +321,7 @@ REGISTER_FAMILY(komihash,
  );
 
 REGISTER_HASH(komihash,
-   $.desc       = "komihash v4.3",
+   $.desc       = "komihash v5.7",
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
@@ -337,8 +330,8 @@ REGISTER_HASH(komihash,
          FLAG_IMPL_SHIFT_VARIABLE      |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
-   $.verification_LE = 0x703624A4,
-   $.verification_BE = 0x1A7A56DA,
+   $.verification_LE = 0x8157FF6D,
+   $.verification_BE = 0x3A74F6E6,
    $.hashfn_native   = komihash<false>,
    $.hashfn_bswap    = komihash<true>
  );
