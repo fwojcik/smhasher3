@@ -1,7 +1,7 @@
 /*
- * PRVHASH - Pseudo-Random-Value Hash.
- * Copyright (C) 2022       Frank J. T. Wojcik
- * Copyright (c) 2020-2022 Aleksey Vaneev
+ * PRVHASH - Pseudo-Random-Value Hash v4.3.7
+ * Copyright (C) 2022-2023   Frank J. T. Wojcik
+ * Copyright (c) 2020-2023 Aleksey Vaneev
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -37,7 +37,7 @@
  * @param fb Final byte used for padding.
  */
 template <bool bswap>
-static inline uint64_t prvhash_lpu64ec( const uint8_t * const Msg, const uint8_t * const MsgEnd, uint64_t fb ) {
+static FORCE_INLINE uint64_t prvhash_lpu64ec( const uint8_t * const Msg, const uint8_t * const MsgEnd, uint64_t fb ) {
     const size_t MsgLen = MsgEnd - Msg;
     const int    ml8    = (int)(MsgLen * 8);
 
@@ -60,7 +60,7 @@ static inline uint64_t prvhash_lpu64ec( const uint8_t * const Msg, const uint8_t
     return fb << ml8 | ml | (mh >> (64 - ml8)) << 32;
 }
 
-static inline uint64_t prvhash_core64( uint64_t & Seed, uint64_t & lcg, uint64_t & Hash ) {
+static FORCE_INLINE uint64_t prvhash_core64( uint64_t & Seed, uint64_t & lcg, uint64_t & Hash ) {
     Seed *= lcg * 2 + 1;
     const uint64_t rs = Seed >> 32 | Seed << 32;
     Hash += rs   + UINT64_C(0xAAAAAAAAAAAAAAAA);
@@ -111,13 +111,13 @@ static inline uint64_t prvhash64_64m( const void * const Msg0, const size_t MsgL
 
     while (1) {
         uint64_t msgw;
-        if (Msg > (MsgEnd - (sizeof(uint64_t)))) {
+        if (Msg < (MsgEnd - (sizeof(uint64_t) - 1))) {
+            msgw = GET_U64<bswap>(Msg, 0);
+        } else {
             if (Msg > MsgEnd) {
                 break;
             }
             msgw = prvhash_lpu64ec<bswap>(Msg, MsgEnd, fb);
-        } else {
-            msgw = GET_U64<bswap>(Msg, 0);
         }
 
         Seed ^= msgw;
@@ -308,7 +308,7 @@ REGISTER_FAMILY(prvhash,
  );
 
 REGISTER_HASH(prvhash_64,
-   $.desc       = "prvhash64 v4.3.1 64-bit output",
+   $.desc       = "prvhash64 v4.3.7 64-bit output",
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
@@ -326,7 +326,7 @@ REGISTER_HASH(prvhash_64,
  );
 
 REGISTER_HASH(prvhash_128,
-   $.desc       = "prvhash64 v4.3.1 128-bit output",
+   $.desc       = "prvhash64 v4.3.7 128-bit output",
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
@@ -344,9 +344,9 @@ REGISTER_HASH(prvhash_128,
  );
 
 REGISTER_HASH(prvhash_64__incr,
-   $.desc       = "prvhash64 v4.3.1 streaming mode 64-bit output",
+   $.desc       = "prvhash64 v4.3.7 streaming mode 64-bit output",
    $.hash_flags =
-         0,
+         FLAG_HASH_XL_SEED,
    $.impl_flags =
          FLAG_IMPL_SLOW            |
          FLAG_IMPL_MULTIPLY_64_64  |
@@ -361,9 +361,9 @@ REGISTER_HASH(prvhash_64__incr,
  );
 
 REGISTER_HASH(prvhash_128__incr,
-   $.desc       = "prvhash64 v4.3.1 streaming mode 128-bit output",
+   $.desc       = "prvhash64 v4.3.7 streaming mode 128-bit output",
    $.hash_flags =
-         0,
+         FLAG_HASH_XL_SEED,
    $.impl_flags =
          FLAG_IMPL_SLOW            |
          FLAG_IMPL_MULTIPLY_64_64  |
