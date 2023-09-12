@@ -1,7 +1,7 @@
 /*
  * Jody Bruchon's fast hashing algorithm
- * Copyright (C) 2021-2022  Frank J. T. Wojcik
- * Copyright (c) 2014-2021 Jody Lee Bruchon
+ * Copyright (C) 2021-2023  Frank J. T. Wojcik
+ * Copyright (c) 2014-2023 Jody Bruchon
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -24,7 +24,6 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-// From https://github.com/jbruchon/jodyhash
 #include "Platform.h"
 #include "Hashlib.h"
 
@@ -51,73 +50,95 @@ static const uint32_t tail_mask_32[] = {
 
 //------------------------------------------------------------
 // Version increments when algorithm changes incompatibly
-// #define JODY_HASH_VERSION 5
+// #define JODY_HASH_VERSION 7
 
-#define JODY_HASH_CONSTANT UINT32_C(0x1f3d5b79)
-#define JODY_HASH_SHIFT    14
+#define JODY_HASH_SHIFT     14
+#define JH_SHIFT2           28
+#define JODY_HASH_CONSTANT  ((sizeof(T) == 4) ? UINT32_C(0x8748ee5d) : UINT64_C(0x71812e0f5463d3c8))
 
+#define JH_ROL(a, x) ((sizeof(T) == 4) ? ROTL32(a, x) : ROTL64(a, x))
+#define JH_ROR(a, x) ((sizeof(T) == 4) ? ROTR32(a, x) : ROTR64(a, x))
+
+//------------------------------------------------------------
+#if defined(HAVE_AVX2)
+  #include "Intrinsics.h"
+  #include "jodyhash/block_avx2.c"
+  #define JODY_IMPL_STR "avx2"
+#elif defined(HAVE_SSE_2)
+  #include "Intrinsics.h"
+  #include "jodyhash/block_sse2.c"
+  #define JODY_IMPL_STR "sse2"
+#else
+  #define JODY_IMPL_STR "portable"
+#endif
+
+//------------------------------------------------------------
 template <typename T, bool bswap>
-static T jody_block_hash( const uint8_t * RESTRICT data, const size_t count, const T start_hash ) {
-    T hash = start_hash;
-    T element;
-    T partial_salt;
-    const T * const tail_mask = (sizeof(T) == 4) ?
-                (const T *)tail_mask_32 : (const T *)tail_mask_64;
-    size_t len;
+static int jody_block_hash( const uint8_t * RESTRICT data, T * hash, const size_t count ) {
+    T      element, element2;
+    size_t length = count / sizeof(T);
+
+    const T         jh_s_constant = JH_ROR(JODY_HASH_CONSTANT, JH_SHIFT2);
+    const T * const tail_mask     = (sizeof(T) == 4) ? (const T *)tail_mask_32 : (const T *)tail_mask_64;
 
     /* Don't bother trying to hash a zero-length block */
-    if (count == 0) { return hash; }
+    if (unlikely(count == 0)) { return 0; }
 
-    len = count / sizeof(T);
-    for (; len > 0; len--) {
-        element = (sizeof(T) == 4) ?
-                    GET_U32<bswap>(data, 0) : GET_U64<bswap>(data, 0);
-        hash   += element;
-        hash   += JODY_HASH_CONSTANT;
-        /* bit rotate left */
-        hash    = (hash << JODY_HASH_SHIFT) | hash >> (sizeof(T) * 8 - JODY_HASH_SHIFT);
-        hash   ^= element;
-        /* bit rotate left */
-        hash    = (hash << JODY_HASH_SHIFT) | hash >> (sizeof(T) * 8 - JODY_HASH_SHIFT);
-        hash   ^= JODY_HASH_CONSTANT;
-        hash   += element;
-        data   += sizeof(T);
+#if defined(HAVE_AVX2) || defined(HAVE_SSE_2)
+    if ((sizeof(T) == 8) && (count >= 32)) {
+        size_t done = jody_block_hash_simd<T, bswap>(data, hash, count);
+        data  += done;
+        length = (count - done) / sizeof(T);
+    }
+#endif
+
+    for (; length > 0; length--) {
+        element   = (sizeof(T) == 4) ? GET_U32<bswap>(data, 0) : GET_U64<bswap>(data, 0);
+        element2  = JH_ROR(element, JODY_HASH_SHIFT);
+        element2 ^= jh_s_constant;
+        element  += JODY_HASH_CONSTANT;
+
+        *hash += element;
+        *hash ^= element2;
+        *hash  = JH_ROL(*hash, JH_SHIFT2);
+        *hash += element;
+
+        data  += sizeof(T);
     }
 
     /* Handle data tail (for blocks indivisible by sizeof(T)) */
-    len = count & (sizeof(T) - 1);
-    if (len) {
-        partial_salt = JODY_HASH_CONSTANT & tail_mask[len];
-        element      = (sizeof(T) == 4) ?
-                    GET_U32<bswap>(data, 0) : GET_U64<bswap>(data, 0);
-        if (isLE() ^ bswap) {
-            element &= tail_mask[len];
-        } else {
-            element >>= (sizeof(T) - len) * 8;
-        }
-        hash += element;
-        hash += partial_salt;
-        hash  = (hash << JODY_HASH_SHIFT) | hash >> (sizeof(T) * 8 - JODY_HASH_SHIFT);
-        hash ^= element;
-        hash  = (hash << JODY_HASH_SHIFT) | hash >> (sizeof(T) * 8 - JODY_HASH_SHIFT);
-        hash ^= partial_salt;
-        hash += element;
+    length = count & (sizeof(T) - 1);
+    if (length) {
+        element   = (sizeof(T) == 4) ? GET_U32<bswap>(data, 0) : GET_U64<bswap>(data, 0);
+        element  &= tail_mask[length];
+        element2  = JH_ROR(element, JODY_HASH_SHIFT);
+        element2 ^= jh_s_constant;
+        element  += JODY_HASH_CONSTANT;
+
+        *hash    += element;
+        *hash    ^= element2;
+        *hash     = JH_ROL(*hash, JH_SHIFT2);
+        *hash    += element2;
     }
 
-    return hash;
+    return 0;
 }
 
 //------------------------------------------------------------
 template <bool bswap>
 static void jodyhash32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint32_t h = jody_block_hash<uint32_t, bswap>((const uint8_t *)in, len, (uint32_t)seed);
+    uint32_t h = (uint32_t)seed;
+
+    jody_block_hash<uint32_t, bswap>((const uint8_t *)in, &h, len);
 
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
 template <bool bswap>
 static void jodyhash64( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t h = jody_block_hash<uint64_t, bswap>((const uint8_t *)in, len, (uint64_t)seed);
+    uint64_t h = (uint64_t)seed;
+
+    jody_block_hash<uint64_t, bswap>((const uint8_t *)in, &h, len);
 
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
@@ -129,7 +150,7 @@ REGISTER_FAMILY(jodyhash,
  );
 
 REGISTER_HASH(jodyhash_32,
-   $.desc       = "jodyhash v5, 32-bit",
+   $.desc       = "jodyhash v7.3, 32-bit",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
@@ -138,14 +159,15 @@ REGISTER_HASH(jodyhash_32,
          FLAG_IMPL_LICENSE_MIT    |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0xFB47D60D,
-   $.verification_BE = 0xB94C9789,
+   $.verification_LE = 0x0B6C88D6,
+   $.verification_BE = 0x3CA56359,
    $.hashfn_native   = jodyhash32<false>,
    $.hashfn_bswap    = jodyhash32<true>
  );
 
 REGISTER_HASH(jodyhash_64,
-   $.desc       = "jodyhash v5, 64-bit",
+   $.desc       = "jodyhash v7.3, 64-bit",
+   $.impl       = JODY_IMPL_STR,
    $.hash_flags =
          0,
    $.impl_flags =
@@ -154,8 +176,8 @@ REGISTER_HASH(jodyhash_64,
          FLAG_IMPL_ROTATE         |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
-   $.verification_LE = 0x9F09E57F,
-   $.verification_BE = 0xF9CDDA2C,
+   $.verification_LE = 0xC1CBFA34,
+   $.verification_BE = 0x93494125,
    $.hashfn_native   = jodyhash64<false>,
    $.hashfn_bswap    = jodyhash64<true>,
    $.badseeds        = { 0xffffffffe0c2a486 }
