@@ -60,6 +60,15 @@
 #endif
 
 /*
+ * UGLY HACK: While AArch64 GCC on Linux does not seem to care, on macOS, GCC -O3
+ * optimizes out the entire hashLong loop because of the aliasing violation.
+ *
+ * However, GCC is also inefficient at load-store optimization with vld1q/vst1q,
+ * so the only option is to mark it as aliasing.
+ */
+typedef uint64x2_t xxh_aliasing_uint64x2_t XXH_ALIASING;
+
+/*
  * `vld1q_u64` but faster and alignment-safe.
  *
  * On AArch64, unaligned access is always safe, but on ARMv7-a, it is only
@@ -75,7 +84,7 @@
 
 /* silence -Wcast-align */
 static FORCE_INLINE uint64x2_t XXH_vld1q_u64( void const * ptr ) {
-    return *(uint64x2_t const *)ptr;
+    return *(xxh_aliasing_uint64x2_t const *)ptr;
 }
 
 #else
@@ -84,6 +93,44 @@ static FORCE_INLINE uint64x2_t XXH_vld1q_u64( void const * ptr ) {
     return vreinterpretq_u64_u8(vld1q_u8((uint8_t const *)ptr));
 }
 
+#endif
+
+/*!
+ * @internal
+ * @brief `vmlal_u32` on low and high halves of a vector.
+ *
+ * This is a workaround for AArch64 GCC < 11 which implemented arm_neon.h with
+ * inline assembly and were therefore incapable of merging the `vget_{low, high}_u32`
+ * with `vmlal_u32`.
+ */
+#if defined(HAVE_ARM64_ASM)
+static FORCE_INLINE uint64x2_t
+XXH_vmlal_low_u32(uint64x2_t acc, uint32x4_t lhs, uint32x4_t rhs)
+{
+    /* Inline assembly is the only way */
+    __asm__("umlal   %0.2d, %1.2s, %2.2s" : "+w" (acc) : "w" (lhs), "w" (rhs));
+    return acc;
+}
+static FORCE_INLINE uint64x2_t
+XXH_vmlal_high_u32(uint64x2_t acc, uint32x4_t lhs, uint32x4_t rhs)
+{
+    /* This intrinsic works as expected */
+    return vmlal_high_u32(acc, lhs, rhs);
+}
+#else
+/* Portable intrinsic versions */
+static FORCE_INLINE uint64x2_t
+XXH_vmlal_low_u32(uint64x2_t acc, uint32x4_t lhs, uint32x4_t rhs)
+{
+    return vmlal_u32(acc, vget_low_u32(lhs), vget_low_u32(rhs));
+}
+/*! @copydoc XXH_vmlal_low_u32
+ * Assume the compiler converts this to vmlal_high_u32 on aarch64 */
+static FORCE_INLINE uint64x2_t
+XXH_vmlal_high_u32(uint64x2_t acc, uint32x4_t lhs, uint32x4_t rhs)
+{
+    return vmlal_u32(acc, vget_high_u32(lhs), vget_high_u32(rhs));
+}
 #endif
 
 // Controls the NEON to scalar ratio for XXH3
@@ -149,10 +196,11 @@ template <bool bswap>
 static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const void * RESTRICT input,
         const void * RESTRICT secret ) {
     XXH_ASSERT((((size_t)acc) & 15) == 0);
-    uint64x2_t    * const xacc    = (uint64x2_t *   )acc;
+    // GCC for darwin arm64 does not like aliasing here
+    xxh_aliasing_uint64x2_t * const xacc = (xxh_aliasing_uint64x2_t *)acc;
     /* We don't use a uint32x4_t pointer because it causes bus errors on ARMv7. */
-    uint8_t const * const xinput  = (const uint8_t *)input;
-    uint8_t const * const xsecret = (const uint8_t *)secret;
+    uint8_t const * xinput  = (const uint8_t *)input;
+    uint8_t const * xsecret = (const uint8_t *)secret;
     size_t i;
 
     /* Scalar lanes use the normal scalarRound routine */
@@ -187,9 +235,9 @@ static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const vo
          * get one vector with the low 32 bits of each lane, and one vector
          * with the high 32 bits of each lane.
          *
-         * This compiles to two instructions on AArch64 and has a paired vector
-         * result, which is an artifact from ARMv7a's version which modified both
-         * vectors in place.
+         * The intrinsic returns a double vector because the original
+         * ARMv7-a instruction modified both arguments in place. AArch64
+         * and SIMD128 emit two instructions from this intrinsic.
          *
          *  [ dk11L | dk11H | dk12L | dk12H ] -> [ dk11L | dk12L | dk21L | dk22L ]
          *  [ dk21L | dk21H | dk22L | dk22H ] -> [ dk11H | dk12H | dk21H | dk22H ]
@@ -205,22 +253,26 @@ static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const vo
         /*
          * Then, we can split the vectors horizontally and multiply which, as for most
          * widening intrinsics, have a variant that works on both high half vectors
-         * for free on AArch64.
+         * for free on AArch64. A similar instruction is available on SIMD128.
          *
          * sum = data_swap + (u64x2) data_key_lo * (u64x2) data_key_hi
          */
-        uint32x2_t data_key_lo_1 = vget_low_u32(data_key_lo);
-        uint32x2_t data_key_hi_1 = vget_low_u32(data_key_hi);
-
-        uint64x2_t sum_1 = vmlal_u32(data_swap_1, data_key_lo_1, data_key_hi_1);
-        /* Assume that the compiler is smart enough to convert this to UMLAL2 */
-        uint32x2_t data_key_lo_2 = vget_high_u32(data_key_lo);
-        uint32x2_t data_key_hi_2 = vget_high_u32(data_key_hi);
-
-        uint64x2_t sum_2 = vmlal_u32(data_swap_2, data_key_lo_2, data_key_hi_2);
-        /* Prevent Clang from reordering the vaddq before the vmlal. */
-        XXH_COMPILER_GUARD_W(sum_1);
-        XXH_COMPILER_GUARD_W(sum_2);
+        uint64x2_t sum_1 = XXH_vmlal_low_u32(data_swap_1, data_key_lo, data_key_hi);
+        uint64x2_t sum_2 = XXH_vmlal_high_u32(data_swap_2, data_key_lo, data_key_hi);
+        /*
+         * Clang reorders
+         *    a += b * c;     // umlal   swap.2d, dkl.2s, dkh.2s
+         *    c += a;         // add     acc.2d, acc.2d, swap.2d
+         * to
+         *    c += a;         // add     acc.2d, acc.2d, swap.2d
+         *    c += b * c;     // umlal   acc.2d, dkl.2s, dkh.2s
+         *
+         * While it would make sense in theory since the addition is faster,
+         * for reasons likely related to umlal being limited to certain NEON
+         * pipelines, this is worse. A compiler guard fixes this.
+         */
+        XXH_COMPILER_GUARD_CLANG_NEON(sum_1);
+        XXH_COMPILER_GUARD_CLANG_NEON(sum_2);
         /* xacc[i] = acc_vec + sum; */
         xacc[i]   = vaddq_u64(xacc[i], sum_1);
         xacc[i+1] = vaddq_u64(xacc[i+1], sum_2);
@@ -246,8 +298,8 @@ static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const vo
         uint32x2_t data_key_hi = vshrn_n_u64(data_key, 32);
         /* sum = data_swap + (u64x2) data_key_lo * (u64x2) data_key_hi; */
         uint64x2_t sum = vmlal_u32(data_swap, data_key_lo, data_key_hi);
-        /* Prevent Clang from reordering the vaddq before the vmlal */
-        XXH_COMPILER_GUARD_W(sum);
+        /* Same Clang workaround as before */
+        XXH_COMPILER_GUARD_CLANG_NEON(sum);
         /* xacc[i] = acc_vec + sum; */
         xacc[i] = vaddq_u64 (xacc[i], sum);
     }
@@ -257,9 +309,12 @@ static FORCE_INLINE void XXH3_accumulate_512_neon( void * RESTRICT acc, const vo
 template <bool bswap>
 static FORCE_INLINE void XXH3_scrambleAcc_neon( void * RESTRICT acc, const void * RESTRICT secret ) {
     XXH_ASSERT((((size_t)acc) & 15) == 0);
-    uint64x2_t *    xacc    = (uint64x2_t *   )acc;
-    uint8_t const * xsecret = (uint8_t const *)secret;
-    uint32x2_t      prime   = vdup_n_u32(XXH_PRIME32_1);
+    xxh_aliasing_uint64x2_t * xacc     = (xxh_aliasing_uint64x2_t *)acc;
+    uint8_t const *           xsecret  = (uint8_t const *)secret;
+    /* { prime32_1, prime32_1 } */
+    uint32x2_t const          kPrimeLo = vdup_n_u32(XXH_PRIME32_1);
+    /* { 0, prime32_1, 0, prime32_1 } */
+    uint32x4_t const          kPrimeHi = vreinterpretq_u32_u64(vdupq_n_u64((uint64_t)XXH_PRIME32_1 << 32));
 
     /* AArch64 uses both scalar and neon at the same time */
     for (size_t i = XXH3_NEON_LANES; i < XXH_ACC_NB; i++) {
@@ -279,30 +334,22 @@ static FORCE_INLINE void XXH3_scrambleAcc_neon( void * RESTRICT acc, const void 
         uint64x2_t data_key = veorq_u64(data_vec, key_vec);
 
         /* xacc[i] *= XXH_PRIME32_1 */
-        uint32x2_t data_key_lo = vmovn_u64(data_key);
-        uint32x2_t data_key_hi = vshrn_n_u64(data_key, 32);
         /*
-         * prod_hi = (data_key >> 32) * XXH_PRIME32_1;
+         * Expanded version with portable NEON intrinsics
          *
-         * Avoid vmul_u32 + vshll_n_u32 since Clang 6 and 7 will
-         * incorrectly "optimize" this:
-         *   tmp     = vmul_u32(vmovn_u64(a), vmovn_u64(b));
-         *   shifted = vshll_n_u32(tmp, 32);
-         * to this:
-         *   tmp     = "vmulq_u64"(a, b); // no such thing!
-         *   shifted = vshlq_n_u64(tmp, 32);
+         *    lo(x) * lo(y) + (hi(x) * lo(y) << 32)
          *
-         * However, unlike SSE, Clang lacks a 64-bit multiply routine
-         * for NEON, and it scalarizes two 64-bit multiplies instead.
+         * prod_hi = hi(data_key) * lo(prime) << 32
          *
-         * vmull_u32 has the same timing as vmul_u32, and it avoids
-         * this bug completely.
-         * See https://bugs.llvm.org/show_bug.cgi?id=39967
+         * Since we only need 32 bits of this multiply a trick can be used,
+         * reinterpreting the vector as a uint32x4_t and multiplying by {
+         * 0, prime, 0, prime } to cancel out the unwanted bits and avoid
+         * the shift.
          */
-        uint64x2_t prod_hi = vmull_u32(data_key_hi, prime);
-        /* xacc[i] = prod_hi << 32; */
-        prod_hi = vshlq_n_u64(prod_hi, 32);
-        /* xacc[i] += (prod_hi & 0xFFFFFFFF) * XXH_PRIME32_1; */
-        xacc[i] = vmlal_u32(prod_hi, data_key_lo, prime);
+        uint32x4_t prod_hi = vmulq_u32(vreinterpretq_u32_u64(data_key), kPrimeHi);
+        /* Extract low bits for vmlal_u32  */
+        uint32x2_t data_key_lo = vmovn_u64(data_key);
+        /* xacc[i] = prod_hi + lo(data_key) * XXH_PRIME32_1; */
+        xacc[i] = vmlal_u32(vreinterpretq_u64_u32(prod_hi), data_key_lo, kPrimeLo);
     }
 }

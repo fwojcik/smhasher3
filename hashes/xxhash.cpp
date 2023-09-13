@@ -1,7 +1,7 @@
 /*
  * xxHash - Extremely Fast Hash algorithm
- * Copyright (C) 2021-2022  Frank J. T. Wojcik
- * Copyright (C) 2012-2021 Yann Collet
+ * Copyright (C) 2021-2023  Frank J. T. Wojcik
+ * Copyright (C) 2012-2023 Yann Collet
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -39,7 +39,7 @@
 //------------------------------------------------------------
 #define XXH_VERSION_MAJOR    0
 #define XXH_VERSION_MINOR    8
-#define XXH_VERSION_RELEASE  1
+#define XXH_VERSION_RELEASE  2
 #define XXH_VERSION_NUMBER  (XXH_VERSION_MAJOR * 100 * 100 + XXH_VERSION_MINOR * 100 + XXH_VERSION_RELEASE)
 
 // Used to prevent unwanted optimizations for var.
@@ -56,15 +56,15 @@
 // XXH3_initCustomSecret_scalar().
 #if defined(HAVE_X86_64_ASM) || defined(HAVE_ARM_ASM) || \
     defined(HAVE_ARM64_ASM) || defined(HAVE_PPC_ASM)
-  #define XXH_COMPILER_GUARD(var) __asm__ __volatile__ ("" : "+r" (var))
-  #if defined(__clang__)
-    #define XXH_COMPILER_GUARD_W(var) __asm__ __volatile__("" : "+w" (var))
+  #define XXH_COMPILER_GUARD(var) __asm__("" : "+r" (var))
+  #if defined(__clang__) && defined(__ARM_ARCH)
+    #define XXH_COMPILER_GUARD_CLANG_NEON(var) __asm__("" : "+w" (var))
   #else
-    #define XXH_COMPILER_GUARD_W(var) ((void)0)
+    #define XXH_COMPILER_GUARD_CLANG_NEON(var) ((void)0)
   #endif
 #else
-  #define XXH_COMPILER_GUARD(var) ((void)var)
-  #define XXH_COMPILER_GUARD_W(var) ((void)0)
+  #define XXH_COMPILER_GUARD(var)            ((void)var)
+  #define XXH_COMPILER_GUARD_CLANG_NEON(var) ((void)0)
 #endif
 
 #if defined(DEBUG)
@@ -72,6 +72,8 @@
 #else
   #define XXH_ASSERT(x) assume(x)
 #endif
+
+#define XXH_ALIASING MAY_ALIAS
 
 //------------------------------------------------------------
 // XXH32 family -- functions used in the classic 32-bit xxHash algorithm
@@ -147,9 +149,9 @@ static uint32_t XXH32_finalize( uint32_t hash, const uint8_t * ptr, size_t len )
 //   rotating, v2 can load data, while v3 can multiply. SSE forces
 //   them to operate together.
 //
-// This is also enabled on AArch64, as Clang autovectorizes it incorrectly
-// and it is pointless writing a NEON implementation that is basically the
-// same speed as scalar for XXH32.
+// The compiler guard is also enabled on AArch64, as Clang is *very
+// aggressive* in vectorizing the loop. NEON is only faster on the A53, and
+// with the newer cores, it is less than half the speed.
 static uint32_t XXH32_round( uint32_t acc, uint32_t input ) {
     acc += input * XXH_PRIME32_2;
     acc  = ROTL32(acc, 13);
@@ -204,6 +206,11 @@ static uint32_t XXH32_impl( const uint8_t * input, size_t len, uint32_t seed ) {
 #define XXH_PRIME64_4  UINT64_C(0x85EBCA77C2B2AE63)
 // 0b0010011111010100111010110010111100010110010101100110011111000101
 #define XXH_PRIME64_5  UINT64_C(0x27D4EB2F165667C5)
+
+// 0b0001011001010110011001111001000110011110001101110111100111111001
+static const uint64_t PRIME_MX1 = UINT64_C(0x165667919E3779F9);
+// 0b1001111110110010000111000110010100011110100110001101111100100101
+static const uint64_t PRIME_MX2 = UINT64_C(0x9FB21C651E98DF25);
 
 static uint64_t XXH64_round( uint64_t acc, uint64_t input ) {
     acc += input * XXH_PRIME64_2;
@@ -438,6 +445,11 @@ typedef struct {
     uint64_t  high64; // value >> 64
 } XXH128_hash_t;
 
+static inline uint64_t XXH_mult32to64_add64( uint64_t lhs, uint64_t rhs, uint64_t acc ) {
+    MathMult::fma32_64(acc, lhs, rhs);
+    return acc;
+}
+
 static inline uint64_t XXH_mult32to64( uint32_t lhs, uint32_t rhs ) {
     uint64_t r64;
 
@@ -468,7 +480,7 @@ static FORCE_INLINE uint64_t XXH_xorshift64( uint64_t v64, const int shift ) {
 // already partially mixed.
 static uint64_t XXH3_avalanche( uint64_t h64 ) {
     h64  = XXH_xorshift64(h64, 37);
-    h64 *= UINT64_C(0x165667919E3779F9);
+    h64 *= PRIME_MX1;
     h64  = XXH_xorshift64(h64, 32);
     return h64;
 }
@@ -478,9 +490,9 @@ static uint64_t XXH3_avalanche( uint64_t h64 ) {
 static uint64_t XXH3_rrmxmx( uint64_t h64, uint64_t len ) {
     /* this mix is inspired by Pelle Evensen's rrmxmx */
     h64 ^= ROTL64(h64, 49) ^ ROTL64(h64, 24);
-    h64 *= UINT64_C(0x9FB21C651E98DF25);
+    h64 *= PRIME_MX2;
     h64 ^= (h64 >> 35) + len;
-    h64 *= UINT64_C(0x9FB21C651E98DF25);
+    h64 *= PRIME_MX2;
     return XXH_xorshift64(h64, 28);
 }
 
@@ -635,24 +647,24 @@ static FORCE_INLINE uint64_t XXH3_len_17to128_64b( const uint8_t * RESTRICT inpu
         const uint8_t * RESTRICT secret, size_t secretSize, uint64_t seed ) {
     XXH_ASSERT(secretSize >= XXH3_SECRET_SIZE_MIN); (void)secretSize;
     XXH_ASSERT(16 < len && len <= 128);
-    uint64_t acc = len * XXH_PRIME64_1, acc_end;
+    uint64_t acc = len * XXH_PRIME64_1;
 
-    acc     += XXH3_mix16B<bswap>(input + 0       , secret +  0, seed);
-    acc_end  = XXH3_mix16B<bswap>(input + len - 16, secret + 16, seed);
     if (len > 32) {
-        acc     += XXH3_mix16B<bswap>(input + 16      , secret + 32, seed);
-        acc_end += XXH3_mix16B<bswap>(input + len - 32, secret + 48, seed);
         if (len > 64) {
-            acc     += XXH3_mix16B<bswap>(input + 32      , secret + 64, seed);
-            acc_end += XXH3_mix16B<bswap>(input + len - 48, secret + 80, seed);
             if (len > 96) {
-                acc     += XXH3_mix16B<bswap>(input + 48      , secret +  96, seed);
-                acc_end += XXH3_mix16B<bswap>(input + len - 64, secret + 112, seed);
+                acc += XXH3_mix16B<bswap>(input + 48      , secret +  96, seed);
+                acc += XXH3_mix16B<bswap>(input + len - 64, secret + 112, seed);
             }
+            acc += XXH3_mix16B<bswap>(input + 32      , secret + 64, seed);
+            acc += XXH3_mix16B<bswap>(input + len - 48, secret + 80, seed);
         }
+        acc += XXH3_mix16B<bswap>(input + 16      , secret + 32, seed);
+        acc += XXH3_mix16B<bswap>(input + len - 32, secret + 48, seed);
     }
+    acc += XXH3_mix16B<bswap>(input + 0       , secret +  0, seed);
+    acc += XXH3_mix16B<bswap>(input + len - 16, secret + 16, seed);
 
-    return XXH3_avalanche(acc + acc_end);
+    return XXH3_avalanche(acc);
 }
 
 // UGLY HACK:
@@ -771,7 +783,7 @@ static FORCE_INLINE XXH128_hash_t XXH3_len_4to8_128b( const uint8_t * input,
     m128.low64  ^= (m128.high64 >> 3);
 
     m128.low64   = XXH_xorshift64(m128.low64, 35);
-    m128.low64  *= UINT64_C(0x9FB21C651E98DF25);
+    m128.low64  *= PRIME_MX2;
     m128.low64   = XXH_xorshift64(m128.low64, 28);
     m128.high64  = XXH3_avalanche(m128.high64);
     return m128;
@@ -1067,7 +1079,7 @@ static FORCE_INLINE void XXH3_scalarRound( void * RESTRICT acc, void const * RES
     uint64_t const  data_key = GET_U64<bswap>(xsecret, lane * 8) ^ data_val;
 
     xacc[lane ^ 1] += data_val; /* swap adjacent lanes */
-    xacc[lane]     += XXH_mult32to64(data_key & 0xFFFFFFFF, data_key >> 32);
+    xacc[lane]      = XXH_mult32to64_add64(data_key, data_key >> 32, xacc[lane]);
 }
 
 template <bool bswap>
@@ -1121,8 +1133,8 @@ static FORCE_INLINE void XXH3_scrambleAcc_scalar( void * RESTRICT acc, const voi
 }
 
 // UGLY HACK:
-// Clang generates a bunch of MOV/MOVK pairs for aarch64, and they are
-// placed sequentially, in order, at the top of the unrolled loop.
+// GCC and Clang generate a bunch of MOV/MOVK pairs for aarch64, and they
+// are placed sequentially, in order, at the top of the unrolled loop.
 //
 // While MOVK is great for generating constants (2 cycles for a 64-bit
 // constant compared to 4 cycles for LDR), it fights for bandwidth with
@@ -1136,9 +1148,9 @@ static FORCE_INLINE void XXH3_scrambleAcc_scalar( void * RESTRICT acc, const voi
 // ADD
 // SUB      STR
 //          STR
-// By forcing loads from memory (as the asm line causes Clang to assume
-// that XXH3_kSecretPtr has been changed), the pipelines are used more
-// efficiently:
+// By forcing loads from memory (as the asm line causes the compiler to
+// assume that XXH3_kSecretPtr has been changed), the pipelines are used
+// more efficiently:
 //   I   L   S
 //      LDR
 //  ADD LDR
@@ -1159,17 +1171,17 @@ static FORCE_INLINE void XXH3_initCustomSecret_scalar( void * RESTRICT customSec
      */
     const uint8_t * kSecretPtr = XXH3_kSecret;
 
-#if defined(__clang__) && defined(__aarch64__)
+#if defined(__GNUC__) && defined(__aarch64__)
     XXH_COMPILER_GUARD(kSecretPtr);
 #endif
 
     int const nbRounds = XXH3_SECRET_DEFAULT_SIZE / 16;
     for (int i = 0; i < nbRounds; i++) {
         /*
-         * The asm hack causes Clang to assume that kSecretPtr aliases with
-         * customSecret, and on aarch64, this prevented LDP from merging two
-         * loads together for free. Putting the loads together before the stores
-         * properly generates LDP.
+         * The asm hack causes the compiler to assume that kSecretPtr
+         * aliases with customSecret, and on aarch64, this prevented LDP
+         * from merging two loads together for free. Putting the loads
+         * together before the stores properly generates LDP.
          */
         uint64_t lo = GET_U64<bswap>(kSecretPtr, 16 * i    ) + seed64;
         uint64_t hi = GET_U64<bswap>(kSecretPtr, 16 * i + 8) - seed64;
@@ -1349,8 +1361,8 @@ static NEVER_INLINE XXH128_hash_t XXH3_hashLong_128b_internal( const void * REST
 // XXH3 and XXH3-128 top-level functions
 
 template <bool bswap>
-static uint64_t XXH3_64bits_withSecretandSeed( const void * input, size_t len, uint64_t seed,
-        const uint8_t * RESTRICT secret, const size_t secretLen ) {
+static FORCE_INLINE uint64_t XXH3_64bits_withSecretandSeed( const void * input, size_t len,
+         uint64_t seed, const uint8_t * RESTRICT secret, const size_t secretLen ) {
     if (len <= 16) {
         return XXH3_len_0to16_64b<bswap>((const uint8_t *)input, len, secret, seed);
     }
@@ -1371,8 +1383,8 @@ static uint64_t XXH3_64bits_withSecretandSeed( const void * input, size_t len, u
 }
 
 template <bool bswap>
-static XXH128_hash_t XXH3_128bits_withSecretandSeed( const void * input, size_t len, uint64_t seed,
-        const uint8_t * RESTRICT secret, const size_t secretLen ) {
+static FORCE_INLINE XXH128_hash_t XXH3_128bits_withSecretandSeed( const void * input, size_t len,
+         uint64_t seed, const uint8_t * RESTRICT secret, const size_t secretLen ) {
     if (len <= 16) {
         return XXH3_len_0to16_128b<bswap>((const uint8_t *)input, len, secret, seed);
     }
