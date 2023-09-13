@@ -138,6 +138,19 @@ static FORCE_INLINE void add96( uint32_t & rlo, uint32_t & rmi, uint32_t & rhi, 
 #endif
 }
 
+// 64-bit fused multiply addition [r64 += a * b]
+static FORCE_INLINE void fma32_64( uint64_t & r64, uint32_t a, uint32_t b ) {
+#if defined(HAVE_ARM_ASM)
+    //uint64_t ret;
+    __asm__("umaddl %x0, %w1, %w2, %x3" : "=r" (r64) : "r" (a), "r" (b), "r" (r64));
+    //r64 = ret;
+#else
+    uint64_t v;
+    MathMult::mult32_64(v, a, b);
+    r64 += v;
+#endif
+}
+
 // 96-bit fused multiply addition [rhi:rmi:rlo += a * b]
 static FORCE_INLINE void fma32_96( uint32_t & rlo, uint32_t & rmi, uint32_t & rhi, uint32_t a, uint32_t b ) {
 // These #defines are not correct; some arm seems to not support this
