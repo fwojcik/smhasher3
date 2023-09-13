@@ -62,6 +62,7 @@ set(HASH_SRC_FILES
   hashes/falcon_oaat.cpp
   hashes/lookup3.cpp
   hashes/fasthash.cpp
+  hashes/aesnihash-peterrk.cpp
   hashes/aesnihash-majek.cpp
   hashes/o1hash.cpp
   hashes/pengyhash.cpp
