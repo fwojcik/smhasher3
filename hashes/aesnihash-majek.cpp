@@ -79,12 +79,12 @@ static void aesnihash( const void * inv, const size_t len, const seed_t seed, vo
     memcpy(out, &result, 8);
 }
 
-REGISTER_FAMILY(aesnihash,
+REGISTER_FAMILY(aesnihash_majek,
    $.src_url    = "https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a",
    $.src_status = HashFamilyInfo::SRC_FROZEN
  );
 
-REGISTER_HASH(aesnihash,
+REGISTER_HASH(aesnihash_majek,
    $.desc       = "majek's aesnihash",
    $.impl       = "aesni",
    $.hash_flags =
@@ -102,5 +102,5 @@ REGISTER_HASH(aesnihash,
  );
 
 #else
-REGISTER_FAMILY(aesnihash);
+REGISTER_FAMILY(aesnihash_majek);
 #endif
