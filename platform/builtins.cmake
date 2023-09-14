@@ -90,6 +90,14 @@ set(RESTRICT_VARIANTS
 )
 findVariant(RESTRICT)
 
+set(MAY_ALIAS_VARIANTS
+  "type aliasing attribute"
+  "may_alias"
+  "@FIXEDINT_IMPL@\n"
+  2
+)
+findVariant(MAY_ALIAS)
+
 set(ROT32_VARIANTS
   "32-bit integer rotation"
   "rot32"
