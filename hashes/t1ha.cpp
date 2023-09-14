@@ -67,10 +67,9 @@
 //------------------------------------------------------------
 #define T1HA_USE_ALIGNED_ONESHOT_READ 1
 
-#define T1HA_UNALIGNED_ACCESS__UNABLE 0
-#define T1HA_UNALIGNED_ACCESS__SLOW 1
+#define T1HA_UNALIGNED_ACCESS__UNABLE    0
+#define T1HA_UNALIGNED_ACCESS__SLOW      1   // Unused in SMHasher3
 #define T1HA_UNALIGNED_ACCESS__EFFICIENT 2
-
 
 #if defined(i386) || defined(__386) || defined(__i386) || defined(__i386__) || \
     defined(i486) || defined(__i486) || defined(__i486__) ||                   \
@@ -83,6 +82,12 @@
   #define T1HA_SYS_UNALIGNED_ACCESS T1HA_UNALIGNED_ACCESS__EFFICIENT
 #else
   #define T1HA_SYS_UNALIGNED_ACCESS T1HA_UNALIGNED_ACCESS__UNABLE
+#endif
+
+#if defined(__ARM_FEATURE_UNALIGNED)
+  #define T1HA_SYS_ARM_UNALIGNED 1
+#else
+  #define T1HA_SYS_ARM_UNALIGNED 0
 #endif
 
 //------------------------------------------------------------
@@ -203,7 +208,8 @@ enum t1ha_modes {
 //------------------------------------------------------------
 template <enum t1ha_modes mode, bool aligned>
 static FORCE_INLINE uint32_t fetch16( const void * v ) {
-    constexpr bool force_aligned = (T1HA_SYS_UNALIGNED_ACCESS != T1HA_UNALIGNED_ACCESS__UNABLE);
+    constexpr bool force_aligned = (T1HA_SYS_UNALIGNED_ACCESS != T1HA_UNALIGNED_ACCESS__UNABLE) ||
+        T1HA_SYS_ARM_UNALIGNED;
 
     if (aligned) { assert(((uintptr_t)v) % ALIGNMENT_16 == 0); }
 
@@ -221,7 +227,8 @@ static FORCE_INLINE uint32_t fetch16( const void * v ) {
 
 template <enum t1ha_modes mode, bool aligned>
 static FORCE_INLINE uint32_t fetch32( const void * v ) {
-    constexpr bool force_aligned = (T1HA_SYS_UNALIGNED_ACCESS != T1HA_UNALIGNED_ACCESS__UNABLE);
+    constexpr bool force_aligned = (T1HA_SYS_UNALIGNED_ACCESS != T1HA_UNALIGNED_ACCESS__UNABLE) ||
+        T1HA_SYS_ARM_UNALIGNED;
 
     if (aligned) { assert(((uintptr_t)v) % ALIGNMENT_32 == 0); }
 
