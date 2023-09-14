@@ -25,8 +25,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#if !defined(IMPORT_CITY)
 #include "Platform.h"
 #include "Hashlib.h"
+#endif
 
 // CityHash128WithSeed is no longer enabled in this family. This is because
 // this exact same hash function is part of the (later) FarmHash family,
@@ -743,6 +745,7 @@ static void CityCrc256( const void * in, const size_t len, const seed_t seed, vo
 #endif
 
 //------------------------------------------------------------
+#if !defined(IMPORT_CITY)
 REGISTER_FAMILY(cityhash,
    $.src_url    = "https://github.com/google/cityhash",
    $.src_status = HashFamilyInfo::SRC_FROZEN
@@ -945,4 +948,5 @@ REGISTER_HASH(CityHashCrc_256,
    $.hashfn_bswap    = CityCrc256<true>
  );
 
+#endif
 #endif
