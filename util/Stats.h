@@ -66,6 +66,7 @@ uint64_t nthlex( uint64_t rank, const uint64_t setbits );
 
 double EstimateNbCollisions( const unsigned long nbH, const int nbBits );
 void ReportCollisionEstimates( void );
+double GetMissingHashesExpected( size_t nbH, int nbBits );
 
 int GetNLogNBound( unsigned nbH );
 double ScalePValue( double p_value, unsigned testcount );

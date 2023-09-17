@@ -1145,6 +1145,13 @@ void ReportCollisionEstimates( void ) {
 }
 
 //-----------------------------------------------------------------------------
+// The number of bins expected to be empty
+double GetMissingHashesExpected( size_t nbH, int nbBits ) {
+    double pE = exp((double)nbH * log1p(-exp2(-nbBits)));
+    return ldexp(pE, nbBits);
+}
+
+//-----------------------------------------------------------------------------
 // p-value formulas for various distributions, and related utility functions
 
 /*

@@ -230,9 +230,10 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
     }
 
     if (zerocount > 0) {
-        printf("Never-seen hash values for %d-bits slice @ offset %d ", bitWidth, bitOffset);
+        printf("Never-seen hash values for %d-bits slice @ offset %d (expected count == %f) ",
+                bitWidth, bitOffset, GetMissingHashesExpected(nbH, bitWidth));
         if (zerocount > maxEntries) {
-            printf("(first %d of %d values):\n", maxPerEntry, zerocount);
+            printf("(first %d of %d values):\n", maxEntries, zerocount);
             zerocount = maxEntries;
         } else {
             printf("(%d values):\n", zerocount);
