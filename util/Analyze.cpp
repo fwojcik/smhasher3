@@ -946,14 +946,14 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn k
 
     if (testDeltaNum > 0) {
         if (verbose) {
-            printf("---Analyzing hash deltas\n");
+            printf("---Analyzing differential distribution\n");
         }
         result &= TestHashListSingle(hashdeltas_x, logpSumPtr, keyprint, testDeltaNum, true, testCollision,
                 testMaxColl, testDist, testHighBits, testLowBits, verbose, drawDiagram);
 
         if (testDeltaNum > 2) {
             if (verbose) {
-                printf("---Analyzing additional hash deltas\n");
+                printf("---Analyzing additional differential distribution\n");
             }
             result &= TestHashListSingle(hashdeltas_y, logpSumPtr, keyprint, testDeltaNum, false, testCollision,
                     testMaxColl, testDist, testHighBits, testLowBits, verbose, drawDiagram);
