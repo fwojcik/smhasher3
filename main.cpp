@@ -84,16 +84,16 @@
 #include "PopcountTest.h"
 #include "PRNGTest.h"
 #include "AvalancheTest.h"
+#include "BitflipTest.h"
 #include "BitIndependenceTest.h" // aka BIC
 #include "DifferentialTest.h"
-#include "DiffDistributionTest.h"
 #include "HashMapTest.h"
 #include "SeedTest.h"
 #include "SeedZeroesTest.h"
 #include "SeedSparseTest.h"
+#include "SeedBitflipTest.h"
 #include "SeedBlockLenTest.h"
 #include "SeedBlockOffsetTest.h"
-#include "SeedDiffDistTest.h"
 #include "SeedAvalancheTest.h"
 #include "SeedBitIndependenceTest.h"
 #include "BadSeedsTest.h"
@@ -137,12 +137,12 @@ static bool g_testSeedZeroes;
 static bool g_testSeedSparse;
 static bool g_testSeedBlockLen;
 static bool g_testSeedBlockOffset;
-static bool g_testSeedDiffDist;
+static bool g_testSeedBitflip;
 static bool g_testSeedAvalanche;
 static bool g_testSeedBIC;
 static bool g_testPerlinNoise;
 static bool g_testDiff;
-static bool g_testDiffDist;
+static bool g_testBitflip;
 static bool g_testPopcount;
 static bool g_testPrng;
 static bool g_testBIC;
@@ -175,11 +175,11 @@ static TestOpts g_testopts[] = {
     { g_testSeedSparse,       true,     false,    "SeedSparse" },
     { g_testSeedBlockLen,     true,     false,    "SeedBlockLen" },
     { g_testSeedBlockOffset,  true,     false,    "SeedBlockOffset" },
-    { g_testSeedDiffDist,     true,     false,    "SeedDiffDist" },
+    { g_testSeedBitflip,      true,     false,    "SeedBitflip" },
     { g_testSeedAvalanche,    true,     false,    "SeedAvalanche" },
     { g_testSeedBIC,          true,     false,    "SeedBIC" },
     { g_testPerlinNoise,      true,     false,    "PerlinNoise" },
-    { g_testDiffDist,         true,     false,    "DiffDist" },
+    { g_testBitflip,          true,     false,    "Bitflip" },
     { g_testBIC,              true,     false,    "BIC" },
     { g_testDiff,            false,     false,    "Diff" },
     { g_testWindow,          false,     false,    "Window" },
@@ -505,10 +505,10 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Differential-distribution tests
+    // Keyset 'Bitflip'
 
-    if (g_testDiffDist) {
-        result &= DiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    if (g_testBitflip) {
+        result &= BitflipTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------
@@ -561,10 +561,10 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Keyset 'SeedDiffDist'
+    // Keyset 'SeedBitflip'
 
-    if (g_testSeedDiffDist) {
-        result &= SeedDiffDistTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+    if (g_testSeedBitflip) {
+        result &= SeedBitflipTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
     }
 
     //-----------------------------------------------------------------------------

@@ -53,31 +53,28 @@
 #include "Instantiate.h"
 #include "VCode.h"
 
-#include "DiffDistributionTest.h"
+#include "BitflipTest.h"
 
 //-----------------------------------------------------------------------------
-// Simpler differential-distribution test - for all 1-bit differentials,
-// generate random key pairs and run full distribution/collision tests on the
-// hash differentials
+// Simple bitflip test - for all 1-bit differentials, generate random keys,
+// apply the differential, and run full distribution/collision tests on the
+// hashes and their deltas.
 
 template <typename hashtype>
-static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_t seed, bool drawDiagram ) {
-    const HashFn hash = hinfo->hashFn(g_hashEndian);
-
-    unsigned       keybytes = keybits / 8;
+static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const seed_t seed, bool drawDiagram ) {
+    const HashFn   hash     = hinfo->hashFn(g_hashEndian);
     const unsigned keycount = 512 * 1024 * ((hinfo->bits <= 64) ? 3 : 4);
+    unsigned       keybytes = keybits / 8;
 
     std::vector<hashtype> worsthashes;
     int worstlogp   = -1;
     int worstkeybit = -1;
     int fails       =  0;
 
-    std::vector<hashtype> hashes( keycount );
-    hashtype h1, h2;
+    std::vector<hashtype> hashes( keycount * 2 ), hashes_copy;
+    std::vector<uint8_t>  keys( keycount * keybytes );
 
-    std::vector<uint8_t> keys( keycount * keybytes );
-
-    Rand r( {84574, keybytes} );
+    Rand r( { 84574, keybytes } );
 
     bool result = true;
 
@@ -90,34 +87,44 @@ static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_
             printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
         }
 
-        // Use a new sequence of keys for every key bit tested
+        // Use a new sequence of keys for every key bit tested. Note that
+        // SEQ_DIST_2 is enough to ensure there are no collisions, because
+        // only 1 bit _position_ is flipped per set of keys, and (x ^ bitN)
+        // ^ (y ^ bitN) == x ^ y, which must have at least 2 set bits.
         RandSeq rs = r.get_seq(SEQ_DIST_2, keybytes);
         rs.write(&keys[0], 0, keycount);
 
         for (unsigned i = 0; i < keycount; i++) {
             ExtBlob k( &keys[i * keybytes], keybytes );
-            hash(k, keybytes, seed, &h1);
+
+            hash(k, keybytes, seed, &hashes[2 * i]);
             addVCodeInput(k, keybytes);
 
             k.flipbit(keybit);
-            hash(k, keybytes, seed, &h2);
+
+            hash(k, keybytes, seed, &hashes[2 * i + 1]);
             addVCodeInput(k, keybytes);
 
-            hashes[i] = h1 ^ h2;
+            // Restore the bit to its original value, for dumpFailKeys()
+            k.flipbit(keybit);
         }
 
-        int curlogp = 0;
+        // TestHashList() modifies the list, so keep a copy in case we need
+        // to run it a second time for drawDiagram == false.
+        if (!drawDiagram) {
+            hashes_copy = hashes;
+        }
+
+        int  curlogp    = 0;
         bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).
-            sumLogp(&curlogp).dumpFailKeys([&]( hidx_t i ) {
-                    ExtBlob k( &keys[i * keybytes], keybytes );
-                    hashtype v1, v2;
-
-                    printf("0x%016" PRIx64 "\t", g_seed);
-                    hash(k, keybytes, seed, &v1); k.printbytes(NULL); k.flipbit(keybit); printf(" vs. ");
-                    hash(k, keybytes, seed, &v2); k.printbytes(NULL); k.flipbit(keybit); printf("\t");
-                    v1.printhex(NULL); printf(" XOR "); v2.printhex(NULL); printf(" == "); v2 ^= v1; v2.printhex(NULL);
-                });
-
+                sumLogp(&curlogp).testDeltas(1).dumpFailKeys([&]( hidx_t i ) {
+                    ExtBlob k(&keys[(i >> 1) * keybytes], keybytes); hashtype v;
+                    if (i & 1) { k.flipbit(keybit); }
+                    hash(k, keybytes, seed, &v);
+                    printf("0x%016" PRIx64 "\t", g_seed); k.printbytes(NULL);
+                    printf("\t"); v.printhex(NULL);
+                    if (i & 1) { k.flipbit(keybit); }
+            });
         if (drawDiagram) {
             printf("\n");
         } else {
@@ -129,7 +136,7 @@ static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_
             if (((fails == 0) || !thisresult) && (worstlogp < curlogp)) {
                 worstlogp   = curlogp;
                 worstkeybit = keybit;
-                worsthashes = hashes;
+                worsthashes = hashes_copy;
             }
             if (!thisresult) {
                 fails++;
@@ -143,12 +150,12 @@ static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_
 
     if (!drawDiagram) {
         printf("%3d failed, worst is key bit %3d%s\n", fails, worstkeybit, result ? "" : "                  !!!!!");
-        bool ignored = TestHashList(worsthashes).testDistribution(true);
+        bool ignored = TestHashList(worsthashes).testDistribution(true).testDeltas(1);
         (void)ignored;
         printf("\n");
     }
 
-    recordTestResult(result, "DiffDist", keybytes);
+    recordTestResult(result, "Bitflip", keybytes);
 
     return result;
 }
@@ -156,95 +163,23 @@ static bool DiffDistTest2( const HashInfo * hinfo, unsigned keybits, const seed_
 //----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool DiffDistTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool BitflipTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     bool result = true;
 
-    printf("[[[ DiffDist 'Differential Distribution' Tests ]]]\n\n");
+    printf("[[[ Keyset 'Bitflip' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= DiffDistTest2<hashtype>(hinfo, 24, seed, verbose);
-    result &= DiffDistTest2<hashtype>(hinfo, 32, seed, verbose);
-    result &= DiffDistTest2<hashtype>(hinfo, 64, seed, verbose);
+    result &= BitflipTestImpl<hashtype>(hinfo, 24, seed, verbose);
+    result &= BitflipTestImpl<hashtype>(hinfo, 32, seed, verbose);
+    result &= BitflipTestImpl<hashtype>(hinfo, 64, seed, verbose);
     if (extra && !hinfo->isVerySlow()) {
-        result &= DiffDistTest2<hashtype>(hinfo, 160, seed, verbose);
-        result &= DiffDistTest2<hashtype>(hinfo, 256, seed, verbose);
+        result &= BitflipTestImpl<hashtype>(hinfo, 160, seed, verbose);
+        result &= BitflipTestImpl<hashtype>(hinfo, 256, seed, verbose);
     }
     printf("%s\n", result ? "" : g_failstr);
 
     return result;
 }
 
-INSTANTIATE(DiffDistTest, HASHTYPELIST);
-
-//-----------------------------------------------------------------------------
-// An old implementation; currently unused.
-
-#if 0
-  #include "SparseKeysetTest.h" // for SparseKeygenRecurse
-//-----------------------------------------------------------------------------
-// Differential distribution test - for each N-bit input differential, generate
-// a large set of differential key pairs, hash them, and test the output
-// differentials using our distribution test code.
-
-// This is a very hard test to pass - even if the hash values are well-distributed,
-// the differences between hash values may not be. It's also not entirely relevant
-// for testing hash functions, but it's still interesting.
-
-// This test is a _lot_ of work, as it's essentially a full keyset test for
-// each of a potentially huge number of input differentials. To speed things
-// along, we do only a few distribution tests per keyset instead of the full
-// grid.
-
-// #TODO - put diagram drawing back on
-
-template <typename keytype, typename hashtype>
-void DiffDistTest( HashFn hash, const int diffbits, int trials, double & worst, double & avg ) {
-    std::vector<keytype>  keys( trials );
-    std::vector<hashtype> A( trials ), B(trials);
-
-    // FIXME seedHash(hash, g_seed);
-    for (int i = 0; i < trials; i++) {
-        rand_p(&keys[i], keytype::len);
-
-        hash(&keys[i], keytype::len, g_seed, (uint32_t *)&A[i]);
-    }
-
-    //----------
-
-    std::vector<keytype> diffs;
-
-    keytype temp( 0 );
-
-    SparseKeygenRecurse<keytype>(0, diffbits, true, temp, diffs);
-
-    //----------
-
-    worst = 0;
-    avg   = 0;
-
-    hashtype h2;
-
-    for (size_t j = 0; j < diffs.size(); j++) {
-        keytype & d = diffs[j];
-
-        for (int i = 0; i < trials; i++) {
-            keytype k2 = keys[i] ^ d;
-
-            hash(&k2, k2.len, g_seed, &h2);
-
-            B[i] = A[i] ^ h2;
-        }
-
-        double dworst, davg;
-
-        TestDistributionFast(B, dworst, davg);
-
-        avg  += davg;
-        worst = (dworst > worst) ? dworst : worst;
-    }
-
-    avg /= double(diffs.size());
-}
-
-#endif /* 0 */
+INSTANTIATE(BitflipTest, HASHTYPELIST);

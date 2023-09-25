@@ -45,8 +45,8 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 //-----------------------------------------------------------------------------
-// Differential distribution tests - generate a bunch of random keys,
-// see what happens to the hash value when we flip a bit of the seed.
+// Bitflip tests - generate a bunch of random keys, see what happens to the
+// hash value when we flip 1 or more bits of the key.
 
 template <typename hashtype>
-bool SeedDiffDistTest( const HashInfo * info, const bool verbose, const bool extra );
+bool BitflipTest( const HashInfo * info, const bool verbose, const bool extra );

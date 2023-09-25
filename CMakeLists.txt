@@ -200,9 +200,9 @@ add_library(
 #
   tests/SanityTest.cpp
   tests/AvalancheTest.cpp
+  tests/BitflipTest.cpp
   tests/BitIndependenceTest.cpp
   tests/DifferentialTest.cpp
-  tests/DiffDistributionTest.cpp
   tests/HashMapTest.cpp
   tests/SparseKeysetTest.cpp
   tests/ZeroesKeysetTest.cpp
@@ -214,9 +214,9 @@ add_library(
   tests/SeedTest.cpp
   tests/SeedZeroesTest.cpp
   tests/SeedSparseTest.cpp
+  tests/SeedBitflipTest.cpp
   tests/SeedBlockLenTest.cpp
   tests/SeedBlockOffsetTest.cpp
-  tests/SeedDiffDistTest.cpp
   tests/SeedAvalancheTest.cpp
   tests/SeedBitIndependenceTest.cpp
   tests/BadSeedsTest.cpp
