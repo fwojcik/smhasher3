@@ -53,12 +53,12 @@
 template <typename hashtype>
 void PrintCollisions( const std::map<hashtype, uint32_t> & collisions, const size_t maxCollisions,
         const uint32_t maxPerCollision = 0, const std::vector<hidx_t> & idxs = {}, const KeyFn keyprint = NULL,
-        const int delta = 0, const uint32_t nbBits = sizeof(hashtype) * 8,
+        const unsigned delta = 0, const bool deltaXaxis = false, const hidx_t nbH = 0, const uint32_t nbBits = sizeof(hashtype) * 8,
         const uint32_t prevBits = sizeof(hashtype) * 8, const bool reversebits = false );
 
 template <typename hashtype>
 void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_t> & hashidxs, const KeyFn keyprint,
-        const int delta, const uint32_t maxEntries, const uint32_t maxPerEntry,
+        const unsigned delta, const bool deltaXaxis, const uint32_t maxEntries, const uint32_t maxPerEntry,
         const uint32_t bitOffset, const uint32_t bitWidth );
 
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,

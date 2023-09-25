@@ -71,11 +71,36 @@ static const double WARNING_PBOUND = exp2(-14); // 2**-14 == 1/16,384  =~ 0.0061
 // average, even with a perfect-quality hash function.
 
 //-----------------------------------------------------------------------------
+// Turn a hash index plus a testDelta configuration into the hash indexes
+// of the two hashes used to compute a differential hash.
+
+static std::pair<hidx_t, hidx_t> DifferentialIdxs( hidx_t idx, hidx_t nbH, unsigned testDeltaNum, bool testDeltaXaxis ) {
+    hidx_t x, y, xp, yp;
+
+    switch (testDeltaNum) {
+    case  0: return std::make_pair(idx, 0);
+    case  1: return std::make_pair(idx, idx + 1);
+    case  2: return std::make_pair(idx << 1, (idx << 1) + 1);
+    default:
+        x = idx % testDeltaNum;
+        y = idx / testDeltaNum;
+        if (testDeltaXaxis) {
+            xp = (x + 1) % testDeltaNum;
+            yp = y;
+        } else {
+            xp = x;
+            yp = (y + 1) % (nbH / testDeltaNum);
+        }
+        return std::make_pair(x + y * testDeltaNum, xp + yp * testDeltaNum);
+    }
+}
+
+//-----------------------------------------------------------------------------
 // Print a list of collisions
 template <typename hashtype>
 void PrintCollisions( const std::map<hashtype, uint32_t> & collisions, const size_t maxCollisions,
-        const uint32_t maxPerCollision, const std::vector<hidx_t> & idxs, const KeyFn keyprint,
-        const int delta, const uint32_t nbBits, const uint32_t prevBits, const bool reversebits ) {
+        const uint32_t maxPerCollision, const std::vector<hidx_t> & idxs, const KeyFn keyprint, const unsigned delta,
+        const bool deltaXaxis, const hidx_t nbH, const uint32_t nbBits, const uint32_t prevBits, const bool reversebits ) {
     if (prevBits != nbBits) {
         printf("\n%d-bit or more collisions (excluding %d-bit or more) ", nbBits, prevBits);
     } else {
@@ -114,10 +139,11 @@ void PrintCollisions( const std::map<hashtype, uint32_t> & collisions, const siz
             for (uint32_t i = 0; i < printcoll; i++) {
                 const hidx_t cur = *idxiter++;
                 printf("\t\t");
-                keyprint(cur);
+                auto idxs = DifferentialIdxs(cur, nbH, delta, deltaXaxis);
+                keyprint(idxs.first);
                 if (delta > 0) {
                     printf("\tXOR\t");
-                    keyprint(cur + delta);
+                    keyprint(idxs.second);
                 }
                 printf("\n");
             }
@@ -132,13 +158,13 @@ INSTANTIATE(PrintCollisions, HASHTYPELIST);
 //-----------------------------------------------------------------------------
 template <typename hashtype>
 void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_t> & hashidxs, const KeyFn keyprint,
-        const int delta, const uint32_t maxEntries, const uint32_t maxPerEntry,
+        const unsigned delta, const bool deltaXaxis, const uint32_t maxEntries, const uint32_t maxPerEntry,
         const uint32_t bitOffset, const uint32_t bitWidth ) {
 
     // This count data could be gathered during TestDistribution, but
     // plumbing that in seems more invasive than I want to be right now. If
     // this ends up being a bottleneck, that can be revisited.
-    const uint32_t nbH = hashes.size();
+    const hidx_t nbH = hashes.size();
     const uint32_t nbC = 1 << bitWidth;
     std::vector<uint32_t> counts(nbC);
     for (uint32_t i = 0; i < nbH; i++) {
@@ -220,10 +246,11 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
                 prevhash = e.first;
             }
             printf("\t\t");
-            keyprint(hashidxs[e.second]);
+            auto idxs = DifferentialIdxs(hashidxs[e.second], nbH, delta, deltaXaxis);
+            keyprint(idxs.first);
             if (delta > 0) {
                 printf("\tXOR\t");
-                keyprint(hashidxs[e.second] + delta);
+                keyprint(idxs.second);
             }
             printf("\n");
         }

@@ -239,7 +239,7 @@ INSTANTIATE(FindCollisionsIndices, HASHTYPELIST);
 // re-implement here, instead of diving further into template madness.
 template <typename hashtype>
 static hidx_t FindCollisionsPrefixesIndices( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions,
-        hidx_t maxCollisions, uint32_t maxPerCollision, std::vector<hidx_t> & collisionidxs,        
+        hidx_t maxCollisions, uint32_t maxPerCollision, std::vector<hidx_t> & collisionidxs,
         const std::vector<hidx_t> & hashidxs, uint32_t prefixLen, uint32_t prevPrefixLen ) {
     hidx_t collcount = 0, curcollcount = 0;
     hashtype mask;
@@ -384,11 +384,11 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, int minHBit
 //----------------------------------------------------------------------------
 
 template <typename hashtype>
-static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs,
-        int * logpSumPtr, KeyFn keyprint, int testDeltaNum, bool willTestDist, bool testMaxColl,
+static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, int * logpSumPtr,
+        KeyFn keyprint, int testDeltaNum, bool testDeltaXaxis, bool testMaxColl, bool willTestDist,
         bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
     const unsigned hashbits   = hashtype::bitlen;
-    const uint64_t nbH        = hashes.size();
+    const hidx_t   nbH        = hashes.size();
     hidx_t         collcount;
 
     if (verbose) {
@@ -553,7 +553,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
         *logpSumPtr += curlogp;
     }
     if (!result && drawDiagram) {
-        PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs, keyprint, testDeltaNum);
+        PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
+                keyprint, testDeltaNum, testDeltaXaxis, nbH);
     }
 
     // Report on partial collisions, if requested
@@ -575,8 +576,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 if (!thisresult && drawDiagram) {
                     FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                             collisionidxs, hashidxs, nbBits, prevBitsH);
-                    PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
-                            keyprint, testDeltaNum, nbBits, prevBitsH, false);
+                    PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs, keyprint,
+                            testDeltaNum, testDeltaXaxis, nbH, nbBits, prevBitsH, false);
                     prevBitsH = nbBits;
                 }
                 result &= thisresult;
@@ -590,8 +591,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 if (!thisresult && drawDiagram) {
                     FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                             collisionidxs, hashidxs_rev, nbBits, prevBitsL);
-                    PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
-                            keyprint, testDeltaNum, nbBits, prevBitsL, true);
+                    PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs, keyprint,
+                            testDeltaNum, testDeltaXaxis, nbH, nbBits, prevBitsL, true);
                     prevBitsL = nbBits;
                 }
                 result &= thisresult;
@@ -609,8 +610,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             if (!thisresult && drawDiagram) {
                 FindCollisionsPrefixesIndices(hashes, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                         collisionidxs, hashidxs, maxBits, hashbits + 1);
-                PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
-                        keyprint, testDeltaNum, maxBits, maxBits, false);
+                PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs, keyprint,
+                        testDeltaNum, testDeltaXaxis, nbH, maxBits, maxBits, false);
             }
             result &= thisresult;
         }
@@ -624,8 +625,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             if (!thisresult && drawDiagram) {
                 FindCollisionsPrefixesIndices(hashes_rev, collisions, MAX_ENTRIES, MAX_PER_ENTRY,
                         collisionidxs, hashidxs_rev, maxBits, hashbits + 1);
-                PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs,
-                        keyprint, testDeltaNum, maxBits, maxBits, true);
+                PrintCollisions(collisions, MAX_ENTRIES, MAX_PER_ENTRY, collisionidxs, keyprint,
+                        testDeltaNum, testDeltaXaxis, nbH, maxBits, maxBits, true);
             }
             result &= thisresult;
         }
@@ -750,8 +751,8 @@ static void TestDistributionBatch( const std::vector<hashtype> & hashes, a_int &
 }
 
 template <typename hashtype>
-static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs,
-        int * logpSumPtr, KeyFn keyprint, int testDeltaNum, bool verbose, bool drawDiagram ) {
+static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, int * logpSumPtr,
+        KeyFn keyprint, unsigned testDeltaNum, bool testDeltaXaxis, bool verbose, bool drawDiagram ) {
     const int      hashbits  = hashtype::bitlen;
     const size_t   nbH       = hashes.size();
     int            maxwidth  = MaxDistBits(nbH);
@@ -798,7 +799,8 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
         *logpSumPtr += curlogp;
     }
     if (!result && drawDiagram) {
-        ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, MAX_ENTRIES, MAX_PER_ENTRY, bitstart, bitwidth);
+        ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, testDeltaXaxis,
+                MAX_ENTRIES, MAX_PER_ENTRY, bitstart, bitwidth);
     }
 
     return result;
@@ -809,25 +811,49 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
 // them to a list of i.i.d. random numbers across a large range of bit
 // widths. The precise test can vary depending on the bit width being
 // tested.
+template <typename hashtype>
+static bool TestHashListSingle( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn keyprint,
+        unsigned testDeltaNum, bool testDeltaXaxis,  bool testCollision, bool testMaxColl, bool testDist,
+        bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
+    std::vector<hidx_t> hashidxs;
+    bool result = true;
+
+    if (testCollision) {
+        result &= TestCollisions(hashes, hashidxs, logpSumPtr, keyprint, testDeltaNum, testDeltaXaxis,
+                testMaxColl, testDist, testHighBits, testLowBits, verbose, drawDiagram);
+    }
+
+    if (testDist) {
+        result &= TestDistribution(hashes, hashidxs, logpSumPtr, keyprint, testDeltaNum, testDeltaXaxis,
+                verbose, drawDiagram);
+    }
+
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// Compute lists of differential hashes as directed, then run statistical
+// tests on the original list and any derivative lists.
 //
 // NB: This function is not intended to be used directly; see
 // TestHashList() and class TestHashListWrapper in Analyze.h.
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * logpSumPtr, KeyFn keyprint,
-        bool drawDiagram, bool testCollision, bool testMaxColl, bool testDist,
-        bool testHighBits, bool testLowBits, bool verbose ) {
-    uint64_t const nbH    = hashes.size();
-    bool           result = true;
+bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn keyprint, unsigned testDeltaNum,
+        bool testCollision, bool testMaxColl, bool testDist,
+        bool testHighBits, bool testLowBits, bool verbose, bool drawDiagram ) {
+    bool result = true;
 
     // If testDeltaNum is 1, then compute the difference between each hash
-    // and its successor, and test that list of deltas. If it is greater
-    // than 1, then do that same thing but *also* compute the difference
-    // between each hash and the hash testDeltaNum hashes back and test
-    // those deltas also.
+    // and its successor, and test that list of deltas.
     //
-    // Note that child calls of TestHashListImpl() get _negative_ values of
-    // testDeltaNum, so that they both know what delta value they test, and
-    // aren't fooled into calling TestHashListImpl() yet again.
+    // If testDeltaNum is 2, then compute the difference between successive
+    // pairs of hashes, and test that list of deltas.
+    //
+    // If testDeltaNum is greater than 2, then treat hashes[] as a 1D
+    // representation of a 2D array, compute the difference between each
+    // hash and its successor along the x-axis (using testDeltaNum as the
+    // length of the axis), wrapping around as needed, and then do the same
+    // along the y-axis, testing both of those sets of deltas.
     //
     // This must be done before the list of hashes is sorted below inside
     // TestCollisions(). The calls to test the list(s) of deltas come at
@@ -837,58 +863,100 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * l
     // necessary, and even an extra cmp/je pair for the std::vector length,
     // but no matter how I tweak things to tighten the loop it always ends
     // up slower. Not a huge deal, but this is a hot spot.
-    std::vector<hashtype> hashdeltas_1;
-    std::vector<hashtype> hashdeltas_N;
-    std::vector<hidx_t>   hashidxs;
+    std::vector<hashtype> hashdeltas_x;
+    std::vector<hashtype> hashdeltas_y;
 
-    if (testDeltaNum >= 1) {
-        hashdeltas_1.reserve(nbH - 1);
+    if (testDeltaNum > 0) {
+        const uint64_t nbH = hashes.size();
+        assert((nbH % (size_t)testDeltaNum) == 0);
 
-        hashtype hprv = hashes[0];
-        for (size_t hnb = 1; hnb < nbH; hnb++) {
-            hashtype h = hashes[hnb];
-            hashdeltas_1.emplace_back(h ^ hprv);
-            hprv = h;
-        }
+        if (testDeltaNum == 1) {
+            hashdeltas_x.reserve(nbH);
 
-        if (testDeltaNum >= 2) {
-            hashdeltas_N.reserve(nbH - testDeltaNum);
+            hashtype hprv = hashes[0];
+            for (size_t hnb = 1; hnb < nbH; hnb++) {
+                hashtype h = hashes[hnb];
+                hashdeltas_x.emplace_back(h ^ hprv);
+                hprv = h;
+            }
+            hashdeltas_x.emplace_back(hashes[0] ^ hprv);
+        } else if (testDeltaNum == 2) {
+            hashdeltas_x.reserve(nbH / 2);
 
-            for (size_t hnb = testDeltaNum; hnb < nbH; hnb++) {
-                hashdeltas_N.emplace_back(hashes[hnb - testDeltaNum] ^ hashes[hnb]);
+            // This is a special case where testing along the y-axis is
+            // skipped.
+            //
+            // Using the loop below for this case would cause nbH/2
+            // collisions, since hash[0][0] ^ hash[0][1] == hash[0][1] ^
+            // hash[0][0], so wraparound is not what is wanted here.
+            for (size_t hnb = 0; hnb < nbH; hnb += 2) {
+                hashdeltas_x.emplace_back(hashes[hnb] ^ hashes[hnb + 1]);
+            }
+        } else {
+            hashdeltas_x.reserve(nbH);
+            hashdeltas_y.reserve(nbH);
+
+            // Test along the "x-axis", so that we produce (using
+            // hash[y][x] notation, so that consecutive x values are
+            // consecutive in memory):
+            //
+            // hash[0][0] ^ hash[0][1],
+            // hash[0][1] ^ hash[0][2],
+            // ...,
+            // hash[0][testDeltaNum - 2] ^ hash[0][testDeltaNum - 1],
+            // hash[0][testDeltaNum - 1] ^ hash[x][0],
+            // hash[1][0] ^ hash[1][1],
+            // ...,
+            for (size_t hnb = 0; hnb < nbH; hnb += (size_t)testDeltaNum) {
+                hashtype hprv = hashes[hnb];
+                for (size_t hx = 1; hx < (size_t)testDeltaNum; hx++) {
+                    hashtype h = hashes[hnb + hx];
+                    hashdeltas_x.emplace_back(h ^ hprv);
+                    hprv = h;
+                }
+                hashdeltas_x.emplace_back(hashes[hnb] ^ hprv);
+            }
+
+            // Test along the "y-axis", so that we produce (using
+            // hash[y][x] notation, so that consecutive x values are
+            // consecutive in memory):
+            //
+            // hash[0][0] ^ hash[1][0],
+            // hash[1][0] ^ hash[2][0],
+            // ...,
+            // hash[testDeltaNum - 2][0] ^ has[testDeltaNum - 1][0],
+            // hash[testDeltaNum - 1][0] ^ hash[0][0],
+            // hash[0][1] ^ hash[1][1],
+            // ...,
+            for (size_t hnb = (size_t)testDeltaNum; hnb < nbH; hnb++) {
+                hashdeltas_y.emplace_back(hashes[hnb - testDeltaNum      ] ^ hashes[hnb]);
+            }
+            for (size_t hnb = 0; hnb < (size_t)testDeltaNum; hnb++) {
+                hashdeltas_y.emplace_back(hashes[hnb - testDeltaNum + nbH] ^ hashes[hnb]);
             }
         }
     }
 
     //----------
 
-    if (testCollision) {
-        result &= TestCollisions(hashes, hashidxs, logpSumPtr, keyprint, -testDeltaNum,
-                testDist, testMaxColl, testHighBits, testLowBits, verbose, drawDiagram);
-    }
+    result &= TestHashListSingle(hashes, logpSumPtr, keyprint, 0, false, testCollision, testMaxColl,
+            testDist, testHighBits, testLowBits, verbose, drawDiagram);
 
     //----------
 
-    if (testDist) {
-        result &= TestDistribution(hashes, hashidxs, logpSumPtr, keyprint, -testDeltaNum,
-                verbose, drawDiagram);
-    }
-
-    //----------
-
-    if (testDeltaNum >= 1) {
+    if (testDeltaNum > 0) {
         if (verbose) {
             printf("---Analyzing hash deltas\n");
         }
-        result &= TestHashListImpl(hashdeltas_1, -1, logpSumPtr, keyprint, drawDiagram,
-                testCollision, testMaxColl, testDist, testHighBits, testLowBits, verbose);
+        result &= TestHashListSingle(hashdeltas_x, logpSumPtr, keyprint, testDeltaNum, true, testCollision,
+                testMaxColl, testDist, testHighBits, testLowBits, verbose, drawDiagram);
 
-        if (testDeltaNum >= 2) {
+        if (testDeltaNum > 2) {
             if (verbose) {
                 printf("---Analyzing additional hash deltas\n");
             }
-            result &= TestHashListImpl(hashdeltas_N, -testDeltaNum, logpSumPtr, keyprint, drawDiagram,
-                    testCollision, testMaxColl, testDist, testHighBits, testLowBits, verbose);
+            result &= TestHashListSingle(hashdeltas_y, logpSumPtr, keyprint, testDeltaNum, false, testCollision,
+                    testMaxColl, testDist, testHighBits, testLowBits, verbose, drawDiagram);
         }
     }
 

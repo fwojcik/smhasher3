@@ -61,9 +61,9 @@ hidx_t FindCollisionsIndices( std::vector<hashtype> & hashes, std::map<hashtype,
 //-----------------------------------------------------------------------------
 // This is not intended to be used directly; see below
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, int testDeltaNum, int * logpSumPtr, KeyFn keyprint,
-        bool drawDiagram, bool testCollision, bool testMaxColl, bool testDist,
-        bool testHighBits, bool testLowBits, bool verbose );
+bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn keyprint, unsigned testDeltaNum,
+        bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits,
+        bool verbose, bool drawDiagram );
 
 // This provides a user-friendly wrapper to TestHashListImpl<>() by using
 // the Named Parameter Idiom.
@@ -76,7 +76,7 @@ template <typename hashtype>
 class TestHashListWrapper {
   private:
     std::vector<hashtype> & hashes_;
-    int       deltaNum_;
+    unsigned  deltaNum_;
     int *     logpSumPtr_;
     KeyFn     keyPrint_;
     bool      testCollisions_;
@@ -102,7 +102,7 @@ class TestHashListWrapper {
 
     inline TestHashListWrapper & testDistribution( bool s ) { testDistribution_ = s; return *this; }
 
-    inline TestHashListWrapper & testDeltas( int n )        { assert(n > 0); deltaNum_ = n; return *this; }
+    inline TestHashListWrapper & testDeltas( unsigned n )   { deltaNum_         = n; return *this; }
 
     inline TestHashListWrapper & testHighBits( bool s )     { testHighBits_     = s; return *this; }
 
@@ -118,9 +118,9 @@ class TestHashListWrapper {
     // "bool result = TestHashList()" to Just Work(tm),
     // even if that allows other, nonsensical uses of TestHashList().
     inline operator bool () const {
-        return TestHashListImpl(hashes_, deltaNum_, logpSumPtr_, keyPrint_, drawDiagram_,
+        return TestHashListImpl(hashes_, logpSumPtr_, keyPrint_, deltaNum_,
                 testCollisions_, testMaxCollisions_, testDistribution_,
-                testHighBits_, testLowBits_, verbose_);
+                testHighBits_, testLowBits_, verbose_, drawDiagram_);
     }
 }; // class TestHashListWrapper
 
