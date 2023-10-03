@@ -75,4 +75,5 @@ set(HASH_SRC_FILES
   hashes/highwayhash.cpp
   hashes/abseil.cpp
   hashes/polymur.cpp
+  hashes/rust-fxhash.cpp
 )
