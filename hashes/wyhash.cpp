@@ -219,7 +219,7 @@ static bool wyhash64_selftest( void ) {
             h = COND_BSWAP(h, true);
         }
         if (h != selftests[i].hash) {
-            printf("Hash %016lx != expected %016lx for string \"%s\"\n", h, selftests[i].hash, selftests[i].key);
+            printf("Hash %016llx != expected %016llx for string \"%s\"\n", h, selftests[i].hash, selftests[i].key);
             return false;
         }
     }

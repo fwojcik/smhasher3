@@ -38,7 +38,7 @@ static void fail( const char * test, int idx, const T * expected, std::initializ
         if (sizeof(T) == 4) {
             printf(" %08x", (uint32_t)val);
         } else {
-            printf(" %016lx", (uint64_t)val);
+            printf(" %016llx", (uint64_t)val);
         }
         count++;
     }
@@ -47,7 +47,7 @@ static void fail( const char * test, int idx, const T * expected, std::initializ
         if (sizeof(T) == 4) {
             printf(" %08x", (uint32_t)expected[i]);
         } else {
-            printf(" %016lx", (uint64_t)expected[i]);
+            printf(" %016llx", (uint64_t)expected[i]);
         }
     }
     printf("\n\n");
