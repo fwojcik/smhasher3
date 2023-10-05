@@ -76,4 +76,5 @@ set(HASH_SRC_FILES
   hashes/abseil.cpp
   hashes/polymur.cpp
   hashes/rust-fxhash.cpp
+  hashes/rust-ahash.cpp
 )
