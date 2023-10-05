@@ -147,7 +147,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
             uint64_t iseed     = nthlex(seedidx, seedbits);
             seed_t   hseed     = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
 
-            uint8_t  buf[keylen] = { 0 }; ExtBlob xb( buf, keylen );
+            uint8_t  buf[keylen]; ExtBlob xb( buf, keylen ); memset(buf, 0, keylen);
             memcpy(buf + blockoffset, &numblock, blocklen);
             uint32_t spacecnt = keylen_max * 3 + 4;
             printf("0x%016" PRIx64 "\t", iseed); spacecnt -= xb.printbytes(NULL);

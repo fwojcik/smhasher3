@@ -165,9 +165,9 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
             uint64_t iseed       = nthlex(seedidx, seedbits);
             seed_t   hseed       = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
 
-            uint8_t  buf[blockoffset_max - blockoffset_min + keylen] = { 0 };
+            uint8_t  buf[blockoffset_max - blockoffset_min + keylen];
             uint8_t * const blockbase = buf + blockoffset_max;
-            memcpy(blockbase, &numblock, blocklen);
+            memset(buf, 0, sizeof(buf)); memcpy(blockbase, &numblock, blocklen);
             uint8_t * key = blockbase - blockoffset; ExtBlob xb( key, keylen );
             printf("0x%016" PRIx64 "\t", iseed); xb.printbytes(NULL); printf("\t");
             const HashFn hash = hinfo->hashFn(g_hashEndian);

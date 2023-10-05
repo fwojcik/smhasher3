@@ -130,7 +130,7 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen,
     // indices for the nth combination has been found, and the "recursion
     // depth" is the length of that list.
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).dumpFailKeys([&]( hidx_t n ) {
-            uint32_t blocknums[maxlen] = { 0 };
+            uint32_t blocknums[maxlen]; memset(blocknums, 0, sizeof(blocknums));
             hidx_t   curlen = 0;
             n++; // Because the empty block isn't hashed
             while (n > 0) {
