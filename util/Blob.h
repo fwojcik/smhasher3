@@ -421,7 +421,7 @@ class Blob {
     }
 
     static FORCE_INLINE void _xor_restrict( uint8_t * RESTRICT out, const uint8_t * RESTRICT in1,
-            const uint8_t RESTRICT * in2, size_t len ) {
+            const uint8_t * RESTRICT in2, size_t len ) {
         _xor(out, in1, in2, len);
     }
 
@@ -449,8 +449,8 @@ class Blob {
         }
     }
 
-    static FORCE_INLINE void _and_restrict( uint8_t RESTRICT * out, const uint8_t RESTRICT * in1,
-            const uint8_t RESTRICT * in2, size_t len ) {
+    static FORCE_INLINE void _and_restrict( uint8_t * RESTRICT out, const uint8_t * RESTRICT in1,
+            const uint8_t * RESTRICT in2, size_t len ) {
         _and(out, in1, in2, len);
     }
 
