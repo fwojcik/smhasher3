@@ -114,14 +114,14 @@ static inline uint64_t _wyhash64( const void * key, size_t len, uint64_t seed, c
         }
     } else {
         size_t i = len;
-        if (unlikely(i > 48)) {
+        if (unlikely(i >= 48)) {
             uint64_t see1 = seed, see2 = seed;
             do {
                 seed = _wymix<strict>(_wyr8<bswap>(p)      ^ secrets[1], _wyr8<bswap>(p +  8) ^ seed);
                 see1 = _wymix<strict>(_wyr8<bswap>(p + 16) ^ secrets[2], _wyr8<bswap>(p + 24) ^ see1);
                 see2 = _wymix<strict>(_wyr8<bswap>(p + 32) ^ secrets[3], _wyr8<bswap>(p + 40) ^ see2);
                 p   += 48; i -= 48;
-            } while (likely(i > 48));
+            } while (likely(i >= 48));
             seed ^= see1 ^ see2;
         }
         while (unlikely(i > 16)) {
@@ -176,8 +176,8 @@ static inline uint32_t _wyhash32( const void * key, uint64_t len, uint32_t seed 
 //-----------------------------------------------------------------------------
 // the default secret parameters
 static const uint64_t _wyp[4] = {
-    UINT64_C(0xa0761d6478bd642f), UINT64_C(0xe7037ed1a0b428db),
-    UINT64_C(0x8ebc6af09c88c6e3), UINT64_C(0x589965cc75374cc3)
+    UINT64_C(0x2d358dccaa6c78a5), UINT64_C(0x8bb84b93962eacc9),
+    UINT64_C(0x4b33a62ed433d4a3), UINT64_C(0x4d5a2da51de1aa47)
 };
 
 //-----------------------------------------------------------------------------
@@ -197,16 +197,14 @@ static bool wyhash64_selftest( void ) {
         const uint64_t  hash;
         const char *    key;
     } selftests[] = {
-        { UINT64_C(0x0409638ee2bde459), "" }                          ,
-        { UINT64_C(0xa8412d091b5fe0a9), "a" }                         ,
-        { UINT64_C(0x32dd92e4b2915153), "abc" }                       ,
-        { UINT64_C(0x8619124089a3a16b), "message digest" }            ,
-        { UINT64_C(0x7a43afb61d7f5f40), "abcdefghijklmnopqrstuvwxyz" },
-        { UINT64_C(0xff42329b90e50d58), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
-        {
-            UINT64_C(0xc39cab13b115aad3),
-            "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
-        },
+        { UINT64_C (0x93228a4de0eec5a2), "" }                          ,
+        { UINT64_C (0xc5bac3db178713c4), "a" }                         ,
+        { UINT64_C (0xa97f2f7b1d9b3314), "abc" }                       ,
+        { UINT64_C (0x786d1f1df3801df4), "message digest" }            ,
+        { UINT64_C (0xdca5a8138ad37c87), "abcdefghijklmnopqrstuvwxyz" },
+        { UINT64_C (0xb9e734f117cfaf70), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+        { UINT64_C (0x6cc5eab49a92d617), "123456789012345678901234567890123456789012345678901234567890"\
+                                         "12345678901234567890" },
     };
 
     for (size_t i = 0; i < sizeof(selftests) / sizeof(selftests[0]); i++) {
@@ -251,7 +249,7 @@ REGISTER_HASH(wyhash_32,
  );
 
 REGISTER_HASH(wyhash,
-   $.desc       = "wyhash v4, 64-bit non-strict version",
+   $.desc       = "wyhash v4.2, 64-bit non-strict version",
    $.hash_flags =
      0,
    $.impl_flags =
@@ -259,15 +257,15 @@ REGISTER_HASH(wyhash,
          FLAG_IMPL_ROTATE           |
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
    $.bits = 64,
-   $.verification_LE = 0xBD5E840C,
-   $.verification_BE = 0xECC972E0,
+   $.verification_LE = 0x9DAE7DD3,
+   $.verification_BE = 0x2E958F8A,
    $.hashfn_native   = Wyhash64<false, false>,
    $.hashfn_bswap    = Wyhash64<true, false>,
    $.initfn          = wyhash64_selftest
  );
 
 REGISTER_HASH(wyhash__strict,
-   $.desc       = "wyhash v4, 64-bit strict version",
+   $.desc       = "wyhash v4.2, 64-bit strict version",
    $.hash_flags =
      0,
    $.impl_flags =
@@ -275,8 +273,8 @@ REGISTER_HASH(wyhash__strict,
          FLAG_IMPL_ROTATE           |
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
    $.bits = 64,
-   $.verification_LE = 0x2F2F154C,
-   $.verification_BE = 0x54CAB3B3,
+   $.verification_LE = 0x82FE7E2E,
+   $.verification_BE = 0xBA2BDA4F,
    $.hashfn_native   = Wyhash64<false, true>,
    $.hashfn_bswap    = Wyhash64<true, true>
  );
