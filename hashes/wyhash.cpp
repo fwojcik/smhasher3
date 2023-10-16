@@ -181,14 +181,30 @@ static const uint64_t _wyp[4] = {
 };
 
 //-----------------------------------------------------------------------------
+// The published wyhash.h file tries to auto-detect system endianness,
+// while the published wyhash32.h file relies on a WYHASH32_BIG_ENDIAN
+// being #defined appropriately. SMHasher3 operates as it that is set
+// correctly. Both published files convert bytes into integers in a
+// little-endian fashion, but return results simply as a 64-bit integer, so
+// the calls to (e.g.) _wyhash32 are made to always read in little-endian
+// mode, but the calls to (e.g.) PUT_U32 are always done in "native" mode.
+
 template <bool bswap>
 static void Wyhash32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    PUT_U32<bswap>(_wyhash32<bswap>(in, (uint64_t)len, (uint32_t)seed), (uint8_t *)out, 0);
+    if (isLE()) {
+        PUT_U32<bswap>(_wyhash32<false>(in, (uint64_t)len, (uint32_t)seed), (uint8_t *)out, 0);
+    } else {
+        PUT_U32<bswap>(_wyhash32<true>(in, (uint64_t)len, (uint32_t)seed), (uint8_t *)out, 0);
+    }
 }
 
 template <bool bswap, bool strict>
 static void Wyhash64( const void * in, const size_t len, const seed_t seed, void * out ) {
-    PUT_U64<bswap>(_wyhash64<bswap, strict>(in, len, (uint64_t)seed, _wyp), (uint8_t *)out, 0);
+    if (isLE()) {
+        PUT_U64<bswap>(_wyhash64<false, strict>(in, len, (uint64_t)seed, _wyp), (uint8_t *)out, 0);
+    } else {
+        PUT_U64<bswap>(_wyhash64<true, strict>(in, len, (uint64_t)seed, _wyp), (uint8_t *)out, 0);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -241,7 +257,7 @@ REGISTER_HASH(wyhash_32,
          FLAG_IMPL_LICENSE_PUBLIC_DOMAIN,
    $.bits = 32,
    $.verification_LE = 0x09DE8066,
-   $.verification_BE = 0x9D86BAC7,
+   $.verification_BE = 0x46D1F8A2,
    $.hashfn_native   = Wyhash32<false>,
    $.hashfn_bswap    = Wyhash32<true>,
    $.seedfixfn       = excludeBadseeds,
