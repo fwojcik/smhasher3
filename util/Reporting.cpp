@@ -63,11 +63,11 @@
 
 //-----------------------------------------------------------------------------
 // If score exceeds this improbability of happening, note a failing result
-static const double FAILURE_PBOUND = exp2(-17); // 2**-17 == 1/131,072 =~ 0.000763%
+static const double FAILURE_PBOUND = exp2(-18); // 2**-18 == 1/262,144 =~ 0.000381%
 // If score exceeds this improbability of happening, note a warning
-static const double WARNING_PBOUND = exp2(-14); // 2**-14 == 1/16,384  =~ 0.0061%, 8x as much as failure
+static const double WARNING_PBOUND = exp2(-15); // 2**-15 == 1/32,768  =~ 0.00305%, 8x as much as failure
 // If these bounds seem overly generous, remember that SMHasher3 uses
-// about 8,000 tests, so a 1/8,000 chance event will hit once per run on
+// about 16,000 tests, so a 1/16,000 chance event will hit once per run on
 // average, even with a perfect-quality hash function.
 
 //-----------------------------------------------------------------------------
