@@ -721,6 +721,77 @@ void RandTest( const unsigned runs ) {
             }
         }
 
+        progress("Orthogonal generation");
+
+        for (size_t j = 0; j < Testcount_sm; j++) {
+            const size_t bytecnt = Buf64len * sizeof(uint64_t);
+            const size_t forward = j + 1;
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands2[l].enable_ortho();
+                testRands2[l].disable_ortho();
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                VERIFYEQUAL(testRands1[l], testRands2[l], j + 2);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                for (size_t k = 0; k < forward; k++) {
+                    ignored = testRands1[l].rand_u64(); (void)ignored;
+                }
+                testRands1[l].enable_ortho();
+                testRands1[l].disable_ortho();
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands2[l].seek(testRands2[l].getoffset() + forward);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                VERIFYEQUAL(testRands1[l], testRands2[l], j + 2);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands2[l].enable_ortho();
+                testRands2[l].disable_ortho();
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                VERIFYEQUAL(testRands1[l], testRands2[l], j + 2);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands1[l].enable_ortho();
+                testRands1[l].rand_n(&buf64_A[l][0], bytecnt);
+                testRands1[l].disable_ortho();
+
+                testRands1[l].enable_ortho();
+                testRands1[l].rand_n(&buf64_B[l][0], bytecnt);
+                testRands1[l].disable_ortho();
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                VERIFYEQUAL(testRands1[l], testRands2[l], j + 2);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                VERIFY(memcmp(&buf64_A[l][0], &buf64_B[l][0], bytecnt) == 0,
+                        "Orthogonal outputs match");
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands1[l].enable_ortho();
+                testRands1[l].rand_n(&buf64_A[l][0], bytecnt);
+                testRands1[l].disable_ortho();
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands2[l].rand_n(&buf64_B[l][0], bytecnt);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                for (unsigned y = 0; y < Buf64len; y++) {
+                    for (unsigned z = 0; z < Buf64len; z++) {
+                        VERIFY(buf64_A[l][y] != buf64_B[l][z], "Rand() orthogonal duplicate");
+                    }
+                }
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                testRands1[l].rand_n(&buf64_B[l][0], bytecnt);
+            }
+            for (size_t l = 0; l < Randcount; l++) {
+                VERIFYEQUAL(testRands1[l], testRands2[l], j + 2);
+            }
+        }
+
         progress("u64 vs. bytes");
 
         // Ensure rand_u64() x N and rand_n(N) match

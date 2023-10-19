@@ -194,6 +194,8 @@ class Rand {
     constexpr static unsigned  BUFLEN = PARALLEL * RANDS_PER_ROUND;
 
   private:
+    friend void RandTest( const unsigned runs );
+
     uint64_t  rngbuf[BUFLEN];  // Always in LE byte order
     uint64_t  xseed[RNG_KEYS]; // Threefry keys (xseed[0] is the counter)
     uint64_t  bufidx;          // The next rngbuf[] index to be given out
