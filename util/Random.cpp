@@ -28,7 +28,7 @@
 // Fill a buffer with 4 * PARALLEL random uint64_t values, updating the
 // counter in keyvals[0] to reflect the number of values generated.
 //
-// This is the Threefry-4x64-14 CBRNG as documented in:
+// This is the Threefry-4x64-16 CBRNG as documented in:
 //   "Parallel random numbers: as easy as 1, 2, 3", by John K. Salmon,
 //     Mark A. Moraes, Ron O. Dror, and David E. Shaw
 //     https://www.thesalmons.org/john/random123/papers/random123sc11.pdf
@@ -547,12 +547,15 @@ RandSeq Rand::get_seq( enum RandSeqType seqtype, const uint32_t szelem ) {
         rs.fkeys[2 * n + 1] = r >> 32;
     }
     // Initialize the Threefry counter to 0. Initialize the equivalent of
-    // xseed[1] through xseed[3] with random numbers. Initialize the last
-    // key from the Threefish specification.
+    // xseed[1] through xseed[3] with basically random numbers. Initialize
+    // the last key from the Threefish specification.
+    //
+    // The low bit is set in xseed[2] and cleared in xseed[3], in order to
+    // guarantee that this can never overlap with a normal Rand object.
     rs.rkeys[0] = 0;
     rs.rkeys[1] = rand_u64();
-    rs.rkeys[2] = rand_u64();
-    rs.rkeys[3] = rand_u64();
+    rs.rkeys[2] = rand_u64() |  UINT64_C(1);
+    rs.rkeys[3] = rand_u64() & ~UINT64_C(1);
     const uint64_t K1 = UINT64_C(0x1BD11BDAA9FC1A22);
     rs.rkeys[4] = K1 ^ rs.rkeys[1] ^ rs.rkeys[2] ^ rs.rkeys[3];
     // Save the sequence type and element size.

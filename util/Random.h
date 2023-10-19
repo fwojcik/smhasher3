@@ -203,33 +203,39 @@ class Rand {
     //-----------------------------------------------------------------------------
 
     inline void update_xseed( void ) {
-        // Init keys 1-3 from seed value. This derivation of 3
-        // random-ish 64-bit keys from 1 64-bit inputs is completely
-        // arbitrary, but is also aesthetically pleasing.
-        //
-        // Key 0 is the counter, which is left untouched here.
-        const uint64_t M1 = UINT64_C(0x9E3779B97F4A7C15);
-        const uint64_t M2 = UINT64_C(0x6A09E667F3BCC909);
+        // Set key 1 to 0. Orthogonal generation mode will use key 1 for
+        // data storage, so it can't really be used for normal mode, and 0
+        // is as fine a constant as any other here, since keys 2-4 will
+        // definitely have a variety of bits set.
+        xseed[1] = 0;
 
-        xseed[1] = ((ROTR64(rseed, 21) | 1) * M1) + ((ROTR64(rseed, 42) | 1) * M2);
-        xseed[2] = ((rseed             | 1) * M1) + ((ROTR64(rseed, 21) | 1) * M2);
-        xseed[3] = ((ROTR64(rseed, 42) | 1) * M1) + ((rseed             | 1) * M2);
+        // Init keys 2&3 from seed value. This derivation of 2 random-ish
+        // 64-bit keys from 1 64-bit input is fairly arbitrary, but is also
+        // aesthetically pleasing. It also leaves the low bits of both keys
+        // set to 1, which is relied upon in other places.
+        const uint64_t M1 = UINT64_C(0x9E3779B97F4A7C15); // phi
+        const uint64_t M2 = UINT64_C(0x6A09E667F3BCC909); // sqrt(2) - 1
+
+        xseed[2] = ((rseed             | 1) * M1);
+        xseed[3] = ((ROTR64(rseed, 32) | 1) * M2);
+
         // Init key 4 from the Threefish specification.
         const uint64_t K1 = UINT64_C(0x1BD11BDAA9FC1A22);
-        xseed[4] = K1 ^ xseed[1] ^ xseed[2] ^ xseed[3];
+        xseed[4] = K1 ^ xseed[2] ^ xseed[3];
     }
 
     //-----------------------------------------------------------------------------
 
-    static inline uint64_t mix( uint64_t a, uint64_t b ) {
-        const uint64_t M1 = UINT64_C(0x9E3779B97F4A7C15);
-        const uint64_t M2 = UINT64_C(0x6A09E667F3BCC909);
-        // Ensure c values in a' = ax + c are odd
-        const uint64_t k1 = 1 | ((b & 0xFFFFFFFF) << 1);
-        const uint64_t k2 = 1 | (b >> 31);
-        a = M1 * a + M2 * k1;
-        a = M1 * a + M2 * k2;
-        return a;
+    // An arbitrary weak mixing function. Some important characteristics are:
+    //   mix(a, x) is a permutation for a for any given x,
+    //   mix(x, b) is a permutation for b for any given x,
+    //   mix(a, b) != mix(b, a) in general, given a != b,
+    //   mix(a + 1, b) != mix(a, b) + 1, in general,
+    //   mix(a, b + 1) != mix(a, b) + 1, in general,
+    //   mix(0, 0) != 0,
+    static inline uint64_t weakmix( uint64_t a, uint64_t b ) {
+        const uint64_t K = UINT64_C(0xBB67AE8584CAA73B); // sqrt(3) - 1
+        return (3 * a) + (5 * b) + (4 * a * b) + K;
     }
 
     //-----------------------------------------------------------------------------
@@ -252,7 +258,7 @@ class Rand {
     inline void reseed( std::initializer_list<uint64_t> seeds ) {
         rseed = 1;
         for (uint64_t next: seeds) {
-            rseed = mix(rseed, next);
+            rseed = weakmix(rseed, next);
         }
         reseed(rseed);
     }
