@@ -239,7 +239,7 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
                 prefixlen = std::min(len, maxprefix);
                 if (n < lencount[len]) { break; }
                 n      -= lencount[len];
-                rngpos += lencount[len] * (len - prefixlen) + RandSeq::RNGU64_USED;
+                rngpos += lencount[len] * (len - prefixlen) + 1;
             }
             r.seek(rngpos);
             const uint64_t curcount = pow((double)corecount, (double)prefixlen);
@@ -247,7 +247,7 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
             for (unsigned j = 0; j < prefixlen; j++) {
                 key[j] = coreset[itemnum % corecount]; itemnum /= corecount;
             }
-            r.seek(rngpos + n * (len - prefixlen) + RandSeq::RNGU64_USED);
+            r.seek(rngpos + n * (len - prefixlen) + 1);
             for (unsigned j = prefixlen; j < len; j++) {
                 key[j] = coreset[r.rand_range(corecount)];
             }

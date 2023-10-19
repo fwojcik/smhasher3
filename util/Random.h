@@ -100,8 +100,7 @@
  *   produce a different sequence of items if its APIs are called multiple
  *   times. If multiple sequences are needed, then multiple RandSeq objects
  *   can be created by repeatedly calling get_seq(). For seeking across
- *   get_seq() calls, each call to get_seq() will use RandSeq::RNGU64_USED
- *   (currently == 7) random numbers.
+ *   get_seq() calls, each call to get_seq() will use 1 random number.
  *
  *   seq_maxelem() will return the maximum possible number of elements in
  *   the sequence type specified. This may be useful to allow a caller to
@@ -382,11 +381,7 @@ class RandSeq {
     // Even though, in theory, only 2 full Feistel rounds are needed for
     // encryption, some smaller block sizes used in Random.cpp require more
     // rounds to get sufficient uniformity of permutations.
-    //
-    // The "- 2" in RNGU64_USED is 1 for the counter and 1 for the
-    // Threefish-defined key, neither of which are random.
     constexpr static unsigned  FEISTEL_MAXROUNDS = 4;
-    constexpr static unsigned  RNGU64_USED       = FEISTEL_MAXROUNDS + Rand::RNG_KEYS - 2;
 
   private:
     friend class Rand;

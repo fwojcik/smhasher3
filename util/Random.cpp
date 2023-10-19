@@ -540,6 +540,8 @@ uint64_t Rand::seq_maxelem( enum RandSeqType seqtype, const uint32_t szelem ) {
 RandSeq Rand::get_seq( enum RandSeqType seqtype, const uint32_t szelem ) {
     RandSeq rs;
 
+    enable_ortho();
+
     // Initialize the Feistel network keys to random 32-bit numbers
     for (uint64_t n = 0; n < RandSeq::FEISTEL_MAXROUNDS; n++) {
         uint64_t r = rand_u64();
@@ -558,9 +560,12 @@ RandSeq Rand::get_seq( enum RandSeqType seqtype, const uint32_t szelem ) {
     rs.rkeys[3] = rand_u64() & ~UINT64_C(1);
     const uint64_t K1 = UINT64_C(0x1BD11BDAA9FC1A22);
     rs.rkeys[4] = K1 ^ rs.rkeys[1] ^ rs.rkeys[2] ^ rs.rkeys[3];
-    // Save the sequence type and element size.
+    // Save the sequence type and element size
     rs.type     = seqtype;
     rs.szelem   = szelem;
+
+    // Consume 1 real random number from the user's POV
+    disable_ortho(1);
 
     return rs;
 }
@@ -875,7 +880,7 @@ void RandTest( const unsigned runs ) {
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_NUM, j);
                 rs1.write(&buf64_A[k][0], 0, numgen);
 
-                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+                testRands1[k].seek(testRands1[k].getoffset() - 1);
 
                 RandSeq rs2 = testRands1[k].get_seq(SEQ_NUM, j);
                 rs2.write(&buf64_B[k][0], 0, numgen);
@@ -943,7 +948,7 @@ void RandTest( const unsigned runs ) {
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_1, j);
                 rs1.write(buf8_A, 0, numgen);
 
-                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+                testRands1[k].seek(testRands1[k].getoffset() - 1);
 
                 RandSeq rs2 = testRands1[k].get_seq(SEQ_DIST_1, j);
                 rs2.write(buf8_B, 0, numgen);
@@ -1008,7 +1013,7 @@ void RandTest( const unsigned runs ) {
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_2, j);
                 rs1.write(buf8_A, 0, numgen);
 
-                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+                testRands1[k].seek(testRands1[k].getoffset() - 1);
 
                 RandSeq rs2 = testRands1[k].get_seq(SEQ_DIST_2, j);
                 rs2.write(buf8_B, 0, numgen);
@@ -1073,7 +1078,7 @@ void RandTest( const unsigned runs ) {
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_3, j);
                 rs1.write(buf8_A, 0, numgen);
 
-                testRands1[k].seek(testRands1[k].getoffset() - RandSeq::RNGU64_USED);
+                testRands1[k].seek(testRands1[k].getoffset() - 1);
 
                 RandSeq rs2 = testRands1[k].get_seq(SEQ_DIST_3, j);
                 rs2.write(buf8_B, 0, numgen);
