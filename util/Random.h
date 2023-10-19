@@ -226,6 +226,66 @@ class Rand {
 
     //-----------------------------------------------------------------------------
 
+    // Orthogonal generation mode allows for a separate internal (not
+    // directly user-accessible) stream of 2^64 random numbers for every
+    // given point (offset / sequence number / counter value) in the normal
+    // RNG mode. This allows for more complex methods which return "cooked"
+    // random values that may need more than one 64-bit number to generate,
+    // while making those methods only consume 1 random number from the
+    // normal stream as far as the user is concerned.
+    //
+    // enable_ortho() turns it on, and disable_ortho() turns it
+    // off. Calling either of these in the mode they don't expect to be
+    // called in will corrupt the RNG state.
+    //
+    // In this mode, the usual raw generation (rand_u64() and rand_n()) and
+    // seeking (seek() and getoffset()) work as normal, but on the
+    // orthogonal stream of random values. Cooked random value generation
+    // will often use orthogonal mode internally, so calling (e.g.)
+    // get_seq() from inside orthogonal mode will not work correctly. These
+    // will need some sort of recursive "locking" implementation if that
+    // ever becomes necessary.
+    //
+    // While these methods themselves are lightweight, they do invalidate
+    // the buffered random values for the normal mode, and of course
+    // orthogonal random values are generated one rngbuf[] at a time just
+    // like normal ones, so they should be used with care.
+
+    inline void enable_ortho( void ) {
+        //assert(xseed[1] == 0);
+        //assert((xseed[2] & 1) == 1);
+        //assert((xseed[3] & 1) == 1);
+
+        // Set key 1 to the offset of the random value about to be given
+        // out, fixup key 4 to reflect the new key 1 value, and seek to
+        // offset 0, which also invalidates the cache.
+        //
+        // To ensure there is no overlap between these values and values
+        // generated regularly, we clear the low bits of keys 2&3. Note
+        // that this nets no effect on the correct value of key 4!
+        xseed[1]  = getoffset();
+        xseed[2] ^= 1;
+        xseed[3] ^= 1;
+        xseed[4] ^= xseed[1];
+        seek(0);
+    }
+
+    inline void disable_ortho( uint64_t fwd = 0 ) {
+        //assert((xseed[2] & 1) == 0);
+        //assert((xseed[3] & 1) == 0);
+
+        // Restore bufidx and xseed[0] via seek(), moving the specified
+        // number of places forward, remove fixup of key 4, restore keys
+        // 2&3, and set key 1 back to 0.
+        seek(xseed[1] + fwd);
+        xseed[4] ^= xseed[1];
+        xseed[3] ^= 1;
+        xseed[2] ^= 1;
+        xseed[1]  = 0;
+    }
+
+    //-----------------------------------------------------------------------------
+
     // An arbitrary weak mixing function. Some important characteristics are:
     //   mix(a, x) is a permutation for a for any given x,
     //   mix(x, b) is a permutation for b for any given x,
