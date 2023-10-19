@@ -646,6 +646,7 @@ void RandTest( const unsigned runs ) {
         ignored = A2.rand_u64(); (void)ignored;
         A2.reseed((uint64_t)(WEAKRAND(5 * i)));
         VERIFYEQUAL(A1, A2, 999);
+
         Rand B1( {WEAKRAND(7 * i), WEAKRAND(9 * i)} );
         Rand B2( {123, 456} );
         ignored = B2.rand_u64(); (void)ignored;
@@ -657,6 +658,7 @@ void RandTest( const unsigned runs ) {
         ignored = C2.rand_u64(); (void)ignored;
         C2.reseed({WEAKRAND(11 * i), WEAKRAND(13 * i)});
         VERIFYEQUAL(C1, C2, 999);
+
         Rand D1( {0, WEAKRAND(15 * i)} );
         Rand D2( {0, WEAKRAND(17 * i)} );
         ignored = D2.rand_u64(); (void)ignored;
@@ -665,15 +667,46 @@ void RandTest( const unsigned runs ) {
 
         // Ensure multiple seeds work sanely
         // Seed(x) != Seed(x,0) != Seed(x,1) != Seed(x+1,0)
-        // RNG of each !=
+        // RNG of each is different
+        for (const uint64_t seedval: { UINT64_C(0), UINT64_C(1), WEAKRAND(19 * i) }) {
+            Rand E1( seedval );
+            Rand E2( { seedval } );
+            Rand E3( { seedval, 0 } );
+            Rand E4( { seedval, 1 } );
+            Rand E5( { seedval + 1, 0 } );
+            VERIFY(!(E1 == E2), "Rand() seeding inequality");
+            VERIFY(!(E1 == E3), "Rand() seeding inequality");
+            VERIFY(!(E1 == E4), "Rand() seeding inequality");
+            VERIFY(!(E1 == E5), "Rand() seeding inequality");
+            VERIFY(!(E2 == E3), "Rand() seeding inequality");
+            VERIFY(!(E2 == E4), "Rand() seeding inequality");
+            VERIFY(!(E2 == E5), "Rand() seeding inequality");
+            VERIFY(!(E3 == E4), "Rand() seeding inequality");
+            VERIFY(!(E3 == E5), "Rand() seeding inequality");
+            VERIFY(!(E4 == E5), "Rand() seeding inequality");
+            E1.rand_n(&buf64_A[0][0], Buf64len * sizeof(uint64_t));
+            E2.rand_n(&buf64_A[1][0], Buf64len * sizeof(uint64_t));
+            E3.rand_n(&buf64_A[2][0], Buf64len * sizeof(uint64_t));
+            E4.rand_n(&buf64_A[3][0], Buf64len * sizeof(uint64_t));
+            E5.rand_n(&buf64_A[4][0], Buf64len * sizeof(uint64_t));
+            for (unsigned w = 0; w < 4; w++) {
+                for (unsigned x = w + 1; x < 5; x++) {
+                    for (unsigned y = 0; y < Buf64len; y++) {
+                        for (unsigned z = 0; z < Buf64len; z++) {
+                            VERIFY(buf64_A[w][y] != buf64_A[x][z], "Rand() seeding duplicate");
+                        }
+                    }
+                }
+            }
+        }
 
         progress("Seeking");
 
         // Ensure seek() works the same as stepping forward
         for (size_t j = 0; j < Testcount_sm; j++) {
             const size_t forward = j + 3;
-            for (size_t k = 0; k < forward; k++) {
-                for (size_t l = 0; l < Randcount; l++) {
+            for (size_t l = 0; l < Randcount; l++) {
+                for (size_t k = 0; k < forward; k++) {
                     ignored = testRands1[l].rand_u64(); (void)ignored;
                 }
             }
