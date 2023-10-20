@@ -60,7 +60,7 @@ extern HashInfo::endianness g_hashEndian;
 //-----------------------------------------------------------------------------
 // Recording test results for final summary printout
 
-#define COUNT_MAX_PVALUE 18
+#define COUNT_MAX_PVALUE 20
 extern uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE + 2];
 
 static inline void recordLog2PValue( uint32_t log_pvalue ) {

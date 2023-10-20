@@ -359,19 +359,20 @@ static void HashSpeedTestAll( bool verbose ) {
 //-----------------------------------------------------------------------------
 
 static void print_pvaluecounts( void ) {
-    printf("Log2(p-value) summary:");
-    for (uint32_t lo = 0; lo <= (COUNT_MAX_PVALUE + 1); lo += 10) {
-        printf("\n\t %2d%c", lo, (lo == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
-        for (uint32_t i = 1; i < 10; i++) {
-            printf("  %2d%c", lo + i, ((lo + i) == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
+    printf("Log2(p-value) summary:\n");
+    const uint32_t per_line = (COUNT_MAX_PVALUE + 2) / 2;
+    for (uint32_t lo = 0; lo <= (COUNT_MAX_PVALUE + 1); lo += per_line) {
+        printf("\n        %2d%c ", lo, (lo == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
+        for (uint32_t i = 1; i < per_line; i++) {
+            printf("  %2d%c ", lo + i, ((lo + i) == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
         }
-        printf("\n\t----");
-        for (uint32_t i = 1; i < 10; i++) {
-            printf(" ----");
+        printf("\n       -----");
+        for (uint32_t i = 1; i < per_line; i++) {
+            printf(" -----");
         }
-        printf("\n\t%4d", g_log2pValueCounts[lo + 0]);
-        for (uint32_t i = 1; i < 10; i++) {
-            printf(" %4d", g_log2pValueCounts[lo + i]);
+        printf("\n       %5d", g_log2pValueCounts[lo + 0]);
+        for (uint32_t i = 1; i < per_line; i++) {
+            printf(" %5d", g_log2pValueCounts[lo + i]);
         }
         printf("\n");
     }
