@@ -319,6 +319,169 @@ static inline uint64_t stadtx( const uint64_t * state, const uint8_t * key, cons
 
 //------------------------------------------------------------
 
+#define SBOX32_MAX_LEN 24
+#define SBOX32_STATE_WORDS (1 + (SBOX32_MAX_LEN * 256))
+#define SBOX32_CHURN_ROUNDS_OLD 5
+#define SBOX32_CHURN_ROUNDS_NEW 128
+
+#define SBOX32_MIX3(v0,v1,v2,text) {  \
+        v0 = ROTL32(v0, 16) - v2;     \
+        v1 = ROTR32(v1, 13) ^ v2;     \
+        v2 = ROTL32(v2, 17) + v1;     \
+        v0 = ROTR32(v0,  2) + v1;     \
+        v1 = ROTR32(v1, 17) - v0;     \
+        v2 = ROTR32(v2,  7) ^ v0;     \
+    }
+
+#define SBOX32_MIX4(v0,v1,v2,v3,text) {  \
+        v0 = ROTL32(v0, 13) - v3;        \
+        v1 ^= v2;                        \
+        v3 = ROTL32(v3,  9) + v1;        \
+        v2 ^= v0;                        \
+        v0 = ROTL32(v0, 14) ^ v3;        \
+        v1 = ROTL32(v1, 25) - v2;        \
+        v3 ^= v1;                        \
+        v2 = ROTL32(v2,  4) - v0;        \
+    }
+
+#define XORSHIFT96_set(r,x,y,z,t) {                      \
+        t = (x ^ ( x << 10 ) );                          \
+        x = y; y = z;                                    \
+        r = z = (z ^ ( z >> 26 ) ) ^ ( t ^ ( t >> 5 ) ); \
+    }
+
+#define XORSHIFT128_set(r,x,y,z,w,t) {                     \
+        t = ( x ^ ( x << 5 ) );                            \
+        x = y; y = z; z = w;                               \
+        r = w = ( w ^ ( w >> 29 ) ) ^ ( t ^ ( t >> 12 ) ); \
+    }
+
+static void sbox32_reseed_96( uint32_t * state, const uint64_t seed64 ) {
+    uint32_t * cursor = state + 1;
+    uint32_t * end    = state + SBOX32_STATE_WORDS;
+
+    uint32_t seed0    = seed64 & 0xffffffff;
+    uint32_t seed1    = seed64 >> 32;
+    uint32_t seed2    = 0;
+    uint32_t s0       = seed0 ^ 0x68736168; /* hash */
+    uint32_t s1       = seed1 ^ 0x786f6273; /* sbox */
+    uint32_t s2       = seed2 ^ 0x646f6f67; /* good */
+    uint32_t t1, t2, i;
+
+    /* make sure we have all non-zero state elements */
+    if (!s0) { s0 = 1; }
+    if (!s1) { s1 = 2; }
+    if (!s2) { s2 = 4; }
+
+    /*
+     * Do a bunch of mix rounds to avalanche the seedbits
+     * before we use them for the XORSHIFT rng.
+     */
+    for (i = 0; i < SBOX32_CHURN_ROUNDS_OLD; i++) {
+        SBOX32_MIX3(s0, s1, s2, "SEED STATE");
+    }
+
+    while (cursor < end) {
+        uint32_t * row_end = cursor + 256;
+        for (; cursor < row_end; cursor++) {
+            XORSHIFT96_set(*cursor, s0, s1, s2, t1);
+        }
+    }
+    XORSHIFT96_set(*state, s0, s1, s2, t2);
+}
+
+template <bool oldver>
+static void sbox32_reseed_128( uint32_t * state, const uint64_t seed64 ) {
+    uint32_t * cursor = state + 1;
+    uint32_t * end    = state + SBOX32_STATE_WORDS;
+
+    uint32_t seed0    = seed64 & 0xffffffff;
+    uint32_t seed1    = seed64 >> 32;
+    uint32_t seed2    = seed0;
+    uint32_t seed3    = seed1;
+    uint32_t s0       = seed0 ^ 0x68736168; /* hash */
+    uint32_t s1       = seed1 ^ 0x786f6273; /* sbox */
+    uint32_t s2       = seed2 ^ 0x646f6f67; /* good */
+    uint32_t s3       = seed3 ^ 0x74736166; /* fast */
+    uint32_t t1, t2, i;
+
+    if (!oldver) {
+        std::swap(s0, s1);
+    }
+
+    /* make sure we have all non-zero state elements */
+    if (!s0) { s0 = 1; }
+    if (!s1) { s1 = 2; }
+    if (!s2) { s2 = 4; }
+    if (!s3) { s3 = 8; }
+
+    /*
+     * Do a bunch of mix rounds to avalanche the seedbits
+     * before we use them for the XORSHIFT rng.
+     */
+    for (i = 0; i < (oldver ? SBOX32_CHURN_ROUNDS_OLD : SBOX32_CHURN_ROUNDS_NEW); i++) {
+        SBOX32_MIX4(s0, s1, s2, s3, "SEED STATE");
+    }
+
+    if (!oldver) {
+        s0 ^= ~seed3;
+        s1 ^= ~seed2;
+        s2 ^= ~seed1;
+        s3 ^= ~seed0;
+
+        /* make sure we have all non-zero state elements, again */
+        if (!s0) { s0 = 8; }
+        if (!s1) { s1 = 4; }
+        if (!s2) { s2 = 2; }
+        if (!s3) { s3 = 1; }
+
+        for (i = 0; i < SBOX32_CHURN_ROUNDS_NEW; i++) {
+            SBOX32_MIX4(s0, s1, s2, s3, "SEED STATE");
+        }
+    }
+
+    while (cursor < end) {
+        uint32_t * row_end = cursor + 256;
+        for (; cursor < row_end; cursor++) {
+            XORSHIFT128_set(*cursor, s0, s1, s2, s3, t1);
+        }
+    }
+    XORSHIFT128_set(*state, s0, s1, s2, s3, t2);
+}
+
+static inline uint32_t sbox32_hash( const uint32_t * state, const uint8_t * key, const size_t key_len ) {
+    uint32_t hash = state[0];
+
+    switch (key_len) {
+    case 24: hash ^= state[1 + (256 * (24 - 1)) + key[24 - 1]];         /* FALLTHROUGH */
+    case 23: hash ^= state[1 + (256 * (23 - 1)) + key[23 - 1]];         /* FALLTHROUGH */
+    case 22: hash ^= state[1 + (256 * (22 - 1)) + key[22 - 1]];         /* FALLTHROUGH */
+    case 21: hash ^= state[1 + (256 * (21 - 1)) + key[21 - 1]];         /* FALLTHROUGH */
+    case 20: hash ^= state[1 + (256 * (20 - 1)) + key[20 - 1]];         /* FALLTHROUGH */
+    case 19: hash ^= state[1 + (256 * (19 - 1)) + key[19 - 1]];         /* FALLTHROUGH */
+    case 18: hash ^= state[1 + (256 * (18 - 1)) + key[18 - 1]];         /* FALLTHROUGH */
+    case 17: hash ^= state[1 + (256 * (17 - 1)) + key[17 - 1]];         /* FALLTHROUGH */
+    case 16: hash ^= state[1 + (256 * (16 - 1)) + key[16 - 1]];         /* FALLTHROUGH */
+    case 15: hash ^= state[1 + (256 * (15 - 1)) + key[15 - 1]];         /* FALLTHROUGH */
+    case 14: hash ^= state[1 + (256 * (14 - 1)) + key[14 - 1]];         /* FALLTHROUGH */
+    case 13: hash ^= state[1 + (256 * (13 - 1)) + key[13 - 1]];         /* FALLTHROUGH */
+    case 12: hash ^= state[1 + (256 * (12 - 1)) + key[12 - 1]];         /* FALLTHROUGH */
+    case 11: hash ^= state[1 + (256 * (11 - 1)) + key[11 - 1]];         /* FALLTHROUGH */
+    case 10: hash ^= state[1 + (256 * (10 - 1)) + key[10 - 1]];         /* FALLTHROUGH */
+    case  9: hash ^= state[1 + (256 * ( 9 - 1)) + key[ 9 - 1]];         /* FALLTHROUGH */
+    case  8: hash ^= state[1 + (256 * ( 8 - 1)) + key[ 8 - 1]];         /* FALLTHROUGH */
+    case  7: hash ^= state[1 + (256 * ( 7 - 1)) + key[ 7 - 1]];         /* FALLTHROUGH */
+    case  6: hash ^= state[1 + (256 * ( 6 - 1)) + key[ 6 - 1]];         /* FALLTHROUGH */
+    case  5: hash ^= state[1 + (256 * ( 5 - 1)) + key[ 5 - 1]];         /* FALLTHROUGH */
+    case  4: hash ^= state[1 + (256 * ( 4 - 1)) + key[ 4 - 1]];         /* FALLTHROUGH */
+    case  3: hash ^= state[1 + (256 * ( 3 - 1)) + key[ 3 - 1]];         /* FALLTHROUGH */
+    case  2: hash ^= state[1 + (256 * ( 2 - 1)) + key[ 2 - 1]];         /* FALLTHROUGH */
+    case  1: hash ^= state[1 + (256 * ( 1 - 1)) + key[ 1 - 1]];         /* FALLTHROUGH */
+    case  0: break;
+    }
+    return hash;
+}
+
 /*
  * This is two marsaglia xor-shift permutes, with a prime-multiple
  * sandwiched inside. The end result of doing this twice with different
@@ -343,13 +506,12 @@ static inline uint64_t stadtx( const uint64_t * state, const uint8_t * key, cons
         v2 = ROTR32(v2,  7) ^ v0;      \
     }
 
-static thread_local uint32_t zaphod32_state[3];
+#define ZAPHOD32_STATE_WORDS 3
 
-static uintptr_t zaphod32_reseed( const seed_t seed ) {
-    uint32_t * state = zaphod32_state;
-    uint32_t   seed0 = (uint64_t)seed & 0xffffffff;
-    uint32_t   seed1 = (uint64_t)seed >>        32;
-    uint32_t   seed2 = 0;
+static void zaphod32_reseed( uint32_t * state, const uint64_t seed64 ) {
+    uint32_t seed0 = seed64 & 0xffffffff;
+    uint32_t seed1 = seed64 >> 32;
+    uint32_t seed2 = 0;
 
     /* hex expansion of pi, skipping first two digits. pi= 3.2[43f6...]*/
     /*
@@ -395,6 +557,19 @@ static uintptr_t zaphod32_reseed( const seed_t seed ) {
     ZAPHOD32_MIX(state[0], state[1], state[2], "ZAPHOD32 SEED-STATE B 3/5");
     ZAPHOD32_MIX(state[0], state[1], state[2], "ZAPHOD32 SEED-STATE B 4/5");
     ZAPHOD32_MIX(state[0], state[1], state[2], "ZAPHOD32 SEED-STATE B 5/5");
+}
+
+static thread_local uint32_t zaphod32_state[ZAPHOD32_STATE_WORDS + SBOX32_STATE_WORDS];
+
+template <unsigned sbox32_bits, bool oldver>
+static uintptr_t zaphod32_seedfn( const seed_t seed ) {
+    zaphod32_reseed(&zaphod32_state[0], (uint64_t)seed);
+
+    if (sbox32_bits == 96) {
+        sbox32_reseed_96(&zaphod32_state[ZAPHOD32_STATE_WORDS], (uint64_t)seed);
+    } else if (sbox32_bits == 128) {
+        sbox32_reseed_128<oldver>(&zaphod32_state[ZAPHOD32_STATE_WORDS], (uint64_t)seed);
+    }
 
     return (uintptr_t)(void *)(zaphod32_state);
 }
@@ -562,6 +737,19 @@ static void perl_zaphod32( const void * in, const size_t len, const seed_t seed,
     PUT_U32<bswap>(h, (uint8_t *)out, 0);
 }
 
+template <bool bswap>
+static void perl_zaphod32_sbox( const void * in, const size_t len, const seed_t seed, void * out ) {
+    uint32_t * s = (uint32_t *)(void *)(uintptr_t)seed;
+    uint32_t   h;
+
+    if (len <= SBOX32_MAX_LEN) {
+        h = sbox32_hash(&s[ZAPHOD32_STATE_WORDS], (const uint8_t *)in, len);
+        PUT_U32<bswap>(h, (uint8_t *)out, 0);
+    } else {
+        perl_zaphod32<bswap>(in, len, seed, out);
+    }
+}
+
 //------------------------------------------------------------
 REGISTER_FAMILY(perlhashes,
    $.src_url    = "https://github.com/Perl/perl5/hv_func.h",
@@ -668,5 +856,56 @@ REGISTER_HASH(perl_zaphod32,
    $.verification_BE = 0xF329D3E4,
    $.hashfn_native   = perl_zaphod32<false>,
    $.hashfn_bswap    = perl_zaphod32<true>,
-   $.seedfn          = zaphod32_reseed
+   $.seedfn          = zaphod32_seedfn<0, true>
+ );
+
+REGISTER_HASH(perl_zaphod32__sbox96,
+   $.desc       = "Zaphod32 hash with sbox32 and 96-bit seeding from perl5",
+   $.hash_flags =
+        FLAG_HASH_LOOKUP_TABLE   |
+        FLAG_HASH_XL_SEED        ,
+   $.impl_flags =
+        FLAG_IMPL_MULTIPLY       |
+        FLAG_IMPL_ROTATE         |
+        FLAG_IMPL_LICENSE_GPL3   ,
+   $.bits = 32,
+   $.verification_LE = 0x0A4EA902,
+   $.verification_BE = 0xE3F5379A,
+   $.hashfn_native   = perl_zaphod32_sbox<false>,
+   $.hashfn_bswap    = perl_zaphod32_sbox<true>,
+   $.seedfn          = zaphod32_seedfn<96, true>
+ );
+
+REGISTER_HASH(perl_zaphod32__sbox128__old,
+   $.desc       = "Zaphod32 hash with sbox32 and old 128-bit seeding from perl5",
+   $.hash_flags =
+        FLAG_HASH_LOOKUP_TABLE   |
+        FLAG_HASH_XL_SEED        ,
+   $.impl_flags =
+        FLAG_IMPL_MULTIPLY       |
+        FLAG_IMPL_ROTATE         |
+        FLAG_IMPL_LICENSE_GPL3   ,
+   $.bits = 32,
+   $.verification_LE = 0x2E897A7E,
+   $.verification_BE = 0x376C0E97,
+   $.hashfn_native   = perl_zaphod32_sbox<false>,
+   $.hashfn_bswap    = perl_zaphod32_sbox<true>,
+   $.seedfn          = zaphod32_seedfn<128, true>
+ );
+
+REGISTER_HASH(perl_zaphod32__sbox128,
+   $.desc       = "Zaphod32 hash with sbox32 and 128-bit seeding from perl5",
+   $.hash_flags =
+        FLAG_HASH_LOOKUP_TABLE   |
+        FLAG_HASH_XL_SEED        ,
+   $.impl_flags =
+        FLAG_IMPL_MULTIPLY       |
+        FLAG_IMPL_ROTATE         |
+        FLAG_IMPL_LICENSE_GPL3   ,
+   $.bits = 32,
+   $.verification_LE = 0x1C203149,
+   $.verification_BE = 0x40D72B66,
+   $.hashfn_native   = perl_zaphod32_sbox<false>,
+   $.hashfn_bswap    = perl_zaphod32_sbox<true>,
+   $.seedfn          = zaphod32_seedfn<128, false>
  );
