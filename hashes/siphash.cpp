@@ -379,30 +379,40 @@ static uint64_t tsip( const uint64_t seed, const uint8_t * m, uint64_t len ) {
 }
 
 //------------------------------------------------------------
-template <bool bswap>
+template <bool bswap, bool xorfold>
 static void SipHash_2_4( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t key[2] = { seed, 0 };
-    uint64_t h;
+    uint64_t h64;
 
 #if defined(HAVE_SSSE_3) || defined(HAVE_SSE_2)
-    h = siphash_sse     <true, bswap>(key, (const uint8_t *)in, len);
+    h64 = siphash_sse     <true, bswap>(key, (const uint8_t *)in, len);
 #else
-    h = siphash_portable<true, bswap>(key, (const uint8_t *)in, len);
+    h64 = siphash_portable<true, bswap>(key, (const uint8_t *)in, len);
 #endif
-    PUT_U64<bswap>(h, (uint8_t *)out, 0);
+    if (xorfold) {
+        uint32_t h32 = (h64 & 0xffffffff) ^ (h64 >> 32);
+        PUT_U32<bswap>(h32, (uint8_t *)out, 0);
+    } else {
+        PUT_U64<bswap>(h64, (uint8_t *)out, 0);
+    }
 }
 
-template <bool bswap>
+template <bool bswap, bool xorfold>
 static void SipHash_1_3( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t key[2] = { seed, 0 };
-    uint64_t h;
+    uint64_t h64;
 
 #if defined(HAVE_SSSE_3) || defined(HAVE_SSE_2)
-    h = siphash_sse     <false, bswap>(key, (const uint8_t *)in, len);
+    h64 = siphash_sse     <false, bswap>(key, (const uint8_t *)in, len);
 #else
-    h = siphash_portable<false, bswap>(key, (const uint8_t *)in, len);
+    h64 = siphash_portable<false, bswap>(key, (const uint8_t *)in, len);
 #endif
-    PUT_U64<bswap>(h, (uint8_t *)out, 0);
+    if (xorfold) {
+        uint32_t h32 = (h64 & 0xffffffff) ^ (h64 >> 32);
+        PUT_U32<bswap>(h32, (uint8_t *)out, 0);
+    } else {
+        PUT_U64<bswap>(h64, (uint8_t *)out, 0);
+    }
 }
 
 template <bool bswap>
@@ -442,8 +452,26 @@ REGISTER_HASH(SipHash_2_4,
    $.bits = 64,
    $.verification_LE = 0x57B661ED,
    $.verification_BE = 0x01B634D0,
-   $.hashfn_native   = SipHash_2_4<false>,
-   $.hashfn_bswap    = SipHash_2_4<true>
+   $.hashfn_native   = SipHash_2_4<false, false>,
+   $.hashfn_bswap    = SipHash_2_4<true, false>
+ );
+
+REGISTER_HASH(SipHash_2_4__folded,
+   $.desc       = "SipHash 2-4, XOR folded down to 32 bits",
+   $.impl       = SIP_IMPL_STR,
+   $.hash_flags =
+         FLAG_HASH_XL_SEED      |
+         FLAG_HASH_CRYPTOGRAPHIC,
+   $.impl_flags =
+         FLAG_IMPL_VERY_SLOW    |
+         FLAG_IMPL_TYPE_PUNNING |
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0xDD46AB1A,
+   $.verification_BE = 0xE5FA5E53,
+   $.hashfn_native   = SipHash_2_4<false, true>,
+   $.hashfn_bswap    = SipHash_2_4<true, true>
  );
 
 REGISTER_HASH(SipHash_1_3,
@@ -460,8 +488,26 @@ REGISTER_HASH(SipHash_1_3,
    $.bits = 64,
    $.verification_LE = 0x8936B193,
    $.verification_BE = 0xBEB90EAC,
-   $.hashfn_native   = SipHash_1_3<false>,
-   $.hashfn_bswap    = SipHash_1_3<true>
+   $.hashfn_native   = SipHash_1_3<false, false>,
+   $.hashfn_bswap    = SipHash_1_3<true, false>
+ );
+
+REGISTER_HASH(SipHash_1_3__folded,
+   $.desc       = "SipHash 1-3, XOR folded down to 32 bits",
+   $.impl       = SIP_IMPL_STR,
+   $.hash_flags =
+         FLAG_HASH_XL_SEED      |
+         FLAG_HASH_CRYPTOGRAPHIC,
+   $.impl_flags =
+         FLAG_IMPL_SLOW         |
+         FLAG_IMPL_TYPE_PUNNING |
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 32,
+   $.verification_LE = 0xC7BC11F8,
+   $.verification_BE = 0x5FE8339A,
+   $.hashfn_native   = SipHash_1_3<false, true>,
+   $.hashfn_bswap    = SipHash_1_3<true, true>
  );
 
 REGISTER_HASH(HalfSipHash,
