@@ -336,8 +336,8 @@ bool SanityTest2( const HashInfo * hinfo, bool verbose ) {
                         if ((ptr >= key2_start) && (ptr < key2_end)) { continue; }
                         *ptr ^= 0xFF;
                         hash(key2, len, seed, hash3);
-                        if (memcmp(hash2, hash3, hashbytes) != 0) {
-                            maybeprintf(" changing single non-key byte (%s%zd) altered hash: ",
+                        if (memcmp(hash1, hash3, hashbytes) != 0) {
+                            maybeprintf(" changing single non-key byte (%s %zd) altered hash: ",
                                     ptr < key2_start ? "head -" : "tail +",
                                     ptr < key2_start ? key2_start - ptr : ptr - key2_end + 1);
                             result = false;
