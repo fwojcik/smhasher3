@@ -45,7 +45,7 @@
 //------------------------------------------------------------
 // RNG global state initialization
 
-static uint32_t round_keys[44]; // only modified on main thread
+static uint8_t round_keys[44 * 4]; // only modified on main thread
 
 // A little ugly...
 extern seed_t g_seed;

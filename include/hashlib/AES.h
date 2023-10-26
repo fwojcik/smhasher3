@@ -50,88 +50,76 @@
   #define AES_IMPL_STR "portable"
 #endif
 
-static inline void _bswap_subkeys( uint32_t rk[], int subkeys ) {
-    for (int i = 0; i < subkeys; i++) {
-        rk[i] = COND_BSWAP(rk[i], true);
-    }
-}
-
-static int AES_KeySetup_Enc( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
+static int AES_KeySetup_Enc( uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
     // STATIC_ASSERT(keyBits == 128);
 #if defined(HAVE_X86_64_AES)
-    return AES_KeySetup_Enc_AESNI(rk, cipherKey, keyBits);
+    return AES_KeySetup_Enc_AESNI(rk8, cipherKey, keyBits);
 #elif defined(HAVE_ARM_AES)
-    int Nr = AES_KeySetup_Enc_portable(rk, cipherKey, keyBits);
-    if (isLE()) {
-        _bswap_subkeys(rk, 4 * (Nr + 1));
-    }
-    return Nr;
+    return AES_KeySetup_Enc_portable(rk8, cipherKey, keyBits);
 #else
-    return AES_KeySetup_Enc_portable(rk, cipherKey, keyBits);
+    return AES_KeySetup_Enc_portable(rk8, cipherKey, keyBits);
 #endif
 }
 
-static int AES_KeySetup_Dec( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
+static int AES_KeySetup_Dec( uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
     // STATIC_ASSERT(keyBits == 128);
 #if defined(HAVE_X86_64_AES)
-    return AES_KeySetup_Dec_AESNI(rk, cipherKey, keyBits);
+    return AES_KeySetup_Dec_AESNI(rk8, cipherKey, keyBits);
 #elif defined(HAVE_ARM_AES)
-    int Nr = AES_KeySetup_Dec_portable(rk, cipherKey, keyBits);
-    if (isLE()) {
-        _bswap_subkeys(rk, 4 * (Nr + 1));
-    }
-    return Nr;
+    return AES_KeySetup_Dec_portable(rk8, cipherKey, keyBits);
 #else
-    return AES_KeySetup_Dec_portable(rk, cipherKey, keyBits);
+    return AES_KeySetup_Dec_portable(rk8, cipherKey, keyBits);
 #endif
 }
 
 template <int Nr>
-static void AES_Encrypt( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
+static void AES_Encrypt( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
 #if defined(HAVE_X86_64_AES)
-    AES_Encrypt_AESNI<Nr>(rk, pt, ct);
+    AES_Encrypt_AESNI<Nr>(rk8, pt, ct);
 #elif defined(HAVE_ARM_AES)
-    AES_Encrypt_ARM<Nr>(rk, pt, ct);
+    AES_Encrypt_ARM<Nr>(rk8, pt, ct);
 #elif defined(HAVE_PPC_AES)
-    AES_Encrypt_PPC<Nr>(rk, pt, ct);
+    AES_Encrypt_PPC<Nr>(rk8, pt, ct);
 #else
-    AES_Encrypt_portable<Nr>(rk, pt, ct);
+    AES_Encrypt_portable<Nr>(rk8, pt, ct);
 #endif
 }
 
 template <int Nr>
-static void AES_Decrypt( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
+static void AES_Decrypt( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
 #if defined(HAVE_X86_64_AES)
-    AES_Decrypt_AESNI<Nr>(rk, pt, ct);
+    AES_Decrypt_AESNI<Nr>(rk8, ct, pt);
 #elif defined(HAVE_ARM_AES)
-    AES_Decrypt_ARM<Nr>(rk, pt, ct);
+    AES_Decrypt_ARM<Nr>(rk8, ct, pt);
 #elif defined(HAVE_PPC_AES)
-    AES_Decrypt_PPC<Nr>(rk, pt, ct);
+    AES_Decrypt_PPC<Nr>(rk8, ct, pt);
 #else
-    AES_Decrypt_portable<Nr>(rk, pt, ct);
+    AES_Decrypt_portable<Nr>(rk8, ct, pt);
 #endif
 }
 
-static void AES_EncryptRound( const uint32_t rk[4], uint8_t block[16] ) {
+static void AES_EncryptRound( const uint8_t rk8[] /*16*/, uint8_t block[16] ) {
 #if defined(HAVE_X86_64_AES)
-    AES_EncryptRound_AESNI(rk, block);
+    AES_EncryptRound_AESNI(rk8, block);
 #elif defined(HAVE_ARM_AES)
-    AES_EncryptRound_ARM(rk, block);
+    AES_EncryptRound_ARM(rk8, block);
 #elif defined(HAVE_PPC_AES)
-    AES_EncryptRound_PPC(rk, block);
+    AES_EncryptRound_PPC(rk8, block);
 #else
-    AES_EncryptRound_portable(rk, block);
+    AES_EncryptRound_portable(rk8, block);
 #endif
 }
 
-static void AES_DecryptRound( const uint32_t rk[4], uint8_t block[16] ) {
+static void AES_DecryptRound( const uint8_t rk8[]  /*16*/, uint8_t block[16] ) {
 #if defined(HAVE_X86_64_AES)
-    AES_DecryptRound_AESNI(rk, block);
+    AES_DecryptRound_AESNI(rk8, block);
 #elif defined(HAVE_ARM_AES)
-    AES_DecryptRound_ARM(rk, block);
+    AES_DecryptRound_ARM(rk8, block);
 #elif defined(HAVE_PPC_AES)
-    AES_DecryptRound_PPC(rk, block);
+    AES_DecryptRound_PPC(rk8, block);
 #else
-    AES_DecryptRound_portable(rk, block);
+    AES_DecryptRound_portable(rk8, block);
 #endif
 }
+
+void TestAESWrappers( void );

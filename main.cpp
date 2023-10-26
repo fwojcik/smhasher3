@@ -69,6 +69,7 @@
 #include "Analyze.h"
 #include "Stats.h"
 #include "VCode.h"
+#include "AES.h"
 #include "version.h"
 
 #include "SanityTest.h"
@@ -812,6 +813,7 @@ int main( int argc, const char ** argv ) {
                 exit(0);
             }
             if (strcmp(arg, "--InternalTests") == 0) {
+                TestAESWrappers();
                 BlobsortTest();
                 RandTest(5);
                 exit(0);

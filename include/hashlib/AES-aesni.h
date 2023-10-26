@@ -47,8 +47,8 @@ static inline __m128i _expand_key_helper( __m128i rkey, __m128i assist ) {
 
 #define MKASSIST(x, y) x, _mm_aeskeygenassist_si128(x, y)
 
-static int AES_KeySetup_Enc_AESNI( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
-    __m128i * round_keys = (__m128i *)rk;
+static int AES_KeySetup_Enc_AESNI( uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
+    __m128i * round_keys = (__m128i *)rk8;
 
     round_keys[ 0] = _mm_loadu_si128((__m128i *)cipherKey);
     round_keys[ 1] = _expand_key_helper(MKASSIST(round_keys[0], 0x01));
@@ -64,8 +64,8 @@ static int AES_KeySetup_Enc_AESNI( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t c
     return (keyBits == 128) ? 10 : (keyBits == 192) ? 12 : (keyBits == 256) ? 14 : 0;
 }
 
-static int AES_KeySetup_Dec_AESNI( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
-    __m128i * round_keys = (__m128i *)rk;
+static int AES_KeySetup_Dec_AESNI( uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
+    __m128i * round_keys = (__m128i *)rk8;
 
     round_keys[10] = _mm_loadu_si128((__m128i *)cipherKey);
     round_keys[ 9] = _expand_key_helper(MKASSIST(round_keys[10], 0x01));
@@ -87,8 +87,8 @@ static int AES_KeySetup_Dec_AESNI( uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t c
 #undef MKASSIST
 
 template <int Nr>
-static inline void AES_Encrypt_AESNI( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
-    const __m128i * round_keys = (const __m128i *)rk;
+static inline void AES_Encrypt_AESNI( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
+    const __m128i * round_keys = (const __m128i *)rk8;
     __m128i         tmp;
 
     tmp = _mm_loadu_si128((const __m128i *)pt);
@@ -105,8 +105,8 @@ static inline void AES_Encrypt_AESNI( const uint32_t rk[] /*4*(Nr + 1)*/, const 
 }
 
 template <int Nr>
-static inline void AES_Decrypt_AESNI( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
-    const __m128i * round_keys = (const __m128i *)rk;
+static inline void AES_Decrypt_AESNI( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
+    const __m128i * round_keys = (const __m128i *)rk8;
     __m128i         tmp;
 
     tmp = _mm_loadu_si128((const __m128i *)ct);
@@ -122,16 +122,16 @@ static inline void AES_Decrypt_AESNI( const uint32_t rk[] /*4*(Nr + 1)*/, const 
     _mm_storeu_si128((((__m128i *)pt)), tmp);
 }
 
-static inline void AES_EncryptRound_AESNI( const uint32_t rk[4], uint8_t block[16] ) {
-    const __m128i round_key = _mm_loadu_si128((const __m128i *)rk);
+static inline void AES_EncryptRound_AESNI( const uint8_t rk8[], uint8_t block[16] ) {
+    const __m128i round_key = _mm_loadu_si128((const __m128i *)rk8);
     __m128i       tmp       = _mm_loadu_si128((__m128i *)block   );
 
     tmp = _mm_aesenc_si128(tmp, round_key);
     _mm_storeu_si128((((__m128i *)block)), tmp);
 }
 
-static void AES_DecryptRound_AESNI( const uint32_t rk[4], uint8_t block[16] ) {
-    const __m128i round_key = _mm_loadu_si128((const __m128i *)rk);
+static void AES_DecryptRound_AESNI( const uint8_t rk8[], uint8_t block[16] ) {
+    const __m128i round_key = _mm_loadu_si128((const __m128i *)rk8);
     __m128i       tmp       = _mm_loadu_si128((__m128i *)block   );
 
     tmp = _mm_aesdec_si128(tmp, round_key);

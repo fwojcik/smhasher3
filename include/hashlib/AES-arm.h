@@ -30,59 +30,61 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 template <int Nr>
-static inline void AES_Encrypt_ARM( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
+static inline void AES_Encrypt_ARM( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
     uint8x16_t      block = vld1q_u8(pt);
-    const uint8_t * keys  = (const uint8_t *)rk;
 
     // AES single round encryption
-    block = vaeseq_u8(block, vld1q_u8(keys + 0 * 16));
+    block = vaeseq_u8(block, vld1q_u8(rk8 + 0 * 16));
 
     for (int i = 1; i < Nr; i++) {
         // AES mix columns
         block = vaesmcq_u8(block);
         // AES single round encryption
-        block = vaeseq_u8(block, vld1q_u8(keys + i * 16));
+        block = vaeseq_u8(block, vld1q_u8(rk8 + i * 16));
     }
 
     // Final xor
-    block = veorq_u8(block, vld1q_u8(keys + Nr * 16));
+    block = veorq_u8(block, vld1q_u8(rk8 + Nr * 16));
 
     vst1q_u8(ct, block);
 }
 
 template <int Nr>
-static inline void AES_Decrypt_ARM( const uint32_t rk[] /*4*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
+static inline void AES_Decrypt_ARM( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
     uint8x16_t      block = vld1q_u8(ct);
-    const uint8_t * keys  = (const uint8_t *)rk;
 
     // AES single round decryption
-    block = vaesdq_u8(block, vld1q_u8(keys + 0 * 16));
+    block = vaesdq_u8(block, vld1q_u8(rk8 + 0 * 16));
 
     for (int i = 1; i < Nr; i++) {
         // AES inverse mix columns
         block = vaesimcq_u8(block);
         // AES single round decryption
-        block = vaesdq_u8(block, vld1q_u8(keys + i * 16));
+        block = vaesdq_u8(block, vld1q_u8(rk8 + i * 16));
     }
 
     // Final xor
-    block = veorq_u8(block, vld1q_u8(keys + Nr * 16));
+    block = veorq_u8(block, vld1q_u8(rk8 + Nr * 16));
 
     vst1q_u8(pt, block);
 }
 
-static inline void AES_EncryptRound_ARM( const uint32_t rk[4], uint8_t block[16] ) {
+static inline void AES_EncryptRound_ARM( const uint8_t rk8[], uint8_t block[16] ) {
+    uint8x16_t zero = vmovq_n_u8(0);
     uint8x16_t tmp = vld1q_u8(block);
 
-    tmp = vaeseq_u8(tmp, vld1q_u8((const uint8_t *)rk));
+    tmp = vaeseq_u8(tmp, zero);
     tmp = vaesmcq_u8(tmp);
+    tmp = veorq_u8(tmp, vld1q_u8(rk8));
     vst1q_u8(block, tmp);
 }
 
-static inline void AES_DecryptRound_ARM( const uint32_t rk[4], uint8_t block[16] ) {
+static inline void AES_DecryptRound_ARM( const uint8_t rk8[], uint8_t block[16] ) {
+    uint8x16_t zero = vmovq_n_u8(0);
     uint8x16_t tmp = vld1q_u8(block);
 
-    tmp = vaesdq_u8(tmp, vld1q_u8((const uint8_t *)rk));
+    tmp = vaesdq_u8(tmp, zero);
     tmp = vaesimcq_u8(tmp);
+    tmp = veorq_u8(tmp, vld1q_u8(rk8));
     vst1q_u8(block, tmp);
 }
