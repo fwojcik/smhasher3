@@ -80,9 +80,9 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
     addVCodeInput(yMax);
     // Since seeding can be expensive, loop over the seed-dependent
     // variable first.
-    for (uint64_t y = 0; y < yMax; y++) {
+    for (uint64_t y = 0; y < yMax; y += step) {
         const seed_t seed = hinfo->Seed(y, HashInfo::SEED_FORCED);
-        for (uint64_t x = 0; x < xMax; x++) {
+        for (uint64_t x = 0; x < xMax; x += step) {
             // Put x in little-endian order
             uint64_t xin = COND_BSWAP(x, isBE());
             memcpy(key, &xin, sizeof(xin));
