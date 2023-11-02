@@ -280,20 +280,20 @@ void SpookyHash::Short( const void * message, size_t length, uint64_t * hash1, u
         d += ((uint64_t)length) << 56;
     }
     switch (remainder) {
-    case 15: d += ((uint64_t)ptr[14]) << 48;
-    case 14: d += ((uint64_t)ptr[13]) << 40;
-    case 13: d += ((uint64_t)ptr[12]) << 32;
+    case 15: d += ((uint64_t)ptr[14]) << 48; // FALLTHROUGH
+    case 14: d += ((uint64_t)ptr[13]) << 40; // FALLTHROUGH
+    case 13: d += ((uint64_t)ptr[12]) << 32; // FALLTHROUGH
     case 12: d += GET_U32<bswap>(ptr, 8); c += GET_U64<bswap>(ptr, 0); break;
-    case 11: d += ((uint64_t)ptr[10]) << 16;
-    case 10: d += ((uint64_t)ptr[ 9]) <<  8;
-    case  9: d +=  (uint64_t)ptr[ 8];
+    case 11: d += ((uint64_t)ptr[10]) << 16; // FALLTHROUGH
+    case 10: d += ((uint64_t)ptr[ 9]) <<  8; // FALLTHROUGH
+    case  9: d +=  (uint64_t)ptr[ 8];        // FALLTHROUGH
     case  8: c += GET_U64<bswap>(ptr, 0); break;
-    case  7: c += ((uint64_t)ptr[ 6]) << 48;
-    case  6: c += ((uint64_t)ptr[ 5]) << 40;
-    case  5: c += ((uint64_t)ptr[ 4]) << 32;
+    case  7: c += ((uint64_t)ptr[ 6]) << 48; // FALLTHROUGH
+    case  6: c += ((uint64_t)ptr[ 5]) << 40; // FALLTHROUGH
+    case  5: c += ((uint64_t)ptr[ 4]) << 32; // FALLTHROUGH
     case  4: c += GET_U32<bswap>(ptr, 0); break;
-    case  3: c += ((uint64_t)ptr[ 2]) << 16;
-    case  2: c += ((uint64_t)ptr[ 1]) <<  8;
+    case  3: c += ((uint64_t)ptr[ 2]) << 16; // FALLTHROUGH
+    case  2: c += ((uint64_t)ptr[ 1]) <<  8; // FALLTHROUGH
     case  1: c += (uint64_t)ptr[0]; break;
     case  0: c += sc_const; d += sc_const; break;
     }

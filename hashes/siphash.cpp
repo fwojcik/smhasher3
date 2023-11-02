@@ -78,13 +78,13 @@ static uint64_t siphash_portable( const uint64_t key[2], const uint8_t * m, size
 
     last7 = (uint64_t)(len & 0xff) << 56;
     switch (len - blocks) {
-    case 7: last7 |= (uint64_t)m[i + 6] << 48;
-    case 6: last7 |= (uint64_t)m[i + 5] << 40;
-    case 5: last7 |= (uint64_t)m[i + 4] << 32;
-    case 4: last7 |= (uint64_t)m[i + 3] << 24;
-    case 3: last7 |= (uint64_t)m[i + 2] << 16;
-    case 2: last7 |= (uint64_t)m[i + 1] <<  8;
-    case 1: last7 |= (uint64_t)m[i + 0];
+    case 7: last7 |= (uint64_t)m[i + 6] << 48; // FALLTHROUGH
+    case 6: last7 |= (uint64_t)m[i + 5] << 40; // FALLTHROUGH
+    case 5: last7 |= (uint64_t)m[i + 4] << 32; // FALLTHROUGH
+    case 4: last7 |= (uint64_t)m[i + 3] << 24; // FALLTHROUGH
+    case 3: last7 |= (uint64_t)m[i + 2] << 16; // FALLTHROUGH
+    case 2: last7 |= (uint64_t)m[i + 1] <<  8; // FALLTHROUGH
+    case 1: last7 |= (uint64_t)m[i + 0];       // FALLTHROUGH
     case 0:
     default:;
     }
@@ -202,13 +202,13 @@ static uint64_t siphash_sse( const uint64_t key[2], const uint8_t * m, size_t le
 
     last7 = (uint64_t)(len & 0xff) << 56;
     switch (len - blocks) {
-    case 7: last7 |= (uint64_t)m[i + 6] << 48;
-    case 6: last7 |= (uint64_t)m[i + 5] << 40;
-    case 5: last7 |= (uint64_t)m[i + 4] << 32;
-    case 4: last7 |= (uint64_t)m[i + 3] << 24;
-    case 3: last7 |= (uint64_t)m[i + 2] << 16;
-    case 2: last7 |= (uint64_t)m[i + 1] <<  8;
-    case 1: last7 |= (uint64_t)m[i + 0];
+    case 7: last7 |= (uint64_t)m[i + 6] << 48; // FALLTHROUGH
+    case 6: last7 |= (uint64_t)m[i + 5] << 40; // FALLTHROUGH
+    case 5: last7 |= (uint64_t)m[i + 4] << 32; // FALLTHROUGH
+    case 4: last7 |= (uint64_t)m[i + 3] << 24; // FALLTHROUGH
+    case 3: last7 |= (uint64_t)m[i + 2] << 16; // FALLTHROUGH
+    case 2: last7 |= (uint64_t)m[i + 1] <<  8; // FALLTHROUGH
+    case 1: last7 |= (uint64_t)m[i + 0];       // FALLTHROUGH
     case 0:
     default:;
     }
@@ -285,9 +285,9 @@ static uint32_t halfsiphash( const uint32_t key[2], const uint8_t * m, size_t le
 
     switch (left) {
     case 3:
-            b |= ((uint32_t)m[2]) << 16;
+            b |= ((uint32_t)m[2]) << 16; // FALLTHROUGH
     case 2:
-            b |= ((uint32_t)m[1]) <<  8;
+            b |= ((uint32_t)m[1]) <<  8; // FALLTHROUGH
     case 1:
             b |= ((uint32_t)m[0]);
             break;
@@ -347,19 +347,19 @@ static uint64_t tsip( const uint64_t seed, const uint8_t * m, uint64_t len ) {
     last7 = (uint64_t)(len & 0xff) << 56;
     switch (len & 7) {
     case 7:
-            last7 |= (uint64_t)m[6] << 48;
+            last7 |= (uint64_t)m[6] << 48; // FALLTHROUGH
     case 6:
-            last7 |= (uint64_t)m[5] << 40;
+            last7 |= (uint64_t)m[5] << 40; // FALLTHROUGH
     case 5:
-            last7 |= (uint64_t)m[4] << 32;
+            last7 |= (uint64_t)m[4] << 32; // FALLTHROUGH
     case 4:
-            last7 |= (uint64_t)m[3] << 24;
+            last7 |= (uint64_t)m[3] << 24; // FALLTHROUGH
     case 3:
-            last7 |= (uint64_t)m[2] << 16;
+            last7 |= (uint64_t)m[2] << 16; // FALLTHROUGH
     case 2:
-            last7 |= (uint64_t)m[1] <<  8;
+            last7 |= (uint64_t)m[1] <<  8; // FALLTHROUGH
     case 1:
-            last7 |= (uint64_t)m[0];
+            last7 |= (uint64_t)m[0];       // FALLTHROUGH
     case 0:
     default:;
     }

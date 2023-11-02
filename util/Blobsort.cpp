@@ -157,8 +157,8 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
         std::sort(blobs.begin(), blobs.end());
         if (testnum == 4) { break; }
     }
-    // 5 is fallthrough to...
-    // "Almost sorted" == mix up a few entries
+    // "Almost sorted" == mix up a few entries. For case 5, this is
+    // FALLTHROUGH
     case  1:
     {
         for (uint32_t n = 0; n < TEST_SIZE / 1000; n++) {

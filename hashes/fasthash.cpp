@@ -61,12 +61,12 @@ static uint64_t fasthash_impl( const uint8_t * pos, size_t len, uint64_t seed ) 
     v = 0;
 
     switch (len & 7) {
-    case 7: v ^= (uint64_t)pos[6] << 48;
-    case 6: v ^= (uint64_t)pos[5] << 40;
-    case 5: v ^= (uint64_t)pos[4] << 32;
-    case 4: v ^= (uint64_t)pos[3] << 24;
-    case 3: v ^= (uint64_t)pos[2] << 16;
-    case 2: v ^= (uint64_t)pos[1] <<  8;
+    case 7: v ^= (uint64_t)pos[6] << 48; // FALLTHROUGH
+    case 6: v ^= (uint64_t)pos[5] << 40; // FALLTHROUGH
+    case 5: v ^= (uint64_t)pos[4] << 32; // FALLTHROUGH
+    case 4: v ^= (uint64_t)pos[3] << 24; // FALLTHROUGH
+    case 3: v ^= (uint64_t)pos[2] << 16; // FALLTHROUGH
+    case 2: v ^= (uint64_t)pos[1] <<  8; // FALLTHROUGH
     case 1: v ^= (uint64_t)pos[0];
             h ^= mix(v);
             h *= m;

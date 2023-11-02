@@ -102,13 +102,13 @@ static inline uint64_t mx3( const uint8_t * buf, size_t len, uint64_t seed ) {
     if (ver < 3) {
         uint64_t v = 0;
         switch (len & 7) {
-        case 7: v |= static_cast<uint64_t>(tail[6]) << 48;
-        case 6: v |= static_cast<uint64_t>(tail[5]) << 40;
-        case 5: v |= static_cast<uint64_t>(tail[4]) << 32;
-        case 4: v |= static_cast<uint64_t>(tail[3]) << 24;
-        case 3: v |= static_cast<uint64_t>(tail[2]) << 16;
-        case 2: v |= static_cast<uint64_t>(tail[1]) <<  8;
-        case 1: h  = mix_stream<ver>(h, v | tail[0]);
+        case 7: v |= static_cast<uint64_t>(tail[6]) << 48; // FALLTHROUGH
+        case 6: v |= static_cast<uint64_t>(tail[5]) << 40; // FALLTHROUGH
+        case 5: v |= static_cast<uint64_t>(tail[4]) << 32; // FALLTHROUGH
+        case 4: v |= static_cast<uint64_t>(tail[3]) << 24; // FALLTHROUGH
+        case 3: v |= static_cast<uint64_t>(tail[2]) << 16; // FALLTHROUGH
+        case 2: v |= static_cast<uint64_t>(tail[1]) <<  8; // FALLTHROUGH
+        case 1: h  = mix_stream<ver>(h, v | tail[0]);      // FALLTHROUGH
         default:;
         }
     } else {
