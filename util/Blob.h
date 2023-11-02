@@ -357,7 +357,7 @@ class Blob {
 
     static FORCE_INLINE uint32_t _highzerobits( const uint8_t * bytes, const size_t len ) {
         uint32_t zb = 0;
-        size_t i = _bytes;
+        size_t i = len;
 
         while (i >= 8) {
             uint64_t a;
