@@ -729,7 +729,7 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
 
     double p_value    = ScalePValue(GetStdNormalPValue(worstN), tests);
     int    logp_value = GetLog2PValue(p_value);
-    double mult       = normalizeScore(worstN, worstWidth, tests);
+    double mult       = normalizeScore(worstN, worstWidth);
 
     recordLog2PValue(logp_value);
     if (logpp != NULL) {

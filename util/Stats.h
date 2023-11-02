@@ -91,7 +91,7 @@ template <typename T>
 uint64_t sumSquaresBasic( const T * bins, size_t bincount );
 
 double calcScore( const uint64_t sumsq, const int bincount, const int ballcount );
-double normalizeScore( double score, int scorewidth, int tests );
+double normalizeScore( double score, int scorewidth );
 
 double ChiSqIndepValue( const uint32_t * boxes, size_t total );
 double ChiSqPValue( double chisq, uint64_t dof );

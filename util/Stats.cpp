@@ -1497,7 +1497,7 @@ double calcScore( const uint64_t sumsq, const int bincount, const int keycount )
 
 // Convert the score from calcScore back into (rmse/sqrt(lambda) -
 // 1.0), to show the user something like the previous report.
-double normalizeScore( double score, int scorewidth, int tests ) {
+double normalizeScore( double score, int scorewidth ) {
     if (score <= 0) {
         return 0.0;
     }
