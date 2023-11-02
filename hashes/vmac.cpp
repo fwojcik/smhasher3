@@ -445,6 +445,7 @@ typedef struct {
 #endif // _MSC_VER
 
 static void vhash_abort( vmac_ctx_t * ctx ) {
+    unused(ctx);
 #if defined(HAVE_32BIT_PLATFORM) && defined(HAVE_SSE_2)
     _mmm_empty /* SSE2 version of poly_step uses mmx instructions */
 #endif

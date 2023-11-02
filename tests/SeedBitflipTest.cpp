@@ -170,7 +170,7 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, bool 
     if (!drawDiagram) {
         printf("%3d failed, worst is seed bit %3d%s\n", fails, worstseedbit, result ? "" : "   !!!!!");
         bool ignored = TestHashList(worsthashes).testDistribution(true).testDeltas(2);
-        (void)ignored;
+        unused(ignored);
         printf("\n");
     }
 

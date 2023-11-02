@@ -151,7 +151,7 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
     if (!drawDiagram) {
         printf("%3d failed, worst is key bit %3d%s\n", fails, worstkeybit, result ? "" : "                  !!!!!");
         bool ignored = TestHashList(worsthashes).testDistribution(true).testDeltas(2);
-        (void)ignored;
+        unused(ignored);
         printf("\n");
     }
 

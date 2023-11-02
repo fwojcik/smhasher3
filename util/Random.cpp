@@ -651,25 +651,25 @@ void RandTest( const unsigned runs ) {
         // Ensure Rand() and reseed() work the same
         Rand A1(WEAKRAND(5 * i));
         Rand A2(0);
-        ignored = A2.rand_u64(); (void)ignored;
+        ignored = A2.rand_u64(); unused(ignored);
         A2.reseed((uint64_t)(WEAKRAND(5 * i)));
         VERIFYEQUAL(A1, A2, 999);
 
         Rand B1( {WEAKRAND(7 * i), WEAKRAND(9 * i)} );
         Rand B2( {123, 456} );
-        ignored = B2.rand_u64(); (void)ignored;
+        ignored = B2.rand_u64(); unused(ignored);
         B2.reseed({(WEAKRAND(7 * i)), (WEAKRAND(9 * i))});
         VERIFYEQUAL(B1, B2, 999);
 
         Rand C1( {WEAKRAND(11 * i), WEAKRAND(13 * i)} );
         Rand C2( WEAKRAND(11 * i) );
-        ignored = C2.rand_u64(); (void)ignored;
+        ignored = C2.rand_u64(); unused(ignored);
         C2.reseed({WEAKRAND(11 * i), WEAKRAND(13 * i)});
         VERIFYEQUAL(C1, C2, 999);
 
         Rand D1( {0, WEAKRAND(15 * i)} );
         Rand D2( {0, WEAKRAND(17 * i)} );
-        ignored = D2.rand_u64(); (void)ignored;
+        ignored = D2.rand_u64(); unused(ignored);
         D2.reseed({0, WEAKRAND(15 * i)});
         VERIFYEQUAL(D1, D2, 999);
 
@@ -715,7 +715,7 @@ void RandTest( const unsigned runs ) {
             const size_t forward = j + 3;
             for (size_t l = 0; l < Randcount; l++) {
                 for (size_t k = 0; k < forward; k++) {
-                    ignored = testRands1[l].rand_u64(); (void)ignored;
+                    ignored = testRands1[l].rand_u64(); unused(ignored);
                 }
             }
             for (size_t l = 0; l < Randcount; l++) {
@@ -740,7 +740,7 @@ void RandTest( const unsigned runs ) {
             }
             for (size_t l = 0; l < Randcount; l++) {
                 for (size_t k = 0; k < forward; k++) {
-                    ignored = testRands1[l].rand_u64(); (void)ignored;
+                    ignored = testRands1[l].rand_u64(); unused(ignored);
                 }
                 testRands1[l].enable_ortho();
                 testRands1[l].disable_ortho();

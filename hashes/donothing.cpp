@@ -29,6 +29,7 @@
 #include "Hashlib.h"
 
 static void DoNothingHash( const void * in, const size_t len, const seed_t seed, void * out ) {
+    unused(in); unused(len); unused(seed); unused(out);
 }
 
 template <uint32_t hashlen>

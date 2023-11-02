@@ -295,6 +295,7 @@ static void plot( const double p_value, const size_t trials ) {
     const int OFFSET   = GetLog2PValue(FAILURE_PBOUND);
     const int DIGITS   = 9; // Use [1-9]
     const int CHARS    = 6; // Use [a-f]
+    unused(trials);
 
     if (p_value > ldexp(FAILURE_PBOUND, DIGITS)) {
         putchar('.');
