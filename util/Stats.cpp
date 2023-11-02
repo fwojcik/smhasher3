@@ -405,16 +405,16 @@ static double EstimateNbCollisions_cur( const double nbH, const int nbBits ) {
 }
 
 double EstimateNbCollisions( const unsigned long nbH, const int nbBits ) {
-    return EstimateNbCollisions_cur((const double)nbH, (const double)nbBits);
+    return EstimateNbCollisions_cur((double)nbH, (double)nbBits);
 }
 
 #define COLLISION_ESTIMATORS 3
 
 static double EstimateNbCollisionsCand( const unsigned long nbH, const int nbBits, const int estimator ) {
     switch (estimator) {
-    case 0: return EstimateNbCollisions_cur((const double)nbH, (const double)nbBits);
-    case 1: return EstimateNbCollisions_prev((const double)nbH, (const double)nbBits);
-    case 2: return EstimateNbCollisions_prevprev((const double)nbH, (const double)nbBits);
+    case 0: return EstimateNbCollisions_cur((double)nbH, (double)nbBits);
+    case 1: return EstimateNbCollisions_prev((double)nbH, (double)nbBits);
+    case 2: return EstimateNbCollisions_prevprev((double)nbH, (double)nbBits);
     default: { printf("Invalid estimator requested\n"); exit(1); }
     }
     return NAN;
