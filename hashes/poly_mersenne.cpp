@@ -3,8 +3,6 @@
  * Copyright (C) 2021-2022  Frank J. T. Wojcik
  * Copyright (c) 2020-2021 Reini Urban
  * Copyright (c) 2020      Thomas Dybdahl Ahle
- * Copyright (c) 1990, 1993
- *      The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,36 +35,19 @@
 
 #if defined(HAVE_INT128)
 
-// This code originally used the system's srand()/rand() functions
-// from libc. This made the hash unstable across platforms. To rectify
-// this, FreeBSD's implementation is included here, with a 64-bit
-// seeding function, just so testing can be done consistently.
+// This code originally used the system's srand()/rand() functions from
+// libc. This made the hash unstable across platforms. To rectify this, a
+// basic LCG implementation is included here, just so testing can be done
+// consistently.
 //
 // It could be interesting to implement other RNGs to see how
 // dependent hash quality is on the RNG used.
 //
 // If you plan on using this hash, it is STRONGLY recommended that you
 // test it with the RNG you plan on using to seed it.
-static uint32_t BSD_rand( uint64_t * BSD_nextrandp ) {
-    /*
-     * Compute x = (7^5 * x) mod (2^31 - 1)
-     * without overflowing 31 bits:
-     *      (2^31 - 1) = 127773 * (7^5) + 2836
-     * From "Random number generators: good ones are hard to find",
-     * Park and Miller, Communications of the ACM, vol. 31, no. 10,
-     * October 1988, p. 1195.
-     */
-    uint64_t hi, lo, x;
-
-    x  = (*BSD_nextrandp % 0x7ffffffe) + 1;
-    hi = x / 127773;
-    lo = x % 127773;
-    x  = 16807 * lo - 2836 * hi;
-    if (x < 0) {
-        x += 0x7fffffff;
-    }
-    *BSD_nextrandp = --x;
-    return x;
+static uint32_t LCG_rand( uint64_t & state ) {
+    state = state * UINT64_C(0x5851f42d4c957f2d) + 1;
+    return (state >> 31);
 }
 
 const static uint64_t MERSENNE_61         = (1ull << 61) - 1;
@@ -79,28 +60,28 @@ struct poly_mersenne_struct {
 };
 static thread_local struct poly_mersenne_struct poly_mersenne_data;
 
-static uint128_t rand_u128( uint64_t * BSD_nextrandp ) {
-    // We don't know how many bits we get from rand(),
-    // but it is at least 16, so we concattenate a couple.
-    uint128_t r = BSD_rand(BSD_nextrandp);
+static uint128_t rand_u128( uint64_t & state ) {
+    // We don't know how many bits we get from rand(), but it is at least
+    // 16, so we concatenate a couple.
+    uint128_t r = LCG_rand(state);
 
     for (int i = 0; i < 7; i++) {
         r <<= 16;
-        r  ^= BSD_rand(BSD_nextrandp);
+        r  ^= LCG_rand(state);
     }
     return r;
 }
 
 static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
-    uint64_t BSD_nextrand = (uint64_t)seed;
+    uint64_t LCG_nextrand = (uint64_t)seed;
 
     // a has be at most 2^60, or the lazy modular reduction won't work.
-    poly_mersenne_data.poly_mersenne_a = rand_u128(&BSD_nextrand) % (MERSENNE_61 / 2);
-    poly_mersenne_data.poly_mersenne_b = rand_u128(&BSD_nextrand) % MERSENNE_61;
+    poly_mersenne_data.poly_mersenne_a = rand_u128(LCG_nextrand) % (MERSENNE_61 / 2);
+    poly_mersenne_data.poly_mersenne_b = rand_u128(LCG_nextrand) % MERSENNE_61;
     for (uint32_t i = 0; i < POLY_MERSENNE_MAX_K + 1; i++) {
         // The random values should be at most 2^61-2, or the lazy
         // modular reduction won't work.
-        poly_mersenne_data.poly_mersenne_random[i] = rand_u128(&BSD_nextrand) % MERSENNE_61;
+        poly_mersenne_data.poly_mersenne_random[i] = rand_u128(LCG_nextrand) % MERSENNE_61;
     }
     return (seed_t)(uintptr_t)&poly_mersenne_data;
 }
@@ -169,11 +150,10 @@ REGISTER_FAMILY(poly_mersenne,
    $.src_status = HashFamilyInfo::SRC_FROZEN
  );
 
-REGISTER_HASH(poly_mersenne__deg1,
-   $.desc       = "Degree 1 Hashing mod 2^61-1",
+REGISTER_HASH(poly_mersenne__deg0,
+   $.desc       = "Degree 0 Hashing mod 2^61-1",
    $.impl       = "int128",
    $.hash_flags =
-         FLAG_HASH_LOOKUP_TABLE         |
          FLAG_HASH_SYSTEM_SPECIFIC,
    $.impl_flags =
          FLAG_IMPL_128BIT               |
@@ -181,8 +161,26 @@ REGISTER_HASH(poly_mersenne__deg1,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0x50526DA4,
-   $.verification_BE = 0xBB8CF709,
+   $.verification_LE = 0x6F1C89E6,
+   $.verification_BE = 0xB4063D06,
+   $.seedfn          = poly_mersenne_seed_init,
+   $.hashfn_native   = Poly_Mersenne<0, false>,
+   $.hashfn_bswap    = Poly_Mersenne<0, true>
+ );
+
+REGISTER_HASH(poly_mersenne__deg1,
+   $.desc       = "Degree 1 Hashing mod 2^61-1",
+   $.impl       = "int128",
+   $.hash_flags =
+         FLAG_HASH_SYSTEM_SPECIFIC,
+   $.impl_flags =
+         FLAG_IMPL_128BIT               |
+         FLAG_IMPL_MULTIPLY_64_128      |
+         FLAG_IMPL_LICENSE_BSD          |
+         FLAG_IMPL_SLOW,
+   $.bits = 32,
+   $.verification_LE = 0x51D89932,
+   $.verification_BE = 0xC66C4E04,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<1, false>,
    $.hashfn_bswap    = Poly_Mersenne<1, true>
@@ -199,13 +197,11 @@ REGISTER_HASH(poly_mersenne__deg2,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0xCDDDA91B,
-   $.verification_BE = 0x9507D811,
+   $.verification_LE = 0xECB98832,
+   $.verification_BE = 0xD08A7507,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<2, false>,
-   $.hashfn_bswap    = Poly_Mersenne<2, true>,
-   $.badseeds        = { 0x60e8512c },
-   $.seedfixfn       = excludeBadseeds
+   $.hashfn_bswap    = Poly_Mersenne<2, true>
  );
 
 REGISTER_HASH(poly_mersenne__deg3,
@@ -219,13 +215,11 @@ REGISTER_HASH(poly_mersenne__deg3,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0x7D822707,
-   $.verification_BE = 0x7273EB0A,
+   $.verification_LE = 0x26C2D5AF,
+   $.verification_BE = 0xD57B4E19,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<3, false>,
-   $.hashfn_bswap    = Poly_Mersenne<3, true>,
-   $.badseeds        = { 0x3d25f745 },
-   $.seedfixfn       = excludeBadseeds
+   $.hashfn_bswap    = Poly_Mersenne<3, true>
  );
 
 REGISTER_HASH(poly_mersenne__deg4,
@@ -239,8 +233,8 @@ REGISTER_HASH(poly_mersenne__deg4,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0xBF0273E6,
-   $.verification_BE = 0xAA526413,
+   $.verification_LE = 0x1D7F250E,
+   $.verification_BE = 0x64AF6A1D,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<4, false>,
    $.hashfn_bswap    = Poly_Mersenne<4, true>

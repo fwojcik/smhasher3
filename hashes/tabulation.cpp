@@ -1,10 +1,8 @@
 /*
  * Polynomial Mersenne Hash
- * Copyright (C) 2021-2022  Frank J. T. Wojcik
+ * Copyright (C) 2021-2023  Frank J. T. Wojcik
  * Copyright (c) 2020-2021 Reini Urban
  * Copyright (c) 2020      Thomas Dybdahl Ahle
- * Copyright (c) 1990, 1993
- *      The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,57 +38,40 @@
 #include <cassert>
 
 //-----------------------------------------------------------------------------
-// This code originally used the system's srand()/rand() functions
-// from libc. This made the hash unstable across platforms. To rectify
-// this, FreeBSD's implementation is included here, with a 64-bit
-// seeding function, just so testing can be done consistently.
+// This code originally used the system's srand()/rand() functions from
+// libc. This made the hash unstable across platforms. To rectify this, a
+// basic LCG implementation is included here, just so testing can be done
+// consistently.
 //
 // It could be interesting to implement other RNGs to see how
 // dependent hash quality is on the RNG used.
 //
 // If you plan on using this hash, it is STRONGLY recommended that you
 // test it with the RNG you plan on using to seed it.
-static uint32_t BSD_rand( uint64_t * BSD_nextrandp ) {
-    /*
-     * Compute x = (7^5 * x) mod (2^31 - 1)
-     * without overflowing 31 bits:
-     *      (2^31 - 1) = 127773 * (7^5) + 2836
-     * From "Random number generators: good ones are hard to find",
-     * Park and Miller, Communications of the ACM, vol. 31, no. 10,
-     * October 1988, p. 1195.
-     */
-    uint64_t hi, lo, x;
-
-    x  = (*BSD_nextrandp % 0x7ffffffe) + 1;
-    hi = x / 127773;
-    lo = x % 127773;
-    x  = 16807 * lo - 2836 * hi;
-    if (x < 0) {
-        x += 0x7fffffff;
-    }
-    *BSD_nextrandp = --x;
-    return x;
+static uint32_t LCG_rand( uint64_t & state ) {
+    state = state * UINT64_C(0x5851f42d4c957f2d) + 1;
+    return (state >> 31);
 }
 
-static uint64_t tab_rand64( uint64_t * BSD_nextrandp ) {
-    // we don't know how many bits we get from rand(),
-    // but it is at least 16, so we concatenate a couple.
+static uint64_t tab_rand64( uint64_t & state ) {
+    // we don't know how many bits we get from rand(), but it is at least
+    // 16, so we concatenate a couple.
     uint64_t r = 0;
 
     for (int i = 0; i < 4; i++) {
         r <<= 16;
-        r  ^= BSD_rand(BSD_nextrandp);
+        r  ^= LCG_rand(state);
     }
     return r;
 }
 
 #if defined(HAVE_INT128)
 
-static inline uint128_t tab_rand128( uint64_t * BSD_nextrandp ) {
+static inline uint128_t tab_rand128( uint64_t & state ) {
     uint128_t r;
 
-    r = tab_rand64(BSD_nextrandp);
-    r = tab_rand64(BSD_nextrandp) | (r << 64);
+    r = tab_rand64(state);
+    r = tab_rand64(state) | (r << 64);
     return r;
 }
 
@@ -114,31 +95,31 @@ static thread_local seed32_struct seed32;
 
 static uintptr_t tabulation32_seed( const seed_t seed ) {
     bool     have_broken_rand = false;
-    uint64_t BSD_nextrand     = (uint64_t)seed;
+    uint64_t LCG_nextrand     = (uint64_t)seed;
 
     seed32.seed = (uint64_t)seed;
     // the lazy mersenne combination requires 30 bits values in the polynomial.
-    seed32.multiply_shift_a_64 = tab_rand64(&BSD_nextrand) & ((UINT64_C(1) << 30) - 1);
+    seed32.multiply_shift_a_64 = tab_rand64(LCG_nextrand) & ((UINT64_C(1) << 30) - 1);
     if (!seed32.multiply_shift_a_64) {
-        seed32.multiply_shift_a_64 = tab_rand64(&BSD_nextrand) & ((UINT64_C(1) << 30) - 1);
+        seed32.multiply_shift_a_64 = tab_rand64(LCG_nextrand) & ((UINT64_C(1) << 30) - 1);
     }
     if (!seed32.multiply_shift_a_64) {
         have_broken_rand = true;
         seed32.multiply_shift_a_64 = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 30) - 1);
     }
-    seed32.multiply_shift_b_64 = tab_rand64(&BSD_nextrand);
+    seed32.multiply_shift_b_64 = tab_rand64(LCG_nextrand);
     if (!seed32.multiply_shift_b_64) {
-        seed32.multiply_shift_b_64 = have_broken_rand ? 0xdeadbeef : tab_rand64(&BSD_nextrand);
+        seed32.multiply_shift_b_64 = have_broken_rand ? 0xdeadbeef : tab_rand64(LCG_nextrand);
     }
     for (int i = 0; i < BLOCK_SIZE_32; i++) {
-        seed32.multiply_shift_random_64[i] = tab_rand64(&BSD_nextrand);
+        seed32.multiply_shift_random_64[i] = tab_rand64(LCG_nextrand);
         if (!seed32.multiply_shift_random_64[i]) {
-            seed32.multiply_shift_random_64[i] = have_broken_rand ? 0xdeadbeef : tab_rand64(&BSD_nextrand);
+            seed32.multiply_shift_random_64[i] = have_broken_rand ? 0xdeadbeef : tab_rand64(LCG_nextrand);
         }
     }
     for (int i = 0; i < 32 / CHAR_SIZE; i++) {
         for (int j = 0; j < 1 << CHAR_SIZE; j++) {
-            seed32.tabulation_32[i][j] = tab_rand64(&BSD_nextrand);
+            seed32.tabulation_32[i][j] = tab_rand64(LCG_nextrand);
         }
     }
     return (seed_t)(uintptr_t)&seed32;
@@ -209,29 +190,29 @@ static thread_local seed64_struct seed64;
 
 static uintptr_t tabulation64_seed( const seed_t seed ) {
     bool     have_broken_rand = false;
-    uint64_t BSD_nextrand     = (uint64_t)seed;
+    uint64_t LCG_nextrand     = (uint64_t)seed;
 
     seed64.seed = (uint64_t)seed;
     // the lazy mersenne combination requires 60 bits values in the polynomial.
     // rurban: added checks for bad seeds
-    seed64.tab_multiply_shift_a = tab_rand128(&BSD_nextrand) & ((UINT64_C(1) << 60) - 1);
-    seed64.tab_multiply_shift_b = tab_rand128(&BSD_nextrand);
+    seed64.tab_multiply_shift_a = tab_rand128(LCG_nextrand) & ((UINT64_C(1) << 60) - 1);
+    seed64.tab_multiply_shift_b = tab_rand128(LCG_nextrand);
     if (!seed64.tab_multiply_shift_a) {
-        seed64.tab_multiply_shift_a = tab_rand128(&BSD_nextrand) & ((UINT64_C(1) << 60) - 1);
+        seed64.tab_multiply_shift_a = tab_rand128(LCG_nextrand) & ((UINT64_C(1) << 60) - 1);
     }
     if (!seed64.tab_multiply_shift_a) {
         have_broken_rand = true;
         seed64.tab_multiply_shift_a = UINT64_C(0xababababbeafcafe) & ((UINT64_C(1) << 60) - 1);
     }
     if (!seed64.tab_multiply_shift_b) {
-        seed64.tab_multiply_shift_b = tab_rand128(&BSD_nextrand);
+        seed64.tab_multiply_shift_b = tab_rand128(LCG_nextrand);
     }
     if (!seed64.tab_multiply_shift_b) {
         have_broken_rand = true;
         seed64.tab_multiply_shift_b++;
     }
     for (int i = 0; i < TAB_BLOCK_SIZE; i++) {
-        seed64.tab_multiply_shift_random[i] = tab_rand128(&BSD_nextrand);
+        seed64.tab_multiply_shift_random[i] = tab_rand128(LCG_nextrand);
         if (!seed64.tab_multiply_shift_random[i]) {
             seed64.tab_multiply_shift_random[i] = 0x12345678;
         }
@@ -242,7 +223,7 @@ static uintptr_t tabulation64_seed( const seed_t seed ) {
     for (int i = 0; i < 64 / CHAR_SIZE; i++) {
         for (int j = 0; j < 1 << CHAR_SIZE; j++) {
             seed64.tabulation[i][j] = have_broken_rand ?
-                        seed64.tab_multiply_shift_random[i] : tab_rand128(&BSD_nextrand);
+                        seed64.tab_multiply_shift_random[i] : tab_rand128(LCG_nextrand);
         }
     }
     return (seed_t)(uintptr_t)&seed64;
@@ -364,8 +345,8 @@ REGISTER_HASH(tabulation_32,
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
    $.bits = 32,
-   $.verification_LE = 0xF951BEFF,
-   $.verification_BE = 0xFEB31CB2,
+   $.verification_LE = 0xDE683B10,
+   $.verification_BE = 0xEC06E61D,
    $.seedfn          = tabulation32_seed,
    $.hashfn_native   = tabulation32<false>,
    $.hashfn_bswap    = tabulation32<true>
@@ -383,8 +364,8 @@ REGISTER_HASH(tabulation_64,
          FLAG_IMPL_MULTIPLY_64_128      |
          FLAG_IMPL_LICENSE_BSD,
    $.bits = 64,
-   $.verification_LE = 0x9CE7C3BC,
-   $.verification_BE = 0x4EE5569F,
+   $.verification_LE = 0x37692041,
+   $.verification_BE = 0x364342A5,
    $.seedfn          = tabulation64_seed,
    $.hashfn_native   = tabulation64<false>,
    $.hashfn_bswap    = tabulation64<true>,
