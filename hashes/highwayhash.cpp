@@ -103,11 +103,11 @@ static HH_INLINE uint64_t Load3LE_AllowUnordered( const uint8_t * from, const si
 #define HH_VSX      4
 
 static const char * hh_vector_str[] = {
-    [HH_PORTABLE] = "portable",
-    [HH_SSE41]    = "sse41",
-    [HH_AVX2]     = "avx2",
-    [HH_NEON]     = "neon",
-    [HH_VSX]      = "vsx",
+    "portable", // HH_PORTABLE
+    "sse41",    // HH_SSE41
+    "avx2",     // HH_AVX2
+    "neon",     // HH_NEON
+    "vsx",      // HH_VSX
 };
 
 // The PPC/VSX alternative is disabled here because the implementation
