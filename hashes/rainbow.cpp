@@ -150,7 +150,11 @@ static void rainbow( const void * in, const size_t olen, const seed_t seed, void
         mixA(h);
         mixB(h, seed);
         mixA(h);
-        PUT_U64<bswap>(h[0] ^ h[1], (uint8_t *)out, 16);
+        g  = 0;
+        g -= h[3];
+        g -= h[2];
+        PUT_U64<bswap>(g, (uint8_t *)out, 16);
+        mixA(h);
         g  = 0;
         g -= h[3];
         g -= h[2];
@@ -164,7 +168,7 @@ REGISTER_FAMILY(rainbow,
 );
 
 REGISTER_HASH(rainbow,
-   $.desc       = "Rainbow v1 (aka Newhash)",
+   $.desc       = "Rainbow v1.0.6 (aka Newhash)",
    $.hash_flags = 0,
    $.impl_flags =
         FLAG_IMPL_MULTIPLY_64_64   |
@@ -178,7 +182,7 @@ REGISTER_HASH(rainbow,
 );
 
 REGISTER_HASH(rainbow_128,
-   $.desc       = "Rainbow 128-bit v1 (aka Newhash 128-bit)",
+   $.desc       = "Rainbow 128-bit v1.0.6 (aka Newhash 128-bit)",
    $.hash_flags = 0,
    $.impl_flags =
         FLAG_IMPL_MULTIPLY_64_64   |
@@ -192,15 +196,15 @@ REGISTER_HASH(rainbow_128,
 );
 
 REGISTER_HASH(rainbow_256,
-   $.desc       = "Rainbow 256-bit v1 (aka Newhash 256-bit)",
+   $.desc       = "Rainbow 256-bit v1.0.6 (aka Newhash 256-bit)",
    $.hash_flags = 0,
    $.impl_flags =
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 256,
-   $.verification_LE = 0xD941AE9F,
-   $.verification_BE = 0x91EDB966,
+   $.verification_LE = 0xB327563D,
+   $.verification_BE = 0,
    $.hashfn_native   = rainbow<256, false>,
    $.hashfn_bswap    = rainbow<256, true>
 );
