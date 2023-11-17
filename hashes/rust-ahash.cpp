@@ -33,10 +33,11 @@
 //------------------------------------------------------------
 // Random state generation
 
-static const uint64_t PI[4] = {
-    UINT64_C(0x243f6a8885a308d3), UINT64_C(0x13198a2e03707344),
-    UINT64_C(0xa4093822299f31d0), UINT64_C(0x082efa98ec4e6c89),
-};
+// This is unused in this configuration
+//static const uint64_t PI[4] = {
+//    UINT64_C(0x243f6a8885a308d3), UINT64_C(0x13198a2e03707344),
+//    UINT64_C(0xa4093822299f31d0), UINT64_C(0x082efa98ec4e6c89),
+//};
 
 static const uint64_t PI2[4] = {
     UINT64_C(0x452821e638d01377), UINT64_C(0xbe5466cf34e90c6c),
