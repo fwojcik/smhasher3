@@ -100,7 +100,7 @@ static void rainstorm( const void * in, const size_t len, const seed_t seed, voi
     };
 
     uint64_t temp[8];
-    size_t   lenRemaining = len;
+    uint64_t lenRemaining = len;
 
     // Process 512-bit blocks
     while (lenRemaining >= 64) {
@@ -155,7 +155,7 @@ REGISTER_FAMILY(rainstorm,
  );
 
 REGISTER_HASH(rainstorm,
-   $.desc       = "Rainstorm v0",
+   $.desc       = "Rainstorm v0.0.6",
    $.impl_flags =
      FLAG_IMPL_ROTATE           |
      FLAG_IMPL_SLOW             |
@@ -168,7 +168,7 @@ REGISTER_HASH(rainstorm,
  );
 
 REGISTER_HASH(rainstorm_128,
-   $.desc       = "Rainstorm 128-bit v0",
+   $.desc       = "Rainstorm 128-bit v0.0.6",
    $.impl_flags =
      FLAG_IMPL_ROTATE           |
      FLAG_IMPL_SLOW             |
@@ -178,4 +178,17 @@ REGISTER_HASH(rainstorm_128,
    $.verification_BE = 0xF9E1DCA4,
    $.hashfn_native   = rainstorm<128, false>,
    $.hashfn_bswap    = rainstorm<128, true>
+ );
+
+REGISTER_HASH(rainstorm_256,
+   $.desc       = "Rainstorm 256-bit v0.0.6",
+   $.impl_flags =
+     FLAG_IMPL_ROTATE           |
+     FLAG_IMPL_SLOW             |
+     FLAG_IMPL_LICENSE_APACHE2,
+   $.bits = 256,
+   $.verification_LE = 0x8BDBF180,
+   $.verification_BE = 0xA08B2DEB,
+   $.hashfn_native   = rainstorm<256, false>,
+   $.hashfn_bswap    = rainstorm<256, true>
  );
