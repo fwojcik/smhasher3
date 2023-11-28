@@ -77,8 +77,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL GNU
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
   endif()
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function \
-      -Wno-unknown-pragmas -Wno-unused-lambda-capture")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wvla -Wpedantic \
+      -Wno-unused-function -Wno-unknown-pragmas")
+
+  if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-lambda-capture \
+        -Wno-dollar-in-identifier-extension")
+  endif()
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(ACTUAL_GCC TRUE)
