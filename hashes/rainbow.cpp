@@ -109,20 +109,20 @@ static void rainbow( const void * in, const size_t olen, const seed_t seed, void
     mixB(h, seed);
 
     switch (len) {
-    case 15: h[0] += (uint64_t)data[14] << 56;
-    case 14: h[1] += (uint64_t)data[13] << 48;
-    case 13: h[2] += (uint64_t)data[12] << 40;
-    case 12: h[3] += (uint64_t)data[11] << 32;
-    case 11: h[0] += (uint64_t)data[10] << 24;
-    case 10: h[1] += (uint64_t)data[ 9] << 16;
-    case  9: h[2] += (uint64_t)data[ 8] <<  8;
-    case  8: h[3] +=           data[ 7];
-    case  7: h[0] += (uint64_t)data[ 6] << 48;
-    case  6: h[1] += (uint64_t)data[ 5] << 40;
-    case  5: h[2] += (uint64_t)data[ 4] << 32;
-    case  4: h[3] += (uint64_t)data[ 3] << 24;
-    case  3: h[0] += (uint64_t)data[ 2] << 16;
-    case  2: h[1] += (uint64_t)data[ 1] <<  8;
+    case 15: h[0] += (uint64_t)data[14] << 56; // FALLTHROUGH
+    case 14: h[1] += (uint64_t)data[13] << 48; // FALLTHROUGH
+    case 13: h[2] += (uint64_t)data[12] << 40; // FALLTHROUGH
+    case 12: h[3] += (uint64_t)data[11] << 32; // FALLTHROUGH
+    case 11: h[0] += (uint64_t)data[10] << 24; // FALLTHROUGH
+    case 10: h[1] += (uint64_t)data[ 9] << 16; // FALLTHROUGH
+    case  9: h[2] += (uint64_t)data[ 8] <<  8; // FALLTHROUGH
+    case  8: h[3] +=           data[ 7];       // FALLTHROUGH
+    case  7: h[0] += (uint64_t)data[ 6] << 48; // FALLTHROUGH
+    case  6: h[1] += (uint64_t)data[ 5] << 40; // FALLTHROUGH
+    case  5: h[2] += (uint64_t)data[ 4] << 32; // FALLTHROUGH
+    case  4: h[3] += (uint64_t)data[ 3] << 24; // FALLTHROUGH
+    case  3: h[0] += (uint64_t)data[ 2] << 16; // FALLTHROUGH
+    case  2: h[1] += (uint64_t)data[ 1] <<  8; // FALLTHROUGH
     case  1: h[2] += (uint64_t)data[ 0];
     }
 

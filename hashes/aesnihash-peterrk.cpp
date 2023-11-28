@@ -115,38 +115,38 @@ static void aesnihash_peterrk( const void * in, const size_t len0, const seed_t 
         uint64_t x = 0;
         switch (len) {
         case 15:
-                 x |= ((uint64_t)msg[14]) << 48U;
+                 x |= ((uint64_t)msg[14]) << 48U; //FALLTHROUGH
         case 14:
-                 x |= ((uint64_t)msg[13]) << 40U;
+                 x |= ((uint64_t)msg[13]) << 40U; //FALLTHROUGH
         case 13:
-                 x |= ((uint64_t)msg[12]) << 32U;
+                 x |= ((uint64_t)msg[12]) << 32U; //FALLTHROUGH
         case 12:
                  x |= *(const uint32_t *)(msg + 8);
                  mix(_mm_set_epi64x(x, *(const uint64_t *)msg));
                  break;
         case 11:
-                 x |= ((uint32_t)msg[10]) << 16U;
+                 x |= ((uint32_t)msg[10]) << 16U; //FALLTHROUGH
         case 10:
-                 x |= ((uint32_t)msg[ 9]) <<  8U;
+                 x |= ((uint32_t)msg[ 9]) <<  8U; //FALLTHROUGH
         case  9:
-                 x |= msg[8];
+                 x |= msg[8];                     //FALLTHROUGH
         case  8:
                  mix(_mm_set_epi64x(x, *(const uint64_t *)msg));
                  break;
         case  7:
-                 x |= ((uint64_t)msg[6]) << 48U;
+                 x |= ((uint64_t)msg[6]) << 48U; //FALLTHROUGH
         case  6:
-                 x |= ((uint64_t)msg[5]) << 40U;
+                 x |= ((uint64_t)msg[5]) << 40U; //FALLTHROUGH
         case  5:
-                 x |= ((uint64_t)msg[4]) << 32U;
+                 x |= ((uint64_t)msg[4]) << 32U; //FALLTHROUGH
         case  4:
                  x |= *(const uint32_t *)msg;
                  mix(_mm_set_epi64x(0, x));
                  break;
         case  3:
-                 x |= ((uint32_t)msg[2]) << 16U;
+                 x |= ((uint32_t)msg[2]) << 16U; //FALLTHROUGH
         case  2:
-                 x |= ((uint32_t)msg[1]) <<  8U;
+                 x |= ((uint32_t)msg[1]) <<  8U; //FALLTHROUGH
         case  1:
                  x |= msg[0];
                  mix(_mm_set_epi64x(0, x));
