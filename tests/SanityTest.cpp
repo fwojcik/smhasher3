@@ -440,7 +440,7 @@ static bool ThreadingTest( const HashInfo * hinfo, bool seedthread, bool verbose
 #if defined(HAVE_THREADS)
         // Compute all the hashes in different random orders in threads
         std::vector<std::vector<uint8_t>> threadhashes( g_NCPU, std::vector<uint8_t>(reps * hashbytes));
-        std::thread t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 hashthings, hinfo, seed, reps, i + 1, seedthread, verbose, std::ref(keys), std::ref(threadhashes[i])

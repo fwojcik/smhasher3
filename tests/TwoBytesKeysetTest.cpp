@@ -81,16 +81,16 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, size_t keylen, st
 
     //----------
     // Add all keys with one non-zero byte
-    uint8_t key[keylen];
-    memset(key, 0, keylen);
+    VLA_ALLOC(uint8_t, key, keylen);
+    memset(&key[0], 0, keylen);
     hashes.reserve(keycount);
 
     for (size_t byteA = 0; byteA < keylen; byteA++) {
         for (unsigned valA = 1; valA <= 255; valA++) {
             hashtype h;
             key[byteA] = (uint8_t)valA;
-            hash(key, keylen, seed, &h);
-            addVCodeInput(key, keylen);
+            hash(&key[0], keylen, seed, &h);
+            addVCodeInput(&key[0], keylen);
             hashes.push_back(h);
         }
         key[byteA] = 0;
@@ -109,8 +109,8 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, size_t keylen, st
                 for (unsigned valB = 1; valB <= 255; valB++) {
                     hashtype h;
                     key[byteB] = (uint8_t)valB;
-                    hash(key, keylen, seed, &h);
-                    addVCodeInput(key, keylen);
+                    hash(&key[0], keylen, seed, &h);
+                    addVCodeInput(&key[0], keylen);
                     hashes.push_back(h);
                 }
                 key[byteB] = 0;
@@ -128,7 +128,7 @@ static bool TwoBytesTestLen( HashFn hash, const seed_t seed, size_t keylen, bool
 
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).
         testDistribution(extra).dumpFailKeys([&]( hidx_t i ) {
-            uint8_t key[keylen]; memset(key, 0, keylen);
+            VLA_ALLOC(uint8_t, key, keylen); memset(&key[0], 0, keylen);
             if (i < (keylen * 255)) {
                 uint8_t val = (i % 255) + 1;
                 key[i / 255] = val;
@@ -145,7 +145,7 @@ static bool TwoBytesTestLen( HashFn hash, const seed_t seed, size_t keylen, bool
                 printf("0x%016" PRIx64 "\t%4zd zeroes except key[%4d] = 0x%02x, key[%4d] = 0x%02x\t",
                         g_seed, keylen, posA, valA, posB, valB);
             }
-            hashtype v; hash(key, keylen, seed, &v); v.printhex(NULL);
+            hashtype v; hash(&key[0], keylen, seed, &v); v.printhex(NULL);
         });
     printf("\n");
 
@@ -177,16 +177,16 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, size_t maxlen
 
     //----------
     // Add all keys with one non-zero byte
-    uint8_t key[maxlen];
-    memset(key, 0, maxlen);
+    VLA_ALLOC(uint8_t, key, maxlen);
+    memset(&key[0], 0, maxlen);
     hashes.reserve(keycount);
     for (size_t keylen = 2; keylen <= maxlen; keylen++) {
         for (size_t byteA = 0; byteA < keylen; byteA++) {
             for (unsigned valA = 1; valA <= 255; valA++) {
                 hashtype h;
                 key[byteA] = (uint8_t)valA;
-                hash(key, keylen, seed, &h);
-                addVCodeInput(key, keylen);
+                hash(&key[0], keylen, seed, &h);
+                addVCodeInput(&key[0], keylen);
                 hashes.push_back(h);
             }
             key[byteA] = 0;
@@ -203,8 +203,8 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, size_t maxlen
                     for (unsigned valB = 1; valB <= 255; valB++) {
                         hashtype h;
                         key[byteB] = (uint8_t)valB;
-                        hash(key, keylen, seed, &h);
-                        addVCodeInput(key, keylen);
+                        hash(&key[0], keylen, seed, &h);
+                        addVCodeInput(&key[0], keylen);
                         hashes.push_back(h);
                     }
                     key[byteB] = 0;
@@ -223,7 +223,7 @@ static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, size_t maxlen, 
 
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).
         testDistribution(extra).dumpFailKeys([&]( hidx_t i ) {
-            uint32_t keylen; uint8_t key[maxlen]; memset(key, 0, maxlen);
+            uint32_t keylen; VLA_ALLOC(uint8_t, key, maxlen); memset(&key[0], 0, maxlen);
             const uint32_t keylencnt = Sum1toN(maxlen) - 1;
             if (i < (keylencnt * 255)) {
                 // One non-zero byte
@@ -246,7 +246,7 @@ static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, size_t maxlen, 
                 printf("0x%016" PRIx64 "\t%4d zeroes except key[%4d] = 0x%02x, key[%4d] = 0x%02x\t",
                         g_seed, keylen, posA, valA, posB, valB);
             }
-            hashtype v; hash(key, keylen, seed, &v); v.printhex(NULL);
+            hashtype v; hash(&key[0], keylen, seed, &v); v.printhex(NULL);
         });
     printf("\n");
 

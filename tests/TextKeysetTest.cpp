@@ -75,7 +75,7 @@ template <typename hashtype, bool commas>
 static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount, bool verbose ) {
     std::vector<hashtype> hashes(numcount);
 
-    printf("Keyset 'TextNum' - numbers in text form %s commas - %ld keys\n", commas ? "with" : "without", numcount);
+    printf("Keyset 'TextNum' - numbers in text form %s commas - %" PRIu64 " keys\n", commas ? "with" : "without", numcount);
 
     //----------
     for (uint64_t n = 0; n < numcount; n++) {
@@ -278,7 +278,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
     const size_t   totalkeys = keycount * (corecount - 1) * varylen;
     char *         key       = new char[maxlen];
 
-    printf("Keyset 'Long' - %d-%d random chars from %s charset - varying %s %d chars - %ld keys\n",
+    printf("Keyset 'Long' - %d-%d random chars from %s charset - varying %s %d chars - %zu keys\n",
             minlen, maxlen, name, varyprefix ? "first" : "last", varylen, totalkeys);
     assert(minlen >= 0    );
     assert(maxlen > minlen);

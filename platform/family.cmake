@@ -22,8 +22,15 @@ endif()
 if(MSVC)
   message(STATUS "MSVC detected")
   set(MSVC_IMPL
-    "#include <stdlib.h>\n"
+"#include <stdlib.h>\n\
+#include <string.h>\n\
+#include <intrin.h>\n\
+#define strncasecmp _strnicmp\n\
+#define strcasecmp _stricmp\n\
+typedef intptr_t ssize_t'\n"
   )
+  string(REGEX REPLACE "\n +" "\n" MSVC_IMPL ${MSVC_IMPL})
+  string(REGEX REPLACE "'" ";" MSVC_IMPL ${MSVC_IMPL})
 else()
   set(MSVC_IMPL "")
 endif()

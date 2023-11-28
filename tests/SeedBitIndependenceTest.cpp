@@ -165,7 +165,7 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
                 keybytes, &keys[0], seedbytes, &seeds[0], irep, reps);
     } else {
 #if defined(HAVE_THREADS)
-        std::thread t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 SeedBicTestBatch<hashtype>, hinfo, std::ref(popcounts[i]), std::ref(andcounts[i]),

@@ -57,12 +57,8 @@ std::vector<std::string> GetWordlist( wordlist_case_t cases, bool verbose ) {
     std::unordered_set<std::string> wordset; // words need to be unique, otherwise we report collisions
     unsigned sum = 0, skip_dup = 0, skip_char = 0;
 
-    const char * ptr = words_array + 1; // Skip over initial newline
-    const char * eof = ptr + strlen(ptr);
-
-    while (ptr != eof) {
-        const char * end = (const char *)memchr(ptr, '\n', eof - ptr);
-        std::string  str( ptr, end - ptr );
+    for (const char* cstr : words_array) {
+        std::string  str = cstr;
         if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyz") != std::string::npos) {
             skip_char++;
             continue;
@@ -79,8 +75,7 @@ std::vector<std::string> GetWordlist( wordlist_case_t cases, bool verbose ) {
             std::transform(str.begin(), str.end(), str.begin(), ::toupper);
             wordvec.push_back(str);
         }
-        sum += end - ptr;
-        ptr  = end + 1;
+        sum += str.size();
     }
 
     if ((skip_dup > 0) || (skip_char > 0)) {

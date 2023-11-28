@@ -132,14 +132,14 @@ static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> 
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
-    uint8_t   buf[keybytes];
+    VLA_ALLOC(uint8_t, buf, keybytes);
     hashtype  h1, h2;
     size_t    irep;
 
     while ((irep = irepp++) < reps) {
         progressdots(irep, 0, reps - 1, 12);
 
-        ExtBlob key( buf, &keys[keybytes * irep], keybytes );
+        ExtBlob key( &buf[0], &keys[keybytes * irep], keybytes );
         hash(key, keybytes, seed, &h1);
 
         uint32_t * pop_cursor = &popcount0[0];
@@ -209,7 +209,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
                 keybytes, &keys[0], irep, reps);
     } else {
 #if defined(HAVE_THREADS)
-        std::thread t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 BicTestBatch<hashtype>, hash, seed, std::ref(popcounts[i]), std::ref(andcounts[i]),

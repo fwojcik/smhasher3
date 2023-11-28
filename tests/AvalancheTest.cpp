@@ -78,7 +78,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
         const uint8_t * keys, a_uint & irepp, const unsigned reps, const bool verbose ) {
     const unsigned keybits = keybytes * 8;
 
-    uint8_t  buf[keybytes];
+    VLA_ALLOC(uint8_t, buf, keybytes);
     hashtype A, B;
     unsigned irep;
 
@@ -87,7 +87,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
             progressdots(irep, 0, reps - 1, 18);
         }
 
-        ExtBlob K( buf, &keys[keybytes * irep], keybytes );
+        ExtBlob K( &buf[0], &keys[keybytes * irep], keybytes );
         hash(K, keybytes, seed, &A);
 
         uint32_t * cursor = &bins[0];
@@ -138,7 +138,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
         calcBiasRange<hashtype>(hash, seed, bins[0], keybytes, &keys[0], irep, reps, drawdots);
     } else {
 #if defined(HAVE_THREADS)
-        std::thread t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype>, hash, seed, std::ref(bins[i]),

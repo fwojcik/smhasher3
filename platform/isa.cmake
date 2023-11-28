@@ -88,11 +88,23 @@ set(detectVarsFilesMap
 function(feature_detect var)
   if (NOT DEFINED ${var})
     lookupDetectFile(file ${var})
-    try_compile(${var} ${CMAKE_BINARY_DIR} ${DETECT_DIR}/${file}
-      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${CMAKE_SOURCE_DIR}/include/common;${CMAKE_BINARY_DIR}/include/"
-      OUTPUT_VARIABLE dump
-    )
-#    message(STATUS "Got result ${dump} for ${file}")
+    if(MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+      try_run(MSVC_RUN_OK MSVC_COMPILE_OK ${CMAKE_BINARY_DIR} ${DETECT_DIR}/${file}
+        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${CMAKE_SOURCE_DIR}/include/common;${CMAKE_BINARY_DIR}/include/"
+        OUTPUT_VARIABLE dump
+      )
+      if(MSVC_RUN_OK EQUAL 0)
+        set(${var} TRUE PARENT_SCOPE)
+      else()
+        set(${var} FALSE PARENT_SCOPE)
+      endif()
+    else()
+      try_compile(${var} ${CMAKE_BINARY_DIR} ${DETECT_DIR}/${file}
+        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${CMAKE_SOURCE_DIR}/include/common;${CMAKE_BINARY_DIR}/include/"
+        OUTPUT_VARIABLE dump
+      )
+    endif()
+    #message(STATUS "Got result ${dump} for ${file}")
   endif()
 endfunction()
 

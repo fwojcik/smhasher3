@@ -293,7 +293,7 @@ bool test_blobsort_type_idx( void ) {
         bool     thispassed = true;
         uint64_t mintime    = UINT64_C(-1);
         if (TEST_ITER > 1) {
-            printf("%3lu bits, test %2zd [%-50s]", blobtype::bitlen, i, teststr[i]);
+            printf("%3zu bits, test %2zd [%-50s]", blobtype::bitlen, i, teststr[i]);
         }
         for (size_t j = 0; j < TEST_ITER; j++) {
             blobfill<blobtype, TEST_SIZE>(blobs, i, j);
@@ -345,7 +345,7 @@ bool test_blobsort_type_idx( void ) {
         if ((delta >= -0.05) && (delta <= 0.05)) {
             delta = 0.0;
         }
-        printf("%3lu bits, %-60s                \t%8.1f ms ( %+6.1f ms )\n\n",
+        printf("%3zu bits, %-60s                \t%8.1f ms ( %+6.1f ms )\n\n",
                 blobtype::bitlen, "SUM TOTAL", thistime, delta);
     }
 

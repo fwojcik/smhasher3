@@ -43,6 +43,8 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <string>
+
 std::vector<std::string> HashMapInit( bool verbose );
 
 bool HashMapTest( const HashInfo * info, const bool verbose, const bool extra );

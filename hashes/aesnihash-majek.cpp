@@ -44,10 +44,10 @@ static void aesnihash( const void * inv, const size_t len, const seed_t seed, vo
     uint64_t        src_sz = len;
 
     uint8_t tmp_buf[16]    = { 0 };
-    __m128i rk0     =        { UINT64_C(0x736f6d6570736575), UINT64_C(0x646f72616e646f6d) };
-    __m128i rk1     =        { UINT64_C(0x1231236570743245), UINT64_C(0x126f12321321456d) };
+    __m128i rk0     = _mm_set_epi64x(UINT64_C(0x646f72616e646f6d), UINT64_C(0x736f6d6570736575));
+    __m128i rk1     = _mm_set_epi64x(UINT64_C(0x126f12321321456d), UINT64_C(0x1231236570743245));
     // Homegrown seeding for SMHasher3
-    __m128i seed128 = { (int64_t)seed, 0 };
+    __m128i seed128 = _mm_set_epi64x(0, (int64_t)seed);
     __m128i hash    = _mm_xor_si128(rk0, seed128);
 
     while (src_sz >= 16) {
@@ -75,7 +75,8 @@ static void aesnihash( const void * inv, const size_t len, const seed_t seed, vo
     // Of course the xor below will cancel out _any_ value...
     hash = _mm_aesenc_si128(hash, _mm_set_epi64x(src_sz, src_sz));
 
-    uint64_t result = hash[0] ^ hash[1];
+    // _mm_extract_epi64 assumes SSE4.1 is available
+    uint64_t result = _mm_cvtsi128_si64(hash) ^ _mm_extract_epi64(hash, 1);
     memcpy(out, &result, 8);
 }
 

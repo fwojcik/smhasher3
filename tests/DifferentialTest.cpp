@@ -207,7 +207,7 @@ static bool DiffTestImpl( HashFn hash, const seed_t seed, unsigned diffbits, uns
         DiffTestImplThread<keytype, hashtype>(hash, seed, diffcounts[0], &keys[0], diffbits, irep, reps);
     } else {
 #if defined(HAVE_THREADS)
-        std::thread t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 DiffTestImplThread<keytype, hashtype>, hash, seed, std::ref(diffcounts[i]),

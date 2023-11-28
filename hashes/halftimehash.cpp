@@ -165,7 +165,8 @@ namespace halftime_hash {
                 return Minus(zero, a);
             }
 
-            inline uint64_t Sum( u128 a ) { return (uint64_t)a[0] + (uint64_t)a[1]; }
+            // _mm_extract_epi64 assumes SSE4.1 is also available
+            inline uint64_t Sum( u128 a ) { return _mm_cvtsi128_si64(a) + _mm_extract_epi64(a, 1); }
 
             template <bool bswap>
             struct BlockWrapper128 {
@@ -218,9 +219,12 @@ namespace halftime_hash {
                 auto d = _mm256_extracti128_si256(a, 1);
 
                 c = _mm_add_epi64(c, d);
+#ifndef _MSC_VER
                 static_assert(sizeof(c[0]) == sizeof(uint64_t) , "u256 too granular");
                 static_assert(sizeof(c) == 2 * sizeof(uint64_t), "u256 too granular");
-                return (uint64_t)c[0] + (uint64_t)c[1];
+#endif
+                // _mm_extract_epi64 assumes SSE4.1 is also available (should be always present when AVX2 is enabled)
+                return _mm_cvtsi128_si64(c) ^ _mm_extract_epi64(c, 1);
             }
 
             template <bool bswap>

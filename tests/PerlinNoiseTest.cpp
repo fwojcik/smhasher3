@@ -75,7 +75,7 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
     const uint64_t yMax = (UINT64_C(1) << Ybits);
     const HashFn   hash = hinfo->hashFn(g_hashEndian);
 
-    printf("Generating coordinates from %3i-byte keys - %ld keys\n", inputLen, xMax * yMax);
+    printf("Generating coordinates from %3i-byte keys - %" PRIu64 " keys\n", inputLen, xMax * yMax);
 
     addVCodeInput(yMax);
     // Since seeding can be expensive, loop over the seed-dependent

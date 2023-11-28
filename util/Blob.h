@@ -54,7 +54,8 @@ class Blob {
     static_assert((_bits % 8) == 0, "Blob<> bit size must be a whole number of bytes");
 
   private:
-    uint8_t  bytes[_bytes];
+    static constexpr size_t _msvc_workaround_bytes = _bytes == 0 ? 1 : _bytes;
+    uint8_t  bytes[_msvc_workaround_bytes];
 
   public:
     static constexpr size_t bitlen = _bits;
@@ -235,8 +236,8 @@ class Blob {
 
     template <bool bytewise = false>
     static uint32_t _printhex( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
-        char   buf[3 * len + 1];
-        char * p = buf;
+        VLA_ALLOC(char, buf, 3 * len + 1);
+        char * p = &buf[0];
         size_t i = len;
         size_t r = validbits;
 
@@ -274,17 +275,17 @@ class Blob {
 
         int written;
         if (prefix == NULL) {
-            printf("[ %s]%n", buf, &written);
+            printf("[ %s]%n", &buf[0], &written);
         } else {
-            printf("%s[ %s]\n%n", prefix, buf, &written);
+            printf("%s[ %s]\n%n", prefix, &buf[0], &written);
         }
         return (uint32_t)written;
     }
 
     template <bool bytewise = false>
     static uint32_t _printhex_flip( const char * prefix, const size_t validbits, const uint8_t * bytes, const size_t len ) {
-        char   buf[3 * len + 1];
-        char * p = buf;
+        VLA_ALLOC(char, buf, 3 * len + 1);
+        char * p = &buf[0];
         size_t i = len;
         size_t r = len * 8 - validbits;
 
@@ -322,16 +323,16 @@ class Blob {
 
         int written;
         if (prefix == NULL) {
-            printf("[ %s]%n", buf, &written);
+            printf("[ %s]%n", &buf[0], &written);
         } else {
-            printf("%s[ %s]\n%n", prefix, buf, &written);
+            printf("%s[ %s]\n%n", prefix, &buf[0], &written);
         }
         return (uint32_t)written;
     }
 
     static void _printbits( const char * prefix, const uint8_t * bytes, const size_t len ) {
-        char   buf[9 * len + 1];
-        char * p = buf;
+        VLA_ALLOC(char, buf, 9 * len + 1);
+        char * p = &buf[0];
         size_t i = len;
 
         // Print using MSB-first notation.  v serves double duty as the
@@ -349,9 +350,9 @@ class Blob {
         *p = 0;
 
         if (prefix == NULL) {
-            printf("[ %s]", buf);
+            printf("[ %s]", &buf[0]);
         } else {
-            printf("%s[ %s]\n", prefix, buf);
+            printf("%s[ %s]\n", prefix, &buf[0]);
         }
     }
 
@@ -508,24 +509,24 @@ class Blob {
 
     // 0xf00f1001 => 0x8008f00f
     static FORCE_INLINE void _reversebits( uint8_t * bytes, const size_t len ) {
-        uint8_t tmp[len];
+        VLA_ALLOC(uint8_t, tmp, len);
 
         for (size_t i = 0; i < len; i++) {
             tmp[len - i - 1] = _byterev(bytes[i]);
         }
-        memcpy(bytes, tmp, len);
+        memcpy(bytes, &tmp[0], len);
     }
 
     static void _lrot( size_t c, uint8_t * bytes, const size_t len ) {
         const size_t byteoffset = c >> 3;
         const size_t bitoffset  = c & 7;
-        uint8_t      tmp[len];
+        VLA_ALLOC(uint8_t, tmp, len);
 
         for (size_t i = 0; i < len; i++) {
             tmp[(i + byteoffset) % len] = bytes[i];
         }
         if (bitoffset == 0) {
-            memcpy(bytes, tmp, len);
+            memcpy(bytes, &tmp[0], len);
         } else {
             uint8_t b = tmp[len - 1];
             for (size_t i = 0; i < len; i++) {

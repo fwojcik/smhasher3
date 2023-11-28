@@ -17,6 +17,8 @@
  * <https://www.gnu.org/licenses/>.
  */
 
+#include <string>
+
 // The list of words in all lower-case are always returned. In addition,
 // the list may include the same words in all upper-case and/or the same
 // words with only their first letter in upper-case, as specified.

@@ -982,12 +982,12 @@ static FORCE_INLINE void XXH3_scalarScrambleRound( void * RESTRICT acc, void con
 #define XXH_VSX    5
 
 static const char * xxh_vector_str[] = {
-    [XXH_SCALAR] = "scalar",
-    [XXH_SSE2]   = "sse2",
-    [XXH_AVX2]   = "avx2",
-    [XXH_AVX512] = "avx512",
-    [XXH_NEON]   = "neon",
-    [XXH_VSX]    = "vsx",
+    "scalar", // XXH_SCALAR
+    "sse2",   // XXH_SSE2
+    "avx2",   // XXH_AVX2
+    "avx512", // XXH_AVX512
+    "neon",   // XXH_NEON
+    "vsx",    // XXH_VSX
 };
 
 #if defined(__has_builtin)

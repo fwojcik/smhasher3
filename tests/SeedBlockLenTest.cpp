@@ -62,11 +62,10 @@
 template <typename hashtype, size_t blocklen>
 static uint8_t * SeedBlockLenTest_Impl3( const HashFn hash, uint8_t * hashptr, size_t keylen, size_t blockoffset_min,
         size_t blockoffset_incr, size_t blockoffset_max, const seed_t seed, uint64_t numblock ) {
-    uint8_t buf[blockoffset_max - blockoffset_min + keylen];
+    VLA_ALLOC(uint8_t, buf, blockoffset_max - blockoffset_min + keylen);
+    memset(&buf[0], 0, blockoffset_max - blockoffset_min + keylen);
 
-    memset(buf, 0, sizeof(buf));
-
-    uint8_t * const blockbase = buf + blockoffset_max;
+    uint8_t * const blockbase = &buf[blockoffset_max];
     memcpy(blockbase, &numblock, blocklen);
 
     for (size_t blockoffset = blockoffset_min; blockoffset <= blockoffset_max; blockoffset += blockoffset_incr) {
@@ -165,9 +164,10 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
             uint64_t iseed       = nthlex(seedidx, seedbits);
             seed_t   hseed       = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
 
-            uint8_t  buf[blockoffset_max - blockoffset_min + keylen];
-            uint8_t * const blockbase = buf + blockoffset_max;
-            memset(buf, 0, sizeof(buf)); memcpy(blockbase, &numblock, blocklen);
+            VLA_ALLOC(uint8_t, buf, blockoffset_max - blockoffset_min + keylen);
+            uint8_t * const blockbase = &buf[blockoffset_max];
+            memset(&buf[0], 0, blockoffset_max - blockoffset_min + keylen);
+            memcpy(blockbase, &numblock, blocklen);
             uint8_t * key = blockbase - blockoffset; ExtBlob xb( key, keylen );
             printf("0x%016" PRIx64 "\t", iseed); xb.printbytes(NULL); printf("\t");
             const HashFn hash = hinfo->hashFn(g_hashEndian);

@@ -95,7 +95,7 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen,
         counts[i] = counts[i - 1] * blockcount + blockcount;
     }
 
-    printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - %ld keys\n",
+    printf("Keyset 'Combination %s' - up to %d blocks from a set of %d - %" PRIu64 " keys\n",
             testdesc, maxlen, blockcount, counts[maxlen]);
 
     //----------
@@ -130,7 +130,8 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen,
     // indices for the nth combination has been found, and the "recursion
     // depth" is the length of that list.
     bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).dumpFailKeys([&]( hidx_t n ) {
-            uint32_t blocknums[maxlen]; memset(blocknums, 0, sizeof(blocknums));
+            VLA_ALLOC(uint32_t, blocknums, maxlen);
+            memset(&blocknums[0], 0, sizeof(uint32_t) * maxlen);
             hidx_t   curlen = 0;
             n++; // Because the empty block isn't hashed
             while (n > 0) {

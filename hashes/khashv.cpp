@@ -41,8 +41,8 @@ static KHASH_FINLINE int khashv_is_little_endian() {
 
 struct khashv_block_s {
     union {
-        uint8_t   bytes[16];
         uint32_t  words[4];
+        uint8_t   bytes[16];
 #if defined(HAVE_SSSE_3)
         __m128i  vec;
 #endif
@@ -53,7 +53,7 @@ typedef struct khashv_block_s  khashvBlock;
 typedef struct khashv_block_s  khashvSeed;
 
 static const khashvBlock khash_v_init = {
-    .words = {
+    { {
         // Really this could basically be almost anything
         // So just using some bytes of the SHA-256 hashes
         // of 1, 2, 3, and 4
@@ -61,7 +61,7 @@ static const khashvBlock khash_v_init = {
         0x6457d986, // SHA256 of the byte 0x02, using the last 4 bytes
         0xadff29c5, // SHA256 of the byte 0x03, using the last 4 bytes
         0x81c89e71, // SHA256 of the byte 0x04, using the last 4 bytes
-    }
+    } }
 };
 
 //------------------------------------------------------------

@@ -422,11 +422,12 @@ static inline struct split_accumulator split_accumulator_update( const struct sp
 
     fixup += add_overflow(sum, hi, &sum);
 
-    return (struct split_accumulator) {
-               . base = sum,
-               /* Avoid sign extension: we know `fixup` is non-negative. */
-               .fixup = (uint8_t)fixup,
+    split_accumulator ret = {
+        sum,
+        /* Avoid sign extension: we know `fixup` is non-negative. */
+        (uint8_t)fixup,
     };
+    return ret;
 }
 
 // This is umash_multiple_blocks_generic().
@@ -437,7 +438,7 @@ static uint64_t umash_multiple_blocks( uint64_t initial, const uint64_t multipli
     const uint64_t m1 = multipliers[1];
     const uint64_t kx = oh_ptr[UMASH_OH_PARAM_COUNT - 2];
     const uint64_t ky = oh_ptr[UMASH_OH_PARAM_COUNT - 1];
-    struct split_accumulator ret = { .base = initial };
+    struct split_accumulator ret = { initial };
 
     assert(n_blocks > 0);
 
@@ -466,8 +467,8 @@ static uint64_t umash_multiple_blocks( uint64_t initial, const uint64_t multipli
             data = data + sizeof(x);                       \
                                                            \
             k = _mm_loadu_si128((const v128 *)&oh_ptr[I]); \
-            x ^= k;                                        \
-            acc ^= v128_clmul_cross(x);                    \
+            x = _mm_xor_si128(x, k);                       \
+            acc = _mm_xor_si128(acc,v128_clmul_cross(x));  \
         } while (0)
 
         PH(0);
@@ -537,8 +538,8 @@ static struct umash_fp umash_fprint_multiple_blocks( struct umash_fp initial, co
     const uint64_t m01  = multipliers[0][1];
     const uint64_t m10  = multipliers[1][0];
     const uint64_t m11  = multipliers[1][1];
-    struct split_accumulator acc0 = { .base = initial.hash[0] };
-    struct split_accumulator acc1 = { .base = initial.hash[1] };
+    struct split_accumulator acc0 = { initial.hash[0] };
+    struct split_accumulator acc1 = { initial.hash[1] };
 
     do {
         struct umash_oh compressed[2];
@@ -547,32 +548,32 @@ static struct umash_fp umash_fprint_multiple_blocks( struct umash_fp initial, co
         v128            lrc         = lrc_init;
         const uint8_t * data        = (const uint8_t *)blocks;
 
-        blocks = (const uint8_t *)blocks + BLOCK_SIZE;
+        blocks = (const uint8_t*)blocks + BLOCK_SIZE;
 
   #define FORCE() ((void)0)
 
-#define TWIST(I)                                       \
-        do {                                           \
-            v128 x, k;                                 \
-                                                       \
-            x = _mm_loadu_si128((const v128 *)data);   \
-            if (bswap) { x = mm_bswap64(x); }          \
-            data = data + sizeof(x);                   \
-                                                       \
-            k = _mm_loadu_si128((const v128 *)&oh[I]); \
-                                                       \
-            x ^= k;                                    \
-            lrc ^= x;                                  \
-                                                       \
-            x = v128_clmul_cross(x);                   \
-                                                       \
-            acc ^= x;                                  \
-                                                       \
-            if (I == 28)                               \
-                break;                                 \
-                                                       \
-            acc_shifted ^= x;                          \
-            acc_shifted = v128_shift(acc_shifted);     \
+#define TWIST(I)                                         \
+        do {                                             \
+            v128 x, k;                                   \
+                                                         \
+            x = _mm_loadu_si128((const v128 *)data);     \
+            if (bswap) { x = mm_bswap64(x); }            \
+            data = data + sizeof(x);                     \
+                                                         \
+            k = _mm_loadu_si128((const v128 *)&oh[I]);   \
+                                                         \
+            x = _mm_xor_si128(x, k);                     \
+            lrc = _mm_xor_si128(lrc, x);                 \
+                                                         \
+            x = v128_clmul_cross(x);                     \
+                                                         \
+            acc = _mm_xor_si128(acc, x);                 \
+                                                         \
+            if (I == 28)                                 \
+                break;                                   \
+                                                         \
+            acc_shifted = _mm_xor_si128(acc_shifted, x); \
+            acc_shifted = v128_shift(acc_shifted);       \
         } while (0)
 
         TWIST(0);
@@ -612,19 +613,19 @@ static struct umash_fp umash_fprint_multiple_blocks( struct umash_fp initial, co
         {
             v128 x, k;
 
-            x    = _mm_loadu_si128((const v128 *)data);
+            x    = _mm_loadu_si128((const v128*)data);
             if (bswap) { x = mm_bswap64(x); }
-            k    = _mm_loadu_si128((const v128 *)&oh[30]);
+            k    = _mm_loadu_si128((const v128*)&oh[30]);
 
-            lrc ^= x ^ k;
+            lrc = _mm_xor_si128(lrc, _mm_xor_si128(x, k));
         }
 
-        acc_shifted ^= acc;
+        acc_shifted  = _mm_xor_si128(acc_shifted, acc);
         acc_shifted  = v128_shift(acc_shifted);
 
-        acc_shifted ^= v128_clmul_cross(lrc);
+        acc_shifted = _mm_xor_si128(acc_shifted, v128_clmul_cross(lrc));
 
-        memcpy(&compressed[0], &acc        , sizeof(compressed[0]));
+        memcpy(&compressed[0], &acc, sizeof(compressed[0]));
         memcpy(&compressed[1], &acc_shifted, sizeof(compressed[1]));
 
         {
@@ -651,12 +652,8 @@ static struct umash_fp umash_fprint_multiple_blocks( struct umash_fp initial, co
         acc1 = split_accumulator_update(acc1, m10, m11, compressed[1].bits[0], compressed[1].bits[1]);
     } while (--n_blocks);
 
-    return (struct umash_fp) {
-               . hash = {
-                   split_accumulator_eval(acc0),
-                   split_accumulator_eval(acc1),
-               },
-    };
+    umash_fp ret = { { split_accumulator_eval(acc0), split_accumulator_eval(acc1) } };
+    return ret;
 }
 
 template <bool bswap>
@@ -678,8 +675,8 @@ static struct umash_oh oh_varblock( const uint64_t * params, uint64_t tag, const
         block = (const uint8_t *)block + sizeof(x);
 
         k     = _mm_loadu_si128((const v128 *)&params[i]);
-        x    ^= k;
-        acc  ^= v128_clmul_cross(x);
+        x     = _mm_xor_si128(x, k);
+        acc   = _mm_xor_si128(acc, v128_clmul_cross(x));
     }
 
     memcpy(&ret, &acc, sizeof(ret));
@@ -725,17 +722,17 @@ static void oh_varblock_fprint( struct umash_oh dst[2], const uint64_t * params,
 
         k     = _mm_loadu_si128((const v128 *)&params[i]);
 
-        x    ^= k;
-        lrc  ^= x;
+        x     = _mm_xor_si128(x, k);
+        lrc   = _mm_xor_si128(lrc, x);
 
         x     = v128_clmul_cross(x);
 
-        acc  ^= x;
+        acc   = _mm_xor_si128(acc, x);
         if (i + 2 >= end_full_pairs) {
             break;
         }
 
-        acc_shifted ^= x;
+        acc_shifted  = _mm_xor_si128(acc_shifted, x);
         acc_shifted  = v128_shift(acc_shifted);
     }
 
@@ -750,13 +747,13 @@ static void oh_varblock_fprint( struct umash_oh dst[2], const uint64_t * params,
         if (bswap) { x = mm_bswap64(x); }
         k    = _mm_loadu_si128((const v128 *)&params[end_full_pairs]);
 
-        lrc ^= x ^ k;
+        lrc = _mm_xor_si128(lrc, _mm_xor_si128(x, k));
     }
 
-    acc_shifted ^= acc;
+    acc_shifted  = _mm_xor_si128(acc_shifted, acc);
     acc_shifted  = v128_shift(acc_shifted);
 
-    acc_shifted ^= v128_clmul_cross(lrc);
+    acc_shifted  = _mm_xor_si128(acc_shifted, v128_clmul_cross(lrc));
 
     memcpy(&dst[0], &acc        , sizeof(dst[0]));
     memcpy(&dst[1], &acc_shifted, sizeof(dst[1]));
@@ -837,7 +834,7 @@ static struct umash_fp umash_fp_long( const uint64_t multipliers[2][2], const ui
 
     // This invokes the optional routines for very long inputs
     if (unlikely(n_bytes >= UMASH_MULTIPLE_BLOCKS_THRESHOLD)) {
-        struct umash_fp poly = { .hash = { 0     , 0 } };
+        struct umash_fp poly = { { 0, 0 } };
         size_t          n_block        = n_bytes / BLOCK_SIZE;
         const void *    remaining;
 

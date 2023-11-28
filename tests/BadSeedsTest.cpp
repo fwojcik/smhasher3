@@ -66,11 +66,11 @@
 //-----------------------------------------------------------------------------
 // Find bad seeds, and test against the known secrets/bad seeds.
 
-const std::vector<int>     testlens  = { 1, 2, 3, 6, 15, 18, 32, 52, 80 };
-const std::vector<uint8_t> testbytes = { 0, 2, 8, 32, 127, 128, 223, 247, 253, 255 };
-const size_t numtestbytes = testbytes.size();
-const size_t numtestlens  = testlens.size();
-const size_t numtests     = numtestbytes * numtestlens;
+static const int        testlens[]   = {1, 2, 3, 6, 15, 18, 32, 52, 80 };
+static const uint8_t    testbytes[]  = {0, 2, 8, 32, 127, 128, 223, 247, 253, 255};
+static constexpr size_t numtestbytes = sizeof(testbytes) / sizeof(testbytes[0]);
+static constexpr size_t numtestlens  = sizeof(testlens) / sizeof(testlens[0]);
+static constexpr size_t numtests     = numtestbytes * numtestlens;
 
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
@@ -237,7 +237,7 @@ static bool TestManySeeds( const HashInfo * hinfo, const uint64_t hi, bool & new
     } else {
 #if defined(HAVE_THREADS)
         // split into g_NCPU threads
-        std::thread    t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         const uint64_t len = UINT64_C(0x100000000) / g_NCPU;
         // Can't make VLAs in C++, so have to use vectors, but can't
         // pass a ref of a bool in a vector to a thread... :-<

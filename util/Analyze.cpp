@@ -308,13 +308,13 @@ static void CountRangedNbCollisionsImpl( std::vector<hashtype> & hashes,
 
     const int collbins    = maxHBits - minHBits + 1;
     const int maxcollbins = calcmax ? threshHBits - minHBits + 1 : 0;
-    int       prevcoll[maxcollbins + 1];
-    int       maxcoll[maxcollbins + 1];
+    VLA_ALLOC(int, prevcoll, maxcollbins + 1);
+    VLA_ALLOC(int, maxcoll, maxcollbins + 1);
 
     memset(collcounts, 0, sizeof(collcounts[0]) * collbins );
     if (calcmax) {
-        memset(prevcoll, 0, sizeof(prevcoll[0]) * maxcollbins);
-        memset(maxcoll , 0, sizeof(maxcoll[0])  * maxcollbins);
+        memset(&prevcoll[0], 0, sizeof(prevcoll[0]) * maxcollbins);
+        memset(&maxcoll[0],  0, sizeof(maxcoll[0])  * maxcollbins);
     }
 
     const uint64_t nbH = hashes.size();
@@ -775,8 +775,8 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
                 maxwidth, minwidth, &tests, &scores[0]);
     } else {
 #if defined(HAVE_THREADS)
-        std::thread t[g_NCPU];
-        int ttests[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
+        std::vector<int> ttests(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 TestDistributionBatch<hashtype>, std::ref(hashes), std::ref(istartbit),

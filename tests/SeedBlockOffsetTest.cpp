@@ -62,13 +62,13 @@
 template <typename hashtype, size_t blocklen>
 static uint8_t * SeedBlockOffsetTest_Impl3( const HashFn hash, uint8_t * hashptr, size_t keylen_min,
         size_t keylen_max, size_t blockoffset, const seed_t seed, uint64_t numblock ) {
-    uint8_t buf[keylen_max];
+    VLA_ALLOC(uint8_t, buf, keylen_max);
 
-    memset(buf, 0, sizeof(buf));
-    memcpy(buf + blockoffset, &numblock, blocklen);
+    memset(&buf[0], 0, keylen_max);
+    memcpy(&buf[blockoffset], &numblock, blocklen);
 
     for (size_t keylen = keylen_min; keylen <= keylen_max; keylen++) {
-        hash(buf, keylen, seed, hashptr);
+        hash(&buf[0], keylen, seed, hashptr);
         hashptr += sizeof(hashtype);
     }
 
@@ -147,13 +147,13 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
             uint64_t iseed     = nthlex(seedidx, seedbits);
             seed_t   hseed     = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
 
-            uint8_t  buf[keylen]; ExtBlob xb( buf, keylen ); memset(buf, 0, keylen);
-            memcpy(buf + blockoffset, &numblock, blocklen);
+            VLA_ALLOC(uint8_t, buf, keylen); ExtBlob xb( &buf[0], keylen ); memset(&buf[0], 0, keylen);
+            memcpy(&buf[blockoffset], &numblock, blocklen);
             uint32_t spacecnt = keylen_max * 3 + 4;
             printf("0x%016" PRIx64 "\t", iseed); spacecnt -= xb.printbytes(NULL);
             printf("%.*s\t", spacecnt, g_manyspaces);
             const HashFn hash = hinfo->hashFn(g_hashEndian);
-            hashtype v; hash(buf, keylen, hseed, &v); v.printhex(NULL);
+            hashtype v; hash(&buf[0], keylen, hseed, &v); v.printhex(NULL);
         });
     printf("\n");
 

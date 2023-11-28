@@ -43,21 +43,32 @@ if(NOT CMAKE_BUILD_TYPE)
       CACHE STRING "Choose the type of build, options are: Release Debug Asan" FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -g")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O1 -DDEBUG  -g")
-set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_DEBUG}")
-
 if(MSVC)
-  # using Visual Studio C++, already the default with VS17
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL GNU
+  # /bigobj required because of wordlist in array.h
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Zc:__cplusplus -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DNOMINMAX -bigobj")
+  if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    # -MP allows to MSVC to build project with multiple processes - running multiple cl.exe in parallel
+    # clang does support this, the buildsystem (make/ninja) controls explicitly how compiler is launched
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MP")
+  endif()
+  if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    # using Visual Studio C++, already the default with VS17
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
+  endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU
      OR (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
      OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
      OR (CMAKE_CXX_COMPILER_ID STREQUAL Intel))
 
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -ggdb3")
-  set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}    -ggdb3")
-  set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_ASAN} -Og -ggdb3 \
+  if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -ggdb3")
+  endif()
+
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_DEBUG   "-O1 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_DEBUG} -Og -ggdb3 \
       -fsanitize=address,undefined -fno-optimize-sibling-calls \
       -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
 
@@ -179,6 +190,10 @@ if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
   set_source_files_properties(lib/Hashinfo.cpp PROPERTIES COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/util")
 else()
   set_source_files_properties(lib/Hashinfo.cpp PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/util")
+endif()
+
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+target_link_libraries(SMHasher3Hashlib PUBLIC clang_rt.builtins-x86_64.lib)
 endif()
 
 ########################################

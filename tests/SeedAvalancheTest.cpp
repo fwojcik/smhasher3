@@ -143,7 +143,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
         calcBiasRange<hashtype, seedbytes>(hinfo, bins[0], keybytes, &keys[0], &seeds[0], irep, reps, drawdots);
     } else {
 #if defined(HAVE_THREADS)
-        std::thread t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype, seedbytes>, hinfo, std::ref(bins[i]),

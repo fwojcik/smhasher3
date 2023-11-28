@@ -143,7 +143,7 @@ static FORCE_INLINE __m128i _mm_loadu_si16( const void * ptr ) {
 
 #if defined(HAVE_SSE_2)
   #undef prefetch
-  #define prefetch(x) _mm_prefetch(x, _MM_HINT_T0)
+  #define prefetch(x) _mm_prefetch((const char*)(x), _MM_HINT_T0)
 #endif
 
 //------------------------------------------------------------
@@ -249,7 +249,7 @@ static FORCE_INLINE __m128i mm_bswap32( const __m128i v ) {
 
 static FORCE_INLINE __m128i mm_bswap64( const __m128i v ) {
     // Swap each pair of bytes
-    __m128i tmp = _mm_or_si128(_mm_slri_epi16(v, 8), _mm_slli_epi16(v, 8));
+    __m128i tmp = _mm_or_si128(_mm_srli_epi16(v, 8), _mm_slli_epi16(v, 8));
 
     // Swap 16-bit words
     tmp = _mm_shufflelo_epi16(tmp, _MM_SHUFFLE(0, 1, 2, 3));
@@ -258,7 +258,7 @@ static FORCE_INLINE __m128i mm_bswap64( const __m128i v ) {
 
 static FORCE_INLINE __m128i mm_bswap32( const __m128i v ) {
     // Swap each pair of bytes
-    __m128i tmp = _mm_or_si128(_mm_slri_epi16(v, 8), _mm_slli_epi16(v, 8));
+    __m128i tmp = _mm_or_si128(_mm_srli_epi16(v, 8), _mm_slli_epi16(v, 8));
 
     // Swap 16-bit words
     tmp = _mm_shufflelo_epi16(tmp, _MM_SHUFFLE(2, 3, 0, 1));

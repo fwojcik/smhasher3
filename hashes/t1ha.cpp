@@ -129,7 +129,10 @@
 #endif
 
 #if !defined(__has_builtin)
-  #define __has_builtin(x) (0)
+#define __has_builtin(x) (0)
+#endif
+#if !defined(__has_attribute)
+#define __has_attribute(x) (0)
 #endif
 
 #if __GNUC_PREREQ(4, 8) || __has_builtin(__builtin_assume_aligned)
@@ -1606,18 +1609,18 @@ static bool t1ha0_aes_selftest( void ) {
 #endif
 
 const char * t1ha_impl_str[] = {
-    [0] = "1N+a0",
-    [1] = "1N+a1",
-    [2] = "1N+a2",
-    [3] = "1Y+a0",
-    [4] = "1Y+a1",
-    [5] = "1Y+a2",
-    [6] = "1N+a0+aes",
-    [7] = "1N+a1+aes",
-    [8] = "1N+a2+aes",
-    [9] = "1Y+a0+aes",
-   [10] = "1Y+a1+aes",
-   [11] = "1Y+a2+aes",
+    "1N+a0",
+    "1N+a1",
+    "1N+a2",
+    "1Y+a0",
+    "1Y+a1",
+    "1Y+a2",
+    "1N+a0+aes",
+    "1N+a1+aes",
+    "1N+a2+aes",
+    "1Y+a0+aes",
+    "1Y+a1+aes",
+    "1Y+a2+aes",
 };
 
 REGISTER_FAMILY(t1ha,

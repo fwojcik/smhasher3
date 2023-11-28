@@ -109,7 +109,14 @@ static FORCE_INLINE T COND_BSWAP(T value, bool doit) {
 
 // Threading includes and global state
 #if defined(HAVE_THREADS)
+  #ifdef _MSC_VER
+    #pragma push_macro("unreachable")
+    #undef unreachable
+  #endif
   #include <thread>
+  #ifdef _MSC_VER
+    #pragma pop_macro("unreachable")
+  #endif
   extern unsigned g_NCPU;
 #else
   extern const unsigned g_NCPU;
@@ -183,6 +190,18 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
 // Generic vector support
 @VECTOR_IMPL@
 @SHUFFLE_IMPL@
+
+//-----------------------------------------------------------------------------
+// VLA helper
+//
+// Allocates on heap when VLA is not available
+
+#if defined(__STDC_NO_VLA__) || defined(_MSC_VER) && !defined(__clang__)
+    #include <vector>
+    #define VLA_ALLOC(type, name, count) std::vector<type> name(count)
+#else
+    #define VLA_ALLOC(type, name, count) type name[count]
+#endif
 
 //-----------------------------------------------------------------------------
 // Debugging helpers

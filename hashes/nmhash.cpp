@@ -57,10 +57,10 @@
 #endif
 
 const char * nmh_impl_str[] = {
-    [NMH_SCALAR] = "scalar",
-    [NMH_SSE2]   = "sse2",
-    [NMH_AVX2]   = "avx2",
-    [NMH_AVX512] = "avx512",
+    "scalar", // NMH_SCALAR
+    "sse2",   // NMH_SSE2
+    "avx2",   // NMH_AVX2
+    "avx512", // NMH_AVX512
 };
 
 #if NMH_VECTOR > NMH_SCALAR

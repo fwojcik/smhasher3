@@ -68,12 +68,14 @@
 
 #include "PopcountTest.h"
 
+#include <array>
+
 //-----------------------------------------------------------------------------
 // Moment Chi-Square test, measuring the probability of the
 // lowest 32 bits set over the whole key space. Not where the bits are, but how many.
 // See e.g. https://www.statlect.com/fundamentals-of-probability/moment-generating-function
 
-typedef uint32_t popcnt_hist[65];
+typedef std::array<uint32_t, 65> popcnt_hist;
 
 // Copy the results into g_NCPU ranges of 2^32
 static void PopcountThread( const HashInfo * hinfo, const seed_t seed, const int inputSize, const unsigned start,
@@ -227,10 +229,8 @@ static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) 
     addVCodeInput(      step); // step
     addVCodeInput( inputSize); // size
 
-    popcnt_hist rawhash[g_NCPU];
-    popcnt_hist xorhash[g_NCPU];
-    memset(rawhash, 0, sizeof(rawhash));
-    memset(xorhash, 0, sizeof(xorhash));
+    std::vector<popcnt_hist> rawhash(g_NCPU, popcnt_hist {} );
+    std::vector<popcnt_hist> xorhash(g_NCPU, popcnt_hist {} );
 
     const seed_t seed = hinfo->Seed(g_seed, HashInfo::SEED_ALLOWFIX, 1);
 
@@ -239,7 +239,7 @@ static bool PopcountTestImpl( const HashInfo * hinfo, int inputSize, int step ) 
     } else {
 #if defined(HAVE_THREADS)
         // split into g_NCPU threads
-        std::thread t[g_NCPU];
+        std::vector<std::thread> t(g_NCPU);
         printf("%d threads starting... ", g_NCPU);
 
         const uint64_t len = UINT64_C(0x100000000) / (step * g_NCPU);
