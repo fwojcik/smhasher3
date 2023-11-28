@@ -18,7 +18,7 @@
   c -= b;  c ^= ROTL32(b, 4);  b += a; \
 }
 
-#define final(a,b,c)         \
+#define finalmix(a,b,c)      \
 {                            \
   c ^= b; c -= ROTL32(b,14); \
   a ^= c; a -= ROTL32(c,11); \
@@ -79,7 +79,7 @@ static void hashlittle( const uint8_t * key, size_t length, uint64_t seed64, uin
     case  0: goto out;                       /* zero length strings require no more mixing */
     }
 
-    final (a, b, c);
+    finalmix(a, b, c);
 
   out:
     PUT_U32<bswap>(c, out, 0);
