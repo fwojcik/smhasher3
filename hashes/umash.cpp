@@ -438,7 +438,9 @@ static uint64_t umash_multiple_blocks( uint64_t initial, const uint64_t multipli
     const uint64_t m1 = multipliers[1];
     const uint64_t kx = oh_ptr[UMASH_OH_PARAM_COUNT - 2];
     const uint64_t ky = oh_ptr[UMASH_OH_PARAM_COUNT - 1];
-    struct split_accumulator ret = { initial };
+    struct split_accumulator ret;
+
+    ret.base = initial; ret.fixup = 0;
 
     assert(n_blocks > 0);
 
@@ -538,8 +540,10 @@ static struct umash_fp umash_fprint_multiple_blocks( struct umash_fp initial, co
     const uint64_t m01  = multipliers[0][1];
     const uint64_t m10  = multipliers[1][0];
     const uint64_t m11  = multipliers[1][1];
-    struct split_accumulator acc0 = { initial.hash[0] };
-    struct split_accumulator acc1 = { initial.hash[1] };
+    struct split_accumulator acc0, acc1;
+
+    acc0.base = initial.hash[0]; acc0.fixup = 0;
+    acc1.base = initial.hash[1]; acc1.fixup = 1;
 
     do {
         struct umash_oh compressed[2];
