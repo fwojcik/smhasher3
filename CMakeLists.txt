@@ -62,6 +62,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL GNU
      OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
      OR (CMAKE_CXX_COMPILER_ID STREQUAL Intel))
 
+  # For clang-cl, CMAKE_CXX_COMPILER_ID is Clang but MSVC is set to true
   if(NOT MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -ggdb3")
   endif()
@@ -193,7 +194,7 @@ else()
 endif()
 
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-target_link_libraries(SMHasher3Hashlib PUBLIC clang_rt.builtins-x86_64.lib)
+  target_link_libraries(SMHasher3Hashlib PUBLIC clang_rt.builtins-x86_64.lib)
 endif()
 
 ########################################

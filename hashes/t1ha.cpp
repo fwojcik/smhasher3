@@ -129,10 +129,10 @@
 #endif
 
 #if !defined(__has_builtin)
-#define __has_builtin(x) (0)
+  #define __has_builtin(x) (0)
 #endif
 #if !defined(__has_attribute)
-#define __has_attribute(x) (0)
+  #define __has_attribute(x) (0)
 #endif
 
 #if __GNUC_PREREQ(4, 8) || __has_builtin(__builtin_assume_aligned)

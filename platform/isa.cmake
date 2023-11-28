@@ -93,6 +93,7 @@ function(feature_detect var)
         CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${CMAKE_SOURCE_DIR}/include/common;${CMAKE_BINARY_DIR}/include/"
         OUTPUT_VARIABLE dump
       )
+      # The result from try_run() is inverted from what we want
       if(MSVC_RUN_OK EQUAL 0)
         set(${var} TRUE PARENT_SCOPE)
       else()
