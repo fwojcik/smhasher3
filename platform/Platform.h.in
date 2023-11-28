@@ -200,7 +200,12 @@ static FORCE_INLINE void PUT_U64(uint64_t n, uint8_t * b, const uint32_t i) {
     #include <vector>
     #define VLA_ALLOC(type, name, count) std::vector<type> name(count)
 #else
-    #define VLA_ALLOC(type, name, count) type name[count]
+    #define VLA_ALLOC(type, name, count)  \
+ _Pragma("GCC diagnostic push");          \
+ _Pragma("GCC diagnostic ignored \"-Wvla\""); \
+ _Pragma("clang diagnostic ignored \"-Wvla-extension\""); \
+ type name[count];                            \
+ _Pragma("GCC diagnostic pop");
 #endif
 
 //-----------------------------------------------------------------------------
