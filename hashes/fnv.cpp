@@ -114,7 +114,7 @@ static void FNV1a_128( const void * in, const size_t len, const seed_t seed, voi
     const uint64_t  C2   = UINT64_C(0x13b);
 
     uint64_t s0, s1;
-    uint64_t hash[2] = { 0, 0 }; // XXX
+    uint64_t hash[2] = { seed, seed };
 
     hash[0] ^= C1hi;
     hash[1] ^= C1lo;
@@ -399,8 +399,8 @@ REGISTER_HASH(FNV_1a_128,
          FLAG_IMPL_VERY_SLOW          |
          FLAG_IMPL_CANONICAL_BOTH,
    $.bits = 128,
-   $.verification_LE = 0x92D20436,
-   $.verification_BE = 0x92D20436,
+   $.verification_LE = 0x0269D36F,
+   $.verification_BE = 0x0269D36F,
    $.hashfn_native   = FNV1a_128,
    $.hashfn_bswap    = FNV1a_128
  );
