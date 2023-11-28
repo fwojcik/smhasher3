@@ -224,7 +224,7 @@ namespace halftime_hash {
                 static_assert(sizeof(c) == 2 * sizeof(uint64_t), "u256 too granular");
 #endif
                 // _mm_extract_epi64 assumes SSE4.1 is also available (should be always present when AVX2 is enabled)
-                return _mm_cvtsi128_si64(c) ^ _mm_extract_epi64(c, 1);
+                return _mm_cvtsi128_si64(c) + _mm_extract_epi64(c, 1);
             }
 
             template <bool bswap>
