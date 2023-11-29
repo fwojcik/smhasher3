@@ -80,10 +80,14 @@ static void aesnihash( const void * inv, const size_t len, const seed_t seed, vo
     memcpy(out, &result, 8);
 }
 
+#endif
+
 REGISTER_FAMILY(aesnihash_majek,
    $.src_url    = "https://gist.github.com/majek/96dd615ed6c8aa64f60aac14e3f6ab5a",
    $.src_status = HashFamilyInfo::SRC_FROZEN
  );
+
+#if defined(HAVE_X86_64_AES)
 
 REGISTER_HASH(aesnihash_majek,
    $.desc       = "majek's aesnihash",
@@ -102,6 +106,4 @@ REGISTER_HASH(aesnihash_majek,
    $.badseeddesc     = "All seeds collide on keys of all zero bytes when (len/16) is constant."
  );
 
-#else
-REGISTER_FAMILY(aesnihash_majek);
 #endif
