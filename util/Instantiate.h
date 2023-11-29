@@ -29,7 +29,7 @@
             std::tuple_cat(std::make_tuple(FN<Types>)...); \
         return &instances;                                 \
     }                                                      \
-    template auto FN ## _instantiator<TYPELIST>();
+    template auto FN ## _instantiator<TYPELIST>()
 #else
 // C++11 doesn't, so YOU get a void*, and YOU get a void*,....
 #define INSTANTIATE(FN, TYPELIST)                      \
@@ -39,7 +39,7 @@
             std::make_tuple(((void *)(FN<Types>))...); \
         return (void *)(&instances);                   \
     }                                                  \
-    template void * FN ## _instantiator<TYPELIST>();
+    template void * FN ## _instantiator<TYPELIST>()
 #endif
 
 // If you get a compiler error from this macro that looks like:

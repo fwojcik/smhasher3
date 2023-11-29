@@ -55,7 +55,7 @@ bool verifyHash( const HashInfo * hinfo, enum HashInfo::endianness endian, bool 
     __VA_ARGS__;                                 \
     register_hash(&$);                           \
     return $;                                    \
-  }();
+  }()
 
 #define USE_FAMILY(N)               \
     extern unsigned CONCAT(N,_ref); \
