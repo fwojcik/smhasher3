@@ -88,6 +88,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL GNU
   if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(ACTUAL_GCC TRUE)
 
+    # GCC versions before 9.0 don't handle _Pragma for ignoring -Wvla :-(
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-vla")
+    endif()
+
     # For my development system
     if(EXISTS "${CMAKE_SOURCE_DIR}/.devbox")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gdwarf-4 -fvar-tracking-assignments")
