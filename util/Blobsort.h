@@ -206,21 +206,27 @@ static void flagsort( T * begin, T * end, hidx_t * idxs, T * base, int digit ) {
     // there's no need to iterate over every item. If there are no more
     // passes, then we're just done. Otherwise, since this case is only
     // likely to hit in degenerate cases (e.g. donothing64), just devolve
-    // into insertionsort since that performs better for those. smallsort()
+    // into radixsort since that performs better for those. smallsort()
     // isn't used here because these blocks must be large.
     //
-    // This has dreadful performance on lists of different values which
-    // have identical prefixes. Might need to do something introsort-like
-    // and detect when insertionsort() is starting to take too long and
-    // fallback to radixsort.
+    // Ideally, this would fallback to insertionsort(), because it's
+    // significantly better on average, but that has dreadful performance
+    // on lists of different values which have identical prefixes. Some bad
+    // hashes (like FNV variants) can generate those. To use
+    // insertionsort(), we might need to do something introsort-like and
+    // detect when it is starting to take too long, and then
+    // fall-further-back to radixsort().
     if (unlikely(++freqs[(*ptr)[digit]] == count)) {
         if (digit != 0) {
             assume((end - begin) > SMALLSORT_CUTOFF);
+            radixsort<track_idxs>(begin, end, idxs);
+#if SOMEDAY_MAYBE
             if (begin == base) {
                 insertionsort<false, track_idxs>(begin, end, idxs);
             } else {
                 insertionsort<true, track_idxs>(begin, end, idxs);
             }
+#endif
         }
         return;
     }
