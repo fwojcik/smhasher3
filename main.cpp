@@ -75,19 +75,15 @@
 #include "SanityTest.h"
 #include "SparseKeysetTest.h"
 #include "ZeroesKeysetTest.h"
-#include "WindowedKeysetTest.h"
 #include "CyclicKeysetTest.h"
 #include "TwoBytesKeysetTest.h"
 #include "TextKeysetTest.h"
 #include "PermutationKeysetTest.h"
 #include "SpeedTest.h"
 #include "PerlinNoiseTest.h"
-#include "PopcountTest.h"
-#include "PRNGTest.h"
 #include "AvalancheTest.h"
 #include "BitflipTest.h"
 #include "BitIndependenceTest.h" // aka BIC
-#include "DifferentialTest.h"
 #include "HashMapTest.h"
 #include "SeedTest.h"
 #include "SeedZeroesTest.h"
@@ -128,7 +124,6 @@ static bool g_testHashmap;
 static bool g_testAvalanche;
 static bool g_testSparse;
 static bool g_testPermutation;
-static bool g_testWindow;
 static bool g_testCyclic;
 static bool g_testTwoBytes;
 static bool g_testText;
@@ -142,10 +137,7 @@ static bool g_testSeedBitflip;
 static bool g_testSeedAvalanche;
 static bool g_testSeedBIC;
 static bool g_testPerlinNoise;
-static bool g_testDiff;
 static bool g_testBitflip;
-static bool g_testPopcount;
-static bool g_testPrng;
 static bool g_testBIC;
 static bool g_testBadSeeds;
 
@@ -182,10 +174,6 @@ static TestOpts g_testopts[] = {
     { g_testPerlinNoise,      true,     false,    "PerlinNoise" },
     { g_testBitflip,          true,     false,    "Bitflip" },
     { g_testBIC,              true,     false,    "BIC" },
-    { g_testDiff,            false,     false,    "Diff" },
-    { g_testWindow,          false,     false,    "Window" },
-    { g_testPopcount,        false,     false,    "Popcount" },
-    { g_testPrng,            false,     false,    "Prng" },
     { g_testBadSeeds,        false,     false,    "BadSeeds" },
 };
 
@@ -451,7 +439,7 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Bit Independence Criteria.
+    // Bit Independence Criteria
 
     if (g_testBIC) {
         result &= BicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
@@ -570,37 +558,7 @@ static bool test( const HashInfo * hInfo ) {
     }
 
     //-----------------------------------------------------------------------------
-    // Keyset 'Window'
-
-    if (g_testWindow) {
-        result &= WindowedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Differential tests
-
-    if (g_testDiff) {
-        result &= DiffTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Measuring the distribution of the population count of the
-    // lowest 32 bits set over the whole key space.
-
-    if (g_testPopcount) {
-        result &= PopcountTest<hashtype>(hInfo, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Test the hash function as a PRNG by repeatedly feeding its output
-    // back into the hash to get the next random number.
-
-    if (g_testPrng) {
-        result &= PRNGTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
-    }
-
-    //-----------------------------------------------------------------------------
-    // Test for known or unknown seed values which give bad/suspect hash values.
+    // Test for known or unknown seed values which give bad/suspect hash values
 
     if (g_testBadSeeds) {
         result &= BadSeedsTest<hashtype>(hInfo, g_testExtra);

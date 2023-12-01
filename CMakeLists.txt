@@ -229,11 +229,9 @@ add_library(
   tests/AvalancheTest.cpp
   tests/BitflipTest.cpp
   tests/BitIndependenceTest.cpp
-  tests/DifferentialTest.cpp
   tests/HashMapTest.cpp
   tests/SparseKeysetTest.cpp
   tests/ZeroesKeysetTest.cpp
-  tests/WindowedKeysetTest.cpp
   tests/CyclicKeysetTest.cpp
   tests/TwoBytesKeysetTest.cpp
   tests/TextKeysetTest.cpp
@@ -248,8 +246,6 @@ add_library(
   tests/SeedBitIndependenceTest.cpp
   tests/BadSeedsTest.cpp
   tests/PerlinNoiseTest.cpp
-  tests/PopcountTest.cpp
-  tests/PRNGTest.cpp
   tests/SpeedTest.cpp
 )
 target_include_directories(SMHasher3Tests PRIVATE util PUBLIC include/common)
