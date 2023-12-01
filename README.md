@@ -53,24 +53,22 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2023-09-07, SMHasher3 is nearing a beta3 release. There is about a
-80% chance this will happen before approx 2023-10-12. If it does not happen
-by then, it will very likely take until late November 2023.
+As of 2023-12-01, SMHasher3 is very near to a beta3 release. The estimated
+date for this is 2023-12-10.
 
-The major features I wanted to include before declaring another stable
-point are nearly all done, now that I've added detailed hash reporting on
-test failure. The last big unfinished one is to add a number of existing
-hash algorithms as well as refresh the existing suite with any updated
-versions. There are a number of other smaller things too, of course. Most
-of those can be tracked at
-https://gitlab.com/fwojcik/smhasher3/-/milestones/3.
+The two coding/writing things left to do before release are to document
+what each test does, and to improve verbosity configuration. I also need to
+run all the hashes to produce their reports, and that can take some time.
 
-This code has compiled and run successfully on Linux x64, arm, and powerpc using gcc
-and clang. Importantly, I do not have the ability to test on Mac or Windows
-environments. The goal is to support both, and while the CMake files Should Just
-Work(tm) in both environments, I feel the odds that I got everything perfect on the
-first go to be... small. So reports of success or failure are appreciated, as are
-patches to make things work.
+This code is compiled and run successfully on Linux x64, arm, and powerpc
+using gcc and clang quite often. Importantly, I do not have the ability to
+test on Mac or Windows environments. It has been compiled successfully
+using MSVC and clang-cl in the past; efforts are made to ensure this
+remains the case, but some things may slip through. The goal is to support
+all of the above, and while the CMake files Should Just Work(tm), MSVC in
+particular has its own ideas about some corners of the various specs. So
+reports of success or failure are appreciated, as are patches to make
+things work.
 
 How to build
 ------------
