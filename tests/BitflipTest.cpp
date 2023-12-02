@@ -128,7 +128,7 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
         if (drawDiagram) {
             printf("\n");
         } else {
-            progressdots(keybit, 0, keybits - 1, 10);
+            progressdots(keybit, 0, keybits - 1, 20);
             // Record worst result, but don't let a pass override a failure
             if ((fails == 0) && !thisresult) {
                 worstlogp = -1;
