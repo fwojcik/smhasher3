@@ -214,7 +214,7 @@ static bool HashMapImpl( const HashInfo * hinfo, std::vector<std::string> words,
 //-----------------------------------------------------------------------------
 
 bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
-    const int    trials = (hinfo->isVerySlow() && !extra) ? 5 : 50;
+    const int    trials = (hinfo->isVerySlow() || !extra) ? 5 : 50;
     bool         result = true;
 
     printf("[[[ 'Hashmap' Speed Tests ]]]\n\n");
