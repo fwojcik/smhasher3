@@ -178,7 +178,7 @@ static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> 
 
 template <typename hashtype>
 static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
-        const size_t reps, bool verbose = false ) {
+        const size_t reps, flags_t flags ) {
     const size_t keybits      = keybytes * 8;
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
@@ -234,7 +234,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
 
     bool result = true;
 
-    result &= ReportChiSqIndep(&popcounts[0][0], &andcounts[0][1], keybits, hashbits, reps, verbose);
+    result &= ReportChiSqIndep(&popcounts[0][0], &andcounts[0][1], keybits, hashbits, reps, flags);
 
     recordTestResult(result, "BIC", keybytes);
 
@@ -244,7 +244,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool BicTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool BicTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     size_t       reps   = (hinfo->bits > 128 || hinfo->isVerySlow()) ? 100000 : 600000;
     bool         result = true;
@@ -261,9 +261,9 @@ bool BicTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
     }
     for (const auto keylen: keylens) {
         if (keylen <= 16) {
-            result &= BicTestImpl<hashtype>(hash, seed, keylen, reps * 2, verbose);
+            result &= BicTestImpl<hashtype>(hash, seed, keylen, reps * 2, flags);
         } else {
-            result &= BicTestImpl<hashtype>(hash, seed, keylen, reps, verbose);
+            result &= BicTestImpl<hashtype>(hash, seed, keylen, reps, flags);
         }
     }
 

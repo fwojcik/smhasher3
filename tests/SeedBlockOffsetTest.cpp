@@ -102,7 +102,7 @@ static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hasht
 // Level 1: print out header, allocate hash vector, generate hashes, test them
 template <typename hashtype, size_t blocklen>
 static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min, size_t keylen_max,
-        size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits, bool verbose ) {
+        size_t blockoffset, size_t seedmaxbits, size_t blockmaxbits, flags_t flags ) {
     // Compute the number of hashes that will be generated
     size_t testseeds = 0;
 
@@ -137,7 +137,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
                 keylen_max, blockoffset, seedmaxbits, blockmaxbits);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys([&]( hidx_t i ) {
             size_t   keylen    = keylen_min + (i % testkeys); i /= testkeys;
             uint32_t blockidx  = (i % testblocks);            i /= testblocks;
             uint32_t seedidx   = i;
@@ -167,7 +167,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedBlockOffsetTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool SeedBlockOffsetTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     constexpr size_t seedbits  = 2;
     constexpr size_t blockbits = 2;
     constexpr size_t blocklen  = 4;
@@ -184,7 +184,7 @@ bool SeedBlockOffsetTest( const HashInfo * hinfo, const bool verbose, const bool
         const size_t minkeylen = blocklen + blockoffset;
         const size_t maxkeylen = 31;
         result &= SeedBlockOffsetTest_Impl1<hashtype, blocklen>(hinfo, minkeylen,
-                maxkeylen, blockoffset, seedbits, blockbits, verbose);
+                maxkeylen, blockoffset, seedbits, blockbits, flags);
     }
 
     printf("%s\n", result ? "" : g_failstr);

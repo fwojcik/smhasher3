@@ -62,7 +62,7 @@
 
 template <typename hashtype>
 static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
-        const HashInfo * hinfo, bool extra, bool verbose ) {
+        const HashInfo * hinfo, bool extra, flags_t flags ) {
     assert(0 < Ybits  &&  Ybits < 31);
     assert(0 < Xbits  &&  Xbits < 31);
     assert(    Xbits   +  Ybits < 31);
@@ -94,8 +94,8 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
         }
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDistribution(extra).testDeltas(xMax).
-        dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).reportFlags(flags).testDistribution(extra).
+        testDeltas(xMax).dumpFailKeys([&]( hidx_t i ) {
                 uint64_t x = i % xMax;
                 uint32_t y = i / xMax;
 
@@ -117,15 +117,15 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool PerlinNoiseTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool PerlinNoiseTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     bool result = true;
 
     printf("[[[ Keyset 'PerlinNoise' Tests ]]]\n\n");
 
-    result &= PerlinNoise<hashtype>(12, 12, 2, 1, hinfo, extra, verbose);
+    result &= PerlinNoise<hashtype>(12, 12, 2, 1, hinfo, extra, flags);
     if (extra) {
-        result &= PerlinNoise<hashtype>(12, 12, 4, 1, hinfo, extra, verbose);
-        result &= PerlinNoise<hashtype>(12, 12, 8, 1, hinfo, extra, verbose);
+        result &= PerlinNoise<hashtype>(12, 12, 4, 1, hinfo, extra, flags);
+        result &= PerlinNoise<hashtype>(12, 12, 8, 1, hinfo, extra, flags);
     }
 
     printf("%s\n", result ? "" : g_failstr);

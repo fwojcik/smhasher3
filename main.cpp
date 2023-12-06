@@ -104,7 +104,6 @@
 
 //-----------------------------------------------------------------------------
 // Locally-visible configuration
-static bool g_drawDiagram  = false;
 static bool g_forceSummary = false;
 
 // Setting to test more thoroughly.
@@ -272,7 +271,8 @@ static HashInfo::endianness parse_endian( const char * str ) {
 //-----------------------------------------------------------------------------
 // Self-tests - verify that hashes work correctly
 
-static void HashSelfTestAll( bool verbose ) {
+static void HashSelfTestAll( flags_t flags ) {
+    bool verbose = REPORT(VERBOSE, flags);
     bool pass = true;
 
     printf("[[[ VerifyAll Tests ]]]\n\n");
@@ -298,14 +298,14 @@ static bool HashSelfTest( const HashInfo * hinfo ) {
     return result;
 }
 
-static void HashSanityTestAll( bool verbose ) {
+static void HashSanityTestAll( flags_t flags ) {
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
     uint64_t       prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ SanityAll Tests ]]]\n\n");
 
-    SanityTestHeader(verbose);
+    SanityTestHeader(flags);
     for (const HashInfo * h: allHashes) {
         if ((h->hash_flags & mask_flags) != prev_flags) {
             printf("\n");
@@ -315,7 +315,7 @@ static void HashSanityTestAll( bool verbose ) {
             printf("%s : hash initialization failed!", h->name);
             continue;
         }
-        SanityTest(h, true, verbose);
+        SanityTest(h, flags, true);
     }
     printf("\n");
 }
@@ -323,14 +323,14 @@ static void HashSanityTestAll( bool verbose ) {
 //-----------------------------------------------------------------------------
 // Quickly speed test all hashes
 
-static void HashSpeedTestAll( bool verbose ) {
+static void HashSpeedTestAll( flags_t flags ) {
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
     uint64_t       prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ Short Speed Tests ]]]\n\n");
 
-    ShortSpeedTestHeader(verbose);
+    ShortSpeedTestHeader(flags);
     for (const HashInfo * h: allHashes) {
         if ((h->hash_flags & mask_flags) != prev_flags) {
             printf("\n");
@@ -340,7 +340,7 @@ static void HashSpeedTestAll( bool verbose ) {
             printf("%s : hash initialization failed!", h->name);
             continue;
         }
-        ShortSpeedTest(h, verbose);
+        ShortSpeedTest(h, flags);
     }
     printf("\n");
 }
@@ -371,7 +371,7 @@ static void print_pvaluecounts( void ) {
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-static bool test( const HashInfo * hInfo ) {
+static bool test( const HashInfo * hInfo, const flags_t flags ) {
     bool result   = true;
 
     if (g_testAll) {
@@ -416,7 +416,7 @@ static bool test( const HashInfo * hInfo ) {
         printf("[[[ Sanity Tests ]]]\n\n");
 
         result &= HashSelfTest(hInfo);
-        result &= (SanityTest(hInfo) || hInfo->isMock());
+        result &= (SanityTest(hInfo, flags) || hInfo->isMock());
         printf("\n");
     }
 
@@ -424,137 +424,137 @@ static bool test( const HashInfo * hInfo ) {
     // Speed tests
 
     if (g_testSpeed) {
-        SpeedTest(hInfo);
+        SpeedTest(hInfo, flags);
     }
 
     if (g_testHashmap) {
-        result &= HashMapTest(hInfo, g_drawDiagram, g_testExtra);
+        result &= HashMapTest(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Avalanche tests
 
     if (g_testAvalanche) {
-        result &= AvalancheTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= AvalancheTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Bit Independence Criteria
 
     if (g_testBIC) {
-        result &= BicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= BicTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'Zeroes'
 
     if (g_testZeroes) {
-        result &= ZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
+        result &= ZeroKeyTest<hashtype>(hInfo, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'Cyclic' - keys of the form "abcdabcdabcd..."
 
     if (g_testCyclic) {
-        result &= CyclicKeyTest<hashtype>(hInfo, g_drawDiagram);
+        result &= CyclicKeyTest<hashtype>(hInfo, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'Sparse' - keys with all bits 0 except a few
 
     if (g_testSparse) {
-        result &= SparseKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= SparseKeyTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'Permutation' - all possible combinations of a set of blocks
 
     if (g_testPermutation) {
-        result &= PermutedKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= PermutedKeyTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'Text'
 
     if (g_testText) {
-        result &= TextKeyTest<hashtype>(hInfo, g_drawDiagram);
+        result &= TextKeyTest<hashtype>(hInfo, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'TwoBytes' - all keys up to N bytes containing two non-zero bytes
 
     if (g_testTwoBytes) {
-        result &= TwoBytesKeyTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= TwoBytesKeyTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'PerlinNoise'
 
     if (g_testPerlinNoise) {
-        result &= PerlinNoiseTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= PerlinNoiseTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'Bitflip'
 
     if (g_testBitflip) {
-        result &= BitflipTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= BitflipTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'SeedZeroes'
 
     if (g_testSeedZeroes) {
-        result &= SeedZeroKeyTest<hashtype>(hInfo, g_drawDiagram);
+        result &= SeedZeroKeyTest<hashtype>(hInfo, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'SeedSparse'
 
     if (g_testSeedSparse) {
-        result &= SeedSparseTest<hashtype>(hInfo, g_drawDiagram);
+        result &= SeedSparseTest<hashtype>(hInfo, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'SeedBlockLen'
 
     if (g_testSeedBlockLen) {
-        result &= SeedBlockLenTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= SeedBlockLenTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'SeedBlockOffset'
 
     if (g_testSeedBlockOffset) {
-        result &= SeedBlockOffsetTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= SeedBlockOffsetTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'Seed'
 
     if (g_testSeed) {
-        result &= SeedTest<hashtype>(hInfo, g_drawDiagram);
+        result &= SeedTest<hashtype>(hInfo, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'SeedAvalanche'
 
     if (g_testSeedAvalanche) {
-        result &= SeedAvalancheTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= SeedAvalancheTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'SeedBIC'
 
     if (g_testSeedBIC) {
-        result &= SeedBicTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= SeedBicTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
     // Keyset 'SeedBitflip'
 
     if (g_testSeedBitflip) {
-        result &= SeedBitflipTest<hashtype>(hInfo, g_drawDiagram, g_testExtra);
+        result &= SeedBitflipTest<hashtype>(hInfo, g_testExtra, flags);
     }
 
     //-----------------------------------------------------------------------------
@@ -597,7 +597,7 @@ static bool test( const HashInfo * hInfo ) {
 
 //-----------------------------------------------------------------------------
 
-static bool testHash( const char * name ) {
+static bool testHash( const char * name, const flags_t flags ) {
     const HashInfo * hInfo;
 
     if ((hInfo = findHash(name)) == NULL) {
@@ -608,22 +608,22 @@ static bool testHash( const char * name ) {
     // If you extend these statements by adding a new bitcount/type, you
     // need to adjust HASHTYPELIST in util/Instantiate.h also.
     if (hInfo->bits == 32) {
-        return test<Blob<32>>(hInfo);
+        return test<Blob<32>>(hInfo, flags);
     }
     if (hInfo->bits == 64) {
-        return test<Blob<64>>(hInfo);
+        return test<Blob<64>>(hInfo, flags);
     }
     if (hInfo->bits == 128) {
-        return test<Blob<128>>(hInfo);
+        return test<Blob<128>>(hInfo, flags);
     }
     if (hInfo->bits == 160) {
-        return test<Blob<160>>(hInfo);
+        return test<Blob<160>>(hInfo, flags);
     }
     if (hInfo->bits == 224) {
-        return test<Blob<224>>(hInfo);
+        return test<Blob<224>>(hInfo, flags);
     }
     if (hInfo->bits == 256) {
-        return test<Blob<256>>(hInfo);
+        return test<Blob<256>>(hInfo, flags);
     }
 
     printf("Invalid hash bit width %d for hash '%s'", hInfo->bits, hInfo->name);
@@ -673,6 +673,7 @@ int main( int argc, const char ** argv ) {
         usage();
     }
 
+    flags_t flags = FLAG_REPORT_PROGRESS;
     for (int argnb = 1; argnb < argc; argnb++) {
         const char * const arg = argv[argnb];
         if (strncmp(arg, "--", 2) == 0) {
@@ -701,7 +702,8 @@ int main( int argc, const char ** argv ) {
                 exit(0);
             }
             if (strcmp(arg, "--verbose") == 0) {
-                g_drawDiagram = true;
+                flags |= FLAG_REPORT_VERBOSE;
+                flags |= FLAG_REPORT_DIAGRAMS;
                 continue;
             }
             if (strcmp(arg, "--force-summary") == 0) {
@@ -797,13 +799,13 @@ int main( int argc, const char ** argv ) {
     size_t timeBegin = monotonic_clock();
 
     if (g_testVerifyAll) {
-        HashSelfTestAll(g_drawDiagram);
+        HashSelfTestAll(flags);
     } else if (g_testSanityAll) {
-        HashSanityTestAll(g_drawDiagram);
+        HashSanityTestAll(flags);
     } else if (g_testSpeedAll) {
-        HashSpeedTestAll(g_drawDiagram);
+        HashSpeedTestAll(flags);
     } else {
-        testHash(hashToTest);
+        testHash(hashToTest, flags);
     }
 
     size_t timeEnd = monotonic_clock();

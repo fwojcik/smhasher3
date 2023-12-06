@@ -49,4 +49,4 @@
 // happens to the hash value when we flip 1 or more bits of the seed.
 
 template <typename hashtype>
-bool SeedBitflipTest( const HashInfo * info, const bool verbose, const bool extra );
+bool SeedBitflipTest( const HashInfo * info, bool extra, flags_t flags );

@@ -63,7 +63,7 @@
 // bits set
 
 template <typename hashtype, uint32_t maxbits, bool bigseed>
-static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiagram ) {
+static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, flags_t flags ) {
     assert(maxbits < 16   );
     assert(keylen < MAXLEN);
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
@@ -102,7 +102,7 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
         } while (iseed != 0);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1).dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).dumpFailKeys([&]( hidx_t i ) {
             seed_t setbits = InverseKChooseUpToK(i, 0, maxbits, bigseed ? 64 : 32);
             seed_t iseed   = nthlex(i, setbits);
             seed_t hseed   = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
@@ -122,7 +122,7 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, bool dr
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedSparseTest( const HashInfo * hinfo, const bool verbose ) {
+bool SeedSparseTest( const HashInfo * hinfo, flags_t flags ) {
     bool result = true;
 
     printf("[[[ Keyset 'SeedSparse' Tests ]]]\n\n");
@@ -131,11 +131,11 @@ bool SeedSparseTest( const HashInfo * hinfo, const bool verbose ) {
 
     if (hinfo->is32BitSeed()) {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedSparseTestImpl<hashtype,  7, false>(hinfo, testkeylen, verbose);
+            result &= SeedSparseTestImpl<hashtype,  7, false>(hinfo, testkeylen, flags);
         }
     } else {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedSparseTestImpl<hashtype,  5,  true>(hinfo, testkeylen, verbose);
+            result &= SeedSparseTestImpl<hashtype,  5,  true>(hinfo, testkeylen, flags);
         }
     }
 

@@ -48,4 +48,4 @@
  */
 
 template <typename hashtype>
-bool SeedZeroKeyTest( const HashInfo * info, const bool verbose );
+bool SeedZeroKeyTest( const HashInfo * info, flags_t flags );

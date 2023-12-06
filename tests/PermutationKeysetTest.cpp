@@ -77,7 +77,7 @@ static void CombinationKeygenRecurse( uint8_t * key, int len, int maxlen, const 
 
 template <typename hashtype>
 static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen, const uint8_t * blocks,
-        uint32_t blockcount, uint32_t blocksz, const char * testdesc, bool verbose ) {
+        uint32_t blockcount, uint32_t blocksz, const char * testdesc, flags_t flags ) {
     uint8_t * key     = new uint8_t[maxlen * blocksz];
     uint64_t * counts = new uint64_t[maxlen + 1];
 
@@ -129,7 +129,7 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen,
     // recursing when n hits 0. When that happens, the complete list of
     // indices for the nth combination has been found, and the "recursion
     // depth" is the length of that list.
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).dumpFailKeys([&]( hidx_t n ) {
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).dumpFailKeys([&]( hidx_t n ) {
             VLA_ALLOC(uint32_t, blocknums, maxlen);
             memset(&blocknums[0], 0, sizeof(uint32_t) * maxlen);
             hidx_t   curlen = 0;
@@ -435,7 +435,7 @@ const struct {
 };
 
 template <typename hashtype>
-bool PermutedKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool PermutedKeyTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     const HashFn hash           = hinfo->hashFn(g_hashEndian);
     const int    default_maxlen = 23;
     bool         result         = true;
@@ -452,7 +452,7 @@ bool PermutedKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
 
         assert(test.blocks.size() == test.nrBlocks * test.szBlock);
         curresult &= CombinationKeyTest<hashtype>(hash, seed, maxlen, &(test.blocks[0]),
-                test.nrBlocks, test.szBlock, test.desc, verbose);
+                test.nrBlocks, test.szBlock, test.desc, flags);
 
         recordTestResult(curresult, "Permutation", test.desc);
 

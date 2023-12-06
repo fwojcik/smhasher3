@@ -45,4 +45,4 @@
  */
 
 template <typename hashtype>
-bool SeedAvalancheTest( const HashInfo * info, const bool verbose, const bool extra );
+bool SeedAvalancheTest( const HashInfo * info, bool extra, flags_t flags );

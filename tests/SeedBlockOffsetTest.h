@@ -48,4 +48,4 @@
  */
 
 template <typename hashtype>
-bool SeedBlockOffsetTest( const HashInfo * info, const bool verbose, const bool extra );
+bool SeedBlockOffsetTest( const HashInfo * info, bool extra, flags_t flags );

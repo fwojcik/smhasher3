@@ -48,4 +48,4 @@
  */
 
 template <typename hashtype>
-bool ZeroKeyTest( const HashInfo * info, const bool verbose );
+bool ZeroKeyTest( const HashInfo * info, flags_t flags );

@@ -61,7 +61,7 @@
 // distribution/collision tests on the hashes and their deltas.
 
 template <typename hashtype, bool bigseed>
-static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, bool drawDiagram ) {
+static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, flags_t flags ) {
     const HashFn   hash      = hinfo->hashFn(g_hashEndian);
     unsigned       seedbytes = bigseed ? 8 : 4;
     unsigned       seedbits  = seedbytes * 8;
@@ -81,12 +81,12 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, bool 
 
     bool result = true;
 
-    if (!drawDiagram) {
+    if (!REPORT(VERBOSE, flags)) {
         printf("Testing %3d-byte keys, %2d-bit seeds, %d reps", keybytes, seedbits, keycount);
     }
 
     for (unsigned seedbit = 0; seedbit < seedbits; seedbit++) {
-        if (drawDiagram) {
+        if (REPORT(VERBOSE, flags)) {
             printf("Testing seed bit %d / %d - %3d-byte keys - %d keys\n", seedbit, seedbits, keybytes, keycount);
         }
 
@@ -123,14 +123,17 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, bool 
             seedptr += seedbytes;
         }
 
-        // TestHashList() modifies the list, so keep a copy in case we need
-        // to run it a second time for drawDiagram == false.
-        if (!drawDiagram) {
+        // If VERBOSE reporting isn't enabled, then each test isn't being
+        // reported on, and so there might need to be a failure summary at
+        // the end of testing. If that's true, then keep a copy of the
+        // original list of hashes, since TestHashList() will modify it.
+        if (!REPORT(VERBOSE, flags)) {
             hashes_copy = hashes;
         }
 
         int  curlogp    = 0;
-        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).
+        bool thisresult = TestHashList(hashes).testDistribution(true).
+                reportFlags(flags).quiet(!REPORT(VERBOSE, flags)).
                 sumLogp(&curlogp).testDeltas(2).dumpFailKeys([&]( hidx_t i ) {
                     ExtBlob k(&keys[(i >> 1) * keybytes], keybytes);
                     hashtype v; seed_t iseed, hseed;
@@ -144,7 +147,7 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, bool 
                     printf("0x%016" PRIx64 "\t", (uint64_t)iseed); k.printbytes(NULL);
                     printf("\t"); v.printhex(NULL);
             });
-        if (drawDiagram) {
+        if (REPORT(VERBOSE, flags)) {
             printf("\n");
         } else {
             progressdots(seedbit, 0, seedbits - 1, 10);
@@ -167,7 +170,7 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, bool 
         result &= thisresult;
     }
 
-    if (!drawDiagram) {
+    if (!REPORT(VERBOSE, flags)) {
         printf("%3d failed, worst is seed bit %3d%s\n", fails, worstseedbit, result ? "" : "   !!!!!");
         bool ignored = TestHashList(worsthashes).testDistribution(true).testDeltas(2);
         unused(ignored);
@@ -182,26 +185,26 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, bool 
 //----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedBitflipTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool SeedBitflipTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     bool result = true;
 
     printf("[[[ Seed Bitflip Tests ]]]\n\n");
 
     if (hinfo->is32BitSeed()) {
-        result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 24, verbose);
-        result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 32, verbose);
-        result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 64, verbose);
+        result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 24, flags);
+        result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 32, flags);
+        result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 64, flags);
         if (extra && !hinfo->isSlow()) {
-            result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 160, verbose);
-            result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 256, verbose);
+            result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 160, flags);
+            result &= SeedBitflipTestImpl<hashtype, false>(hinfo, 256, flags);
         }
     } else {
-        result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 24, verbose);
-        result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 32, verbose);
-        result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 64, verbose);
+        result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 24, flags);
+        result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 32, flags);
+        result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 64, flags);
         if (extra && !hinfo->isSlow()) {
-            result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 160, verbose);
-            result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 256, verbose);
+            result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 160, flags);
+            result &= SeedBitflipTestImpl<hashtype,  true>(hinfo, 256, flags);
         }
     }
     printf("%s\n", result ? "" : g_failstr);

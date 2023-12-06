@@ -73,9 +73,9 @@ typedef phmap::flat_hash_map<std::string, int,
 //-----------------------------------------------------------------------------
 
 static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string> words,
-        const int trials, bool verbose ) {
+        const int trials, const flags_t flags ) {
     Rand r( 358512 );
-    unused(verbose);
+    unused(flags);
 
     const HashFn hash     = hinfo->hashFn(g_hashEndian);
     const seed_t seed     = hinfo->Seed(g_seed ^ r.rand_u64());
@@ -201,10 +201,10 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
 //-----------------------------------------------------------------------------
 
 static bool HashMapImpl( const HashInfo * hinfo, std::vector<std::string> words,
-        const int trials, bool verbose ) {
+        const int trials, const flags_t flags ) {
 
     try {
-        HashMapSpeedTest(hinfo, words, trials, verbose);
+        HashMapSpeedTest(hinfo, words, trials, flags);
     } catch (...) {
         printf(" aborted !!!!\n");
     }
@@ -213,7 +213,7 @@ static bool HashMapImpl( const HashInfo * hinfo, std::vector<std::string> words,
 
 //-----------------------------------------------------------------------------
 
-bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool HashMapTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     const int    trials = (hinfo->isVerySlow() || !extra) ? 5 : 50;
     bool         result = true;
 
@@ -229,13 +229,13 @@ bool HashMapTest( const HashInfo * hinfo, const bool verbose, const bool extra )
         return result;
     }
 
-    std::vector<std::string> words = GetWordlist(CASE_ALL, verbose);
+    std::vector<std::string> words = GetWordlist(CASE_ALL, REPORT(VERBOSE, flags));
     if (!words.size()) {
         printf("WARNING: Hashmap initialization failed! Skipping Hashmap test.\n");
         return result;
     }
 
-    result &= HashMapImpl(hinfo, words, trials, verbose);
+    result &= HashMapImpl(hinfo, words, trials, flags);
 
     printf("\n%s\n", result ? "" : g_failstr);
 

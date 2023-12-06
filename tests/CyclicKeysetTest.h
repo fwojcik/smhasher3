@@ -48,4 +48,4 @@
  */
 
 template <typename hashtype>
-bool CyclicKeyTest( const HashInfo * info, const bool verbose );
+bool CyclicKeyTest( const HashInfo * info, flags_t flags );

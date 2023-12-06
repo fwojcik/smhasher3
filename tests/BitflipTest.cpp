@@ -61,7 +61,7 @@
 // hashes and their deltas.
 
 template <typename hashtype>
-static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const seed_t seed, bool drawDiagram ) {
+static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const seed_t seed, flags_t flags ) {
     const HashFn   hash     = hinfo->hashFn(g_hashEndian);
     const unsigned keycount = 512 * 1024 * ((hinfo->bits <= 64) ? 3 : 4);
     unsigned       keybytes = keybits / 8;
@@ -78,12 +78,12 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
 
     bool result = true;
 
-    if (!drawDiagram) {
+    if (!REPORT(VERBOSE, flags)) {
         printf("Testing %3d-byte keys, %d reps", keybytes, keycount);
     }
 
     for (unsigned keybit = 0; keybit < keybits; keybit++) {
-        if (drawDiagram) {
+        if (REPORT(VERBOSE, flags)) {
             printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
         }
 
@@ -109,14 +109,17 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
             k.flipbit(keybit);
         }
 
-        // TestHashList() modifies the list, so keep a copy in case we need
-        // to run it a second time for drawDiagram == false.
-        if (!drawDiagram) {
+        // If VERBOSE reporting isn't enabled, then each test isn't being
+        // reported on, and so there might need to be a failure summary at
+        // the end of testing. If that's true, then keep a copy of the
+        // original list of hashes, since TestHashList() will modify it.
+        if (!REPORT(VERBOSE, flags)) {
             hashes_copy = hashes;
         }
 
         int  curlogp    = 0;
-        bool thisresult = TestHashList(hashes).testDistribution(true).verbose(drawDiagram).drawDiagram(drawDiagram).
+        bool thisresult = TestHashList(hashes).testDistribution(true).
+                reportFlags(flags).quiet(!REPORT(VERBOSE, flags)).
                 sumLogp(&curlogp).testDeltas(2).dumpFailKeys([&]( hidx_t i ) {
                     ExtBlob k(&keys[(i >> 1) * keybytes], keybytes); hashtype v;
                     if (i & 1) { k.flipbit(keybit); }
@@ -125,7 +128,7 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
                     printf("\t"); v.printhex(NULL);
                     if (i & 1) { k.flipbit(keybit); }
             });
-        if (drawDiagram) {
+        if (REPORT(VERBOSE, flags)) {
             printf("\n");
         } else {
             progressdots(keybit, 0, keybits - 1, 20);
@@ -148,7 +151,7 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
         result &= thisresult;
     }
 
-    if (!drawDiagram) {
+    if (!REPORT(VERBOSE, flags)) {
         printf("%3d failed, worst is key bit %3d%s\n", fails, worstkeybit, result ? "" : "                  !!!!!");
         bool ignored = TestHashList(worsthashes).testDistribution(true).testDeltas(2);
         unused(ignored);
@@ -163,19 +166,19 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
 //----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool BitflipTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool BitflipTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     bool result = true;
 
     printf("[[[ Keyset 'Bitflip' Tests ]]]\n\n");
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= BitflipTestImpl<hashtype>(hinfo, 24, seed, verbose);
-    result &= BitflipTestImpl<hashtype>(hinfo, 32, seed, verbose);
-    result &= BitflipTestImpl<hashtype>(hinfo, 64, seed, verbose);
+    result &= BitflipTestImpl<hashtype>(hinfo, 24, seed, flags);
+    result &= BitflipTestImpl<hashtype>(hinfo, 32, seed, flags);
+    result &= BitflipTestImpl<hashtype>(hinfo, 64, seed, flags);
     if (extra && !hinfo->isVerySlow()) {
-        result &= BitflipTestImpl<hashtype>(hinfo, 160, seed, verbose);
-        result &= BitflipTestImpl<hashtype>(hinfo, 256, seed, verbose);
+        result &= BitflipTestImpl<hashtype>(hinfo, 160, seed, flags);
+        result &= BitflipTestImpl<hashtype>(hinfo, 256, seed, flags);
     }
     printf("%s\n", result ? "" : g_failstr);
 

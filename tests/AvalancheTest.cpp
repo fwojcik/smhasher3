@@ -75,7 +75,7 @@ typedef unsigned a_uint;
 
 template <typename hashtype>
 static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uint32_t> & bins, const unsigned keybytes,
-        const uint8_t * keys, a_uint & irepp, const unsigned reps, const bool verbose ) {
+        const uint8_t * keys, a_uint & irepp, const unsigned reps, const flags_t flags ) {
     const unsigned keybits = keybytes * 8;
 
     VLA_ALLOC(uint8_t, buf, keybytes);
@@ -83,7 +83,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
     unsigned irep;
 
     while ((irep = irepp++) < reps) {
-        if (verbose) {
+        if (REPORT(PROGRESS, flags)) {
             progressdots(irep, 0, reps - 1, 18);
         }
 
@@ -110,7 +110,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
 
 template <typename hashtype>
 static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybits,
-        const unsigned reps, bool drawDiagram, bool drawdots ) {
+        const unsigned reps, flags_t flags ) {
     assert((keybits & 7) == 0);
 
     const unsigned keybytes  = keybits / 8;
@@ -135,14 +135,14 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
     }
 
     if (g_NCPU == 1) {
-        calcBiasRange<hashtype>(hash, seed, bins[0], keybytes, &keys[0], irep, reps, drawdots);
+        calcBiasRange<hashtype>(hash, seed, bins[0], keybytes, &keys[0], irep, reps, flags);
     } else {
 #if defined(HAVE_THREADS)
         std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype>, hash, seed, std::ref(bins[i]),
-                keybytes, &keys[0], std::ref(irep), reps, drawdots
+                keybytes, &keys[0], std::ref(irep), reps, flags
             };
         }
         for (unsigned i = 0; i < g_NCPU; i++) {
@@ -160,7 +160,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
 
     bool result = true;
 
-    result &= ReportBias(&bins[0][0], reps, arraysize, hashbits, drawDiagram);
+    result &= ReportBias(&bins[0][0], reps, arraysize, hashbits, flags);
 
     recordTestResult(result, "Avalanche", keybytes);
 
@@ -170,10 +170,9 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool AvalancheTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     const HashFn hash     = hinfo->hashFn(g_hashEndian);
     bool         result   = true;
-    bool         drawdots = true; // .......... progress dots
 
     printf("[[[ Avalanche Tests ]]]\n\n");
 
@@ -188,7 +187,7 @@ bool AvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra
     }
 
     for (unsigned testBits: testBitsvec) {
-        result &= AvalancheImpl<hashtype>(hash, seed, testBits, 300000, verbose, drawdots);
+        result &= AvalancheImpl<hashtype>(hash, seed, testBits, 300000, flags);
     }
 
     printf("\n%s\n", result ? "" : g_failstr);

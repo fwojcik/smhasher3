@@ -59,11 +59,18 @@ hidx_t FindCollisionsIndices( std::vector<hashtype> & hashes, std::map<hashtype,
         std::vector<hidx_t> & hashidxs );
 
 //-----------------------------------------------------------------------------
-// This is not intended to be used directly; see below
+// These is not intended to be used directly; see below
 template <typename hashtype>
-bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn keyprint, unsigned testDeltaNum,
-        bool testCollision, bool testMaxColl, bool testDist, bool testHighBits, bool testLowBits,
-        bool verbose, bool drawDiagram );
+bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn keyprint,
+        unsigned testDeltaNum, flags_t testFlags, flags_t reportFlags );
+
+#define TEST(flagname, var) (!!(var & FLAG_TEST_ ## flagname))
+#define FLAG_TEST_COLLISIONS    (1 << 0)
+#define FLAG_TEST_MAXCOLLISIONS (1 << 1)
+#define FLAG_TEST_DISTRIBUTION  (1 << 2)
+#define FLAG_TEST_HIGHBITS      (1 << 3)
+#define FLAG_TEST_LOWBITS       (1 << 4)
+#define FLAG_TEST_DELTAXAXIS    (1 << 5)
 
 // This provides a user-friendly wrapper to TestHashListImpl<>() by using
 // the Named Parameter Idiom.
@@ -79,20 +86,19 @@ class TestHashListWrapper {
     unsigned  deltaNum_;
     int *     logpSumPtr_;
     KeyFn     keyPrint_;
+    flags_t   reportFlags_;
     bool      testCollisions_;
     bool      testMaxCollisions_;
     bool      testDistribution_;
     bool      testHighBits_;
     bool      testLowBits_;
-    bool      verbose_;
-    bool      drawDiagram_;
+    bool      quietMode_;
 
   public:
     inline TestHashListWrapper( std::vector<hashtype> & hashes ) :
-        hashes_( hashes ), deltaNum_( 0 ), logpSumPtr_( NULL ), keyPrint_( NULL ),
+        hashes_( hashes ), deltaNum_( 0 ), logpSumPtr_( NULL ), keyPrint_( NULL ), reportFlags_( 0 ),
         testCollisions_( true ), testMaxCollisions_( false ), testDistribution_( true ),
-        testHighBits_( true ), testLowBits_( true ),
-        verbose_( true ), drawDiagram_( false ) {}
+        testHighBits_( true ), testLowBits_( true ), quietMode_( false ) {}
 
     inline TestHashListWrapper & sumLogp( int * p )         { logpSumPtr_       = p; return *this; }
 
@@ -110,17 +116,24 @@ class TestHashListWrapper {
 
     inline TestHashListWrapper & dumpFailKeys( KeyFn p )    { keyPrint_         = std::move(p); return *this; }
 
-    inline TestHashListWrapper & verbose( bool s )          { verbose_          = s; return *this; }
+    inline TestHashListWrapper & quiet( bool s )            { quietMode_        = s; return *this; }
 
-    inline TestHashListWrapper & drawDiagram( bool s )      { drawDiagram_      = s; return *this; }
+    inline TestHashListWrapper & reportFlags( flags_t f )   { reportFlags_      = f; return *this; }
 
     // This can't be explicit, because we want code like
     // "bool result = TestHashList()" to Just Work(tm),
     // even if that allows other, nonsensical uses of TestHashList().
     inline operator bool () const {
+        flags_t testFlags_ = 0;
+
+        if (testCollisions_)    { testFlags_ |= FLAG_TEST_COLLISIONS;    }
+        if (testMaxCollisions_) { testFlags_ |= FLAG_TEST_MAXCOLLISIONS; }
+        if (testDistribution_)  { testFlags_ |= FLAG_TEST_DISTRIBUTION;  }
+        if (testHighBits_)      { testFlags_ |= FLAG_TEST_HIGHBITS;      }
+        if (testLowBits_)       { testFlags_ |= FLAG_TEST_LOWBITS;       }
+
         return TestHashListImpl(hashes_, logpSumPtr_, keyPrint_, deltaNum_,
-                testCollisions_, testMaxCollisions_, testDistribution_,
-                testHighBits_, testLowBits_, verbose_, drawDiagram_);
+                testFlags_, quietMode_ ? FLAG_REPORT_QUIET : reportFlags_);
     }
 }; // class TestHashListWrapper
 

@@ -49,4 +49,4 @@
 // hash value when we flip 1 or more bits of the key.
 
 template <typename hashtype>
-bool BitflipTest( const HashInfo * info, const bool verbose, const bool extra );
+bool BitflipTest( const HashInfo * info, bool extra, flags_t flags );

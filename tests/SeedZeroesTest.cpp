@@ -61,7 +61,7 @@
 // with seeds with up-to-N bits set or cleared.
 
 template <typename hashtype, bool bigseed>
-static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const size_t keycount, bool verbose ) {
+static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const size_t keycount, flags_t flags ) {
     assert(maxbits < 16);
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
     uint64_t     seeds     = 2 * chooseUpToK(bigseed ? 64 : 32, maxbits);
@@ -100,7 +100,7 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
         } while (seed != 0);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(2 * keycount).dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(2 * keycount).dumpFailKeys([&]( hidx_t i ) {
             hidx_t keylen  = 1 + (i % keycount); i /= keycount;
             bool   negate  = (i & 1);            i /= 2;
             seed_t setbits = InverseKChooseUpToK(i, 1, maxbits, bigseed ? 64 : 32);
@@ -124,16 +124,16 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedZeroKeyTest( const HashInfo * hinfo, const bool verbose ) {
+bool SeedZeroKeyTest( const HashInfo * hinfo, flags_t flags ) {
     bool result = true;
 
     printf("[[[ Seed 'Zeroes' Tests ]]]\n\n");
 
     for (auto sz: { 1 * 1024 + 256, 8 * 1024 + 256 }) {
         if (hinfo->is32BitSeed()) {
-            result &= SeedZeroKeyImpl<hashtype, false>(hinfo, 2, sz, verbose);
+            result &= SeedZeroKeyImpl<hashtype, false>(hinfo, 2, sz, flags);
         } else {
-            result &= SeedZeroKeyImpl<hashtype,  true>(hinfo, 2, sz, verbose);
+            result &= SeedZeroKeyImpl<hashtype,  true>(hinfo, 2, sz, flags);
         }
     }
 

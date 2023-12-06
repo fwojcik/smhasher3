@@ -46,4 +46,4 @@
  */
 
 template <typename hashtype>
-bool SeedBicTest( const HashInfo * info, const bool verbose, const bool extra );
+bool SeedBicTest( const HashInfo * info, bool extra, flags_t flags );

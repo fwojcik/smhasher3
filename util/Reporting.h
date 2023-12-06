@@ -62,16 +62,16 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
         const uint32_t bitOffset, const uint32_t bitWidth );
 
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
-        const int hashbits, const bool drawDiagram );
+        const int hashbits, const flags_t flags );
 
 bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
-        size_t hashbits, size_t testcount, bool drawDiagram );
+        size_t hashbits, size_t testcount, const flags_t flags );
 
 bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int * logpp,
-        bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram );
+        bool maxcoll, bool highbits, bool header, const flags_t flags );
 
 bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, int maxBits,
-        int * logpp, int * maxbitsp, bool highbits, bool verbose, bool drawDiagram );
+        int * logpp, int * maxbitsp, bool highbits, const flags_t flags );
 
 bool ReportDistribution( const std::vector<double> & score, int tests, int hashbits, int maxwidth, int minwidth,
-        int * logpp, int * worstStartp, int * worstWidthp, bool verbose, bool drawDiagram );
+        int * logpp, int * worstStartp, int * worstWidthp, const flags_t flags );

@@ -60,7 +60,7 @@
 // We reuse one block of empty bytes, otherwise the RAM cost is enormous.
 
 template <typename hashtype>
-static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool verbose ) {
+static bool ZeroKeyImpl( HashFn hash, const seed_t seed, flags_t flags ) {
     int keycount = 200 * 1024;
 
     printf("Keyset 'Zeroes' - %d keys\n", keycount);
@@ -79,7 +79,7 @@ static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool verbose ) {
         hash(nullblock, i, seed, &hashes[i]);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).testDeltas(1).reportFlags(flags).dumpFailKeys([&]( hidx_t i ) {
             printf("0x%016" PRIx64 "\t%d copies of 0x00\t", g_seed, i);
             hashtype v; hash(nullblock, i, seed, &v); v.printhex(NULL);
         });
@@ -97,7 +97,7 @@ static bool ZeroKeyImpl( HashFn hash, const seed_t seed, bool verbose ) {
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool ZeroKeyTest( const HashInfo * hinfo, const bool verbose ) {
+bool ZeroKeyTest( const HashInfo * hinfo, flags_t flags ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
 
@@ -105,7 +105,7 @@ bool ZeroKeyTest( const HashInfo * hinfo, const bool verbose ) {
 
     const seed_t seed = hinfo->Seed(g_seed);
 
-    result &= ZeroKeyImpl<hashtype>(hash, seed, verbose);
+    result &= ZeroKeyImpl<hashtype>(hash, seed, flags);
 
     printf("%s\n", result ? "" : g_failstr);
 

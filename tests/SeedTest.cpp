@@ -61,7 +61,7 @@
 // Keyset 'Seed' - hash "the quick brown fox..." using different seeds
 
 template <typename hashtype, uint32_t seedbits, bool bigseed>
-static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiagram ) {
+static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, flags_t flags ) {
     assert(seedbits <= 31 );
     assert(keylen < MAXLEN);
     const HashFn hash      = hinfo->hashFn(g_hashEndian);
@@ -97,7 +97,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
         }
     }
 
-    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDeltas(1 << lobits).dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1 << lobits).dumpFailKeys([&]( hidx_t i ) {
             seed_t   seedlo = 1; seedlo = i & ((seedlo << lobits) - 1);
             seed_t   seedhi = i; seedhi >>= lobits; seedhi <<= shiftbits;
             seed_t   iseed  = seedlo | seedhi;
@@ -119,7 +119,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, bool drawDiag
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedTest( const HashInfo * hinfo, const bool verbose ) {
+bool SeedTest( const HashInfo * hinfo, flags_t flags ) {
     bool result = true;
 
     printf("[[[ Keyset 'Seed' Tests ]]]\n\n");
@@ -128,11 +128,11 @@ bool SeedTest( const HashInfo * hinfo, const bool verbose ) {
 
     if (hinfo->is32BitSeed()) {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedTestImpl      <hashtype, 22, false>(hinfo, testkeylen, verbose);
+            result &= SeedTestImpl      <hashtype, 22, false>(hinfo, testkeylen, flags);
         }
     } else {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedTestImpl      <hashtype, 22,  true>(hinfo, testkeylen, verbose);
+            result &= SeedTestImpl      <hashtype, 22,  true>(hinfo, testkeylen, flags);
         }
     }
 

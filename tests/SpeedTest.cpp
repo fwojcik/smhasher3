@@ -229,7 +229,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
 //-----------------------------------------------------------------------------
 // 256k blocks seem to give the best results.
 
-static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align, bool vary_size ) {
+static void BulkSpeedTest( const HashInfo * hinfo, flags_t flags, seed_t seed, bool vary_align, bool vary_size ) {
     const int    blocksize = 256 * 1024;
     const int    maxvary   = vary_size ? 127 : 0;
     const int    runcount  = hinfo->isVerySlow() ? BULK_RUNS   / 16 : (hinfo->isSlow() ? BULK_RUNS   / 4 : BULK_RUNS  );
@@ -255,13 +255,13 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
         double bestbps = (bestbpc * 3500000000.0 / 1073741824.0);
-#if SHOW_STDDEV
-        printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f %10.6f stdv%8.4f%%)\n",
-                align, bestbpc, bestbps, cycles, stddev, 100.0 * stddev / cycles);
-#else
-        printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n",
-                align, bestbpc, bestbps);
-#endif
+        if (REPORT(VERBOSE, flags)) {
+            printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f %10.6f stdv%8.4f%%)\n",
+                    align, bestbpc, bestbps, cycles, stddev, 100.0 * stddev / cycles);
+        } else {
+            printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n",
+                    align, bestbpc, bestbps);
+        }
         sumbpc += bestbpc;
     }
 
@@ -278,12 +278,12 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
 
         double bestbps = (bestbpc * 3500000000.0 / 1073741824.0);
-#if SHOW_STDDEV
-        printf("Alignment rnd - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f stdv%8.4f%%)\n",
-                bestbpc, bestbps, stddev, 100.0 * stddev / cycles);
-#else
-        printf("Alignment rnd - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n", bestbpc, bestbps);
-#endif
+        if (REPORT(VERBOSE, flags)) {
+            printf("Alignment rnd - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f stdv%8.4f%%)\n",
+                    bestbpc, bestbps, stddev, 100.0 * stddev / cycles);
+        } else {
+            printf("Alignment rnd - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n", bestbpc, bestbps);
+        }
     }
 
     fflush(NULL);
@@ -291,7 +291,8 @@ static void BulkSpeedTest( const HashInfo * hinfo, seed_t seed, bool vary_align,
 
 //-----------------------------------------------------------------------------
 
-static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed, bool verbose, bool include_vary ) {
+static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysize,
+        seed_t seed, bool include_vary ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     double       sum  = 0.0;
 
@@ -303,13 +304,11 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
     for (int i = 1; i <= maxkeysize; i++) {
         volatile int j      = i;
         double       cycles = SpeedTest(hash, seed, TINY_TRIALS, j, 0, 0, 0);
-        if (verbose) {
-#if SHOW_STDDEV
+        if (REPORT(VERBOSE, flags)) {
             printf("  %2d-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
                     j, cycles, stddev, 100.0 * stddev / cycles);
-#else
+        } else {
             printf("  %2d-byte keys - %8.2f cycles/hash\n", j, cycles);
-#endif
         }
         sum += cycles;
     }
@@ -320,12 +319,10 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (include_vary) {
         double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0);
-        if (verbose) {
-#if SHOW_STDDEV
+        if (REPORT(VERBOSE, flags)) {
             printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n", cycles, stddev, 100.0 * stddev / cycles);
-#else
+        } else {
             printf(" rnd-byte keys - %8.2f cycles/hash\n", cycles);
-#endif
         }
     }
 
@@ -333,7 +330,7 @@ static double TinySpeedTest( const HashInfo * hinfo, int maxkeysize, seed_t seed
 }
 
 //-----------------------------------------------------------------------------
-bool SpeedTest( const HashInfo * hinfo ) {
+bool SpeedTest( const HashInfo * hinfo, flags_t flags ) {
     bool result = true;
     Rand r( 164200 );
 
@@ -341,13 +338,13 @@ bool SpeedTest( const HashInfo * hinfo ) {
 
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
-    TinySpeedTest(hinfo, 31, seed, true, true);
+    TinySpeedTest(hinfo, flags, 31, seed, true);
     printf("\n");
 
-    BulkSpeedTest(hinfo, seed, true, false);
+    BulkSpeedTest(hinfo, flags, seed, true, false);
     printf("\n");
 
-    BulkSpeedTest(hinfo, seed, true, true);
+    BulkSpeedTest(hinfo, flags, seed, true, true);
     printf("\n");
 
     return result;
@@ -356,9 +353,9 @@ bool SpeedTest( const HashInfo * hinfo ) {
 //-----------------------------------------------------------------------------
 // Does 5 different speed tests to try to summarize hash performance
 
-void ShortSpeedTestHeader( bool verbose ) {
+void ShortSpeedTestHeader( flags_t flags ) {
     printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n\n");
-    if (verbose) {
+    if (REPORT(VERBOSE, flags)) {
         printf("%-25s  %10s  %9s  %17s  %17s  %17s  %17s  \n",
                 "Name", "Impl   ", "Bulk  ", "1-8 bytes    ", "9-16 bytes   ", "17-24 bytes   ", "25-32 bytes   ");
         printf("%-25s  %-10s  %9s  %17s  %17s  %17s  %17s  \n",
@@ -373,7 +370,7 @@ void ShortSpeedTestHeader( bool verbose ) {
     }
 }
 
-void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
+void ShortSpeedTest( const HashInfo * hinfo, flags_t flags ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     Rand r( 20265 );
 
@@ -381,7 +378,7 @@ void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
     const int basealignoffset = 0;
 
     printf("%-25s", hinfo->name);
-    if (verbose) {
+    if (REPORT(VERBOSE, flags)) {
         printf("  %-10s", hinfo->impl);
     }
 
@@ -417,7 +414,7 @@ void ShortSpeedTest( const HashInfo * hinfo, bool verbose ) {
                 worstdevpct = devpct;
             }
         }
-        if (verbose) {
+        if (REPORT(VERBOSE, flags)) {
             if (worstdevpct < 1.0) {
                 printf("   %7.2f [%5.3f] ", cycles / 8.0, worstdevpct);
             } else {

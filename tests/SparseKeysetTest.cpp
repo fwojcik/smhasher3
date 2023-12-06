@@ -84,7 +84,7 @@ static void SparseKeygenRecurse( HashFn hash, const seed_t seed, unsigned start,
 
 //----------
 template <int keybits, typename hashtype>
-static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbits, bool inclusive, bool verbose ) {
+static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbits, bool inclusive, flags_t flags ) {
     typedef Blob<keybits> keytype;
     keytype k(0);
 
@@ -106,7 +106,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbit
 
     SparseKeygenRecurse(hash, seed, 0, setbits, inclusive, k, hashes);
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).
         testDistribution(false).dumpFailKeys([&]( hidx_t n ) {
             hidx_t t, pos = 0, maxpos = keybits - 1, laterbits = setbits;
             k = 0;
@@ -144,7 +144,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbit
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SparseKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool SparseKeyTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
 
@@ -155,66 +155,66 @@ bool SparseKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra
     // Some hashes fail with small numbers of sparse keys, because the rest of the
     // keys will "drown out" the failure modes. These set-bit threshholds were chosen
     // to find these failures. Empirically, this happens above ~2^13.5 (~11586) keys.
-    result &= SparseKeyImpl<16, hashtype>(hash, seed, 6, true, verbose);
-    result &= SparseKeyImpl<24, hashtype>(hash, seed, 4, true, verbose);
-    result &= SparseKeyImpl<32, hashtype>(hash, seed, 4, true, verbose);
-    result &= SparseKeyImpl<40, hashtype>(hash, seed, 4, true, verbose);
-    result &= SparseKeyImpl<48, hashtype>(hash, seed, 3, true, verbose);
-    result &= SparseKeyImpl<56, hashtype>(hash, seed, 3, true, verbose);
-    result &= SparseKeyImpl<64, hashtype>(hash, seed, 3, true, verbose);
-    result &= SparseKeyImpl<72, hashtype>(hash, seed, 3, true, verbose);
-    result &= SparseKeyImpl<80, hashtype>(hash, seed, 3, true, verbose);
+    result &= SparseKeyImpl<16, hashtype>(hash, seed, 6, true, flags);
+    result &= SparseKeyImpl<24, hashtype>(hash, seed, 4, true, flags);
+    result &= SparseKeyImpl<32, hashtype>(hash, seed, 4, true, flags);
+    result &= SparseKeyImpl<40, hashtype>(hash, seed, 4, true, flags);
+    result &= SparseKeyImpl<48, hashtype>(hash, seed, 3, true, flags);
+    result &= SparseKeyImpl<56, hashtype>(hash, seed, 3, true, flags);
+    result &= SparseKeyImpl<64, hashtype>(hash, seed, 3, true, flags);
+    result &= SparseKeyImpl<72, hashtype>(hash, seed, 3, true, flags);
+    result &= SparseKeyImpl<80, hashtype>(hash, seed, 3, true, flags);
     if (extra) {
-        result &= SparseKeyImpl<88, hashtype>(hash, seed, 3, true, verbose);
+        result &= SparseKeyImpl<88, hashtype>(hash, seed, 3, true, flags);
     }
-    result &= SparseKeyImpl<96, hashtype>(hash, seed, 3, true, verbose);
+    result &= SparseKeyImpl<96, hashtype>(hash, seed, 3, true, flags);
     if (extra) {
-        result &= SparseKeyImpl<104, hashtype>(hash, seed, 3, true, verbose);
+        result &= SparseKeyImpl<104, hashtype>(hash, seed, 3, true, flags);
     }
-    result &= SparseKeyImpl<112, hashtype>(hash, seed, 3, true, verbose);
+    result &= SparseKeyImpl<112, hashtype>(hash, seed, 3, true, flags);
 
     // Most hashes which fail this test will fail with larger numbers of sparse keys.
     // These set-bit threshholds were chosen to limit the number of keys to 100,000,000.
     // The longer-running configurations are generally pushed to --extra mode,
     // except 768-bit keys, which seems to be a more-common failure point.
-    result &= SparseKeyImpl<16, hashtype>(hash, seed, 10, true, verbose);
-    result &= SparseKeyImpl<24, hashtype>(hash, seed, 20, true, verbose);
-    result &= SparseKeyImpl<32, hashtype>(hash, seed,  9, true, verbose);
+    result &= SparseKeyImpl<16, hashtype>(hash, seed, 10, true, flags);
+    result &= SparseKeyImpl<24, hashtype>(hash, seed, 20, true, flags);
+    result &= SparseKeyImpl<32, hashtype>(hash, seed,  9, true, flags);
     if (extra) {
-        result &= SparseKeyImpl<40, hashtype>(hash, seed, 7, true, verbose);
-        result &= SparseKeyImpl<48, hashtype>(hash, seed, 7, true, verbose);
-        result &= SparseKeyImpl<56, hashtype>(hash, seed, 6, true, verbose);
-        result &= SparseKeyImpl<64, hashtype>(hash, seed, 6, true, verbose);
+        result &= SparseKeyImpl<40, hashtype>(hash, seed, 7, true, flags);
+        result &= SparseKeyImpl<48, hashtype>(hash, seed, 7, true, flags);
+        result &= SparseKeyImpl<56, hashtype>(hash, seed, 6, true, flags);
+        result &= SparseKeyImpl<64, hashtype>(hash, seed, 6, true, flags);
     }
 
-    result &= SparseKeyImpl<72, hashtype>(hash, seed, 5, true, verbose);
+    result &= SparseKeyImpl<72, hashtype>(hash, seed, 5, true, flags);
     if (extra) {
-        result &= SparseKeyImpl<96, hashtype>(hash, seed, 5, true, verbose);
+        result &= SparseKeyImpl<96, hashtype>(hash, seed, 5, true, flags);
     }
 
-    result &= SparseKeyImpl<112, hashtype>(hash, seed, 4, true, verbose);
-    result &= SparseKeyImpl<128, hashtype>(hash, seed, 4, true, verbose);
+    result &= SparseKeyImpl<112, hashtype>(hash, seed, 4, true, flags);
+    result &= SparseKeyImpl<128, hashtype>(hash, seed, 4, true, flags);
     if (extra) {
-        result &= SparseKeyImpl<144, hashtype>(hash, seed, 4, true, verbose);
-        result &= SparseKeyImpl<192, hashtype>(hash, seed, 4, true, verbose);
-        result &= SparseKeyImpl<208, hashtype>(hash, seed, 4, true, verbose);
+        result &= SparseKeyImpl<144, hashtype>(hash, seed, 4, true, flags);
+        result &= SparseKeyImpl<192, hashtype>(hash, seed, 4, true, flags);
+        result &= SparseKeyImpl<208, hashtype>(hash, seed, 4, true, flags);
     }
 
-    result &= SparseKeyImpl<256, hashtype>(hash, seed, 3, true, verbose);
-    result &= SparseKeyImpl<384, hashtype>(hash, seed, 3, true, verbose);
-    result &= SparseKeyImpl<512, hashtype>(hash, seed, 3, true, verbose);
+    result &= SparseKeyImpl<256, hashtype>(hash, seed, 3, true, flags);
+    result &= SparseKeyImpl<384, hashtype>(hash, seed, 3, true, flags);
+    result &= SparseKeyImpl<512, hashtype>(hash, seed, 3, true, flags);
     if (1 || extra) {
-        result &= SparseKeyImpl<768, hashtype>(hash, seed, 3, true, verbose);
+        result &= SparseKeyImpl<768, hashtype>(hash, seed, 3, true, flags);
     }
 
-    result &= SparseKeyImpl< 1024, hashtype>(hash, seed, 2, true, verbose);
-    result &= SparseKeyImpl< 2048, hashtype>(hash, seed, 2, true, verbose);
-    result &= SparseKeyImpl< 4096, hashtype>(hash, seed, 2, true, verbose);
-    result &= SparseKeyImpl< 8192, hashtype>(hash, seed, 2, true, verbose);
-    result &= SparseKeyImpl<10240, hashtype>(hash, seed, 2, true, verbose);
+    result &= SparseKeyImpl< 1024, hashtype>(hash, seed, 2, true, flags);
+    result &= SparseKeyImpl< 2048, hashtype>(hash, seed, 2, true, flags);
+    result &= SparseKeyImpl< 4096, hashtype>(hash, seed, 2, true, flags);
+    result &= SparseKeyImpl< 8192, hashtype>(hash, seed, 2, true, flags);
+    result &= SparseKeyImpl<10240, hashtype>(hash, seed, 2, true, flags);
     if (extra) {
-        result &= SparseKeyImpl<12288, hashtype>(hash, seed, 2, true, verbose);
-        result &= SparseKeyImpl<16384, hashtype>(hash, seed, 2, true, verbose);
+        result &= SparseKeyImpl<12288, hashtype>(hash, seed, 2, true, flags);
+        result &= SparseKeyImpl<16384, hashtype>(hash, seed, 2, true, flags);
     }
 
     printf("%s\n", result ? "" : g_failstr);

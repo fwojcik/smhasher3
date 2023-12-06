@@ -44,6 +44,6 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-bool SpeedTest( const HashInfo * info );
-void ShortSpeedTest( const HashInfo * hinfo, bool verbose );
-void ShortSpeedTestHeader( bool verbose );
+bool SpeedTest( const HashInfo * info, flags_t flags );
+void ShortSpeedTest( const HashInfo * hinfo, flags_t flags );
+void ShortSpeedTestHeader( flags_t flags );

@@ -58,6 +58,18 @@ extern HashInfo::endianness g_hashEndian;
 #endif
 
 //-----------------------------------------------------------------------------
+// Verbosity flags
+
+typedef uint32_t flags_t;
+
+#define REPORT(flagname, var) (!!(var & FLAG_REPORT_ ## flagname))
+
+#define FLAG_REPORT_QUIET        (1 << 0)
+#define FLAG_REPORT_VERBOSE      (1 << 1)
+#define FLAG_REPORT_DIAGRAMS     (1 << 2)
+#define FLAG_REPORT_PROGRESS     (1 << 3)
+
+//-----------------------------------------------------------------------------
 // Recording test results for final summary printout
 
 #define COUNT_MAX_PVALUE 20

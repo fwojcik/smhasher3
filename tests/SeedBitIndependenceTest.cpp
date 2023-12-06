@@ -126,7 +126,7 @@ static void SeedBicTestBatch( const HashInfo * hinfo, std::vector<uint32_t> & po
 }
 
 template <typename hashtype>
-static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, const size_t reps, bool verbose = false ) {
+static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, const size_t reps, const flags_t flags ) {
     const size_t seedbits     = hinfo->is32BitSeed() ? 32 : 64;
     const size_t seedbytes    = seedbits / 8;
     const size_t hashbits     = hashtype::bitlen;
@@ -190,7 +190,7 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
 
     bool result = true;
 
-    result &= ReportChiSqIndep(&popcounts[0][0], &andcounts[0][1], seedbits, hashbits, reps, verbose);
+    result &= ReportChiSqIndep(&popcounts[0][0], &andcounts[0][1], seedbits, hashbits, reps, flags);
 
     recordTestResult(result, "SeedBIC", keybytes);
 
@@ -200,7 +200,7 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedBicTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool SeedBicTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     size_t reps   = (hinfo->bits > 128 || hinfo->isVerySlow()) ? 100000 : 600000;
     bool   result = true;
 
@@ -214,9 +214,9 @@ bool SeedBicTest( const HashInfo * hinfo, const bool verbose, const bool extra )
     }
     for (const auto keylen: keylens) {
         if (keylen <= 16) {
-            result &= SeedBicTestImpl<hashtype>(hinfo, keylen, reps * 2, verbose);
+            result &= SeedBicTestImpl<hashtype>(hinfo, keylen, reps * 2, flags);
         } else {
-            result &= SeedBicTestImpl<hashtype>(hinfo, keylen, reps, verbose);
+            result &= SeedBicTestImpl<hashtype>(hinfo, keylen, reps, flags);
         }
     }
 

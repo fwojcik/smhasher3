@@ -316,7 +316,7 @@ static void plot( const double p_value, const size_t trials ) {
 // (number of excess "heads" or "tails") over all those trials was the
 // specified worstbiascnt.
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
-        const int hashbits, const bool drawDiagram ) {
+        const int hashbits, const flags_t flags ) {
     const int expected   = coinflips / 2;
     int       worstbias  = 0;
     int       worstbiasN = 0;
@@ -347,7 +347,7 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
     bool   result     = true;
 
     recordLog2PValue(logp_value);
-    if (drawDiagram) {
+    if (REPORT(DIAGRAMS, flags)) {
         if (p_value > 0.00001) {
             printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%8.6f) (^%2d)", pctdigits, pct,
                     worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
@@ -369,7 +369,7 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
         printf("\n");
     }
 
-    if (drawDiagram) {
+    if (REPORT(DIAGRAMS, flags)) {
         printf("[");
         for (int i = 0; i < trials; i++) {
             int    thisbias  = abs((int)counts[i] - expected);
@@ -389,7 +389,7 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
 // we convert from the popcount[] and andcount[] arrays into full 2x2 contingency
 // tables, see the comment in tests/BitIndependence.cpp.
 bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, size_t keybits,
-        size_t hashbits, size_t testcount, bool drawDiagram ) {
+        size_t hashbits, size_t testcount, const flags_t flags ) {
     const size_t hashbitpairs     = hashbits / 2 * hashbits;
     const size_t realhashbitpairs = hashbits / 2 * (hashbits - 1);
 
@@ -456,7 +456,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
     // andcount arrays in linear order. But for human-oriented printouts, we want to
     // iterate over them differently, and so reporting is now done here in its own
     // loop, separate from analysis.
-    if (drawDiagram) {
+    if (REPORT(DIAGRAMS, flags)) {
         size_t xyoffset = 0;
         for (size_t out1 = 0; out1 < hashbits - 1; out1++) {
             for (size_t out2 = out1 + 1; out2 < hashbits; out2++) {
@@ -491,7 +491,7 @@ bool ReportChiSqIndep( const uint32_t * popcount, const uint32_t * andcount, siz
 
 //-----------------------------------------------------------------------------
 bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int * logpp,
-        bool maxcoll, bool highbits, bool header, bool verbose, bool drawDiagram ) {
+        bool maxcoll, bool highbits, bool header, const flags_t flags ) {
     bool largehash = hashsize > (8 * sizeof(uint32_t));
 
     // The expected number depends on what collision statistic is being
@@ -564,7 +564,7 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
 
     recordLog2PValue(logp_value);
 
-    if (verbose) {
+    if (!REPORT(QUIET, flags)) {
         if (header) {
             printf("Testing %s collisions (%s %3i-bit)", maxcoll ? "max" : "all", highbits ? "high" : "low ", hashsize);
         }
@@ -584,7 +584,7 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
         // and deltas and exact p-values add visual noise and variable line
         // widths and possibly field counts, they are now only printed out
         // in --verbose mode.
-        if (drawDiagram) {
+        if (REPORT(DIAGRAMS, flags)) {
             if (p_value > 0.00001) {
                 printf("(%+i) (p<%8.6f) (^%2d)", collcount - (int)round(expected), p_value, logp_value);
             } else {
@@ -608,11 +608,11 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
 
 //-----------------------------------------------------------------------------
 bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, int maxBits,
-        int * logpp, int * maxbitsp, bool highbits, bool verbose, bool drawDiagram ) {
+        int * logpp, int * maxbitsp, bool highbits, const flags_t flags ) {
     if ((maxBits <= 1) || (minBits > maxBits)) { return true; }
 
     int spacelen = 80;
-    if (verbose) {
+    if (!REPORT(QUIET, flags)) {
         spacelen -=
                 printf("Testing all collisions (%s %2i..%2i bits) - ", highbits ? "high" : "low ", minBits, maxBits);
     }
@@ -658,7 +658,7 @@ bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, in
         warning = true;
     }
 
-    if (verbose) {
+    if (!REPORT(QUIET, flags)) {
         int          i_maxCollDevExp = (int)round(maxCollDevExp);
         spacelen -= printf("Worst is %2i bits: %i/%i ", maxCollDevBits, maxCollDevNb, i_maxCollDevExp);
         if (spacelen < 0) {
@@ -677,7 +677,7 @@ bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, in
             printf("%.*s(%#.4gx) ", spacelen, g_manyspaces, maxCollDev);
         }
 
-        if (drawDiagram) {
+        if (REPORT(DIAGRAMS, flags)) {
             if (p_value > 0.00001) {
                 printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
             } else {
@@ -701,7 +701,7 @@ bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, in
 
 //-----------------------------------------------------------------------------
 bool ReportDistribution( const std::vector<double> & scores, int tests, int hashbits, int maxwidth, int minwidth,
-        int * logpp, int * worstStartp, int * worstWidthp, bool verbose, bool drawDiagram ) {
+        int * logpp, int * worstStartp, int * worstWidthp, const flags_t flags ) {
     // Find the startbit with the worst bias. Only report on biases above 0.
     double worstN     = 0;
     int    worstStart = -1;
@@ -712,7 +712,7 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
         for (int width = maxwidth; width >= minwidth; width--) {
             double n = *worstptr++;
 
-            if (drawDiagram) { plot(GetStdNormalPValue(n), tests); }
+            if (REPORT(DIAGRAMS, flags)) { plot(GetStdNormalPValue(n), tests); }
 
             if (worstN    <= n) {
                 worstN     = n;
@@ -721,7 +721,7 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
             }
         }
 
-        if (drawDiagram) { printf("]\n%s", ((startbit + 1) == hashbits) ? "" : "["); }
+        if (REPORT(DIAGRAMS, flags)) { printf("]\n%s", ((startbit + 1) == hashbits) ? "" : "["); }
     }
 
     addVCodeResult((uint32_t)worstN);
@@ -750,7 +750,7 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
         warning = true;
     }
 
-    if (verbose) {
+    if (!REPORT(QUIET, flags)) {
         if (worstStart == -1) {
             printf("No positive bias detected            %5.3fx  ", 0.0);
         } else if (mult < 9.0) {
@@ -759,7 +759,7 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
             printf("Worst bias is %2d bits at bit %3d:    %#.4gx  ", worstWidth, worstStart, mult);
         }
 
-        if (drawDiagram) {
+        if (REPORT(DIAGRAMS, flags)) {
             if (p_value > 0.00001) {
                 printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
             } else {

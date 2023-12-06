@@ -48,4 +48,4 @@
  */
 
 template <typename hashtype>
-bool TextKeyTest( const HashInfo * info, const bool verbose );
+bool TextKeyTest( const HashInfo * info, flags_t flags );

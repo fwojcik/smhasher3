@@ -48,4 +48,4 @@
  */
 
 template <typename hashtype>
-bool PerlinNoiseTest( const HashInfo * info, const bool verbose, const bool extra );
+bool PerlinNoiseTest( const HashInfo * info, bool extra, flags_t flags );

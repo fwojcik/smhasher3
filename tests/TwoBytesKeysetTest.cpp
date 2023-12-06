@@ -121,12 +121,12 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, size_t keylen, st
 }
 
 template <typename hashtype>
-static bool TwoBytesTestLen( HashFn hash, const seed_t seed, size_t keylen, bool verbose, const bool extra ) {
+static bool TwoBytesTestLen( HashFn hash, const seed_t seed, size_t keylen, flags_t flags, const bool extra ) {
     std::vector<hashtype> hashes;
 
     TwoBytesLenKeygen(hash, seed, keylen, hashes);
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).
         testDistribution(extra).dumpFailKeys([&]( hidx_t i ) {
             VLA_ALLOC(uint8_t, key, keylen); memset(&key[0], 0, keylen);
             if (i < (keylen * 255)) {
@@ -216,12 +216,12 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, size_t maxlen
 }
 
 template <typename hashtype>
-static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, size_t maxlen, bool verbose, const bool extra ) {
+static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, size_t maxlen, flags_t flags, const bool extra ) {
     std::vector<hashtype> hashes;
 
     TwoBytesUpToLenKeygen(hash, seed, maxlen, hashes);
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).testDeltas(1).
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).
         testDistribution(extra).dumpFailKeys([&]( hidx_t i ) {
             uint32_t keylen; VLA_ALLOC(uint8_t, key, maxlen); memset(&key[0], 0, maxlen);
             const uint32_t keylencnt = Sum1toN(maxlen) - 1;
@@ -259,7 +259,7 @@ static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, size_t maxlen, 
 
 //-----------------------------------------------------------------------------
 template <typename hashtype>
-bool TwoBytesKeyTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool TwoBytesKeyTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
 
@@ -268,17 +268,17 @@ bool TwoBytesKeyTest( const HashInfo * hinfo, const bool verbose, const bool ext
     const seed_t seed = hinfo->Seed(g_seed);
 
     if (hinfo->isVerySlow()) {
-        result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 8, verbose, true);
+        result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 8, flags, true);
     } else {
-        result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 20, verbose, extra);
-        result &= TwoBytesTestLen    <hashtype>(hash, seed, 32, verbose, extra);
+        result &= TwoBytesTestUpToLen<hashtype>(hash, seed, 20, flags, extra);
+        result &= TwoBytesTestLen    <hashtype>(hash, seed, 32, flags, extra);
         if (!hinfo->isSlow()) {
-            result &= TwoBytesTestLen<hashtype>(hash, seed, 48, verbose, extra);
+            result &= TwoBytesTestLen<hashtype>(hash, seed, 48, flags, extra);
         }
     }
-    result &= TwoBytesTestLen<hashtype>(hash, seed, 1024, verbose, true);
-    result &= TwoBytesTestLen<hashtype>(hash, seed, 2048, verbose, true);
-    result &= TwoBytesTestLen<hashtype>(hash, seed, 4096, verbose, true);
+    result &= TwoBytesTestLen<hashtype>(hash, seed, 1024, flags, true);
+    result &= TwoBytesTestLen<hashtype>(hash, seed, 2048, flags, true);
+    result &= TwoBytesTestLen<hashtype>(hash, seed, 4096, flags, true);
 
     printf("%s\n", result ? "" : g_failstr);
 

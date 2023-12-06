@@ -48,4 +48,4 @@
  */
 
 template <typename hashtype>
-bool SeedTest( const HashInfo * info, const bool verbose );
+bool SeedTest( const HashInfo * info, flags_t flags );

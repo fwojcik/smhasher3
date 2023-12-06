@@ -75,7 +75,7 @@ typedef unsigned a_uint;
 
 template <typename hashtype, unsigned seedbytes>
 static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins, const unsigned keybytes,
-        const uint8_t * keys, const uint8_t * seeds, a_uint & irepp, const unsigned reps, const bool verbose ) {
+        const uint8_t * keys, const uint8_t * seeds, a_uint & irepp, const unsigned reps, const flags_t flags ) {
     const HashFn hash    = hinfo->hashFn(g_hashEndian);
 
     hashtype A, B;
@@ -84,7 +84,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
     uint64_t baseseed = 0;
 
     while ((irep = irepp++) < reps) {
-        if (verbose) {
+        if (REPORT(PROGRESS, flags)) {
             progressdots(irep, 0, reps - 1, 18);
         }
 
@@ -113,7 +113,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 
 template <typename hashtype, unsigned seedbits>
 static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
-        const unsigned reps, bool drawDiagram, bool drawdots ) {
+        const unsigned reps, flags_t flags ) {
     const unsigned seedbytes = seedbits / 8;
     const unsigned hashbits  = hashtype::bitlen;
     const unsigned arraysize = seedbits * hashbits;
@@ -140,14 +140,14 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
     }
 
     if (g_NCPU == 1) {
-        calcBiasRange<hashtype, seedbytes>(hinfo, bins[0], keybytes, &keys[0], &seeds[0], irep, reps, drawdots);
+        calcBiasRange<hashtype, seedbytes>(hinfo, bins[0], keybytes, &keys[0], &seeds[0], irep, reps, flags);
     } else {
 #if defined(HAVE_THREADS)
         std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype, seedbytes>, hinfo, std::ref(bins[i]),
-                keybytes, &keys[0], &seeds[0], std::ref(irep), reps, drawdots
+                keybytes, &keys[0], &seeds[0], std::ref(irep), reps, flags
             };
         }
         for (unsigned i = 0; i < g_NCPU; i++) {
@@ -165,7 +165,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
 
     bool result = true;
 
-    result &= ReportBias(&bins[0][0], reps, arraysize, hashbits, drawDiagram);
+    result &= ReportBias(&bins[0][0], reps, arraysize, hashbits, flags);
 
     recordTestResult(result, "SeedAvalanche", keybytes);
 
@@ -175,9 +175,8 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedAvalancheTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool SeedAvalancheTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     bool result   = true;
-    bool drawdots = true; // .......... progress dots
 
     printf("[[[ Seed Avalanche Tests ]]]\n\n");
 
@@ -188,11 +187,11 @@ bool SeedAvalancheTest( const HashInfo * hinfo, const bool verbose, const bool e
 
     if (hinfo->is32BitSeed()) {
         for (unsigned keyBytes: keyBytesvec) {
-            result &= SeedAvalancheImpl<hashtype, 32>(hinfo, keyBytes, 300000, verbose, drawdots);
+            result &= SeedAvalancheImpl<hashtype, 32>(hinfo, keyBytes, 300000, flags);
         }
     } else {
         for (unsigned keyBytes: keyBytesvec) {
-            result &= SeedAvalancheImpl<hashtype, 64>(hinfo, keyBytes, 300000, verbose, drawdots);
+            result &= SeedAvalancheImpl<hashtype, 64>(hinfo, keyBytes, 300000, flags);
         }
     }
 

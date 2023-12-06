@@ -65,7 +65,7 @@
 
 template <typename hashtype, unsigned cycleLen>
 static bool CyclicKeyImpl( HashFn hash, const seed_t seed, unsigned cycleReps,
-        const unsigned keycount, bool drawDiagram ) {
+        const unsigned keycount, flags_t flags ) {
     printf("Keyset 'Cyclic' - %d cycles of %d bytes - %d keys\n", cycleReps, cycleLen, keycount);
 
     std::vector<hashtype> hashes( keycount );
@@ -92,7 +92,7 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, unsigned cycleReps,
 
     //----------
 
-    bool result = TestHashList(hashes).drawDiagram(drawDiagram).testDistribution(false).dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).reportFlags(flags).testDistribution(false).dumpFailKeys([&]( hidx_t i ) {
             ExtBlob xb( &cycles[i * cycleLen], cycleLen );
 
             printf("0x%016" PRIx64 "\t%d copies of ", g_seed, cycleReps); xb.printbytes(NULL); printf("\t");
@@ -118,7 +118,7 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, unsigned cycleReps,
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool CyclicKeyTest( const HashInfo * hinfo, const bool verbose ) {
+bool CyclicKeyTest( const HashInfo * hinfo, flags_t flags ) {
     const HashFn hash   = hinfo->hashFn(g_hashEndian);
     bool         result = true;
 
@@ -128,10 +128,10 @@ bool CyclicKeyTest( const HashInfo * hinfo, const bool verbose ) {
     const seed_t   seed = hinfo->Seed(g_seed);
 
     for (unsigned count = 4; count <= 16; count += 4) {
-        result &= CyclicKeyImpl<hashtype, 3>(hash, seed, count, reps, verbose);
-        result &= CyclicKeyImpl<hashtype, 4>(hash, seed, count, reps, verbose);
-        result &= CyclicKeyImpl<hashtype, 5>(hash, seed, count, reps, verbose);
-        result &= CyclicKeyImpl<hashtype, 8>(hash, seed, count, reps, verbose);
+        result &= CyclicKeyImpl<hashtype, 3>(hash, seed, count, reps, flags);
+        result &= CyclicKeyImpl<hashtype, 4>(hash, seed, count, reps, flags);
+        result &= CyclicKeyImpl<hashtype, 5>(hash, seed, count, reps, flags);
+        result &= CyclicKeyImpl<hashtype, 8>(hash, seed, count, reps, flags);
     }
 
     printf("%s\n", result ? "" : g_failstr);

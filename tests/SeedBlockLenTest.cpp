@@ -106,7 +106,7 @@ static void SeedBlockLenTest_Impl2( const HashInfo * hinfo, std::vector<hashtype
 // Level 1: print out header, allocate hash vector, generate hashes, test them
 template <typename hashtype, size_t blocklen>
 static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_min, size_t blockoffset_incr,
-        size_t keylen, size_t seedmaxbits, size_t blockmaxbits, bool verbose ) {
+        size_t keylen, size_t seedmaxbits, size_t blockmaxbits, flags_t flags ) {
     assert((keylen - blocklen - blockoffset_min) >= blockoffset_incr);
     const size_t blockoffset_max = blockoffset_min +
             (((keylen - blocklen - blockoffset_min) / blockoffset_incr) * blockoffset_incr);
@@ -154,7 +154,7 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
                 blockoffset_incr, blockoffset_max, seedmaxbits, blockmaxbits);
     }
 
-    bool result = TestHashList(hashes).drawDiagram(verbose).dumpFailKeys([&]( hidx_t i ) {
+    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys([&]( hidx_t i ) {
             size_t   blockoffset = blockoffset_min + (i % testkeys) * blockoffset_incr; i /= testkeys;
             uint32_t blockidx    = (i % testblocks);                                    i /= testblocks;
             uint32_t seedidx     = i;
@@ -185,7 +185,7 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
 //-----------------------------------------------------------------------------
 
 template <typename hashtype>
-bool SeedBlockLenTest( const HashInfo * hinfo, const bool verbose, const bool extra ) {
+bool SeedBlockLenTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
     constexpr size_t seedbits   = 2;
     constexpr size_t blockbits  = 2;
     constexpr size_t blocklen   = 4;
@@ -207,7 +207,7 @@ bool SeedBlockLenTest( const HashInfo * hinfo, const bool verbose, const bool ex
 
     for (size_t kl = minkey; kl <= maxkey; kl++) {
         result &= SeedBlockLenTest_Impl1<hashtype, blocklen>(hinfo, minoffset,
-                incroffset, kl, seedbits, blockbits, verbose);
+                incroffset, kl, seedbits, blockbits, flags);
     }
 
     printf("%s\n", result ? "" : g_failstr);
