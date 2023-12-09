@@ -317,16 +317,20 @@ static void plot( const double p_value, const size_t trials ) {
 // specified worstbiascnt.
 bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
         const int hashbits, const flags_t flags ) {
-    const int expected   = coinflips / 2;
-    int       worstbias  = 0;
-    int       worstbiasN = 0;
+    const int expected     = coinflips / 2;
+    int       worstrawbias = 0;
+    int       worstbias    = 0;
+    int       worstbiasN   = 0;
 
     for (int i = 0; i < trials; i++) {
-        int bias = abs((int)counts[i] - expected);
+        int rawbias = (int)counts[i] - expected;
+        int bias    = abs(rawbias);
         if (worstbias < bias) {
-            worstbias  = bias;
-            worstbiasN = i;
+            worstbias    = bias;
+            worstrawbias = rawbias;
+            worstbiasN   = i;
         }
+        bias = abs(bias);
     }
     const int worstbiasKeybit  = worstbiasN / hashbits;
     const int worstbiasHashbit = worstbiasN % hashbits;
@@ -347,13 +351,13 @@ bool ReportBias( const uint32_t * counts, const int coinflips, const int trials,
     bool   result     = true;
 
     recordLog2PValue(logp_value);
-    if (REPORT(DIAGRAMS, flags)) {
+    if (REPORT(MORESTATS, flags)) {
         if (p_value > 0.00001) {
-            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%8.6f) (^%2d)", pctdigits, pct,
-                    worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
+            printf("max is %5.*f%% at bit %4d -> out %3d (^%2d) (p<%8.6f) (%+i)", pctdigits, pct,
+                    worstbiasKeybit, worstbiasHashbit, logp_value, p_value, worstrawbias);
         } else {
-            printf("max is %5.*f%% at bit %4d -> out %3d (%6d) (p<%.2e) (^%2d)", pctdigits, pct,
-                    worstbiasKeybit, worstbiasHashbit, worstbias, p_value, logp_value);
+            printf("max is %5.*f%% at bit %4d -> out %3d (^%2d) (p<%.2e) (%+i)", pctdigits, pct,
+                    worstbiasKeybit, worstbiasHashbit, logp_value, p_value, worstrawbias);
         }
     } else {
         printf("max is %5.*f%% at bit %4d -> out %3d (^%2d)", pctdigits,
@@ -584,11 +588,11 @@ bool ReportCollisions( uint64_t const nbH, int collcount, unsigned hashsize, int
         // and deltas and exact p-values add visual noise and variable line
         // widths and possibly field counts, they are now only printed out
         // in --verbose mode.
-        if (REPORT(DIAGRAMS, flags)) {
+        if (REPORT(MORESTATS, flags)) {
             if (p_value > 0.00001) {
-                printf("(%+i) (p<%8.6f) (^%2d)", collcount - (int)round(expected), p_value, logp_value);
+                printf("(^%2d) (p<%8.6f) (%+i)", logp_value, p_value, collcount - (int)round(expected));
             } else {
-                printf("(%+i) (p<%.2e) (^%2d)", collcount - (int)round(expected), p_value, logp_value);
+                printf("(^%2d) (p<%.2e) (%+i)", logp_value, p_value, collcount - (int)round(expected));
             }
         } else {
             printf("(^%2d)", logp_value);
@@ -677,11 +681,11 @@ bool ReportBitsCollisions( uint64_t nbH, const int * collcounts, int minBits, in
             printf("%.*s(%#.4gx) ", spacelen, g_manyspaces, maxCollDev);
         }
 
-        if (REPORT(DIAGRAMS, flags)) {
+        if (REPORT(MORESTATS, flags)) {
             if (p_value > 0.00001) {
-                printf("(%+i) (p<%8.6f) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+                printf("(^%2d) (p<%8.6f) (%+i)", logp_value, p_value, maxCollDevNb - i_maxCollDevExp);
             } else {
-                printf("(%+i) (p<%.2e) (^%2d)", maxCollDevNb - i_maxCollDevExp, p_value, logp_value);
+                printf("(^%2d) (p<%.2e) (%+i)", logp_value, p_value, maxCollDevNb - i_maxCollDevExp);
             }
         } else {
             printf("(^%2d)", logp_value);
@@ -759,11 +763,11 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
             printf("Worst bias is %2d bits at bit %3d:    %#.4gx  ", worstWidth, worstStart, mult);
         }
 
-        if (REPORT(DIAGRAMS, flags)) {
+        if (REPORT(MORESTATS, flags)) {
             if (p_value > 0.00001) {
-                printf("(%f) (p<%8.6f) (^%2d)", worstN, p_value, logp_value);
+                printf("(^%2d) (p<%8.6f) (%f)", logp_value, p_value, worstN);
             } else {
-                printf("(%f) (p<%.2e) (^%2d)", worstN, p_value, logp_value);
+                printf("(^%2d) (p<%.2e) (%f)", logp_value, p_value, worstN);
             }
         } else {
             printf("(^%2d)", logp_value);

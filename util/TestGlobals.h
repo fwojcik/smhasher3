@@ -67,7 +67,8 @@ typedef uint32_t flags_t;
 #define FLAG_REPORT_QUIET        (1 << 0)
 #define FLAG_REPORT_VERBOSE      (1 << 1)
 #define FLAG_REPORT_DIAGRAMS     (1 << 2)
-#define FLAG_REPORT_PROGRESS     (1 << 3)
+#define FLAG_REPORT_MORESTATS    (1 << 3)
+#define FLAG_REPORT_PROGRESS     (1 << 4)
 
 //-----------------------------------------------------------------------------
 // Recording test results for final summary printout

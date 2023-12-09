@@ -703,6 +703,7 @@ int main( int argc, const char ** argv ) {
             }
             if (strcmp(arg, "--verbose") == 0) {
                 flags |= FLAG_REPORT_VERBOSE;
+                flags |= FLAG_REPORT_MORESTATS;
                 flags |= FLAG_REPORT_DIAGRAMS;
                 continue;
             }
