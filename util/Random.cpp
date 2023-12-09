@@ -875,7 +875,7 @@ void RandTest( const unsigned runs ) {
         // Test SEQ_NUM
         for (uint64_t j = 1; j < (UINT64_C(1) << 32); j = j * 2 + 1) {
             for (size_t k = 0; k < Randcount; k++) {
-                const uint64_t numgen = std::min(Buf64len, Rand::seq_maxelem(SEQ_NUM, j));
+                const uint64_t numgen = std::min((uint64_t)Buf64len, Rand::seq_maxelem(SEQ_NUM, j));
 
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_NUM, j);
                 rs1.write(&buf64_A[k][0], 0, numgen);
@@ -943,7 +943,7 @@ void RandTest( const unsigned runs ) {
         // Test SEQ_DIST_1
         for (size_t j = 1; j <= 12; j++) {
             for (size_t k = 0; k < Randcount; k++) {
-                const size_t numgen = std::min(Buf8len / j, Rand::seq_maxelem(SEQ_DIST_1, j));
+                const uint64_t numgen = std::min((uint64_t)Buf8len / j, Rand::seq_maxelem(SEQ_DIST_1, j));
 
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_1, j);
                 rs1.write(buf8_A, 0, numgen);
@@ -1008,7 +1008,7 @@ void RandTest( const unsigned runs ) {
         // Test SEQ_DIST_2
         for (size_t j = 1; j <= 12; j++) {
             for (size_t k = 0; k < Randcount; k++) {
-                const size_t numgen = std::min(Buf8len / j, Rand::seq_maxelem(SEQ_DIST_2, j));
+                const uint64_t numgen = std::min((uint64_t)Buf8len / j, Rand::seq_maxelem(SEQ_DIST_2, j));
 
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_2, j);
                 rs1.write(buf8_A, 0, numgen);
@@ -1073,7 +1073,7 @@ void RandTest( const unsigned runs ) {
         // Test SEQ_DIST_3
         for (size_t j = 1; j <= 12; j++) {
             for (size_t k = 0; k < Randcount; k++) {
-                const size_t numgen = std::min(Buf8len / j, Rand::seq_maxelem(SEQ_DIST_3, j));
+                const uint64_t numgen = std::min((uint64_t)Buf8len / j, Rand::seq_maxelem(SEQ_DIST_3, j));
 
                 RandSeq rs1 = testRands1[k].get_seq(SEQ_DIST_3, j);
                 rs1.write(buf8_A, 0, numgen);
@@ -1147,8 +1147,8 @@ void RandBenchmark( void ) {
     volatile uint64_t val;
     Rand randbuf[TEST_ITER];
 
-    size_t numgen;
-    double deltat;
+    uint64_t numgen;
+    double   deltat;
 
     printf("Raw RNG.........................");
     deltat = UINT64_C(1) << 53;
@@ -1237,7 +1237,7 @@ void RandBenchmark( void ) {
         printf("RandSeq(SEQ_DIST_1, %2d).........", (int)szelem);
         deltat = UINT64_C(1) << 53;
         Rand r6( {6, szelem} );
-        numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_1, szelem));
+        numgen = std::min((uint64_t)sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_1, szelem));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs1   = r6.get_seq(SEQ_DIST_1, szelem);
@@ -1252,7 +1252,7 @@ void RandBenchmark( void ) {
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs1   = r6.get_seq(SEQ_DIST_1, szelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 rs1.write(buf, j, 1);
             }
             uint64_t end =   timer_start();
@@ -1267,7 +1267,7 @@ void RandBenchmark( void ) {
 
             RandSeq  rs1   = r6.get_seq(SEQ_DIST_1, szelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 uint64_t k = GET_U64<false>(buf, j * 8);
                 rs1.write(buf, k, 1);
             }
@@ -1281,7 +1281,7 @@ void RandBenchmark( void ) {
         printf("RandSeq(SEQ_DIST_2, %2d).........", (int)szelem);
         deltat = UINT64_C(1) << 53;
         Rand r7( {7, szelem} );
-        numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_2, szelem));
+        numgen = std::min((uint64_t)sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_2, szelem));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs2   = r7.get_seq(SEQ_DIST_2, szelem);
@@ -1296,7 +1296,7 @@ void RandBenchmark( void ) {
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs2   = r7.get_seq(SEQ_DIST_2, szelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 rs2.write(buf, j, 1);
             }
             uint64_t end =   timer_start();
@@ -1311,7 +1311,7 @@ void RandBenchmark( void ) {
 
             RandSeq  rs2   = r7.get_seq(SEQ_DIST_2, szelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 uint64_t k = GET_U64<false>(buf, j * 8);
                 rs2.write(buf, k, 1);
             }
@@ -1325,7 +1325,7 @@ void RandBenchmark( void ) {
         printf("RandSeq(SEQ_DIST_3, %2d).........", (int)szelem);
         deltat = UINT64_C(1) << 53;
         Rand r8( {8, szelem} );
-        numgen = std::min(sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_3, szelem));
+        numgen = std::min((uint64_t)sizeof(buf) / 16, Rand::seq_maxelem(SEQ_DIST_3, szelem));
         // Batched
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs3   = r8.get_seq(SEQ_DIST_3, szelem);
@@ -1340,7 +1340,7 @@ void RandBenchmark( void ) {
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs3   = r8.get_seq(SEQ_DIST_3, szelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 rs3.write(buf, j, 1);
             }
             uint64_t end =   timer_start();
@@ -1355,7 +1355,7 @@ void RandBenchmark( void ) {
 
             RandSeq  rs3   = r8.get_seq(SEQ_DIST_3, szelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 uint64_t k = GET_U64<false>(buf, j * 8);
                 rs3.write(buf, k, 1);
             }
@@ -1385,7 +1385,7 @@ void RandBenchmark( void ) {
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs4   = r9.get_seq(SEQ_NUM, maxelem - 1);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 rs4.write(buf, j, 1);
             }
             uint64_t end =   timer_start();
@@ -1400,7 +1400,7 @@ void RandBenchmark( void ) {
 
             RandSeq  rs4   = r9.get_seq(SEQ_NUM, maxelem - 1);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 uint64_t k = GET_U64<false>(buf, j * 8);
                 rs4.write(buf, k, 1);
             }
@@ -1430,7 +1430,7 @@ void RandBenchmark( void ) {
         for (size_t i = 0; i < TEST_ITER; i++) {
             RandSeq  rs5   = rA.get_seq(SEQ_NUM, maxelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 rs5.write(buf, j, 1);
             }
             uint64_t end =   timer_start();
@@ -1445,7 +1445,7 @@ void RandBenchmark( void ) {
 
             RandSeq  rs5   = rA.get_seq(SEQ_NUM, maxelem);
             uint64_t begin = timer_start();
-            for (size_t j = 0; j < numgen; j++) {
+            for (uint64_t j = 0; j < numgen; j++) {
                 uint64_t k = GET_U64<false>(buf, j * 8);
                 rs5.write(buf, k, 1);
             }
