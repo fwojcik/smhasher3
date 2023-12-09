@@ -767,8 +767,7 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
     }
 
     if (!REPORT(QUIET, reportFlags)) {
-        printf("Testing distribution   (any  %2i..%2i bits)%s", minwidth, maxwidth,
-                REPORT(DIAGRAMS, reportFlags) ? "\n[" : " - ");
+        printf("Testing distribution   (any  %2i..%2i bits) - ", minwidth, maxwidth);
     }
 
     std::vector<double> scores(hashbits * (maxwidth - minwidth + 1));

@@ -716,16 +716,12 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
         for (int width = maxwidth; width >= minwidth; width--) {
             double n = *worstptr++;
 
-            if (REPORT(DIAGRAMS, flags)) { plot(GetStdNormalPValue(n), tests); }
-
             if (worstN    <= n) {
                 worstN     = n;
                 worstWidth = width;
                 worstStart = startbit;
             }
         }
-
-        if (REPORT(DIAGRAMS, flags)) { printf("]\n%s", ((startbit + 1) == hashbits) ? "" : "["); }
     }
 
     addVCodeResult((uint32_t)worstN);
@@ -779,6 +775,17 @@ bool ReportDistribution( const std::vector<double> & scores, int tests, int hash
             printf(" !\n");
         } else {
             printf("\n");
+        }
+    }
+
+    if (REPORT(DIAGRAMS, flags)) {
+        printf("[");
+        for (int startbit = 0; startbit < hashbits; startbit++) {
+            const double * worstptr = &scores[startbit * (maxwidth - minwidth + 1)];
+            for (int width = maxwidth; width >= minwidth; width--) {
+                plot(GetStdNormalPValue(*worstptr++), tests);
+            }
+            printf("]\n%s", ((startbit + 1) == hashbits) ? "" : "[");
         }
     }
 
