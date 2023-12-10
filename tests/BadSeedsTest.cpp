@@ -61,6 +61,7 @@
   #include <chrono>
   #include <atomic>
   #include <mutex>
+  #include <condition_variable>
 #endif
 
 //-----------------------------------------------------------------------------
@@ -74,8 +75,11 @@ static constexpr size_t numtests     = numtestbytes * numtestlens;
 
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
-static std::atomic<unsigned> seed_progress;
-static std::mutex            print_mutex;
+static std::atomic<unsigned>   seed_progress;
+static std::atomic<unsigned>   threads_remaining;
+static std::condition_variable threads_initialized;
+static std::mutex              print_mutex;
+static std::mutex              progress_mutex;
 #else
 static unsigned seed_progress;
 #endif
@@ -122,6 +126,15 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         seed_progress = 0;
     }
 
+#if defined(HAVE_THREADS)
+    {
+        std::lock_guard<std::mutex> lock( progress_mutex );
+        if (--threads_remaining == 0) {
+            threads_initialized.notify_one();
+        }
+    }
+#endif
+
     /* Premake all the test keys */
     uint8_t keys[numtestbytes][128];
     for (size_t i = 0; i < numtestbytes; i++) {
@@ -140,10 +153,17 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
          */
         if ((seed & UINT64_C(0x1ffffff)) == UINT64_C(0x1ffffff)) {
 #if defined(HAVE_THREADS)
-            std::lock_guard<std::mutex> lock( print_mutex );
+            // Wish we had C++17's std::scoped_lock(), but this will do
+            std::lock(print_mutex, progress_mutex);
+            std::lock_guard<std::mutex> lock1(print_mutex, std::adopt_lock);
+            std::lock_guard<std::mutex> lock2(progress_mutex, std::adopt_lock);
 #endif
+            // print_mutex has been acquired, so read-test-modify should be safe here
             unsigned   count  = ++seed_progress;
             const char spacer = ((count % progress_nl_every) == 0) ? '\n' : ' ';
+            if (spacer == '\n') {
+                seed_progress = 0;
+            }
 
             printf("%0*" PRIx64 "%c", seedchars, seed, spacer);
         }
@@ -252,16 +272,24 @@ static bool TestManySeeds( const HashInfo * hinfo, const uint64_t hi, bool & new
         bool * newresults = new bool[g_NCPU]();
 
         printf("%d threads starting...\n", g_NCPU);
-        for (unsigned i = 0; i < g_NCPU; i++) {
-            const uint32_t start = i * len;
-            const uint32_t end   = (i < (g_NCPU - 1)) ? start + (len - 1) : 0xffffffff;
-            t[i] = std::thread {
-                TestSeedRangeThread<hashtype>, hinfo, hi, start, end,
-                std::ref(results[i]), std::ref(newresults[i])
-            };
+        {
+            std::unique_lock<std::mutex> lock( progress_mutex );
+
+            threads_remaining = g_NCPU;
+
+            for (unsigned i = 0; i < g_NCPU; i++) {
+                const uint32_t start = i * len;
+                const uint32_t end   = (i < (g_NCPU - 1)) ? start + (len - 1) : 0xffffffff;
+                t[i] = std::thread {
+                    TestSeedRangeThread<hashtype>, hinfo, hi, start, end,
+                    std::ref(results[i]), std::ref(newresults[i])
+                };
+            }
+
+            threads_initialized.wait(lock, []{ return !!(threads_remaining == 0); });
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        //std::this_thread::sleep_for(std::chrono::seconds(1));
 
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i].join();
