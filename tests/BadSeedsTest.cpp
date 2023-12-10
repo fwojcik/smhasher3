@@ -119,6 +119,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         std::lock_guard<std::mutex> lock( print_mutex );
 #endif
         printf("Testing [0x%0*" PRIx64 ", 0x%0*" PRIx64 "] ... \n", seedchars, hi | start, seedchars, last);
+        seed_progress = 0;
     }
 
     /* Premake all the test keys */
@@ -165,10 +166,12 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
 #endif
             bool known_seed = (std::find(seeds.begin(), seeds.end(), seed) != seeds.end());
             if (known_seed) {
-                printf("\nVerified bad seed 0x%0*" PRIx64 "\n", seedchars, seed);
+                printf("%sVerified bad seed 0x%0*" PRIx64 "\n", (seed_progress == 0) ? "" : "\n",  seedchars, seed);
             } else {
-                printf("\nNew bad seed 0x%0*" PRIx64 "\n", seedchars, seed);
+                printf("%sNew bad seed 0x%0*" PRIx64 "\n", (seed_progress == 0) ? "" : "\n", seedchars, seed);
             }
+            seed_progress = 0;
+
             fails++;
             if (fails > 300) {
                 fprintf(stderr, "Too many bad seeds, ending test\n");
@@ -201,14 +204,19 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
             std::lock_guard<std::mutex> lock( print_mutex );
 #endif
             if (known_seed) {
-                printf("\nVerified broken seed 0x%" PRIx64 " => 0 hash value\n", seed);
+                printf("%sVerified broken seed 0x%0*" PRIx64 " => 0 hash value\n",
+                        (seed_progress == 0) ? "" : "\n", seedchars, seed);
             } else {
-                printf("\nNew broken seed 0x%" PRIx64 " => 0 hash value\n", seed);
+                printf("%sNew broken seed 0x%0*" PRIx64 " => 0 hash value\n",
+                        (seed_progress == 0) ? "" : "\n", seedchars, seed);
             }
+            seed_progress = 0;
+
             fails++;
             if (!known_seed && (fails < 32)) { // don't print too many lines
                 PrintZeroes(hash, hseed, zero, &keys[0][0]);
             }
+
             thisresult = false;
             if (!known_seed) {
                 newresult = true;
