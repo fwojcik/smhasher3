@@ -139,5 +139,6 @@ REGISTER_HASH(rust_fxhash64,
    $.verification_LE = 0x32408FE5,
    $.verification_BE = 0x57249883,
    $.hashfn_native   = FxHash64<false>,
-   $.hashfn_bswap    = FxHash64<true>
+   $.hashfn_bswap    = FxHash64<true>,
+   $.badseeddesc     = "All seeds are bad, as varying lengths of all-zeros can always cause collisions"
  );
