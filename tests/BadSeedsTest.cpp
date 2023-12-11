@@ -72,6 +72,7 @@ static const uint8_t    testbytes[]  = {0, 2, 8, 32, 127, 128, 223, 247, 253, 25
 static constexpr size_t numtestbytes = sizeof(testbytes) / sizeof(testbytes[0]);
 static constexpr size_t numtestlens  = sizeof(testlens) / sizeof(testlens[0]);
 static constexpr size_t numtests     = numtestbytes * numtestlens;
+static const int        maxtestlen   = testlens[numtestlens - 1];
 
 #if defined(HAVE_THREADS)
 // For keeping track of progress printouts across threads
@@ -88,15 +89,15 @@ template <typename hashtype>
 static void PrintZeroes( const HashFn hash, const seed_t hseed, const hashtype & zero, const uint8_t * keys) {
     hashtype v;
 
-    printf("Zero hashes:\n");
     for (size_t i = 0; i < numtestbytes; i++) {
         for (int len: testlens) {
-            hash(&keys[i * numtestbytes], len, hseed, &v);
+            hash(&keys[i * maxtestlen], len, hseed, &v);
             if (v == zero) {
-                printf("keybyte %02x len %2d:", keys[i * numtestbytes], len); v.printhex(" ");
+                printf("\tkeybyte %02x len %2d:", keys[i * numtestbytes], len); v.printhex(" ");
             }
         }
     }
+    printf("\n");
 }
 
 // Process part of a 2^32 range, split into g_NCPU threads
@@ -136,9 +137,9 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
 #endif
 
     /* Premake all the test keys */
-    uint8_t keys[numtestbytes][128];
+    uint8_t keys[numtestbytes][maxtestlen];
     for (size_t i = 0; i < numtestbytes; i++) {
-        memset(&keys[i][0], testbytes[i], 128);
+        memset(&keys[i][0], testbytes[i], maxtestlen);
     }
 
     seed_t seed = (hi | start);
@@ -361,9 +362,9 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
     }
 
     /* Premake all the test keys */
-    uint8_t keys[numtestbytes][128];
+    uint8_t keys[numtestbytes][maxtestlen];
     for (size_t i = 0; i < numtestbytes; i++) {
-        memset(&keys[i][0], testbytes[i], 128);
+        memset(&keys[i][0], testbytes[i], maxtestlen);
     }
 
     const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
