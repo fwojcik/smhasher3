@@ -93,7 +93,7 @@ static void PrintZeroes( const HashFn hash, const seed_t hseed, const hashtype &
         for (int len: testlens) {
             hash(&keys[i * maxtestlen], len, hseed, &v);
             if (v == zero) {
-                printf("\tkeybyte %02x len %2d:", keys[i * numtestbytes], len); v.printhex(" ");
+                printf("\tkeybyte %02x len %2d:", keys[i * maxtestlen], len); v.printhex(" ");
             }
         }
     }
