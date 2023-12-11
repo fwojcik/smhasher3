@@ -137,9 +137,9 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
 #endif
 
     /* Premake all the test keys */
-    uint8_t keys[numtestbytes][maxtestlen];
+    VLA_ALLOC(uint8_t, keys, numtestbytes * maxtestlen);
     for (size_t i = 0; i < numtestbytes; i++) {
-        memset(&keys[i][0], testbytes[i], maxtestlen);
+        memset(&keys[i * maxtestlen], testbytes[i], maxtestlen);
     }
 
     seed_t seed = (hi | start);
@@ -176,7 +176,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
         unsigned cnt = 0;
         for (size_t i = 0; i < numtestbytes; i++) {
             for (int len: testlens) {
-                hash(&keys[i][0], len, hseed, &hashes[cnt++]);
+                hash(&keys[i * maxtestlen], len, hseed, &hashes[cnt++]);
             }
         }
 
@@ -207,7 +207,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
                             const unsigned lenidx  = idx % numtestbytes;
                             const unsigned byteidx = idx / numtestbytes;
                             printf("0x%0*" PRIx64 "\t%2d copies of 0x%02x", seedchars, seed,
-                                    testlens[lenidx], keys[byteidx][0]);
+                                    testlens[lenidx], keys[byteidx * maxtestlen]);
                         });
             }
 
@@ -235,7 +235,7 @@ static void TestSeedRangeThread( const HashInfo * hinfo, const uint64_t hi, cons
 
             fails++;
             if (!known_seed && (fails < 32)) { // don't print too many lines
-                PrintZeroes(hash, hseed, zero, &keys[0][0]);
+                PrintZeroes(hash, hseed, zero, &keys[0]);
             }
 
             thisresult = false;
@@ -362,9 +362,9 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
     }
 
     /* Premake all the test keys */
-    uint8_t keys[numtestbytes][maxtestlen];
+    VLA_ALLOC(uint8_t, keys, numtestbytes * maxtestlen);
     for (size_t i = 0; i < numtestbytes; i++) {
-        memset(&keys[i][0], testbytes[i], maxtestlen);
+        memset(&keys[i * maxtestlen], testbytes[i], maxtestlen);
     }
 
     const seed_t hseed = hinfo->Seed(seed, HashInfo::SEED_FORCED);
@@ -373,7 +373,7 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
     unsigned cnt = 0;
     for (size_t i = 0; i < numtestbytes; i++) {
         for (int len: testlens) {
-            hash(&keys[i][0], len, hseed, &hashes[cnt++]);
+            hash(&keys[i * maxtestlen], len, hseed, &hashes[cnt++]);
         }
     }
 
@@ -384,14 +384,14 @@ static bool TestSingleSeed( const HashInfo * hinfo, const seed_t seed ) {
                     const unsigned lenidx  = idx % numtestbytes;
                     const unsigned byteidx = idx / numtestbytes;
                     printf("0x%0*" PRIx64 "\t%2d copies of 0x%02x", seedchars, seed,
-                            testlens[lenidx], keys[byteidx][0]);
+                            testlens[lenidx], keys[byteidx * maxtestlen]);
                 });
         result = false;
     }
 
     if (hashes[0] == zero) {
         printf("Confirmed broken seed 0x%" PRIx64 " => 0 hash value\n", seed);
-        PrintZeroes(hash, hseed, zero, &keys[0][0]);
+        PrintZeroes(hash, hseed, zero, &keys[0]);
         result = false;
     }
 
