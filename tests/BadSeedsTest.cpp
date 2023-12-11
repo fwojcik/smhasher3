@@ -403,16 +403,10 @@ static bool BadSeedsKnown( const HashInfo * hinfo, const bool extra ) {
     bool result = true;
     const std::set<seed_t> & seeds = hinfo->badseeds;
 
-    if (hinfo->badseeddesc != NULL) {
-        printf("Too many bad seeds to test; stated description:\n");
-        printf("\t%s\n", hinfo->badseeddesc);
-        printf("Use --extra to demonstrate.\n");
-        result = false;
-        return result;
-    }
-
     if (!seeds.size()) {
-        if (extra) {
+        if (hinfo->badseeddesc != NULL) {
+            printf("No explicitly listed bad seeds to test.\n");
+        } else if (extra) {
             printf("No known bad seeds to test.\n");
         } else {
             printf("No known bad seeds to test. Use --extra to search for them.\n");
@@ -462,6 +456,11 @@ bool BadSeedsTest( const HashInfo * hinfo, bool find_new_seeds ) {
         printf("Refusing to find new bad seeds for mock hash.\n");
     } else if (find_new_seeds) {
         result &= BadSeedsFind<hashtype>(hinfo);
+    } else if (hinfo->badseeddesc != NULL) {
+        printf("Too many bad seeds to test; stated description:\n");
+        printf("\t%s\n", hinfo->badseeddesc);
+        printf("Use --extra to force testing\n");
+        result = false;
     }
 
     recordTestResult(result, "BadSeeds", (const char *)NULL);
