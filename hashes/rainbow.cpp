@@ -204,7 +204,7 @@ REGISTER_HASH(rainbow_256,
         FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 256,
    $.verification_LE = 0xB327563D,
-   $.verification_BE = 0,
+   $.verification_BE = 0x10C46364,
    $.hashfn_native   = rainbow<256, false>,
    $.hashfn_bswap    = rainbow<256, true>
 );
