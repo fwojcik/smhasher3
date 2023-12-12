@@ -35,19 +35,27 @@
 
 #if defined(HAVE_INT128)
 
+//-----------------------------------------------------------------------------
 // This code originally used the system's srand()/rand() functions from
 // libc. This made the hash unstable across platforms. To rectify this, a
-// basic LCG implementation is included here, just so testing can be done
-// consistently.
+// basic splitmix implementation is included here, just so testing can be
+// done consistently.
 //
-// It could be interesting to implement other RNGs to see how
-// dependent hash quality is on the RNG used.
-//
-// If you plan on using this hash, it is STRONGLY recommended that you
-// test it with the RNG you plan on using to seed it.
-static uint32_t LCG_rand( uint64_t & state ) {
-    state = state * UINT64_C(0x5851f42d4c957f2d) + 1;
-    return (state >> 31);
+// Hash quality is dependent on the RNG used! If you plan on using this
+// hash, it is STRONGLY recommended that you test it with the RNG you plan
+// on using to seed it.
+static uint32_t splitmix_rand( uint64_t & state ) {
+    uint64_t rand;
+
+    rand  = (state += UINT64_C(0x9e3779b97f4a7c15));
+    rand ^= rand >> 30;
+    rand *= UINT64_C(0xbf58476d1ce4e5b9);
+    rand ^= rand >> 27;
+    rand *= UINT64_C(0x94d049bb133111eb);
+    rand ^= rand >> 31;
+
+    // Return the middle 32-bits
+    return (uint32_t)(rand >> 16);
 }
 
 const static uint64_t MERSENNE_61         = (1ull << 61) - 1;
@@ -63,25 +71,25 @@ static thread_local struct poly_mersenne_struct poly_mersenne_data;
 static uint128_t rand_u128( uint64_t & state ) {
     // We don't know how many bits we get from rand(), but it is at least
     // 16, so we concatenate a couple.
-    uint128_t r = LCG_rand(state);
+    uint128_t r = splitmix_rand(state);
 
     for (int i = 0; i < 7; i++) {
         r <<= 16;
-        r  ^= LCG_rand(state);
+        r  ^= splitmix_rand(state);
     }
     return r;
 }
 
 static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
-    uint64_t LCG_nextrand = (uint64_t)seed;
+    uint64_t splitmix_nextrand = (uint64_t)seed;    
 
     // a has be at most 2^60, or the lazy modular reduction won't work.
-    poly_mersenne_data.poly_mersenne_a = rand_u128(LCG_nextrand) % (MERSENNE_61 / 2);
-    poly_mersenne_data.poly_mersenne_b = rand_u128(LCG_nextrand) % MERSENNE_61;
+    poly_mersenne_data.poly_mersenne_a = rand_u128(splitmix_nextrand) % (MERSENNE_61 / 2);
+    poly_mersenne_data.poly_mersenne_b = rand_u128(splitmix_nextrand) % MERSENNE_61;
     for (uint32_t i = 0; i < POLY_MERSENNE_MAX_K + 1; i++) {
         // The random values should be at most 2^61-2, or the lazy
         // modular reduction won't work.
-        poly_mersenne_data.poly_mersenne_random[i] = rand_u128(LCG_nextrand) % MERSENNE_61;
+        poly_mersenne_data.poly_mersenne_random[i] = rand_u128(splitmix_nextrand) % MERSENNE_61;
     }
     return (seed_t)(uintptr_t)&poly_mersenne_data;
 }
@@ -161,8 +169,8 @@ REGISTER_HASH(poly_mersenne__deg0,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0x6F1C89E6,
-   $.verification_BE = 0xB4063D06,
+   $.verification_LE = 0x5D4B947A,
+   $.verification_BE = 0x79E0F01B,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<0, false>,
    $.hashfn_bswap    = Poly_Mersenne<0, true>
@@ -179,8 +187,8 @@ REGISTER_HASH(poly_mersenne__deg1,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0x51D89932,
-   $.verification_BE = 0xC66C4E04,
+   $.verification_LE = 0x2C5C1B0E,
+   $.verification_BE = 0xE85E0414,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<1, false>,
    $.hashfn_bswap    = Poly_Mersenne<1, true>
@@ -197,8 +205,8 @@ REGISTER_HASH(poly_mersenne__deg2,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0xECB98832,
-   $.verification_BE = 0xD08A7507,
+   $.verification_LE = 0x35AF4EA2,
+   $.verification_BE = 0xEA3BFB05,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<2, false>,
    $.hashfn_bswap    = Poly_Mersenne<2, true>
@@ -215,8 +223,8 @@ REGISTER_HASH(poly_mersenne__deg3,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0x26C2D5AF,
-   $.verification_BE = 0xD57B4E19,
+   $.verification_LE = 0x8197A37D,
+   $.verification_BE = 0x601CF718,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<3, false>,
    $.hashfn_bswap    = Poly_Mersenne<3, true>
@@ -233,8 +241,8 @@ REGISTER_HASH(poly_mersenne__deg4,
          FLAG_IMPL_LICENSE_BSD          |
          FLAG_IMPL_SLOW,
    $.bits = 32,
-   $.verification_LE = 0x1D7F250E,
-   $.verification_BE = 0x64AF6A1D,
+   $.verification_LE = 0x27C2F53B,
+   $.verification_BE = 0x6857DC31,
    $.seedfn          = poly_mersenne_seed_init,
    $.hashfn_native   = Poly_Mersenne<4, false>,
    $.hashfn_bswap    = Poly_Mersenne<4, true>
