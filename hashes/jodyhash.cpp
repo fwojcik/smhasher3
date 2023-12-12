@@ -154,6 +154,7 @@ REGISTER_HASH(jodyhash_32,
    $.hash_flags =
          FLAG_HASH_SMALL_SEED,
    $.impl_flags =
+         FLAG_IMPL_SANITY_FAILS   | // appending zero bytes might not alter hash!
          FLAG_IMPL_READ_PAST_EOB  |
          FLAG_IMPL_ROTATE         |
          FLAG_IMPL_LICENSE_MIT    |
