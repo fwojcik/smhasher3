@@ -11,7 +11,7 @@
 Test Results
 ------------
 
-If you are interested in the **[latest hash test results](foo.html)**
+If you are interested in the **[latest hash test results](results/README.md)**
 (currently from SMHasher3 `SMHasher3 beta3-c6b9cc18`), they are in the
 `results/` directory.
 
