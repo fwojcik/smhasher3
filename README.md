@@ -15,6 +15,11 @@ If you are interested in the **[latest hash test results](results/README.md)**
 (currently from SMHasher3 `SMHasher3 beta3-c6b9cc18`), they are in the
 `results/` directory.
 
+There are a few hashes which do not pass all the tests, but are very close
+to doing so. These are: `chaskey-12` are `MeowHash`. These failures will be
+investigated in the next month, as the failures could be due to chance
+and/or due to a flaw in a test.
+
 Summary
 -------
 
