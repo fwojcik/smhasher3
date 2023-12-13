@@ -8,6 +8,13 @@
 =======================================================
 ```
 
+Test Results
+------------
+
+If you are interested in the **[latest hash test results](foo.html)**
+(currently from SMHasher3 `SMHasher3 beta3-c6b9cc18`), they are in the
+`results/` directory.
+
 Summary
 -------
 
@@ -53,12 +60,15 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2023-12-01, SMHasher3 is very near to a beta3 release. The estimated
-date for this is 2023-12-10.
+As of 2023-12-12, SMHasher3 beta3 has been released.
 
-The two coding/writing things left to do before release are to document
-what each test does, and to improve verbosity configuration. I also need to
-run all the hashes to produce their reports, and that can take some time.
+There are some coding/writing things I wanted to complete before release,
+but was unable to. These were: to document what each test does, to improve
+verbosity command-line options, and to rewrite rngstream.cpp. I've made
+progress towards these, but have decided to not hold up tagging the code
+and releasing the results. Those improvements should land sometime in
+mid-late January, along with a bulk source-code reformatting run, which I
+want to have happen shortly after releases normally.
 
 This code is compiled and run successfully on Linux x64, arm, and powerpc
 using gcc and clang quite often. Importantly, I do not have the ability to

@@ -1,6 +1,17 @@
 #!/bin/bash
-TMPDIR=/tmp
+
+set -e
+set -o pipefail
+
+TMPDIR=/tmp/beta3
 TAB=`echo -en '\t'`
+
+if [ -d "${TMPDIR}" ]; then
+    echo "${TMPDIR} exists";
+    exit 1;
+fi
+
+mkdir -p ${TMPDIR}
 
 ../build/SMHasher3 --list                |
     awk 'NR>4 {printf "%s\t%d\n",$1,$2}' |
@@ -9,32 +20,30 @@ TAB=`echo -en '\t'`
 awk 'NF!=12 {next} {r="pass"} $0 ~ /FAIL/ {r="FAIL"} {print $1"\t"r}' SanityAll.txt |
     sort > ${TMPDIR}/sanity.j
 
-egrep '^Overall result:' *.txt  |
-    sed 's/\.txt:/:/'           |
-    tr '(/)' '   '              |
-    awk -F: '{print $1"\t"$NF}' |
+egrep '^Overall result:' raw/*.txt  |
+    sed 's/\.txt:/:/'               |
+    sed 's/^raw\///'                |
+    tr '(/)' '   '                  |
+    awk -F: '{print $1"\t"$NF}'     |
     awk '{printf "%s\t%s\t%d\t%d\n",$1,$2,$4-$3,$4}' |
     sort > ${TMPDIR}/passfail.j
 
-egrep '^ +[0-9]+-byte keys' *.txt   |
-    sed 's/\.txt:/:/'               |
-    tr '(/:)' '    '                |
+egrep '^ +[0-9]+-byte keys' raw/*.txt   |
+    sed 's/\.txt:/:/'                   |
+    sed 's/^raw\///'                    |
+    tr '(/:)' '    '                    |
     awk '
-                     { xsum[$1]+=$5; xcnt[$1]++; }
-        $8/$5 < 0.01 {  sum[$1]+=$5;  cnt[$1]++; }
-        END          { for (h in xcnt) {
-                           if (cnt[h]>=24) {
-                               printf "%s\t%6.2f\n", h, sum[h]/cnt[h];
-                           } else {
-                               printf "%s\t%6.2f XX\n", h, xsum[h]/xcnt[h];
-                           }
+                     {  sum[$1]+=$5;  cnt[$1]++; }
+        END          { for (h in cnt) {
+                           printf "%s\t%6.2f\n", h, sum[h]/cnt[h];
                        }
                      }'             |
     sort > ${TMPDIR}/speed1.j
 
-egrep '^Alignment rnd - ' *.txt |
-    sed 's/\.txt:/:/'           |
-    tr '(/:)' '    '            |
+egrep '^Alignment rnd - ' raw/*.txt |
+    sed 's/\.txt:/:/'               |
+    sed 's/^raw\///'                |
+    tr '(/:)' '    '                |
     awk '(NR%2)==0 {printf "%s\t%6.2f\n", $1,$5}' |
     sort > ${TMPDIR}/speed2.j
 
@@ -43,8 +52,7 @@ join -t"$TAB" ${TMPDIR}/bits.j ${TMPDIR}/sanity.j |
     join -t"$TAB" - ${TMPDIR}/speed1.j            |
     join -t"$TAB" - ${TMPDIR}/speed2.j            |
     sort -g -k7                                   |
-    sed 's/\([0-9.]\+\) XX/\\\*\\\* \1/'          |
-    awk -F'\t' -vOFS='\t' '{$1=sprintf("[%s](%s.txt)", $1, $1); print}' > ${TMPDIR}/joined.t
+    awk -F'\t' -vOFS='\t' '{$1=sprintf("[%s](raw/%s.txt)", $1, $1); print}' > ${TMPDIR}/joined.t
 
 cat <<EOF
 SMHasher3 results summary
@@ -129,6 +137,4 @@ VERS=`cat VERSION.TXT`
 cat <<EOF
 
 All results were generated using: $VERS
-
-[\*\*]: this result had >= 1% std. deviation in >=25% of tests, and so may not be reliable
 EOF

@@ -1,7 +1,7 @@
 [[_TOC_]]
 
-Differences from beta2
-======================
+Differences from beta2 to beta3
+===============================
 
 General changes
 ---------------
@@ -14,10 +14,12 @@ General changes
 - External RNG test utility has been added
 - Some code has been made more self-documenting
 - Code is now compiled with "-Wall" on non-MSVC compilers
+- Additional compiler warnings enabled
 - Numerous small changes based on compiler warnings
 - "make test" improved, and enabled on all platforms
 - "C" locale is now explicitly set internally
 - Many code cleanups and readability improvements
+- Raw result .txt files moved to results/raw/
 
 Testing changes
 ---------------
@@ -25,8 +27,12 @@ Testing changes
   failures are detected and --verbose is given on the command-line
    - This includes hash seed and key inputs, as well as hash value results
    - This also includes tests which test XORs of two hash results
+   - This also includes lists of never-seen hash slice values
    - Some tests don't support this, as it wouldn't make sense to do so,
      such as Avalanche-based and BIC-based tests
+- DiffDist test renamed to Bitflip
+   - This is to more properly label all the so-called hash delta anaysis as
+     "differential distribution
 - BIC and SeedBIC tests have been reorganized
    - The same input data is now used for each input bit, to reduce
      memory usage and be consistent with other test suites
@@ -43,11 +49,15 @@ Testing changes
 - SeedSparse test is now separated out from the Seed test
 - Reporting code is now separated out from Analysis code
    - There will likely be more minor changes like this in the future
-- BadSeeds reporting has been improved
+- BadSeeds reporting has been improved significantly
 - SanityTest error messages have been improved
 - SpeedTest fidelity has been improved
 - Sparse test now reports set bit count in summaries
+- HashMap test now acts more like the purely performance test that it is
+- Test warning and failure thresholds have been tweaked to account for the
+  added numbers of tests
 - Expected collision estimation has been improved
+- Layout of lines in --verbose mode has been improved
 - Plots of per-bit results have been improved and made consistent
    - This includes bias graphs in Avalanche-based and BIC-based tests, as
      well as hash bucket distribution graphs in Keyset-based tests
@@ -66,6 +76,12 @@ General hash changes
 
 Specific hash changes
 ---------------------
+- abseil-lowlevel, abseil32, abseil64-llh, abseil64-city
+   - Added
+- aesnihash
+   - Renamed to aesnihash-majek
+- aesnihash-peterrk
+   - Added
 - aesrng
    - Simplified somewhat, and fixed some threading issues
 - beamsplitter
@@ -74,30 +90,70 @@ Specific hash changes
    - Fixed compilation for SSE2 implementation
 - chaskey
    - Improved readability of implementation
+- cityhash
+   - Updated to 1.1.1
 - discohash
-   - Made byteswapping changes be clearer
+   - Many updates from hash author
 - farsh
    - Fixed compilation on 32-bit platforms
 - floppsyhash
    - Fixed compilation on non-UNIX platforms
+- fnv-1a-128
+   - Added
 - fnv-mulvey
    - Added
 - hasshe2
    - Altered tweaked version to be streamable
+- highwayhash
+   - Added
+- jodyhash
+   - Updated to 7.3
 - khashv
    - Updated to latest revision
    - Fixed compilation on 32-bit platforms
+- komihash
+   - Updated to 5.7
 - multiply_shift
    - Fixed operation on 32-bit platforms
 - nmhash
    - Fixed operation on 32-bit platforms
 - pearson
    - Fixed operation on 32-bit platforms
+- pengyhash
+   - Updated to 0.3
+- perl-stadtx
+   - Added
+- perl-zaphod32, perl-zaphod32.sbox96, perl-zaphod32.sbox128.old, perl-zaphod32.sbox128
+   - Added
+- prvhash
+   - Updated to 4.3.7
 - pmp_multilinear
    - Hash has been temporarily disabled
+- poly-mersenne
+   - Replaced RNG with less buggy one
+   - Added "degree 0" version for completeness
+- polymurhash, polymurhash-tweakseed
+   - Added
+- rainbow
+   - Added
+- rainstorm
+   - Added
+- rust-ahash, rust-ahash.noshuf, rust-ahash-fb, rust-ahash-fb.nofold
+   - Added
+- rust-fxhash32, rust-fxhash64
+   - Added
+- siphash-2-4.folded, siphash-1-3.folded
+   - Added
+- tabulation
+   - Replaced RNG with less buggy one
+- t1ha
+   - Fixed bug on ARM platforms
+- wyhash
+   - Updated to 4.2
+   - Fixed endian issues
 - xxh3
    - Fixed bug in AVX-512 implementation
-
+   - Updated to 0.8.2
 
 Differences from beta1 to beta2
 ===============================
@@ -504,3 +560,4 @@ This is only bugs in testing code. Bugs in hash functions are addressed above.
 - Fixed bug where reporting could get visually corrupted when not using '--verbose'
 - Fixed bug where 32-bit hashes would not have their collisions printed when
   requested
+<
