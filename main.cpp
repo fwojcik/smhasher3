@@ -104,7 +104,9 @@
 
 //-----------------------------------------------------------------------------
 // Locally-visible configuration
-static bool g_forceSummary = false;
+static bool g_forceSummary   = false;
+static bool g_exitOnFailure  = false;
+static bool g_exitCodeResult = false;
 
 // Setting to test more thoroughly.
 //
@@ -372,7 +374,8 @@ static void print_pvaluecounts( void ) {
 
 template <typename hashtype>
 static bool test( const HashInfo * hInfo, const flags_t flags ) {
-    bool result   = true;
+    bool result  = true;
+    bool summary = g_forceSummary;
 
     if (g_testAll) {
         printf("-------------------------------------------------------------------------------\n");
@@ -418,6 +421,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
         result &= HashSelfTest(hInfo);
         result &= (SanityTest(hInfo, flags) || hInfo->isMock());
         printf("\n");
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -429,6 +433,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testHashmap) {
         result &= HashMapTest(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -436,6 +441,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testAvalanche) {
         result &= AvalancheTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -443,6 +449,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testBIC) {
         result &= BicTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -450,6 +457,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testZeroes) {
         result &= ZeroKeyTest<hashtype>(hInfo, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -457,6 +465,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testCyclic) {
         result &= CyclicKeyTest<hashtype>(hInfo, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -464,6 +473,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSparse) {
         result &= SparseKeyTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -471,6 +481,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testPermutation) {
         result &= PermutedKeyTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -478,6 +489,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testText) {
         result &= TextKeyTest<hashtype>(hInfo, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -485,6 +497,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testTwoBytes) {
         result &= TwoBytesKeyTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -492,6 +505,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testPerlinNoise) {
         result &= PerlinNoiseTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -499,6 +513,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testBitflip) {
         result &= BitflipTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -506,6 +521,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedZeroes) {
         result &= SeedZeroKeyTest<hashtype>(hInfo, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -513,6 +529,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedSparse) {
         result &= SeedSparseTest<hashtype>(hInfo, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -520,6 +537,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBlockLen) {
         result &= SeedBlockLenTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -527,6 +545,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBlockOffset) {
         result &= SeedBlockOffsetTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -534,6 +553,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeed) {
         result &= SeedTest<hashtype>(hInfo, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -541,6 +561,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedAvalanche) {
         result &= SeedAvalancheTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -548,6 +569,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBIC) {
         result &= SeedBicTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -555,6 +577,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBitflip) {
         result &= SeedBitflipTest<hashtype>(hInfo, g_testExtra, flags);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
@@ -562,12 +585,15 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testBadSeeds) {
         result &= BadSeedsTest<hashtype>(hInfo, g_testExtra);
+        if (!result && g_exitOnFailure) { goto out; }
     }
 
     //-----------------------------------------------------------------------------
     // If All material tests were done, show a final summary of testing
+    summary |= g_testAll;
 
-    if (g_testAll || g_forceSummary) {
+ out:
+    if (summary) {
         printf("-------------------------------------------------------------------------------\n");
         print_pvaluecounts();
         printf("-------------------------------------------------------------------------------\n");
@@ -636,6 +662,7 @@ static bool testHash( const char * name, const flags_t flags ) {
 static void usage( void ) {
     printf("Usage: SMHasher3 [--[no]test=<testname>[,...]] [--extra] [--seed=<globalseed>]\n"
            "                 [--endian=default|nondefault|native|nonnative|big|little]\n"
+           "                 [--[no]exit-on-failure] [--[no]exit-code-on-failure]\n"
            "                 [--verbose] [--vcode] [--ncpu=N] [<hashname>]\n"
            "\n"
            "       SMHasher3 [--list]|[--listnames]|[--tests]|[--version]\n"
@@ -723,6 +750,22 @@ int main( int argc, const char ** argv ) {
                 VCODE_INIT();
                 continue;
             }
+            if (strcmp(arg, "--exit-on-failure") == 0) {
+                g_exitOnFailure = true;
+                continue;
+            }
+            if (strcmp(arg, "--noexit-on-failure") == 0) {
+                g_exitOnFailure = false;
+                continue;
+            }
+            if (strcmp(arg, "--exit-code-on-failure") == 0) {
+                g_exitCodeResult = true;
+                continue;
+            }
+            if (strcmp(arg, "--noexit-code-on-failure") == 0) {
+                g_exitCodeResult = false;
+                continue;
+            }
             if (strncmp(arg, "--endian=", 9) == 0) {
                 g_hashEndian = parse_endian(&arg[9]);
                 continue;
@@ -797,6 +840,7 @@ int main( int argc, const char ** argv ) {
         hashToTest = arg;
     }
 
+    bool   result    = true;
     size_t timeBegin = monotonic_clock();
 
     if (g_testVerifyAll) {
@@ -806,7 +850,7 @@ int main( int argc, const char ** argv ) {
     } else if (g_testSpeedAll) {
         HashSpeedTestAll(flags);
     } else {
-        testHash(hashToTest, flags);
+        result = testHash(hashToTest, flags);
     }
 
     size_t timeEnd = monotonic_clock();
@@ -823,5 +867,5 @@ int main( int argc, const char ** argv ) {
     fprintf(outfile, "Verification value is 0x%08x - Testing took %f seconds\n\n",
             vcode, (double)(timeEnd - timeBegin) / (double)NSEC_PER_SEC);
 
-    return 0;
+    return (!result && g_exitCodeResult) ? 99 : 0;
 }
