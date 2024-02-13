@@ -73,7 +73,7 @@ typedef uint32_t flags_t;
 //-----------------------------------------------------------------------------
 // Recording test results for final summary printout
 
-#define COUNT_MAX_PVALUE 20
+#define COUNT_MAX_PVALUE 24
 extern uint32_t g_log2pValueCounts[COUNT_MAX_PVALUE + 2];
 
 static inline void recordLog2PValue( uint32_t log_pvalue ) {

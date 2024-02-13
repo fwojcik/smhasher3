@@ -353,15 +353,15 @@ static void print_pvaluecounts( void ) {
     printf("Log2(p-value) summary:\n");
     const uint32_t per_line = (COUNT_MAX_PVALUE + 2) / 2;
     for (uint32_t lo = 0; lo <= (COUNT_MAX_PVALUE + 1); lo += per_line) {
-        printf("\n        %2d%c ", lo, (lo == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
+        printf("\n         %2d%c ", lo, (lo == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
         for (uint32_t i = 1; i < per_line; i++) {
             printf("  %2d%c ", lo + i, ((lo + i) == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
         }
-        printf("\n       -----");
+        printf("\n        -----");
         for (uint32_t i = 1; i < per_line; i++) {
             printf(" -----");
         }
-        printf("\n       %5d", g_log2pValueCounts[lo + 0]);
+        printf("\n        %5d", g_log2pValueCounts[lo + 0]);
         for (uint32_t i = 1; i < per_line; i++) {
             printf(" %5d", g_log2pValueCounts[lo + i]);
         }
@@ -594,9 +594,9 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
  out:
     if (summary) {
-        printf("-------------------------------------------------------------------------------\n");
+        printf("----------------------------------------------------------------------------------------------\n");
         print_pvaluecounts();
-        printf("-------------------------------------------------------------------------------\n");
+        printf("----------------------------------------------------------------------------------------------\n");
         printf("Overall result: %s            ( %d / %d passed)\n", result ? "pass" : "FAIL",
                 g_testPass, g_testPass + g_testFail);
         if (!result) {
@@ -612,7 +612,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
             }
             printf("]\n");
         }
-        printf("\n-------------------------------------------------------------------------------\n");
+        printf("\n----------------------------------------------------------------------------------------------\n");
     }
     for (auto x: g_testFailures) {
         free(x.second);
