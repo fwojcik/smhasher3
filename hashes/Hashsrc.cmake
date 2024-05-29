@@ -80,4 +80,5 @@ set(HASH_SRC_FILES
   hashes/o1hash.cpp
   hashes/murmur_oaat.cpp
   hashes/x17.cpp
+  hashes/rapidhash.cpp
 )
