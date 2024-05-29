@@ -60,7 +60,7 @@ static inline uint64_t rapid_readSmall( const uint8_t * p, size_t k ) {
 
 /*
  *  64*64 -> 128bit multiply function.
- *  
+ *
  *  @param A  Address of 64-bit number.
  *  @param B  Address of 64-bit number.
  *
@@ -77,6 +77,7 @@ static inline uint64_t rapid_readSmall( const uint8_t * p, size_t k ) {
 template <bool isProtected>
 static inline void rapid_mum( uint64_t * A, uint64_t * B ) {
     uint64_t rlo, rhi;
+
     MathMult::mult64_128(rlo, rhi, *A, *B);
     if (isProtected) {
         *A ^= rlo; *B ^= rhi;
@@ -87,7 +88,7 @@ static inline void rapid_mum( uint64_t * A, uint64_t * B ) {
 
 /*
  *  Multiply and xor mix function.
- *  
+ *
  *  @param A  64-bit number.
  *  @param B  64-bit number.
  *
@@ -120,8 +121,8 @@ static inline uint64_t rapidhash( const void * key, size_t len, uint64_t seed, c
     if (likely(len <= 16)) {
         if (likely(len >= 4)) {
             const uint8_t * plast = p + len - 4;
-            a = (rapid_read32<bswap>(p) << 32) | rapid_read32<bswap>(plast);
-            const uint64_t delta = ((len&24)>>(len>>3));
+            a = (rapid_read32<bswap>(p)         << 32) | rapid_read32<bswap>(plast);
+            const uint64_t delta  = ((len & 24) >> (len >> 3));
             b = (rapid_read32<bswap>(p + delta) << 32) | rapid_read32<bswap>(plast - delta);
         } else if (likely(len > 0)) {
             a = rapid_readSmall(p, len);
@@ -134,35 +135,50 @@ static inline uint64_t rapidhash( const void * key, size_t len, uint64_t seed, c
         if (unlikely(i > 48)) {
             uint64_t see1 = seed, see2 = seed;
             if (unrolled) {
-                while(likely(i>=96)){
-                    seed=rapid_mix<isProtected>(rapid_read64<bswap>(p)^secrets[0],rapid_read64<bswap>(p+8)^seed);
-                    see1=rapid_mix<isProtected>(rapid_read64<bswap>(p+16)^secrets[1],rapid_read64<bswap>(p+24)^see1);
-                    see2=rapid_mix<isProtected>(rapid_read64<bswap>(p+32)^secrets[2],rapid_read64<bswap>(p+40)^see2);
-                    seed=rapid_mix<isProtected>(rapid_read64<bswap>(p+48)^secrets[0],rapid_read64<bswap>(p+56)^seed);
-                    see1=rapid_mix<isProtected>(rapid_read64<bswap>(p+64)^secrets[1],rapid_read64<bswap>(p+72)^see1);
-                    see2=rapid_mix<isProtected>(rapid_read64<bswap>(p+80)^secrets[2],rapid_read64<bswap>(p+88)^see2);
-                    p+=96; i-=96;
+                while (likely(i >= 96)) {
+                    seed = rapid_mix<isProtected>(rapid_read64<bswap>(p)      ^ secrets[0],
+                            rapid_read64<bswap>(p +  8) ^ seed);
+                    see1 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 16) ^ secrets[1],
+                            rapid_read64<bswap>(p + 24) ^ see1);
+                    see2 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 32) ^ secrets[2],
+                            rapid_read64<bswap>(p + 40) ^ see2);
+                    seed = rapid_mix<isProtected>(rapid_read64<bswap>(p + 48) ^ secrets[0],
+                            rapid_read64<bswap>(p + 56) ^ seed);
+                    see1 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 64) ^ secrets[1],
+                            rapid_read64<bswap>(p + 72) ^ see1);
+                    see2 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 80) ^ secrets[2],
+                            rapid_read64<bswap>(p + 88) ^ see2);
+                    p   += 96; i -= 96;
                 }
-                if(unlikely(i>=48)){
-                    seed=rapid_mix<isProtected>(rapid_read64<bswap>(p)^secrets[0],rapid_read64<bswap>(p+8)^seed);
-                    see1=rapid_mix<isProtected>(rapid_read64<bswap>(p+16)^secrets[1],rapid_read64<bswap>(p+24)^see1);
-                    see2=rapid_mix<isProtected>(rapid_read64<bswap>(p+32)^secrets[2],rapid_read64<bswap>(p+40)^see2);
-                    p+=48; i-=48;
+                if (unlikely(i >= 48)) {
+                    seed = rapid_mix<isProtected>(rapid_read64<bswap>(p)      ^ secrets[0],
+                            rapid_read64<bswap>(p +  8) ^ seed);
+                    see1 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 16) ^ secrets[1],
+                            rapid_read64<bswap>(p + 24) ^ see1);
+                    see2 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 32) ^ secrets[2],
+                            rapid_read64<bswap>(p + 40) ^ see2);
+                    p   += 48; i -= 48;
                 }
             } else {
                 do {
-                    seed=rapid_mix<isProtected>(rapid_read64<bswap>(p)^secrets[0],rapid_read64<bswap>(p+8)^seed);
-                    see1=rapid_mix<isProtected>(rapid_read64<bswap>(p+16)^secrets[1],rapid_read64<bswap>(p+24)^see1);
-                    see2=rapid_mix<isProtected>(rapid_read64<bswap>(p+32)^secrets[2],rapid_read64<bswap>(p+40)^see2);
-                    p+=48; i-=48;
-                } while (likely(i>=48));
+                    seed = rapid_mix<isProtected>(rapid_read64<bswap>(p)      ^ secrets[0],
+                            rapid_read64<bswap>(p +  8) ^ seed);
+                    see1 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 16) ^ secrets[1],
+                            rapid_read64<bswap>(p + 24) ^ see1);
+                    see2 = rapid_mix<isProtected>(rapid_read64<bswap>(p + 32) ^ secrets[2],
+                            rapid_read64<bswap>(p + 40) ^ see2);
+                    p   += 48; i -= 48;
+                } while (likely(i >= 48));
             }
             seed ^= see1 ^ see2;
         }
-        if(i>16){
-          seed=rapid_mix<isProtected>(rapid_read64<bswap>(p)^secrets[2],rapid_read64<bswap>(p+8)^seed^secrets[1]);
-          if(i>32)
-            seed=rapid_mix<isProtected>(rapid_read64<bswap>(p+16)^secrets[2],rapid_read64<bswap>(p+24)^seed);
+        if (i > 16) {
+            seed = rapid_mix<isProtected>(rapid_read64<bswap>(p) ^ secrets[2],
+                    rapid_read64<bswap>(p + 8) ^ seed ^ secrets[1]);
+            if (i > 32) {
+                seed = rapid_mix<isProtected>(rapid_read64<bswap>(p + 16) ^ secrets[2],
+                        rapid_read64<bswap>(p + 24) ^ seed);
+            }
         }
         a = rapid_read64<bswap>(p + i - 16);
         b = rapid_read64<bswap>(p + i -  8);
@@ -184,9 +200,11 @@ static const uint64_t rapid_secret[3] = {
 template <bool bswap, bool isProtected, bool unrolled>
 static void RapidHash64( const void * in, const size_t len, const seed_t seed, void * out ) {
     if (isLE()) {
-        PUT_U64<bswap>(rapidhash<false, isProtected, unrolled>(in, len, (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
+        PUT_U64<bswap>(rapidhash<false, isProtected, unrolled>(in, len,
+                (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
     } else {
-        PUT_U64<bswap>(rapidhash<true, isProtected, unrolled>(in, len, (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
+        PUT_U64<bswap>(rapidhash<true, isProtected, unrolled>(in, len,
+                (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
     }
 }
 
@@ -196,14 +214,14 @@ static bool rapidhash64_selftest( void ) {
         const uint64_t  hash;
         const char *    key;
     } selftests[] = {
-        { UINT64_C (0x93228a4de0eec5a2), "" }                          ,
-        { UINT64_C (0x0dc3b86c0704cea4), "a" }                         ,
-        { UINT64_C (0x93dc6a6329f8ddba), "abc" }                       ,
-        { UINT64_C (0x0031cdc21324150f), "message digest" }            ,
-        { UINT64_C (0xd7523bef5b2a3fbd), "abcdefghijklmnopqrstuvwxyz" },
-        { UINT64_C (0x416757764b7bd75b), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
-        { UINT64_C (0xa2db61f63e5a8f20), "123456789012345678901234567890123456789012345678901234567890"\
-                                         "12345678901234567890" },
+        { UINT64_C(0x93228a4de0eec5a2), "" }                          ,
+        { UINT64_C(0x0dc3b86c0704cea4), "a" }                         ,
+        { UINT64_C(0x93dc6a6329f8ddba), "abc" }                       ,
+        { UINT64_C(0x0031cdc21324150f), "message digest" }            ,
+        { UINT64_C(0xd7523bef5b2a3fbd), "abcdefghijklmnopqrstuvwxyz" },
+        { UINT64_C(0x416757764b7bd75b), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+        { UINT64_C(0xa2db61f63e5a8f20), "123456789012345678901234567890123456789012345678901234567890" \
+                                        "12345678901234567890" },
     };
 
     for (size_t i = 0; i < sizeof(selftests) / sizeof(selftests[0]); i++) {
