@@ -843,11 +843,14 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn k
         unsigned testDeltaNum, flags_t testFlags, flags_t reportFlags ) {
     bool result = true;
 
+    // If testDeltaNum is 0, then don't compute any hash differences,
+    // and only test the given list of hashes.
+    //
     // If testDeltaNum is 1, then compute the difference between each hash
-    // and its successor, and test that list of deltas.
+    // and its successor, and also test that list of deltas.
     //
     // If testDeltaNum is 2, then compute the difference between successive
-    // pairs of hashes, and test that list of deltas.
+    // pairs of hashes, and also test that list of deltas.
     //
     // If testDeltaNum is greater than 2, then treat hashes[] as a 1D
     // representation of a 2D array, compute the difference between each
@@ -855,9 +858,9 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn k
     // length of the axis), wrapping around as needed, and then do the same
     // along the y-axis, testing both of those sets of deltas.
     //
-    // This must be done before the list of hashes is sorted below inside
-    // TestCollisions(). The calls to test the list(s) of deltas come at
-    // the bottom of this function.
+    // These difference calculations must be done before the list of hashes
+    // is sorted below inside TestHashListSingle(). The calls to test the
+    // list(s) of deltas come at the bottom of this function.
     //
     // The ASM for these loops contains more mov instructions than seem
     // necessary, and even an extra cmp/je pair for the std::vector length,
