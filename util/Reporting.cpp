@@ -176,11 +176,10 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
     // Find the top 10 bin counts, including duplicates, and the number of
     // empty bins.
     constexpr unsigned nOutliers = 10;
+    uint32_t zerocount = (counts[0] == 0) ? 1 : 0;
     std::vector<uint32_t> maxcounts(nOutliers);
-    uint32_t zerocount;
     for (unsigned i = 0; i < nOutliers; i++) {
         maxcounts[i] = counts[0];
-        zerocount   = (counts[0] == 0) ? 1 : 0;
     }
     for (size_t i = 1; i < nbC; i++) {
         if (counts[i] == 0) {
