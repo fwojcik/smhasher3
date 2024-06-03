@@ -29,12 +29,12 @@ void usage(void) {
     printf("Usage:\n");
     printf("    rngstream gen_type [base_seed [base_stream [stride]]]\n");
     printf("\n");
-    printf("  The default values for base_seed and base_stream are 0.\n");
+    printf("  The default values for base_seed is 0.\n");
     printf("\n");
     printf("  Valid values for gen_type:\n");
-    printf("    1\t\tBytes from 1 seed for 1 substream\n");
+    printf("    1\t\tBytes from 1 seed for default stream\n");
     printf("    2\t\tBytes from 1 seed across many substreams\n");
-    printf("    3\t\tBytes from many seeds across 1 substream\n");
+    printf("    3\t\tBytes from many seeds across default stream\n");
     printf("    4\t\tBytes from many seeds across many substreams\n");
     printf("\n");
     printf("  The stride parameter defines how many random u64s are\n");
@@ -49,7 +49,7 @@ void usage(void) {
  * use with dieharder or other RNG testing programs.
  */
 int main(int argc, char * argv[]) {
-    uint64_t mode, seed, stream, basestream;
+    uint64_t mode, seed, stream, usestream;
 
     if ((argc < 2) || (argc > 5)) {
         usage();
@@ -58,11 +58,16 @@ int main(int argc, char * argv[]) {
     // Arbitrary default values
     seed = 0;
     stream = 0;
+    usestream = 0;
 
     if ((argv[1][0] >= '1') && (argv[1][0] <= '4')) {
         mode = argv[1][0] - '0';
     } else {
         usage();
+    }
+
+    if ((mode == 2) || (mode == 4)) {
+        usestream = 1;
     }
 
     if (argc >= 3) {
@@ -78,6 +83,7 @@ int main(int argc, char * argv[]) {
                 printf("Can't parse stream: %s\n", argv[3]);
                 usage();
             }
+            usestream = 1;
             if (argc >= 5) {
                 unsigned val = strtoul(argv[4], &endptr, 0);
                 if ((argv[4][0] == '\0') || (*endptr != '\0')) {
@@ -93,8 +99,14 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    Rand RNG(seed, stream);
+    Rand RNG;
     uint64_t r;
+
+    if (usestream) {
+        RNG.reseed({seed, stream});
+    } else {
+        RNG.reseed(seed);
+    }
 
 #define WRITE_NEXT()                                        \
     r = RNG.rand_u64();                                     \
@@ -109,25 +121,29 @@ int main(int argc, char * argv[]) {
             for (unsigned i = 0; i < STRIDE; i++) {
                 WRITE_NEXT();
             }
-            RNG.substream(++stream);
+            RNG.reseed({seed, ++stream});
             break;
         case 3:
             for (unsigned i = 0; i < STRIDE; i++) {
                 WRITE_NEXT();
             }
-            RNG.reseed(++seed, stream);
+            if (usestream) {
+                RNG.reseed({++seed, stream});
+            } else {
+                RNG.reseed(++seed);
+            }
             break;
         case 4:
             for (unsigned i = 0; i < STRIDE; i++) {
-                basestream = stream;
+                uint64_t basestream = stream;
                 for (unsigned j = 0; j < STRIDE; j++) {
                     for (unsigned k = 0; k < STRIDE; k++) {
                         WRITE_NEXT();
                     }
-                    RNG.substream(++stream);
+                    RNG.reseed({seed, ++stream});
                 }
                 stream = basestream;
-                RNG.reseed(++seed, stream);
+                RNG.reseed({++seed, stream});
             }
             stream += STRIDE;
             break;
