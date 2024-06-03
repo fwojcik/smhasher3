@@ -350,7 +350,7 @@ static void HashSpeedTestAll( flags_t flags ) {
 //-----------------------------------------------------------------------------
 
 static void print_pvaluecounts( void ) {
-    printf("Log2(p-value) summary:\n");
+    printf("-log2(p-value) summary:\n");
     const uint32_t per_line = (COUNT_MAX_PVALUE + 2) / 2;
     for (uint32_t lo = 0; lo <= (COUNT_MAX_PVALUE + 1); lo += per_line) {
         printf("\n         %2d%c ", lo, (lo == (COUNT_MAX_PVALUE + 1)) ? '+' : ' ');
