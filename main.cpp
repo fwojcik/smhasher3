@@ -597,6 +597,11 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
         printf("----------------------------------------------------------------------------------------------\n");
         print_pvaluecounts();
         printf("----------------------------------------------------------------------------------------------\n");
+        if ((hInfo->impl != NULL) && (hInfo->impl[0] != '\0')) {
+            printf("Summary for: %s [%s]%s\n", hInfo->name, hInfo->impl, hInfo->isMock() ? " MOCK" : "");
+        } else {
+            printf("Summary for: %s%s\n", hInfo->name, hInfo->isMock() ? " MOCK" : "");
+        }
         printf("Overall result: %s            ( %d / %d passed)\n", result ? "pass" : "FAIL",
                 g_testPass, g_testPass + g_testFail);
         if (!result) {
