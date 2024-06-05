@@ -404,10 +404,10 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
         outfile = stderr;
     }
     if ((hInfo->impl != NULL) && (hInfo->impl[0] != '\0')) {
-        fprintf(outfile, "--- Testing %s \"%s\" [%s] %s", hInfo->name, hInfo->desc,
-                hInfo->impl, hInfo->isMock() ? "MOCK" : "");
+        fprintf(outfile, "--- Testing %s \"%s\" [%s]%s", hInfo->name, hInfo->desc,
+                hInfo->impl, hInfo->isMock() ? " MOCK" : "");
     } else {
-        fprintf(outfile, "--- Testing %s \"%s\" %s", hInfo->name, hInfo->desc, hInfo->isMock() ? "MOCK" : "");
+        fprintf(outfile, "--- Testing %s \"%s\"%s", hInfo->name, hInfo->desc, hInfo->isMock() ? " MOCK" : "");
     }
     if (g_seed != 0) {
         fprintf(outfile, " seed 0x%016" PRIx64 "\n\n", g_seed);
