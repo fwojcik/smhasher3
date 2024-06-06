@@ -10,8 +10,10 @@ Hashes that currently pass all tests, sorted by average short input speed.
 
 | Hash name | output width | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
 |:----------|-------------:|-----------:|-------------------------:|------------------------:|
+| [rapidhash](raw/rapidhash.txt) | 64 | 250 |  35.37 |   7.25|
 | [rust-ahash-fb](raw/rust-ahash-fb.txt) | 64 | 250 |  35.49 |   4.51|
 | [rust-ahash-fb.nofold](raw/rust-ahash-fb.nofold.txt) | 64 | 250 |  37.37 |   3.45|
+| [rapidhash.protected](raw/rapidhash.protected.txt) | 64 | 250 |  37.50 |   5.65|
 | [komihash](raw/komihash.txt) | 64 | 250 |  38.09 |   6.45|
 | [polymurhash](raw/polymurhash.txt) | 64 | 250 |  48.42 |   4.02|
 | [khashv-64](raw/khashv-64.txt) | 64 | 250 |  62.17 |   3.20|
@@ -485,4 +487,4 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 | [donothingOAAT-32](raw/donothingOAAT-32.txt) | 32 | 249 | 250 |  45.37 |   3.40|
 | [donothingOAAT-128](raw/donothingOAAT-128.txt) | 128 | 249 | 250 |  45.41 |   3.42|
 
-All results were generated using: SMHasher3 beta3-c6b9cc18
+All results were generated using: SMHasher3 beta3-c6b9cc18 or SMHasher3 beta3-13-9a00c481
