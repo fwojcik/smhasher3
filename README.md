@@ -16,9 +16,9 @@ If you are interested in the **[latest hash test results](results/README.md)**
 `results/` directory.
 
 There are a few hashes which do not pass all the tests, but are very close
-to doing so. These are: `chaskey-12` are `MeowHash`. These failures will be
-investigated in the next month, as the failures could be due to chance
-and/or due to a flaw in a test.
+to doing so. These are: `chaskey-12` are `MeowHash`. These failures are
+false positives. The failure thresholds have been adjusted, and these
+hashes are expected to be listed as "passing" in the next round of results.
 
 Summary
 -------
@@ -67,13 +67,10 @@ Current status
 
 As of 2023-12-12, SMHasher3 beta3 has been released.
 
-There are some coding/writing things I wanted to complete before release,
-but was unable to. These were: to document what each test does, to improve
-verbosity command-line options, and to rewrite rngstream.cpp. I've made
-progress towards these, but have decided to not hold up tagging the code
-and releasing the results. Those improvements should land sometime in
-mid-late January, along with a bulk source-code reformatting run, which I
-want to have happen shortly after releases normally.
+I have hopes to release a 1.0 version sometime before the end of September
+2024. The current code should still be very useful in evaluating hashes, as
+most remaining features are either additional tests, tweaks to specific
+hashes, or quality-of-life usage enhancements.
 
 This code is compiled and run successfully on Linux x64, arm, and powerpc
 using gcc and clang quite often. Importantly, I do not have the ability to
@@ -107,15 +104,18 @@ How to use
   test suites, using only a single thread
 - `./SMHasher3 --help` will show many other usage options
 
-Note that a hashname specified on the command-line is looked up via case-insensitive
-search, so you do not have to precisely match the names given from the list of
-available hashes. Even fuzzier name matching is planned for future releases.
+Note that a hashname specified on the command-line is looked up via
+case-insensitive search, so you do not have to precisely match the names
+given from the list of available hashes. Even fuzzier name matching is
+planned for future releases.
 
-If SMHasher3 found a usable threading implementation during the build, then the
-default is to assume `--ncpu=4`, which uses up to 4 threads to speed up testing. Not
-all test suites use threading. Not all hashes are thread-safe; threading will be
-disabled and a warning will be given if one is chosen. If no usable threading library
-was found, then a warning will be given if a `--ncpu=` value above 1 was used.
+If SMHasher3 found a usable threading implementation during the build, then
+the default is to assume `--ncpu=4`, which uses up to 4 threads to speed up
+testing. Not all test suites use threading. While all included hashes are
+thread-safe as of this writing, if a non-thread safe hash is detected then
+threading will be disabled and a warning will be given. If no usable
+threading library was found, then a warning will be given if a `--ncpu=`
+value above 1 was used.
 
 Adding a new hash
 -----------------
@@ -129,55 +129,61 @@ Many more details can be found in `hashes/README.addinghashes.md`.
 P-value reporting
 -----------------
 
-This section has been placed near the front of the README because it is the most
-important and most visible new feature for existing SMHasher users.
+This section has been placed near the front of the README because it is the
+most important and most visible new feature for existing SMHasher users.
 
-The tests in the base SMHasher code had a variety of metrics for reporting results,
-and those metrics often did not take the test parameters into account well, leading
-to results that were questionable and hard to interpret. For example, the Avalanche
-test reports on the worst result over all test buckets, but tests with longer inputs
-have more buckets. This was not part of the result calculation, and so longer inputs
-naturally get higher percentage biases (on average) even with truly random hashes. In
-other words, a bias of "0.75%" on a 32-bit input was not the same as a bias of
-"0.75%" on a 1024-bit input. This is not to call out the Avalanche test specifically;
-many tests exhibited some variation of this problem.
+The tests in the base SMHasher code had a variety of metrics for reporting
+results, and those metrics often did not take the test parameters into
+account well (or at all), leading to results that were questionable and hard
+to interpret. For example, the Avalanche test reports on the worst result
+over all test buckets, but tests with longer inputs have more buckets. This
+was not part of the result calculation, and so longer inputs naturally get
+higher percentage biases (on average) even with truly random hashes. In
+other words, a bias of "0.75%" on a 32-bit input was not the same as a bias
+of "0.75%" on a 1024-bit input. This is not to call out the Avalanche test
+specifically; many tests exhibited some variation of this problem.
 
-To address these issues, SMHasher3 often compares aspects of the distribution of hash
-values from the hash function against those from a hypothetical true random number
-generator, and summarizes the result in the form of a
-[p-value](https://en.wikipedia.org/wiki/P-value).
+To address these issues, SMHasher3 tests compare aspects of the
+distribution of hash values from the hash function against those from a
+hypothetical true random number generator, and summarizes the result in the
+form of a [p-value](https://en.wikipedia.org/wiki/P-value).
 
-These p-values are reported by a caret symbol (^) followed by a number. The number is
-approximately the improbability of seeing the result from a true RNG, expressed in
-(negative) powers of two. This is the nicest way of summarizing the p-values that
-I've found.
+P-values are probabilities: they are numbers between 0 and 1. Their values
+are approximately the probability of a true RNG producing a test result
+that was at least as bad as the observed result from the hash
+function. Smaller p-values would indicate worse hash results.
 
-For example, if a true RNG would be expected to produce the same or a worse result
-with a probability of 0.075, then that is about 2^-3.737. The exponent is then
-rounded towards zero and the sign is simply discarded (since probabilities are never
-greater than 1, the exponent is always negative), and finally reported as "^ 3".
+However, these p-values quite often end up being very small values near
+zero, even in cases of good results. Reporting them in their decimal form,
+or even in scientific notation, would probably not be very useful, and
+could be very difficult to compare or interpret just by looking at them.
 
-This means that, in general, a true RNG would have about twice as many ^4 results as
-^5 results, and twice as many ^3 results as ^4 results, and so on. However, many of
-the statistical formulas used by SMHasher3 only produce **bounds** on the result
-probabilities, and sometimes those bounds are not very tight and/or get significantly
-worse for higher-likelihood results. The formulas used were typically chosen for
-greater accuracy in failure / long-tail cases.  Further, some tests are very unlikely
-to get even a single "hit", and so a result of zero hits can't really give a precise
-p-value. For those reasons and more, you should expect to see more lower numbers than
-the power-of-2 relationship would imply, and you will see _many_ more ^0 results than
-you would expect mathematically.
+In SMhasher3, these p-values are reported by a caret symbol (^) followed by
+the p-value expressed in negative powers of two. For example, if it is
+determined that a true RNG would be expected to produce the same or a worse
+result with a probability of 0.075, then SMHasher3 would compute that that
+p-value is about 2^-3.737. It would then round the exponent towards zero,
+simply discard the sign (since probabilities are never greater than 1, the
+exponent is always negative), and finally report the p-value as "^ 3".
 
-When a test supports reporting on p-values, they are the only numbers used by
-SMHasher3 to determine pass/warn/fail status. And since the really, truly most
-important result of testing is "does a hash pass or fail", and perhaps noting how
-close to the line it is, the precise p-value is not important. The reported values
-are always lower bounds on the actual p-value exponents (the "true" result could be
-worse than reported but never better), so any failures reported should be genuine.
+Therefore, *smaller* p-values (which indicate worse test results) result in
+*larger* numbers when reported using caret notation. You can think of the
+values in caret notation as indicating how *improbable*, and thus worse,
+the test result was. For example, "^50" could be interpreted as "there is,
+at best, only a 1 in 2^50 chance that an RNG would have produced a result
+as bad as the hash did".
 
-These p-value computations also take into account how many tests are being
-summarized, which can lead to unintuitive results. As an example, here are some lines
-from a single batch of test keys:
+The p-value computations only care about the likelihood of *bad* results
+(e.g. more collisions than an RNG would produce). Test results that are
+*better* than a typical RNG result but would still be outliers from a
+purely statistical point-of-view, such as seeing no or very few collisions
+when at least some would be expected, do not produce extreme p-values. In
+statistics terms, the p-values are one-tailed when appropriate, instead of
+always being two-tailed.
+
+The p-value computations also take into account how many tests are being
+summarized, which can lead to unintuitive results. As an example, here are
+some lines from a single batch of test keys:
 
 ```
 Keyset 'Sparse' - 256-bit keys with up to 3 bits set - 2796417 keys
@@ -187,15 +193,68 @@ Testing all collisions (high  32-bit) - Expected      910.2, actual        989  
 Testing all collisions (high 20..38 bits) - Worst is 32 bits: 989/910           (1.087x) (^ 3)
 ```
 
-The middle line reports ^7 for seeing 989 collisions when 910 were expected, and the
-last line reports ^3 for what seems like the same result. This is due to the fact
-that the middle line is reporting that as the result of a single test, and the last
-line is reporting that as the worst result over 19 tests. It's much more likely to
-see a result at least that bad if you have 19 tries to get it than if you just had 1
-try, and so the improbability is much lower. Indeed, 19 is around 2^4, and the first
-reported result is about 4 powers of 2 worse than the second (7 - 3), as expected.
+The middle line reports ^7 for seeing 989 collisions when 910 were
+expected, and the last line reports ^3 for what seems like the same
+result. This is due to the fact that the middle line is reporting that as
+the result of a single test, and the last line is reporting that as the
+worst result over 19 tests. It's much more likely to see a result at least
+that bad if you have 19 tries to get it than if you just had 1 try, and so
+the improbability is much lower. Indeed, 19 is around 2^4, and the first
+reported result is about 4 powers of 2 worse than the second (7 - 3), as
+expected.
 
-All non-deprecated tests in SMHasher3 support p-value reporting.
+A true RNG would generally have about twice as many ^4 results as ^5
+results, and twice as many ^3 results as ^4 results, and so on. However,
+many of the statistical formulas used by SMHasher3 only produce **bounds**
+on the result probabilities, and sometimes those bounds are not very tight
+and/or get significantly worse for higher-likelihood results. The formulas
+used were typically chosen for greater accuracy in failure / long-tail
+cases. Further, some tests are very unlikely to get even a single "hit",
+and so a result of zero hits can't really give a precise p-value. For those
+reasons and more, you should expect to see more lower numbers than the
+power-of-2 relationship would imply, and you will see _many_ more ^0
+results than you would expect mathematically.
+
+All non-deprecated tests in SMHasher3 support p-value reporting. These
+p-value results are the only numbers used by SMHasher3 to determine
+pass/warn/fail status for tests. And since the really, truly most important
+result of testing is "does a hash pass or fail", and perhaps noting how
+close to the line it is, the precise p-value is not very important. The
+reported values are always lower bounds on the actual p-value exponents
+(the "true" result could be worse than reported but never better), so any
+failures reported should be genuine.
+
+The precise cutoffs for test warnings and failures can be found at the top
+of [util/Reporting.cpp](util/Reporting.cpp), in the variables
+`FAILURE_PBOUND` and `WARNING_PBOUND`. As of this writing, a warning is
+given at ^16, and a failure is given at ^20. Those bounds might seem
+surprisingly high, but that is because there are so many tests. Since a
+typical full SMHasher3 test run consists of about 16,000 tests, even
+testing a cryptographic-quality hash function is expected to produce a ^14
+event every run on average (-log2(1/16,000) =~ 13.966) (this calculation
+overstates things because test failures are far from independent). The
+failure threshold was chosen to correspond to be less than a 1% chance of
+false test failure, and the warning threshold was arbitrarily chosen to
+make them about 16 times as likely as failures.
+
+For the statistics folks, this is a correction for the [Multiple
+comparisons
+problem](https://en.wikipedia.org/wiki/Multiple_comparisons_problem), and
+the correction used is slightly weaker than what the [Bonferroni
+correction](https://en.wikipedia.org/wiki/Bonferroni_correction) would call
+for. This should be OK since SMHasher3 uses a large number of tests, and
+failures are positively correlated. Maybe the Harmonic mean p-value
+procedure will be used in the future.
+
+A final summary table of p-values in caret notation is currently produced
+after a full run. This table can be useful to see a summary of how close to
+the pass/fail line a particular hash is, or to see if some suspicious
+patterns (e.g. many warning values) exist. It is important to remember that
+this table should **NOT** be used to compare hashes. SMHasher3 focuses on
+*broad* testing to find classes of bad behavior in hashes. It doesn't do
+nearly the depth of testing to fairly compare the quality of hash outputs
+across candidate functions, regardless of any particular definition of
+"quality", which may also vary across perspectives.
 
 Performance
 -----------
