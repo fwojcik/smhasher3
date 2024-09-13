@@ -22,7 +22,8 @@ endif()
 if(MSVC)
   message(STATUS "MSVC detected")
   set(MSVC_IMPL
-    "#include <stdlib.h>\n\
+    "#define _CRT_NONSTDC_NO_DEPRECATE\n\
+     #include <stdlib.h>\n\
      #include <string.h>\n\
      #include <intrin.h>\n\
      #define strncasecmp _strnicmp\n\
