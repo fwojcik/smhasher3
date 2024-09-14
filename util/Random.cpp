@@ -227,12 +227,16 @@ static void fill_perm( uint8_t * buf, const uint64_t key, const uint64_t elem_lo
 //-----------------------------------------------------------------------------
 // An arbitrary simple mixing routine, for use as the F() function in a
 // Feistel network below.
-static inline uint64_t feistelF( uint64_t x, uint32_t y ) {
-    const uint64_t k = UINT64_C(0xBB67AE8584CAA73D);
+//
+// Currently, despite the input and output types, no more than 32 input
+// bits are ever set, and no more than 32 output bits are used.
+static inline uint64_t feistelF( uint64_t value, const uint32_t * subkeys, uint32_t round ) {
+    const uint64_t k = UINT64_C(0x9E3779B97F4A7C15); // phi
 
-    x ^= y; x *= k; x ^= x >> 58; x *= k; x ^= x >> 47;
+    value += subkeys[round]; value *= k; value ^= value >> 32;
+    value += round;          value *= k; value ^= value >> 32;
 
-    return x;
+    return value;
 }
 
 //-----------------------------------------------------------------------------
@@ -263,8 +267,8 @@ static inline uint64_t feistel( const uint32_t k[RandSeq::FEISTEL_MAXROUNDS * 2]
     uint64_t r = (n >> lbits) & rmask;
 
     for (uint64_t i = 0; i < rounds; i++) {
-        l ^= feistelF(r, k[2 * i + 0]) & lmask;
-        r ^= feistelF(l, k[2 * i + 1]) & rmask;
+        l ^= feistelF(r, k, 2 * i + 0) & lmask;
+        r ^= feistelF(l, k, 2 * i + 1) & rmask;
     }
     r = (r << lbits) + l;
     return r;
