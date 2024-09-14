@@ -598,10 +598,10 @@ void RandTest( const unsigned runs ) {
     std::vector<Rand> testRands2;
     volatile uint64_t ignored;
 
-    // This comprises ~6000 tests, so ~50% chance of hitting Logp of 14,
-    // and ~5% chance of hitting 18, assuming real randomness.
-    constexpr int    LogpFail     = 18;
-    constexpr int    LogpPrint    = LogpFail;
+    // This comprises ~54,000 tests, so ~50% chance of hitting Logp of 17,
+    // and ~5% chance of hitting 20, assuming real randomness.
+    constexpr int    LogpFail     = 20;
+    constexpr int    LogpPrint    = 17;
     constexpr size_t Testcount_sm = 1024;
     constexpr size_t Testcount_lg = 1024 * 256;
 
@@ -995,7 +995,7 @@ void RandTest( const unsigned runs ) {
                     cnt32[m][buf8_A[m]]++;
                 }
             }
-            for (size_t m = 0; m < 256; m++) {
+            for (size_t m = 0; m < sdcnt; m++) {
                 uint64_t sumsq      = sumSquaresBasic(&cnt32[m][0], 256);
                 double   score      = calcScore(sumsq, 256, Testcount_lg);
                 double   p_value    = GetStdNormalPValue(score);
@@ -1060,7 +1060,7 @@ void RandTest( const unsigned runs ) {
                     cnt32[m][buf8_A[m]]++;
                 }
             }
-            for (size_t m = 0; m < 256; m++) {
+            for (size_t m = 0; m < sdcnt; m++) {
                 uint64_t sumsq      = sumSquaresBasic(&cnt32[m][0], 256);
                 double   score      = calcScore(sumsq, 256, Testcount_lg);
                 double   p_value    = GetStdNormalPValue(score);
@@ -1125,7 +1125,7 @@ void RandTest( const unsigned runs ) {
                     cnt32[m][buf8_A[m]]++;
                 }
             }
-            for (size_t m = 0; m < 256; m++) {
+            for (size_t m = 0; m < sdcnt; m++) {
                 uint64_t sumsq      = sumSquaresBasic(&cnt32[m][0], 256);
                 double   score      = calcScore(sumsq, 256, Testcount_lg);
                 double   p_value    = GetStdNormalPValue(score);
