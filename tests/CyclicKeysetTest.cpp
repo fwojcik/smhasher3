@@ -71,7 +71,7 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, unsigned cycleReps,
     std::vector<hashtype> hashes( keycount );
     std::vector<uint8_t>  cycles( keycount * cycleLen );
 
-    Rand r( {214586, cycleLen, cycleReps} );
+    Rand r( 214586, cycleLen, cycleReps );
     RandSeq rs = r.get_seq(SEQ_DIST_1, cycleLen);
     rs.write(&cycles[0], 0, keycount);
 

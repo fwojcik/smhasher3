@@ -117,7 +117,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
     const unsigned hashbits  = hashtype::bitlen;
     const unsigned arraysize = keybits * hashbits;
 
-    Rand r( {402562, keybits} );
+    Rand r( 402562, keybits );
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
     RandSeq rs = r.get_seq(seqtype, keybytes);
 

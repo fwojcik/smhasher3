@@ -77,7 +77,7 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, flags
     std::vector<uint8_t>  keys( keycount * keybytes );
     std::vector<uint8_t>  seeds( keycount * seedbytes );
 
-    Rand r( { 44057, keybytes } );
+    Rand r( 44057, keybytes );
 
     bool result = true;
 

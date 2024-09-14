@@ -152,7 +152,7 @@ std::map<std::pair<int, int>, std::vector<double>> times;
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
         const int bufalign, const int maxvarysize, const int maxvaryalign ) {
     static uint64_t callcount = 0;
-    Rand r( {256765, callcount++} );
+    Rand r( 256765, callcount++ );
 
     uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
     uint8_t * abuf = buf + (-reinterpret_cast<uintptr_t>(buf) % 256) + bufalign;

@@ -391,7 +391,7 @@ static void hashthings( const HashInfo * hinfo, seed_t seed, uint32_t reps, uint
     std::vector<uint32_t> idxs( reps );
 
     if (order != 0) {
-        Rand r( {583015, order} );
+        Rand r( 583015, order );
         for (uint32_t i = 0; i < reps; i++) { idxs[i] = i; }
         for (uint32_t i = reps - 1; i > 0; i--) {
             std::swap(idxs[i], idxs[r.rand_range(i + 1)]);

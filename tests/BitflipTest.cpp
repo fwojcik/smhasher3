@@ -74,7 +74,7 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
     std::vector<hashtype> hashes( keycount * 2 ), hashes_copy;
     std::vector<uint8_t>  keys( keycount * keybytes );
 
-    Rand r( { 84574, keybytes } );
+    Rand r( 84574, keybytes );
 
     bool result = true;
 

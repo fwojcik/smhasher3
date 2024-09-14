@@ -287,12 +287,19 @@ class Rand {
 
     //-----------------------------------------------------------------------------
 
-    // An arbitrary weak mixing function. Some important characteristics are:
+    // A weak mixing function. This does not attempt to distribute entropy
+    // across the output bits (known as "diffusion"). Its main requirement
+    // is to make output collisions unlikely when given inputs of some
+    // combination of raw real-world data or previous outputs.
+    //
+    // Some important characteristics are:
     //   mix(a, x) is a permutation for a for any given x,
     //   mix(x, b) is a permutation for b for any given x,
     //   mix(a, b) != mix(b, a) in general, given a != b,
     //   mix(a + 1, b) != mix(a, b) + 1, in general,
     //   mix(a, b + 1) != mix(a, b) + 1, in general,
+    //   mix(a, 0) != a, in general,
+    //   mix(0, b) != b, in general,
     //   mix(0, 0) != 0,
     static inline uint64_t weakmix( uint64_t a, uint64_t b ) {
         const uint64_t K = UINT64_C(0xBB67AE8584CAA73B); // sqrt(3) - 1
@@ -306,8 +313,14 @@ class Rand {
         reseed(seed);
     }
 
-    Rand( std::initializer_list<uint64_t> seeds ) {
-        reseed(seeds);
+    // This just calls reseed() with the args it is given. All the template
+    // stuff is just so the constructor API declaration exactly matches the
+    // reseed() API call. See reseed() below for the how and why.
+    template<typename T, typename U, typename...Remaining>
+    Rand( T seed1, U seed2, Remaining... seeds) {
+        static_assert(std::is_integral<typename std::common_type<uint64_t,T,U,Remaining...>::type>::value,
+                "Rand() only takes integer seeds");
+        reseed(seed1, seed2, seeds...);
     }
 
     inline void reseed( uint64_t seed ) {
@@ -316,12 +329,21 @@ class Rand {
         update_xseed();
     }
 
-    inline void reseed( std::initializer_list<uint64_t> seeds ) {
-        rseed = 1;
-        for (uint64_t next: seeds) {
-            rseed = weakmix(rseed, next);
-        }
-        reseed(rseed);
+    // Since the actual RNG seeding only takes 1 64-bit integer, this
+    // construction allows seeding with an arbitrary number of multiple
+    // integer inputs. It takes the first two given values, coerces them to
+    // become uint64_t values, and feeds them into weakmix(), which
+    // condenses them into one uint64_t value. This keeps repeating
+    // (recursing) until all given seeds are processed.
+    //
+    // When seeds... becomes empty, this will call the base version of
+    // above (reseed( uint64_t seed )) with the single 64-bit value
+    // obtained from coalescing all the given seed values via weakmix().
+    template<typename T, typename U, typename...Remaining>
+    inline void reseed( T seed1, U seed2, Remaining... seeds) {
+        static_assert(std::is_integral<typename std::common_type<uint64_t,T,U,Remaining...>::type>::value,
+                "Rand::reseed() only takes integer seeds");
+        reseed(weakmix((uint64_t)seed1, (uint64_t)seed2), seeds...);
     }
 
     inline void seek( uint64_t offset ) {

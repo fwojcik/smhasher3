@@ -185,7 +185,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
 
     printf("Testing %4zd-byte keys, %7zd reps", keybytes, reps);
 
-    Rand r( {939741, keybytes} );
+    Rand r( 939741, keybytes );
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
     RandSeq rs = r.get_seq(seqtype, keybytes);
 

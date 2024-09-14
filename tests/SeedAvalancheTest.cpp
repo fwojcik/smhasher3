@@ -118,7 +118,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
     const unsigned hashbits  = hashtype::bitlen;
     const unsigned arraysize = seedbits * hashbits;
 
-    Rand r( {860319, keybytes} );
+    Rand r( 860319, keybytes );
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, seedbytes) ? SEQ_DIST_2 : SEQ_DIST_3;
     RandSeq rs = r.get_seq(seqtype, seedbytes);
 
