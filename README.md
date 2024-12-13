@@ -16,7 +16,7 @@ If you are interested in the **[latest hash test results](results/README.md)**
 `results/` directory.
 
 There are a few hashes which do not pass all the tests, but are very close
-to doing so. These are: `chaskey-12` are `MeowHash`. These failures are
+to doing so. These are: `chaskey-12` and `MeowHash`. These failures are
 false positives. The failure thresholds have been adjusted, and these
 hashes are expected to be listed as "passing" in the next round of results.
 
@@ -426,7 +426,7 @@ If the `--vcode` command-line option is used, then these signatures are computed
 reported on. A final summary "verification value" is computed from these 3 component
 VCode signatures, and is reported on the last line of output. They are an easy way to
 compare complete operation across runs and/or platforms, without having to compare
-result-by-result. There is a small but noticable performance hit when this is
+result-by-result. There is a small but noticeable performance hit when this is
 enabled. If it is not enabled, then the VCode component output line is no longer
 emitted, but the final summary code is (with a value of 1 to indicate it was not
 computed), to keep output lengths consistent.
@@ -579,7 +579,7 @@ would not require any relicensing of the test code.
 
 This decision was not taken lightly, as I would prefer to keep the
 original authors' license when possible, as was done with the
-modifications made to the hash implmentations. I believe this to have
+modifications made to the hash implementations. I believe this to have
 been the least bad option to get the improvements in SMHasher3 out to
 the world.
 
