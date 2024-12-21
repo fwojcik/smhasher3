@@ -19,7 +19,7 @@ else ()
   set(PROCESSOR_FAMILY "Other")
 endif()
 
-if(MSVC)
+if((MSVC) OR (MSYS) OR (MINGW))
   message(STATUS "Windows-like target detected")
   set(WINLIKE_IMPL
     "#define _CRT_NONSTDC_NO_DEPRECATE\n\
