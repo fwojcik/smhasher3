@@ -138,16 +138,28 @@ static const uint8_t SHUFFLE_MASK[16] = {
     0xe, 0x3, 0x1, 0xc, 0x0, 0x7, 0xa, 0x2,
 };
 
+#define AHASH_SHUFFLE_SSSE3    0
+#define AHASH_SHUFFLE_GVEC     1
+#define AHASH_SHUFFLE_PORTABLE 2
+
+static const char * ahash_shuffle_str[] = {
+    "ssse3",       // AHASH_SHUFFLE_SSSE3
+    "gvec",        // AHASH_SHUFFLE_GVEC
+    "portable",    // AHASH_SHUFFLE_PORTABLE
+};
+
 static_assert(sizeof(SHUFFLE_MASK) == 16, "shuffle() assumes a 16-byte shuffle");
 template <bool hw_shuffle>
 static void shuffle( uint64_t vals[2] ) {
     if (hw_shuffle) {
 #if defined(HAVE_SSSE_3)
+  #define AHASH_SHUFFLE AHASH_SHUFFLE_SSSE3
         const __m128i shuf = _mm_loadu_si128((const __m128i *)SHUFFLE_MASK);
         __m128i       data = _mm_loadu_si128((const __m128i *)vals        );
         data = _mm_shuffle_epi8(data, shuf);
         _mm_storeu_si128((__m128i *)vals, data);
 #elif defined(HAVE_GENERIC_VECTOR) && defined(HAVE_GENERIC_VECTOR_SHUFFLE)
+  #define AHASH_SHUFFLE AHASH_SHUFFLE_GVEC
         typedef uint8_t vec16b VECTOR_SIZE( 16 );
         vec16b data, shuf;
         if (isBE()) {
@@ -163,6 +175,7 @@ static void shuffle( uint64_t vals[2] ) {
             vals[1] = BSWAP64(vals[1]);
         }
 #else
+  #define AHASH_SHUFFLE AHASH_SHUFFLE_PORTABLE
         uint8_t   tmp[16];
         uint8_t * valptr = (uint8_t *)&vals[0];
         if (isBE()) {
@@ -475,6 +488,7 @@ REGISTER_FAMILY(rust_ahash,
 
 REGISTER_HASH(rust_ahash,
    $.desc            = "aHash (ported from Rust, AES-based version)",
+   $.impl            = ahash_shuffle_str[AHASH_SHUFFLE],
    $.sort_order      = 0,
    $.hash_flags      =
          FLAG_HASH_AES_BASED     |
@@ -490,7 +504,7 @@ REGISTER_HASH(rust_ahash,
  );
 
 REGISTER_HASH(rust_ahash__noshuf,
-   $.desc            = "aHash (ported from Rust, AES-based version, without SSSE3 shuffle)",
+   $.desc            = "aHash (ported from Rust, AES-based version, without shuffle)",
    $.sort_order      = 10,
    $.hash_flags      =
          FLAG_HASH_AES_BASED     |
