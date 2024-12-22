@@ -138,6 +138,7 @@ static const uint8_t SHUFFLE_MASK[16] = {
     0xe, 0x3, 0x1, 0xc, 0x0, 0x7, 0xa, 0x2,
 };
 
+static_assert(sizeof(SHUFFLE_MASK) == 16, "shuffle() assumes a 16-byte shuffle");
 template <bool hw_shuffle>
 static void shuffle( uint64_t vals[2] ) {
     if (hw_shuffle) {
@@ -162,7 +163,20 @@ static void shuffle( uint64_t vals[2] ) {
             vals[1] = BSWAP64(vals[1]);
         }
 #else
-  #error "Not implemented yet"
+        uint8_t   tmp[16];
+        uint8_t * valptr = (uint8_t *)&vals[0];
+        if (isBE()) {
+            vals[0] = BSWAP64(vals[0]);
+            vals[1] = BSWAP64(vals[1]);
+        }
+        for (size_t i = 0; i < 16; i++) {
+            tmp[i] = valptr[SHUFFLE_MASK[i]];
+        }
+        memcpy(valptr, &tmp[0], 16);
+        if (isBE()) {
+            vals[0] = BSWAP64(vals[0]);
+            vals[1] = BSWAP64(vals[1]);
+        }
 #endif
     } else {
         vals[0] = BSWAP64(vals[0]);
