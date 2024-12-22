@@ -87,7 +87,7 @@ How to build
 
 - `mkdir build`
 - `cd build`
-- `cmake ..` or `C=mycc CXX=mycxx CXXFLAGS="-foo bar" cmake ..` as needed for your system
+- `cmake ..` or `CC=mycc CXX=mycxx CXXFLAGS="-foo bar" cmake ..` as needed for your system
 - `make -j4` or `make -j4 all test`
 
 How to use
