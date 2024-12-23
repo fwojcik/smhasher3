@@ -57,25 +57,31 @@ if(MSVC)
   endif()
 endif()
 
+if (MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+endif()
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU
      OR (CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
      OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
      OR (CMAKE_CXX_COMPILER_ID STREQUAL Intel))
+
+  if(NOT CMAKE_CROSSCOMPILING)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+  endif()
 
   # For clang-cl, CMAKE_CXX_COMPILER_ID is Clang but MSVC is set to true
   if(NOT MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -ggdb3")
   endif()
 
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG   "-O1 -DNDEBUG")
   set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_DEBUG} -Og -ggdb3 \
       -fsanitize=address,undefined -fno-optimize-sibling-calls \
       -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
-
-  if(NOT CMAKE_CROSSCOMPILING)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-  endif()
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wvla -Wpedantic \
       -Wno-unused-function -Wno-unknown-pragmas")
