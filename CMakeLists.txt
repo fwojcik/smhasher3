@@ -78,8 +78,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL GNU
   endif()
 
   set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
-  set(CMAKE_CXX_FLAGS_DEBUG   "-O1 -DNDEBUG")
-  set(CMAKE_CXX_FLAGS_ASAN    "${CMAKE_CXX_FLAGS_DEBUG} -Og -ggdb3 \
+  set(CMAKE_CXX_FLAGS_DEBUG   "-O1 -UNDEBUG -DDEBUG")
+  set(CMAKE_CXX_FLAGS_ASAN    "-Og -UNDEBUG \
       -fsanitize=address,undefined -fno-optimize-sibling-calls \
       -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
 

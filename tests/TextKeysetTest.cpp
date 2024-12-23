@@ -280,7 +280,6 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
 
     printf("Keyset 'Long' - %d-%d random chars from %s charset - varying %s %d chars - %zu keys\n",
             minlen, maxlen, name, varyprefix ? "first" : "last", varylen, totalkeys);
-    assert(minlen >= 0    );
     assert(maxlen > minlen);
 
     std::vector<hashtype> hashes;
