@@ -1204,11 +1204,13 @@ void RandBenchmark( void ) {
     for (size_t i = 0; i < TEST_ITER; i++) {
         uint64_t keys[5] = { 1, 2, 3, 4, 5 };
         uint64_t begin   = timer_start();
-        threefry(buf, keys);
+        for (size_t j = 0; j < 4096; j++) {
+            threefry(&buf[j * Rand::BUFLEN], keys);
+        }
         uint64_t end     = timer_start();
         deltat = std::min(deltat, (double)(end - begin));
     }
-    printf("%8.2f\n", deltat);
+    printf("%8.2f\n", deltat / 4096.0);
 
     printf("Object init.....................");
     deltat = UINT64_C(1) << 53;
