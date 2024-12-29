@@ -164,14 +164,9 @@ static void threefry( void * buf, uint64_t * keyvals ) {
 
     // This reorders the state values so that the output bytes don't depend
     // on the value of PARALLEL. This usually gets vectorized also.
-    //
-    // While the loop ordering, and therefore the memory access pattern,
-    // may look very strange, GCC does a MUCH better job with its data
-    // layout choices for vectorization with things arranged like this, and
-    // it seems to help LLVM somewhat.
     uint8_t * rngbuf = static_cast<uint8_t *>(buf);
-    for (uint64_t j = 0; j < 4; j++) {
-        for (uint64_t i = 0; i < PARALLEL; i++) {
+    for (uint64_t i = 0; i < PARALLEL; i++) {
+        for (uint64_t j = 0; j < 4; j++) {
             memcpy(&rngbuf[i * 32 + j * 8], &(STATE(j)), sizeof(uint64_t));
         }
     }
