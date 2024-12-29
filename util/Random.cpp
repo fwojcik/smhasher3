@@ -40,18 +40,29 @@ static void threefry( void * buf, uint64_t * keyvals ) {
             "Rand buffer can hold current PARALLEL setting");
 
     // This strange construction involving many for() loops from [0,
-    // PARALLEL) allows most compilers to vectorize this sequence of
-    // operations when the platform supports that. It is exactly
-    // equivalent to a single for() loop containing all the STATE()
-    // statements inside of it.
+    // PARALLEL) is exactly equivalent to a single for() loop containing
+    // all the STATE() statements inside of it. Having the extra loops
+    // allows some compilers to more easily auto-vectorize this sequence of
+    // operations when the platform supports that. It also helps GCC do a
+    // better job of insn scheduling. That said, LLVM seems to intensely
+    // dislike this construction, and so we give it a single giant loop.
+#if defined(__llvm__)
+  #define SINGLE_GIANT_LOOP 1
+#else
+  #define SINGLE_GIANT_LOOP 0
+#endif
+
 #define STATE(j) tmpbuf[i + PARALLEL * j]
+
     for (uint64_t i = 0; i < PARALLEL; i++) {
         STATE(0) = keyvals[0] + i;
         STATE(1) = keyvals[1];
         STATE(2) = keyvals[2];
         STATE(3) = keyvals[3];
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(0) += STATE(1); STATE(1) = ROTL64(STATE(1), 14); STATE(1) ^= STATE(0);
         STATE(2) += STATE(3); STATE(3) = ROTL64(STATE(3), 16); STATE(3) ^= STATE(2);
         STATE(0) += STATE(3); STATE(3) = ROTL64(STATE(3), 52); STATE(3) ^= STATE(0);
@@ -60,17 +71,23 @@ static void threefry( void * buf, uint64_t * keyvals ) {
         STATE(2) += STATE(3); STATE(3) = ROTL64(STATE(3), 40); STATE(3) ^= STATE(2);
         STATE(0) += STATE(3); STATE(3) = ROTL64(STATE(3),  5); STATE(3) ^= STATE(0);
         STATE(2) += STATE(1); STATE(1) = ROTL64(STATE(1), 37); STATE(1) ^= STATE(2);
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(0) += keyvals[1];
         STATE(1) += keyvals[2];
         STATE(2) += keyvals[3];
         STATE(3) += keyvals[4] ^ (keyvals[0] + i);
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(3) += 1;
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(0) += STATE(1); STATE(1) = ROTL64(STATE(1), 25); STATE(1) ^= STATE(0);
         STATE(2) += STATE(3); STATE(3) = ROTL64(STATE(3), 33); STATE(3) ^= STATE(2);
         STATE(0) += STATE(3); STATE(3) = ROTL64(STATE(3), 46); STATE(3) ^= STATE(0);
@@ -79,17 +96,23 @@ static void threefry( void * buf, uint64_t * keyvals ) {
         STATE(2) += STATE(3); STATE(3) = ROTL64(STATE(3), 22); STATE(3) ^= STATE(2);
         STATE(0) += STATE(3); STATE(3) = ROTL64(STATE(3), 32); STATE(3) ^= STATE(0);
         STATE(2) += STATE(1); STATE(1) = ROTL64(STATE(1), 32); STATE(1) ^= STATE(2);
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(0) += keyvals[2];
         STATE(1) += keyvals[3];
         STATE(2) += keyvals[4] ^ (keyvals[0] + i);
         STATE(3) += keyvals[0] + i;
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(3) += 2;
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(0) += STATE(1); STATE(1) = ROTL64(STATE(1), 14); STATE(1) ^= STATE(0);
         STATE(2) += STATE(3); STATE(3) = ROTL64(STATE(3), 16); STATE(3) ^= STATE(2);
         STATE(0) += STATE(3); STATE(3) = ROTL64(STATE(3), 52); STATE(3) ^= STATE(0);
@@ -98,17 +121,23 @@ static void threefry( void * buf, uint64_t * keyvals ) {
         STATE(2) += STATE(3); STATE(3) = ROTL64(STATE(3), 40); STATE(3) ^= STATE(2);
         STATE(0) += STATE(3); STATE(3) = ROTL64(STATE(3),  5); STATE(3) ^= STATE(0);
         STATE(2) += STATE(1); STATE(1) = ROTL64(STATE(1), 37); STATE(1) ^= STATE(2);
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(0) += keyvals[3];
         STATE(1) += keyvals[4] ^ (keyvals[0] + i);
         STATE(2) += keyvals[0] + i;
         STATE(3) += keyvals[1];
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(3) += 3;
+#if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
+#endif
         STATE(0) += STATE(1); STATE(1) = ROTL64(STATE(1), 25); STATE(1) ^= STATE(0);
         STATE(2) += STATE(3); STATE(3) = ROTL64(STATE(3), 33); STATE(3) ^= STATE(2);
         STATE(0) += STATE(3); STATE(3) = ROTL64(STATE(3), 46); STATE(3) ^= STATE(0);
@@ -122,16 +151,32 @@ static void threefry( void * buf, uint64_t * keyvals ) {
     // Update the counter to reflect that we've generated PARALLEL values.
     keyvals[0] += PARALLEL;
 
+    // Since we want buffered byte-order to be little-endian always (see
+    // Random.h for why), byte-swapping is done on big-endian ints. Doing
+    // this outside the loop below seems to produce better code.
+    if (isBE()) {
+        for (uint64_t i = 0; i < PARALLEL; i++) {
+            for (uint64_t j = 0; j < 4; j++) {
+                STATE(j) = BSWAP(STATE(j));
+            }
+        }
+    }
+
     // This reorders the state values so that the output bytes don't depend
     // on the value of PARALLEL. This usually gets vectorized also.
+    //
+    // While the loop ordering, and therefore the memory access pattern,
+    // may look very strange, GCC does a MUCH better job with its data
+    // layout choices for vectorization with things arranged like this, and
+    // it seems to help LLVM somewhat.
     uint8_t * rngbuf = static_cast<uint8_t *>(buf);
-    for (uint64_t i = 0; i < PARALLEL; i++) {
-        for (uint64_t j = 0; j < 4; j++) {
-            uint64_t tmp = COND_BSWAP(STATE(j), isBE());
-            memcpy(&rngbuf[j * 8 + i * 32], &tmp, sizeof(uint64_t));
+    for (uint64_t j = 0; j < 4; j++) {
+        for (uint64_t i = 0; i < PARALLEL; i++) {
+            memcpy(&rngbuf[i * 32 + j * 8], &(STATE(j)), sizeof(uint64_t));
         }
     }
 #undef STATE
+#undef SINGLE_GIANT_LOOP
 }
 
 //-----------------------------------------------------------------------------
