@@ -377,15 +377,28 @@ static bool WordsDictImpl( HashFn hash, const seed_t seed, flags_t flags ) {
 
 //-----------------------------------------------------------------------------
 
+static void VerifyCharset(const char * charset, const char * name) {
+    const size_t len = strlen(charset);
+    for (unsigned i = 1; i < len; i++) {
+        if (charset[i] <= charset[i - 1]) {
+            printf("INTERNAL ERROR: coreset \"%s\" is not in order, or has dups!\n", name);
+            exit(9);
+        }
+    }
+}
+
 template <typename hashtype>
 bool TextKeyTest( const HashInfo * hinfo, flags_t flags ) {
     const HashFn hash  = hinfo->hashFn(g_hashEndian);
     const seed_t seed  = hinfo->Seed(g_seed);
-    const char * alnum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+    const char * alnum = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     printf("[[[ Keyset 'Text' Tests ]]]\n\n");
 
     bool result = true;
+
+    // The values in character sets MUST be in ascending order, with no duplicates
+    VerifyCharset(alnum, "alnum");
 
     // Dictionary words
     result &= WordsDictImpl<hashtype>(hash, seed, flags);
