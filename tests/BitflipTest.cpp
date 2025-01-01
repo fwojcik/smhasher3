@@ -105,9 +105,23 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
             hash(k, keybytes, seed, &hashes[2 * i + 1]);
             addVCodeInput(k, keybytes);
 
-            // Restore the bit to its original value, for dumpFailKeys()
+            // Restore the bit to its original value, so that keyprint()
+            // below can get the original values in keys[].
             k.flipbit(keybit);
         }
+
+        auto keyprint = [&]( hidx_t i ) {
+            ExtBlob k( &keys[(i >> 1) * keybytes], keybytes );
+            hashtype v;
+
+            if (i & 1) { k.flipbit(keybit); }
+            hash(k, keybytes, seed, &v);
+            printf("0x%016" PRIx64 "\t", g_seed);
+            k.printbytes(NULL);
+            printf("\t");
+            v.printhex(NULL);
+            if (i & 1) { k.flipbit(keybit); }
+        };
 
         // If VERBOSE reporting isn't enabled, then each test isn't being
         // reported on, and so there might need to be a failure summary at
@@ -120,14 +134,8 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
         int  curlogp    = 0;
         bool thisresult = TestHashList(hashes).testDistribution(true).
                 reportFlags(flags).quiet(!REPORT(VERBOSE, flags)).
-                sumLogp(&curlogp).testDeltas(2).dumpFailKeys([&]( hidx_t i ) {
-                    ExtBlob k(&keys[(i >> 1) * keybytes], keybytes); hashtype v;
-                    if (i & 1) { k.flipbit(keybit); }
-                    hash(k, keybytes, seed, &v);
-                    printf("0x%016" PRIx64 "\t", g_seed); k.printbytes(NULL);
-                    printf("\t"); v.printhex(NULL);
-                    if (i & 1) { k.flipbit(keybit); }
-            });
+                sumLogp(&curlogp).testDeltas(2).dumpFailKeys(keyprint);
+
         if (REPORT(VERBOSE, flags)) {
             printf("\n");
         } else {

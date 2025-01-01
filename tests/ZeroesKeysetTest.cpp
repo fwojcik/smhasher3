@@ -79,10 +79,15 @@ static bool ZeroKeyImpl( HashFn hash, const seed_t seed, flags_t flags ) {
         hash(nullblock, i, seed, &hashes[i]);
     }
 
-    bool result = TestHashList(hashes).testDeltas(1).reportFlags(flags).dumpFailKeys([&]( hidx_t i ) {
-            printf("0x%016" PRIx64 "\t%d copies of 0x00\t", g_seed, i);
-            hashtype v; hash(nullblock, i, seed, &v); v.printhex(NULL);
-        });
+    auto keyprint = [&]( hidx_t i ) {
+        hashtype v;
+        hash(nullblock, i, seed, &v);
+        printf("0x%016" PRIx64 "\t%d copies of 0x00\t", g_seed, i);
+        v.printhex(NULL);
+    };
+
+    bool result = TestHashList(hashes).testDeltas(1).reportFlags(flags).dumpFailKeys(keyprint);
+
     printf("\n");
 
     delete [] nullblock;

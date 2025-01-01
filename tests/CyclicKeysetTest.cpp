@@ -92,15 +92,23 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, unsigned cycleReps,
 
     //----------
 
-    bool result = TestHashList(hashes).reportFlags(flags).testDistribution(false).dumpFailKeys([&]( hidx_t i ) {
-            ExtBlob xb( &cycles[i * cycleLen], cycleLen );
+    auto keyprint = [&]( hidx_t i ) {
+        ExtBlob xb( &cycles[i * cycleLen], cycleLen );
+        hashtype v;
 
-            printf("0x%016" PRIx64 "\t%d copies of ", g_seed, cycleReps); xb.printbytes(NULL); printf("\t");
-            for (unsigned j = 0; j < cycleReps; j++) {
-                memcpy(&key[j * cycleLen], &cycles[i * cycleLen], cycleLen);
-            }
-            hashtype v; hash(key, keyLen, seed, &v); v.printhex(NULL);
-        });
+        for (unsigned j = 0; j < cycleReps; j++) {
+            memcpy(&key[j * cycleLen], &cycles[i * cycleLen], cycleLen);
+        }
+        hash(key, keyLen, seed, &v);
+
+        printf("0x%016" PRIx64 "\t%d copies of ", g_seed, cycleReps);
+        xb.printbytes(NULL);
+        printf("\t");
+        v.printhex(NULL);
+    };
+
+    bool result = TestHashList(hashes).reportFlags(flags).testDistribution(false).dumpFailKeys(keyprint);
+
     printf("\n");
 
     delete [] key;

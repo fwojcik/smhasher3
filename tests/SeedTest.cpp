@@ -97,15 +97,19 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, flags_t flags
         }
     }
 
-    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1 << lobits).dumpFailKeys([&]( hidx_t i ) {
-            seed_t   seedlo = 1; seedlo = i & ((seedlo << lobits) - 1);
-            seed_t   seedhi = i; seedhi >>= lobits; seedhi <<= shiftbits;
-            seed_t   iseed  = seedlo | seedhi;
-            seed_t   hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+    auto keyprint = [&]( hidx_t i ) {
+        seed_t   seedlo = 1; seedlo = i & ((seedlo << lobits) - 1);
+        seed_t   seedhi = i; seedhi >>= lobits; seedhi <<= shiftbits;
+        seed_t   iseed  = seedlo | seedhi;
+        seed_t   hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+        hashtype v;
 
-            printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
-            hashtype v; hash(key, keylen, hseed, &v); v.printhex(NULL);
-        });
+        printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
+        hash(key, keylen, hseed, &v);
+        v.printhex(NULL);
+    };
+
+    bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1 << lobits).dumpFailKeys(keyprint);
 
     printf("\n");
 

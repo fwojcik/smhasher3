@@ -123,6 +123,23 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, flags
             seedptr += seedbytes;
         }
 
+        auto keyprint = [&]( hidx_t i ) {
+            ExtBlob k(&keys[(i >> 1) * keybytes], keybytes);
+            seed_t iseed, hseed;
+            hashtype v;
+
+            memcpy(&iseed, &seeds[(i >> 1) * seedbytes], seedbytes);
+            iseed = hinfo->getFixedSeed(iseed);
+            if (i & 1) { iseed ^= (UINT64_C(1) << seedbit); }
+            hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+
+            hash(k, keybytes, hseed, &v);
+            printf("0x%016" PRIx64 "\t", (uint64_t)iseed);
+            k.printbytes(NULL);
+            printf("\t");
+            v.printhex(NULL);
+        };
+
         // If VERBOSE reporting isn't enabled, then each test isn't being
         // reported on, and so there might need to be a failure summary at
         // the end of testing. If that's true, then keep a copy of the
@@ -134,19 +151,8 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, flags
         int  curlogp    = 0;
         bool thisresult = TestHashList(hashes).testDistribution(true).
                 reportFlags(flags).quiet(!REPORT(VERBOSE, flags)).
-                sumLogp(&curlogp).testDeltas(2).dumpFailKeys([&]( hidx_t i ) {
-                    ExtBlob k(&keys[(i >> 1) * keybytes], keybytes);
-                    hashtype v; seed_t iseed, hseed;
+                sumLogp(&curlogp).testDeltas(2).dumpFailKeys(keyprint);
 
-                    memcpy(&iseed, &seeds[(i >> 1) * seedbytes], seedbytes);
-                    iseed = hinfo->getFixedSeed(iseed);
-                    if (i & 1) { iseed ^= (UINT64_C(1) << seedbit); }
-                    hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
-
-                    hash(k, keybytes, hseed, &v);
-                    printf("0x%016" PRIx64 "\t", (uint64_t)iseed); k.printbytes(NULL);
-                    printf("\t"); v.printhex(NULL);
-            });
         if (REPORT(VERBOSE, flags)) {
             printf("\n");
         } else {

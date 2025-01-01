@@ -74,29 +74,35 @@ static void PrintTextKeyHash( HashFn hash, seed_t seed, const char * key, const 
 template <typename hashtype, bool commas>
 static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount, flags_t flags ) {
     std::vector<hashtype> hashes(numcount);
+    std::string nstr;
 
     printf("Keyset 'TextNum' - numbers in text form %s commas - %" PRIu64 " keys\n", commas ? "with" : "without", numcount);
 
     //----------
-    for (uint64_t n = 0; n < numcount; n++) {
-        std::string nstr = std::to_string(n);
+    auto keybuild = [&]( hidx_t n ) {
+        nstr = std::to_string(n);
         if (commas) {
             for (size_t i = nstr.length(); i > 3; i -= 3) {
                 nstr.insert(i - 3, ",");
             }
         }
+    };
+
+    auto keyprint = [&]( hidx_t n ) {
+        keybuild(n);
+        PrintTextKeyHash<hashtype>(hash, seed, nstr.c_str(), nstr.length());
+    };
+
+    //----------
+    for (uint64_t n = 0; n < numcount; n++) {
+        keybuild(n);
         hash(nstr.c_str(), nstr.length(), seed, &hashes[n]);
         addVCodeInput(nstr.c_str(), nstr.length());
     }
 
     //----------
-    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys([&]( hidx_t n ) {
-            std::string nstr = std::to_string(n);
-            if (commas) {
-                for (size_t i = nstr.length(); i > 3; i -= 3) { nstr.insert(i - 3, ","); }
-            }
-            PrintTextKeyHash<hashtype>(hash, seed, nstr.c_str(), nstr.length());
-        });
+    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys(keyprint);
+
     printf("\n");
 
     recordTestResult(result, "TextNum", commas ? "with commas" : "without commas");
@@ -132,24 +138,27 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
     printf("Keyset 'Text' - keys of form \"%s\" - %d keys\n", key, keycount);
 
     //----------
-    for (unsigned i = 0; i < keycount; i++) {
-        uint32_t t = i;
-
+    auto keybuild = [&]( hidx_t n ) {
         for (unsigned j = 0; j < corelen; j++) {
-            key[prefixlen + j] = coreset[t % corecount]; t /= corecount;
+            key[prefixlen + j] = coreset[n % corecount]; n /= corecount;
         }
+    };
 
+    auto keyprint = [&]( hidx_t n ) {
+        keybuild(n);
+        PrintTextKeyHash<hashtype>(hash, seed, key, keybytes);
+    };
+
+    //----------
+    for (unsigned i = 0; i < keycount; i++) {
+        keybuild(i);
         hash(key, keybytes, seed, &hashes[i]);
         addVCodeInput(key, keybytes);
     }
 
     //----------
-    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys([&]( hidx_t i ) {
-            for (unsigned j = 0; j < corelen; j++) {
-                key[prefixlen + j] = coreset[i % corecount]; i /= corecount;
-            }
-            PrintTextKeyHash<hashtype>(hash, seed, key, keybytes);
-        });
+    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys(keyprint);
+
     printf("\n");
 
     memset(key + prefixlen, 'X', corelen);
@@ -200,11 +209,47 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
     std::vector<hashtype> hashes(keycount - remaining);
     Rand     r( 708218, minlen, maxlen );
     char *   key = new char[maxlen];
-    uint64_t itemnum;
     uint32_t cnt = 0;
 
     printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n",
             minlen, maxlen, name, keycount - remaining);
+
+    //----------
+    auto keybuild = [&]( uint64_t itemnum, uint32_t prefixlen, uint32_t len ) {
+        for (unsigned j = 0; j < prefixlen; j++) {
+            key[j] = coreset[itemnum % corecount]; itemnum /= corecount;
+        }
+        for (unsigned j = prefixlen; j < len; j++) {
+            key[j] = coreset[r.rand_range(corecount)];
+        }
+    };
+
+    auto keyprint = [&]( hidx_t n ) {
+        // Prepare the state to match the n'th key generation
+        uint32_t len, rngpos = 0, prefixlen = std::min(minlen, maxprefix);
+        uint64_t itemnum;
+
+        for (len = minlen; len <= maxlen; len++) {
+            prefixlen = std::min(len, maxprefix);
+            if (n < lencount[len]) { break; }
+            n        -= lencount[len];
+            rngpos   += lencount[len] * (len - prefixlen) + 1;
+        }
+
+        const uint64_t curcount = pow((double)corecount, (double)prefixlen);
+
+        // Regenerate the RandSeq for this key length
+        r.seek(rngpos);
+        RandSeq rs = r.get_seq(SEQ_NUM, curcount - 1);
+        rs.write(&itemnum, n, 1);
+
+        // Seek the RNG for this specific key
+        r.seek(rngpos + n * (len - prefixlen) + 1);
+
+        // Build the n'th key, and print it out
+        keybuild(itemnum, prefixlen, len);
+        PrintTextKeyHash<hashtype>(hash, seed, key, len);
+    };
 
     //----------
     for (uint32_t len = minlen; len <= maxlen; len++) {
@@ -215,17 +260,12 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
         // just pick any random ones from coreset.
         const uint32_t prefixlen = std::min(len, maxprefix);
         const uint64_t curcount  = pow((double)corecount, (double)prefixlen);
+        RandSeq        rs        = r.get_seq(SEQ_NUM, curcount - 1);
+        uint64_t       itemnum;
 
-        RandSeq rs = r.get_seq(SEQ_NUM, curcount - 1);
         for (uint32_t i = 0; i < lencount[len]; i++) {
             rs.write(&itemnum, i, 1);
-            for (unsigned j = 0; j < prefixlen; j++) {
-                key[j] = coreset[itemnum % corecount]; itemnum /= corecount;
-            }
-            for (unsigned j = prefixlen; j < len; j++) {
-                key[j] = coreset[r.rand_range(corecount)];
-            }
-
+            keybuild(itemnum, prefixlen, len);
             hash(key, len, seed, &hashes[cnt++]);
             addVCodeInput(key, len);
             //fprintf(stderr, "%ld\t%d:%ld\t%.*s\n", i, len, nnn, len, key);
@@ -233,26 +273,8 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
     }
 
     //----------
-    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys([&]( hidx_t n ) {
-            uint32_t len, prefixlen = std::min(minlen, maxprefix), rngpos = 0;
-            for (len = minlen; len <= maxlen; len++) {
-                prefixlen = std::min(len, maxprefix);
-                if (n < lencount[len]) { break; }
-                n      -= lencount[len];
-                rngpos += lencount[len] * (len - prefixlen) + 1;
-            }
-            r.seek(rngpos);
-            const uint64_t curcount = pow((double)corecount, (double)prefixlen);
-            RandSeq rs = r.get_seq(SEQ_NUM, curcount - 1); rs.write(&itemnum, n, 1);
-            for (unsigned j = 0; j < prefixlen; j++) {
-                key[j] = coreset[itemnum % corecount]; itemnum /= corecount;
-            }
-            r.seek(rngpos + n * (len - prefixlen) + 1);
-            for (unsigned j = prefixlen; j < len; j++) {
-                key[j] = coreset[r.rand_range(corecount)];
-            }
-            PrintTextKeyHash<hashtype>(hash, seed, key, len);
-        });
+    bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys(keyprint);
+
     printf("\n");
 
     char buf[32];
@@ -277,58 +299,78 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
     const unsigned corecount = (unsigned)strlen(coreset);
     const size_t   totalkeys = keycount * (corecount - 1) * varylen;
     char *         key       = new char[maxlen];
+    char *         keyorig   = new char[maxlen];
+    unsigned       keylen;
+    size_t         basepos;
 
     printf("Keyset 'Long' - %d-%d random chars from %s charset - varying %s %d chars - %zu keys\n",
             minlen, maxlen, name, varyprefix ? "first" : "last", varylen, totalkeys);
     assert(maxlen > minlen);
 
+    Rand r( 312318, varyprefix, minlen, maxlen );
     std::vector<hashtype> hashes;
     hashes.resize(totalkeys);
-    Rand r( 312318, varyprefix, minlen, maxlen );
-    size_t cnt = 0;
+    hidx_t cnt = 0;
 
-    for (long i = 0; i < keycount; i++) {
-        r.seek(i * (maxlen + 1));
+    //----------
+    auto keybuild = [&]( hidx_t basenum ) {
+        r.seek(basenum * (maxlen + 1));
 
         // These words are long enough that we don't explicitly avoid collisions.
-        const unsigned len = minlen + r.rand_range(maxlen - minlen + 1);
-        for (unsigned j = 0; j < len; j++) {
+        keylen  = minlen + r.rand_range(maxlen - minlen + 1);
+        basepos = varyprefix ? 0 : (keylen - varylen);
+        for (unsigned j = 0; j < keylen; j++) {
             key[j] = coreset[r.rand_range(corecount)];
         }
+        memcpy(keyorig, key, keylen);
+    };
 
-        for (unsigned offset = 0; offset < varylen; offset++) {
-            size_t j = offset + (varyprefix ? 0 : (len - varylen));
-            uint8_t prv = key[j];
-            for (unsigned k = 0; k < corecount; k++) {
-                if (prv == coreset[k]) {
-                    continue;
-                }
-                key[j] = coreset[k];
-                hash(key, len, seed, &hashes[cnt++]);
-                addVCodeInput(key, len);
+    auto keyrestore = [&]( size_t idx ) {
+        key[idx] = keyorig[idx];
+    };
+
+    auto keytweak = [&]( size_t idx, unsigned charnum ) {
+        // Avoid repeating the base key
+        if (keyorig[idx] <= coreset[charnum]) {
+            charnum++;
+        }
+        key[idx] = coreset[charnum];
+    };
+
+    auto keyprint = [&]( hidx_t n ) {
+        unsigned charnum = n % (corecount - 1); n /= (corecount - 1);
+        size_t   offset  = n % varylen;         n /= varylen;
+
+        keybuild(n);
+
+        size_t   idx     = basepos + offset;
+        keytweak(idx, charnum);
+
+        PrintTextKeyHash<hashtype>(hash, seed, key, keylen);
+        printf("  [key[%zd]=\'%c\']", idx, key[idx]);
+    };
+
+    //----------
+    for (hidx_t i = 0; i < keycount; i++) {
+        keybuild(i);
+
+        for (size_t offset = 0; offset < varylen; offset++) {
+            size_t idx = basepos + offset;
+            for (unsigned charnum = 0; charnum < corecount - 1; charnum++) {
+                keytweak(idx, charnum);
+
+                hash(key, keylen, seed, &hashes[cnt++]);
+                addVCodeInput(key, keylen);
             }
-            key[j] = prv;
+
+            keyrestore(idx);
         }
     }
 
     //----------
     bool result = TestHashList(hashes).reportFlags(flags).testDistribution(true).
-        testDeltas(1).dumpFailKeys([&]( hidx_t n ) {
-            unsigned l3 = n % (corecount - 1); n /= (corecount - 1);
-            unsigned l2 = n % varylen;         n /= varylen;
-            r.seek(n * (maxlen + 1));
-            const unsigned len = minlen + r.rand_range(maxlen - minlen + 1);
-            for (unsigned j = 0; j < len; j++) {
-                key[j] = coreset[r.rand_range(corecount)];
-            }
-            size_t j = l2 + (varyprefix ? 0 : (len - varylen));
-            for (unsigned k = 0; k <= l3; k++) {
-                if (key[j] == coreset[k]) { l3++; break; }
-            }
-            key[j] = coreset[l3];
-            PrintTextKeyHash<hashtype>(hash, seed, key, len);
-            printf("  [key[%zd]=\'%c\']", j, key[j]);
-        });
+        testDeltas(1).dumpFailKeys(keyprint);
+
     printf("\n");
 
     char buf[64];
@@ -338,6 +380,7 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount,
     addVCodeResult(result);
 
     delete [] key;
+    delete [] keyorig;
 
     return result;
 }
