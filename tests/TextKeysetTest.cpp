@@ -105,7 +105,7 @@ static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount
 
     printf("\n");
 
-    recordTestResult(result, "TextNum", commas ? "with commas" : "without commas");
+    recordTestResult(result, "Text", commas ? "numbers with commas" : "numbers without commas");
 
     addVCodeResult(result);
 
