@@ -272,13 +272,13 @@ static bool blobverify( std::vector<blobtype> & blobs, std::vector<blobtype> & o
 
 static const uint32_t BASELINE_TEST_SIZE = 4000000;
 static const uint32_t BASELINE_TEST_ITER = 100;
-double baseline_timing[6][9] = {
-    { 37.0,  34.3, 44.8, 41.8,  8.1,  34.3,  8.4, 42.8 },
-    { 76.3,  76.2, 85.1, 83.9, 11.7,  76.3, 11.6, 84.2 },
-    { 22.2, 136.0, 25.0, 35.4, 13.1, 136.1, 13.1, 41.1 },
-    { 23.1, 144.5, 27.7, 39.0, 15.2, 144.6, 15.2, 43.9 },
-    { 26.2, 201.9, 33.8, 30.1, 16.9, 202.0, 16.9, 48.5 },
-    { 29.4, 194.7, 30.9, 32.8, 18.0, 194.9, 18.0, 49.5 },
+double baseline_timing[6][10] = {
+    { 25.3,  22.6, 45.1, 41.5,  8.2,  16.7,  16.7,  22.6,  9.0, 42.1 },
+    { 51.5,  51.5, 85.6, 83.4, 11.8,  31.4,  31.5,  51.6, 11.7, 83.6 },
+    { 22.5, 120.7, 25.3, 26.4, 13.0,  96.7, 120.8, 121.2, 13.0, 42.2 },
+    { 23.7, 145.3, 32.6, 27.1, 15.4, 198.3, 145.1, 147.2, 15.4, 44.0 },
+    { 27.9, 202.0, 32.0, 31.5, 16.5, 322.4, 201.9, 203.8, 16.5, 48.5 },
+    { 28.9, 186.6, 31.2, 40.7, 16.9, 385.3, 186.1, 188.0, 16.9, 48.1 },
 };
 // Converts number of 32-bit words in the hash to the row of
 // baseline_timing. Row 0 is 32-bits, row 1 is 64, etc.
@@ -289,7 +289,7 @@ const static int baseline_idx1[] = {
 // "Random numbers, sorted", column 1 is "Random numbers, scrambled", etc.
 const static int baseline_idx2[SORT_TESTS] = {
     -1, -1, -1, -1, +0, -1, +1, -1, +2, +3, +4,
-    -1, -1, -1, -1, -1, -1, +5, +6, -1, -1, +7
+    -1, -1, -1, -1, +5, +6, +7, +8, -1, -1, +9
 };
 
 template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype, bool track_idxs>

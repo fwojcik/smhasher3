@@ -25,6 +25,20 @@ static constexpr ssize_t SMALLSORT_CUTOFF = 1024;
 //-----------------------------------------------------------------------------
 // Blob sorting routines
 
+// This just returns true if all entries in [begin, end) are already in
+// sorted order, and false as soon as it detects otherwise.
+template <typename T>
+static bool issorted( T * begin, T * end ) {
+    for (T * i = begin + 1; i != end; i++) {
+        T * node = i;
+        T * prev = i - 1;
+        if (*node < *prev) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // This moves the smallest element in [begin, end) to be the first
 // element. It is one step in insertionsort, and it is used to ensure there
 // is a sentinel at the beginning that is less than or equal to every other
@@ -99,29 +113,30 @@ static const uint32_t RADIX_MASK = RADIX_SIZE - 1;
 
 template <bool track_idxs, typename T>
 static void radixsort( T * begin, T * end, hidx_t * idxs ) {
-    const uint32_t RADIX_LEVELS = T::len;
+    constexpr uint32_t RADIX_LEVELS = T::len;
     const size_t   count        = end - begin;
 
     uint32_t freqs[RADIX_SIZE][RADIX_LEVELS] = {};
-    T *      ptr = begin;
+    T *      last = begin + count - 1;
 
     // Record byte frequencies in each position over all items except
     // the last one.
-    assume(begin <= (end - SMALLSORT_CUTOFF));
-    do {
+    assume(begin < last);
+    for (T * ptr = begin; ptr < last; ptr++) {
         prefetch(ptr + 64);
         for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
             uint8_t value = (*ptr)[pass];
             ++freqs[value][pass];
         }
-    } while (++ptr < (end - 1));
+    }
     // Process the last item separately, so that we can record which
     // passes (if any) would do no reordering of items, and which can
     // therefore be skipped entirely.
     uint32_t trivial_passes = 0;
+#pragma GCC unroll 0
     for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
-        uint8_t value = (*ptr)[pass];
-        if (++freqs[value][pass] == count) {
+        uint8_t value = (*last)[pass];
+        if (unlikely(++freqs[value][pass] == count)) {
             trivial_passes |= 1UL << pass;
         }
     }
@@ -136,7 +151,7 @@ static void radixsort( T * begin, T * end, hidx_t * idxs ) {
 
     for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
         // If this pass would do nothing, just skip it.
-        if (trivial_passes & (1UL << pass)) {
+        if (unlikely(trivial_passes & (1UL << pass))) {
             continue;
         }
 
@@ -145,12 +160,14 @@ static void radixsort( T * begin, T * end, hidx_t * idxs ) {
         // way all the entries end up contiguous with no gaps.
         T * queue_ptrs[RADIX_SIZE];
         T * next = to;
+#pragma GCC unroll 8
         for (size_t i = 0; i < RADIX_SIZE; i++) {
             queue_ptrs[i] = next;
             next += freqs[i][pass];
         }
 
         // Copy each element into its queue based on the current byte.
+#pragma GCC unroll 4
         for (size_t i = 0; i < count; i++) {
             uint8_t index = from[i][pass];
             if (track_idxs) {
@@ -172,7 +189,8 @@ static void radixsort( T * begin, T * end, hidx_t * idxs ) {
     // Because the swap always happens in the above loop, the "from"
     // area has the sorted payload. If that's not the original array,
     // then do a final copy.
-    if (from != begin) {
+    if (unlikely(from != begin)) {
+        assume(count >= SMALLSORT_CUTOFF);
         if (track_idxs) {
             std::copy(idxfrom, idxfrom + count, idxs);
         }
@@ -204,29 +222,51 @@ static void flagsort( T * begin, T * end, hidx_t * idxs, T * base, int digit ) {
     } while (++ptr < (end - 1));
     // As in radix sort, if this pass would do no rearrangement, then
     // there's no need to iterate over every item. If there are no more
-    // passes, then we're just done. Otherwise, since this case is only
-    // likely to hit in degenerate cases (e.g. donothing64), just devolve
-    // into radixsort since that performs better for those. smallsort()
-    // isn't used here because these blocks must be large.
+    // passes, then we're just done. Otherwise, hitting this condition in
+    // real-world data is a little suspicious. This is only likely to hit
+    // in degenerate cases.
     //
-    // Ideally, this would fallback to insertionsort(), because it's
-    // significantly better on average, but that has dreadful performance
-    // on lists of different values which have identical prefixes. Some bad
-    // hashes (like FNV variants) can generate those. To use
-    // insertionsort(), we might need to do something introsort-like and
-    // detect when it is starting to take too long, and then
-    // fall-further-back to radixsort().
+    // If this is the first sorting pass, then the first digit of every
+    // item in the list is identical. This means either every item is
+    // identical (e.g. donothing128), or every item has the same prefix
+    // (e.g. fnv-1a-128 in Sparse tests). If it's a later pass, then one of
+    // those two cases holds, but only for some subset of the data.
+    //
+    // Currently, the heuristic used is that if this case is hit by the
+    // whole list, then it's either already sorted (perhaps because all
+    // entries are identical), or we devolve into radixsort, since it
+    // performs best for many oddball cases, and still performs OK in the
+    // average case. Since issorted() breaks early, the penalty for
+    // checking is typically very low.
+    //
+    // Otherwise, for subsets of the whole list, we devolve into
+    // insertionsort, which is significantly better on average than
+    // radixsort. That can't be done in the more degenerate cases, because
+    // insertionsort has dreadful worst-case performance.
+    //
+    // Better choices for a more well-rounded sort function would be to
+    // perhaps have some sort of metric for how unsorted the list is
+    // instead of a simple bool, possibly also considering the size of the
+    // list or subset and/or the size of the elements, when deciding on a
+    // fallback sort. Another option might be to do something
+    // introsort-like and have insertionsort() detect when it is starting
+    // to take too long, and have it fall-further-back to radixsort(). For
+    // now, this is good enough. Further sort optimizations are planned.
+    //
+    // smallsort() isn't used here because these blocks must be large.
     if (unlikely(++freqs[(*ptr)[digit]] == count)) {
         if (digit != 0) {
             assume((end - begin) > SMALLSORT_CUTOFF);
-            radixsort<track_idxs>(begin, end, idxs);
-#if SOMEDAY_MAYBE
-            if (begin == base) {
+            if ((digit == (DIGITS - 1))) {
+                if (issorted(begin, end)) {
+                    return;
+                }
+                radixsort<track_idxs>(begin, end, idxs);
+            } else if (begin == base) {
                 insertionsort<false, track_idxs>(begin, end, idxs);
             } else {
                 insertionsort<true, track_idxs>(begin, end, idxs);
             }
-#endif
         }
         return;
     }
@@ -304,7 +344,7 @@ static void blobsort( Iter iter_begin, Iter iter_end, std::vector<hidx_t> & idxv
     }
 
     hidx_t * idxs = track_idxs ? &(*idxvec.begin()) : NULL;
-    if (count <= SMALLSORT_CUTOFF) {
+    if (unlikely(count <= SMALLSORT_CUTOFF)) {
         if (count <= 1) {
             return;
         }

@@ -109,21 +109,21 @@ class Blob {
             i -= 8;
             memcpy(&a, &bytes[i], 8)  ; a = COND_BSWAP(a, isBE());
             memcpy(&b, &k.bytes[i], 8); b = COND_BSWAP(b, isBE());
-            if (a < b) { return true; }
-            if (a > b) { return false; }
+            if (likely(a < b)) { return true; }
+            if (likely(a > b)) { return false; }
         }
-        while (i >= 4) {
+        if (i >= 4) {
             uint32_t a, b;
             i -= 4;
             memcpy(&a, &bytes[i], 4)  ; a = COND_BSWAP(a, isBE());
             memcpy(&b, &k.bytes[i], 4); b = COND_BSWAP(b, isBE());
-            if (a < b) { return true; }
-            if (a > b) { return false; }
+            if (likely(a < b)) { return true; }
+            if (likely(a > b)) { return false; }
         }
         while (i >= 1) {
             i -= 1;
-            if (bytes[i] < k.bytes[i]) { return true; }
-            if (bytes[i] > k.bytes[i]) { return false; }
+            if (likely(bytes[i] < k.bytes[i])) { return true; }
+            if (likely(bytes[i] > k.bytes[i])) { return false; }
         }
         return false;
     }
