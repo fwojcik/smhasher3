@@ -191,6 +191,7 @@ class Rand {
     constexpr static unsigned  RANDS_PER_ROUND = 4;
     constexpr static unsigned  RNG_KEYS        = 5;
     constexpr static unsigned  BUFLEN = PARALLEL * RANDS_PER_ROUND;
+    static uint64_t GLOBAL_SEED;
 
   private:
     friend void RandTest( const unsigned runs );
@@ -324,7 +325,7 @@ class Rand {
     }
 
     inline void reseed( uint64_t seed ) {
-        rseed = seed;
+        rseed = weakmix(seed, GLOBAL_SEED);
         seek(0);
         update_xseed();
     }

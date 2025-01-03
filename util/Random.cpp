@@ -24,6 +24,9 @@
 
 #include <algorithm>
 
+// Default to zero
+uint64_t Rand::GLOBAL_SEED = 0;
+
 //-----------------------------------------------------------------------------
 // Fill a buffer with 4 * PARALLEL random uint64_t values, updating the
 // counter in keyvals[0] to reflect the number of values generated.

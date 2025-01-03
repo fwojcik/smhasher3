@@ -786,6 +786,17 @@ int main( int argc, const char ** argv ) {
                 g_seed = seed;
                 continue;
             }
+            if (strncmp(arg, "--randseed=", 11) == 0) {
+                errno = 0;
+                char *   endptr;
+                uint64_t seed = strtol(&arg[11], &endptr, 0);
+                if ((errno != 0) || (arg[11] == '\0') || (*endptr != '\0')) {
+                    printf("Error parsing RNG seed value \"%s\"\n", &arg[11]);
+                    exit(1);
+                }
+                Rand::GLOBAL_SEED = seed;
+                continue;
+            }
             if (strncmp(arg, "--ncpu=", 7) == 0) {
 #if defined(HAVE_THREADS)
                 errno = 0;
