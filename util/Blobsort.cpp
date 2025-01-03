@@ -39,7 +39,7 @@ static const char * teststr[SORT_TESTS] = {
     "Random numbers, almost sorted",
     "Random numbers, scrambled",
     "Random numbers, reverse sorted",
-    "Random numbers, many duplicates",
+    "Random numbers, many duplicates, clustered",
     "Random numbers, many duplicates, scrambled",
     "Random number,  all duplicates",
     "Random numbers, all zero in LSB",
@@ -251,7 +251,8 @@ static bool blobverify( std::vector<blobtype> & blobs, std::vector<blobtype> & o
 
 //-----------------------------------------------------------------------------
 
-static const uint32_t BASELINE_TEST_ITER = 4000000;
+static const uint32_t BASELINE_TEST_SIZE = 4000000;
+static const uint32_t BASELINE_TEST_ITER = 100;
 double baseline_timing[6][9] = {
     { 37.0,  34.3, 44.8, 41.8,  8.1,  34.3,  8.4, 42.8 },
     { 76.3,  76.2, 85.1, 83.9, 11.7,  76.3, 11.6, 84.2 },
@@ -289,6 +290,8 @@ bool test_blobsort_type_idx( void ) {
         }
     }
 
+    printf("%s\n", track_idxs ? "Testing sorting plus index tracking" : "Testing raw sorting");
+
     for (size_t i: testnums) {
         bool     thispassed = true;
         uint64_t mintime    = UINT64_C(-1);
@@ -323,7 +326,8 @@ bool test_blobsort_type_idx( void ) {
         }
         if (TEST_ITER > 1) {
             double thistime = (double)mintime / (double)(NSEC_PER_SEC / 1000);
-            if ((TEST_ITER != BASELINE_TEST_ITER) || (baseline_idx1[blobtype::len / 4] < 0) || (baseline_idx2[i] < 0)) {
+            if ((TEST_ITER != BASELINE_TEST_ITER) || (TEST_SIZE != BASELINE_TEST_SIZE) ||
+                    (baseline_idx1[blobtype::len / 4] < 0) || (baseline_idx2[i] < 0)) {
                 printf("\t %7.1f ms               %s\n", thistime, thispassed ? "ok" : "NO");
             } else {
                 double basetime = baseline_timing[baseline_idx1[blobtype::len / 4]][baseline_idx2[i]];
