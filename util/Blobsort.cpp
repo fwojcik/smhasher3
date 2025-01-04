@@ -29,7 +29,7 @@
 //-----------------------------------------------------------------------------
 // Blob sorting routine unit tests
 
-static const size_t SORT_TESTS = 20;
+static const size_t SORT_TESTS = 22;
 static const char * teststr[SORT_TESTS] = {
     "Consecutive numbers, sorted",
     "Consecutive numbers, almost sorted",
@@ -46,6 +46,8 @@ static const char * teststr[SORT_TESTS] = {
     "Random numbers, all zero in MSB",
     "Random numbers, all zero in LSB+1",
     "Random numbers, all zero in MSB+1",
+    "Random numbers, same half-width prefix",
+    "Random numbers, same half-width suffix",
     "Random numbers, each byte has some missing values",
     "All zeroes",
     "All ones",
@@ -59,6 +61,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
 
     Rand r( testnum, iternum );
 
+    // Fill in the base data for the selected test
     switch (testnum) {
     case  0: // Consecutive numbers, sorted
     case  1: // Consecutive numbers, sorted almost
@@ -84,7 +87,9 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
     case 12: // All zero bytes in MSB position
     case 13: // All zero bytes in LSB+1 position
     case 14: // All zero bytes in MSB-1 position
-    case 15: // Random numbers, except each position has some missing bytes
+    case 15: // Random numbers, same half-width prefix
+    case 16: // Random numbers, same half-width suffix
+    case 17: // Random numbers, except each position has some missing bytes
     {
         r.rand_n(&blobs[0], blobtype::len * TEST_SIZE);
         break;
@@ -111,24 +116,24 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
         }
         break;
     }
-    case 16: // All zeroes
+    case 18: // All zeroes
     {
         memset((void *)&blobs[0], 0, TEST_SIZE * sizeof(blobtype));
         break;
     }
-    case 17: // All ones
+    case 19: // All ones
     {
         for (uint32_t i = 0; i < TEST_SIZE; i++) {
             blobs[i] = 1;
         }
         break;
     }
-    case 18: // All Fs
+    case 20: // All Fs
     {
         memset((void *)&blobs[0], 0xFF, TEST_SIZE * blobtype::len);
         break;
     }
-    case 19: // All 0xAAA and 0x555
+    case 21: // All 0xAAA and 0x555
     {
         uint64_t rndnum = 0;
         for (uint32_t i = 0; i < TEST_SIZE; i++) {
@@ -143,6 +148,7 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
     default: unreachable(); break;
     }
 
+    // Tweak the base data, if needed for the selected test
     switch (testnum) {
     // Sorted backwards
     case  7:
@@ -189,8 +195,21 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
         }
         break;
     }
-    // Exclude a byte value from each position
+    // Give each entry the same prefix (MSB) or suffix (LSB)
     case 15:
+    case 16:
+    {
+        const size_t len    = sizeof(blobtype) / 2;
+        const size_t offset = (testnum == 15) ? (sizeof(blobtype) - len) : 0;
+        const uint8_t * const src = ((uint8_t *)&blobs[0]) + offset;
+        for (uint32_t i = 1; i < TEST_SIZE; i++) {
+            uint8_t * dst = ((uint8_t *)&blobs[i]) + offset;
+            memcpy(dst, src, len);
+        }
+        break;
+    }
+    // Exclude a byte value from each position
+    case 17:
     {
         uint8_t excludes[blobtype::len];
         r.rand_n(excludes, sizeof(excludes));
@@ -269,8 +288,8 @@ const static int baseline_idx1[] = {
 // Converts test number to the columns of baseline_timing. Column 0 is
 // "Random numbers, sorted", column 1 is "Random numbers, scrambled", etc.
 const static int baseline_idx2[SORT_TESTS] = {
-    -1, -1, -1, -1, +0, -1, +1, -1, +2, +3,
-    +4, -1, -1, -1, -1, +5, +6, -1, -1, +7
+    -1, -1, -1, -1, +0, -1, +1, -1, +2, +3, +4,
+    -1, -1, -1, -1, -1, -1, +5, +6, -1, -1, +7
 };
 
 template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype, bool track_idxs>
@@ -283,7 +302,7 @@ bool test_blobsort_type_idx( void ) {
     bool     passed    = true;
 
     if (TEST_ITER > 1) {
-        testnums = { 4, 6, 8, 9, 10, 15, 16, 19 };
+        testnums = { 4, 6, 8, 9, 10, 15, 16, 17, 18, 21 };
     } else {
         for (size_t i = 0; i < SORT_TESTS; i++) {
             testnums.push_back(i);
