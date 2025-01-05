@@ -8,11 +8,11 @@ int main(void) {
     int sum = 0;
     uint64_t start, end;
 
-    start = timer_start();
+    start = cycle_timer_start();
     for (int i = 1; i <= (1 << 24); i++) {
         sum += state * i;
     }
-    end = timer_end();
+    end = cycle_timer_end();
 
     unsigned long avg = (end - start) >> 24;
     printf("Cycles taken: %ld\n", avg);

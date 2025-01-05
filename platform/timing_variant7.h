@@ -5,10 +5,10 @@
 
 #pragma intrinsic(__rdtsc)
 
-FORCE_INLINE uint64_t timer_start() {
+FORCE_INLINE uint64_t cycle_timer_start() {
     return __rdtsc();
 }
 
-FORCE_INLINE uint64_t timer_end() {
+FORCE_INLINE uint64_t cycle_timer_end() {
     return __rdtsc();
 }

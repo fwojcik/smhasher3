@@ -86,11 +86,11 @@ constexpr int MAX_TRIALS = (BULK_TRIALS > TINY_TRIALS) ? BULK_TRIALS : TINY_TRIA
 NEVER_INLINE static int64_t timehash( HashFn hash, const seed_t seed, void * const key, int len ) {
     volatile int64_t begin, end;
 
-    begin = timer_start();
+    begin = cycle_timer_start();
 
     hash(key, len, seed, key);
 
-    end = timer_end();
+    end = cycle_timer_end();
 
     return end - begin;
 }
@@ -124,7 +124,7 @@ NEVER_INLINE static uint64_t timehash_small( HashFn hash, const seed_t seed, uin
     volatile unsigned long long int begin, end;
     uint32_t hash_temp[16] = { 0 };
 
-    begin = timer_start();
+    begin = cycle_timer_start();
 
     for (uint64_t i = 0; i < maxi; i += incr) {
         hash(key, len, seed, hash_temp);
@@ -137,7 +137,7 @@ NEVER_INLINE static uint64_t timehash_small( HashFn hash, const seed_t seed, uin
         memcpy(key, &j, 4);
     }
 
-    end = timer_end();
+    end = cycle_timer_end();
 
     return end - begin;
 }

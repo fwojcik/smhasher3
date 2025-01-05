@@ -111,7 +111,7 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
         // hash inserts plus 1% deletes
         volatile int64_t begin, end;
         int i = 0;
-        begin = timer_start();
+        begin = cycle_timer_start();
         for (it = words.begin(); it != words.end(); it++, i++) {
             std::string line = *it;
             hashmap[line] = 1;
@@ -119,7 +119,7 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
                 hashmap.erase(line);
             }
         }
-        end = timer_end();
+        end = cycle_timer_end();
         t1  = (double)(end - begin) / (double)words.size();
     }
 
@@ -130,14 +130,14 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
         volatile int64_t begin, end;
         int    i = 0, found = 0;
         double t;
-        begin = timer_start();
+        begin = cycle_timer_start();
         for (it = words.begin(); it != words.end(); it++, i++) {
             std::string line = *it;
             if (hashmap[line]) {
                 found++;
             }
         }
-        end = timer_end();
+        end = cycle_timer_end();
         t   = (double)(end - begin) / (double)words.size();
         if ((found > 0) && (t > 0)) { times.push_back(t); }
     }
@@ -158,7 +158,7 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
     { // hash inserts and 1% deletes
         volatile int64_t begin, end;
         int i = 0;
-        begin = timer_start();
+        begin = cycle_timer_start();
         for (it = words.begin(); it != words.end(); it++, i++) {
             std::string line = *it;
             phashmap[line] = 1;
@@ -166,7 +166,7 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
                 phashmap.erase(line);
             }
         }
-        end = timer_end();
+        end = cycle_timer_end();
         t1  = (double)(end - begin) / (double)words.size();
     }
 
@@ -177,14 +177,14 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
         volatile int64_t begin, end;
         int    i = 0, found = 0;
         double t;
-        begin = timer_start();
+        begin = cycle_timer_start();
         for (it = words.begin(); it != words.end(); it++, i++) {
             std::string line = *it;
             if (phashmap[line]) {
                 found++;
             }
         }
-        end = timer_end();
+        end = cycle_timer_end();
         t   = (double)(end - begin) / (double)words.size();
         if ((found > 0) && (t > 0)) { times.push_back(t); }
     }

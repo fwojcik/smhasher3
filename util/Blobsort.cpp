@@ -18,7 +18,6 @@
  * <https://www.gnu.org/licenses/>.
  */
 #include "Platform.h"
-#include "Timing.h"
 #include "TestGlobals.h"
 #include "Blobsort.h"
 #include "Instantiate.h"

@@ -1,4 +1,4 @@
-FORCE_INLINE uint64_t timer_start() {
+FORCE_INLINE uint64_t cycle_timer_start() {
     uint64_t cycles_high, cycles_low;
     __asm__ volatile
         ("cpuid\n\t"
@@ -8,7 +8,7 @@ FORCE_INLINE uint64_t timer_start() {
     return (cycles_high << 32) | cycles_low;
 }
 
-FORCE_INLINE uint64_t timer_end() {
+FORCE_INLINE uint64_t cycle_timer_end() {
     uint64_t cycles_high, cycles_low;
     __asm__ volatile
         ("rdtscp\n\t"

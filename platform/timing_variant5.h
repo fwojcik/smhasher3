@@ -6,10 +6,10 @@ FORCE_INLINE uint64_t rdarmcnt() {
     return (uint64_t)(pmccntr) * 64;
 }
 
-FORCE_INLINE uint64_t timer_start() {
+FORCE_INLINE uint64_t cycle_timer_start() {
     return rdarmcnt();
 }
 
-FORCE_INLINE uint64_t timer_end() {
+FORCE_INLINE uint64_t cycle_timer_end() {
     return rdarmcnt();
 }
