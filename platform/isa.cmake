@@ -139,6 +139,10 @@ foreach(entry ${detectVarsFilesMap})
     set(isFile ON)
   endif()
 endforeach()
+# These also depend on the fixed-size int implementation
+list(APPEND detectFiles "${DETECT_DIR}/intsize.cmake")
+# These also depend on the force-inline builtin implementation
+list(APPEND detectFiles "${DETECT_DIR}/builtins.cmake")
 
 checkCachedVarsDepend(DETECT "instruction-set availability")
 setCachedVarsDepend(DETECT detectVars detectFiles)

@@ -28,5 +28,9 @@ findVariant(TIMING)
 # list of files were to ever change, as this file is the only one that
 # can change it.
 list(APPEND TIMING_FILELIST "${DETECT_DIR}/timing.cmake")
+# These also depend on the fixed-size int implementation
+list(APPEND TIMING_FILELIST "${DETECT_DIR}/intsize.cmake")
+# These also depend on the force-inline builtin implementation
+list(APPEND TIMING_FILELIST "${DETECT_DIR}/builtins.cmake")
 
 setCachedVarsDepend(TIMING TIMING_VARLIST TIMING_FILELIST)
