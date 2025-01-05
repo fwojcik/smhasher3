@@ -107,6 +107,7 @@
 static bool g_forceSummary   = false;
 static bool g_exitOnFailure  = false;
 static bool g_exitCodeResult = false;
+static bool g_dumpAllVCodes  = false;
 
 // Setting to test more thoroughly.
 //
@@ -271,6 +272,15 @@ static HashInfo::endianness parse_endian( const char * str ) {
 }
 
 //-----------------------------------------------------------------------------
+// Show intermediate-stage VCodes, to help narrow down test differences
+// across runs and platforms
+static void DumpVCodes( void ) {
+    uint32_t vcode = VCODE_FINALIZE();
+    printf("Input 0x%08x, Output 0x%08x, Result 0x%08x, Overall 0x%08x\n\n",
+            g_inputVCode, g_outputVCode, g_resultVCode, vcode);
+}
+
+//-----------------------------------------------------------------------------
 // Self-tests - verify that hashes work correctly
 
 static void HashSelfTestAll( flags_t flags ) {
@@ -389,7 +399,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
     //-----------------------------------------------------------------------------
     // Some hashes only take 32-bits of seed data, so there's no way of
     // getting big seeds to them at all.
-    if ((g_seed >= (1ULL << (8 * sizeof(uint32_t)))) && hInfo->is32BitSeed()) {
+    if ((g_seed >= (1ULL << 32)) && hInfo->is32BitSeed()) {
         printf("WARNING: Specified global seed 0x%016" PRIx64 "\n"
                 " is larger than the specified hash can accept\n", g_seed);
     }
@@ -421,6 +431,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
         result &= HashSelfTest(hInfo);
         result &= (SanityTest(hInfo, flags) || hInfo->isMock());
         printf("\n");
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -441,6 +452,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testAvalanche) {
         result &= AvalancheTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -449,6 +461,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testBIC) {
         result &= BicTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -457,6 +470,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testZeroes) {
         result &= ZeroKeyTest<hashtype>(hInfo, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -465,6 +479,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testCyclic) {
         result &= CyclicKeyTest<hashtype>(hInfo, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -473,6 +488,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSparse) {
         result &= SparseKeyTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -481,6 +497,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testPermutation) {
         result &= PermutedKeyTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -489,6 +506,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testText) {
         result &= TextKeyTest<hashtype>(hInfo, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -497,6 +515,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testTwoBytes) {
         result &= TwoBytesKeyTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -505,6 +524,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testPerlinNoise) {
         result &= PerlinNoiseTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -513,6 +533,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testBitflip) {
         result &= BitflipTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -521,6 +542,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedZeroes) {
         result &= SeedZeroKeyTest<hashtype>(hInfo, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -529,6 +551,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedSparse) {
         result &= SeedSparseTest<hashtype>(hInfo, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -537,6 +560,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBlockLen) {
         result &= SeedBlockLenTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -545,6 +569,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBlockOffset) {
         result &= SeedBlockOffsetTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -553,6 +578,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeed) {
         result &= SeedTest<hashtype>(hInfo, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -561,6 +587,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedAvalanche) {
         result &= SeedAvalancheTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -569,6 +596,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBIC) {
         result &= SeedBicTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -577,6 +605,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testSeedBitflip) {
         result &= SeedBitflipTest<hashtype>(hInfo, g_testExtra, flags);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -585,6 +614,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
 
     if (g_testBadSeeds) {
         result &= BadSeedsTest<hashtype>(hInfo, g_testExtra);
+        if (g_dumpAllVCodes) { DumpVCodes(); }
         if (!result && g_exitOnFailure) { goto out; }
     }
 
@@ -753,6 +783,12 @@ int main( int argc, const char ** argv ) {
             if (strcmp(arg, "--vcode") == 0) {
                 g_doVCode = 1;
                 VCODE_INIT();
+                continue;
+            }
+            if (strcmp(arg, "--vcode-all") == 0) {
+                g_doVCode = 1;
+                VCODE_INIT();
+                g_dumpAllVCodes = true;
                 continue;
             }
             if (strcmp(arg, "--exit-on-failure") == 0) {
