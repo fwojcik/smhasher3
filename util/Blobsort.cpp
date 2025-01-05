@@ -347,15 +347,15 @@ bool test_blobsort_type_idx( void ) {
             double thistime = (double)mintime / (double)(NSEC_PER_SEC / 1000);
             if ((TEST_ITER != BASELINE_TEST_ITER) || (TEST_SIZE != BASELINE_TEST_SIZE) ||
                     (baseline_idx1[blobtype::len / 4] < 0) || (baseline_idx2[i] < 0)) {
-                printf("\t %7.1f ms               %s\n", thistime, thispassed ? "ok" : "NO");
+                printf("\t %7.1f ms              %s\n", thistime, thispassed ? "ok" : "NO");
             } else {
                 double basetime = baseline_timing[baseline_idx1[blobtype::len / 4]][baseline_idx2[i]];
-                double delta    = thistime - basetime;
+                double delta    = (thistime - basetime) / basetime * 100.0;
                 if ((delta >= -0.05) && (delta <= 0.05)) {
                     delta = 0.0;
                 }
                 basesum += basetime;
-                printf("\t %7.1f ms ( %+6.1f ms ) %s\n", thistime, delta, thispassed ? "ok" : "NO");
+                printf("\t %7.1f ms ( %+6.1f %% ) %s\n", thistime, delta, thispassed ? "ok" : "NO");
             }
         }
         timetotal += mintime;
@@ -364,11 +364,11 @@ bool test_blobsort_type_idx( void ) {
 
     if (TEST_ITER > 1) {
         double thistime = (double)timetotal / (double)(NSEC_PER_SEC / 1000);
-        double delta    = thistime - basesum;
+        double delta    = (thistime - basesum) / basesum * 100.0;
         if ((delta >= -0.05) && (delta <= 0.05)) {
             delta = 0.0;
         }
-        printf("%3zu bits, %-60s                \t%8.1f ms ( %+6.1f ms )\n\n",
+        printf("%3zu bits, %-60s                \t%8.1f ms ( %+6.1f %% )\n\n",
                 blobtype::bitlen, "SUM TOTAL", thistime, delta);
     }
 
