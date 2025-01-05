@@ -695,10 +695,12 @@ static bool testHash( const char * name, const flags_t flags ) {
 //-----------------------------------------------------------------------------
 
 static void usage( void ) {
-    printf("Usage: SMHasher3 [--[no]test=<testname>[,...]] [--extra] [--seed=<globalseed>]\n"
+    printf("Usage: SMHasher3 [--[no]test=<testname>[,...]] [--extra] [--verbose] [--ncpu=N]\n"
+           "                 [--seed=<hash_default_seed>] [--randseed=<RNG_base_seed>]\n"
            "                 [--endian=default|nondefault|native|nonnative|big|little]\n"
            "                 [--[no]exit-on-failure] [--[no]exit-code-on-failure]\n"
-           "                 [--verbose] [--vcode] [--ncpu=N] [<hashname>]\n"
+           "                 [--vcode[-all]] [--[no]time-tests]\n"
+           "                 [<hashname>]\n"
            "\n"
            "       SMHasher3 [--list]|[--listnames]|[--tests]|[--version]\n"
            "\n"
