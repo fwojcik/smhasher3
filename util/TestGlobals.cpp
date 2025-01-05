@@ -80,6 +80,11 @@ uint32_t g_testPass, g_testFail;
 std::vector<std::pair<const char *, char *>> g_testFailures;
 
 //--------
+// Individual test timing
+uint64_t g_prevtime;
+bool g_showTestTimes;
+
+//--------
 // A string with 128 spaces, useful for aligning text outputs
 const char * g_manyspaces =
     "                                                                "  \

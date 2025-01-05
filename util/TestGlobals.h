@@ -86,24 +86,44 @@ static inline void recordLog2PValue( uint32_t log_pvalue ) {
 
 extern uint32_t g_testPass, g_testFail;
 extern std::vector<std::pair<const char *, char *>> g_testFailures;
+extern uint64_t g_prevtime;
+extern bool g_showTestTimes;
 
 static inline void recordTestResult( bool pass, const char * suitename, const char * testname ) {
+    if (testname != NULL) {
+        // Skip any leading spaces in the testname
+        testname += strspn(testname, " ");
+    }
+
+    if (g_showTestTimes) {
+        uint64_t curtime = monotonic_clock();
+        if (testname != NULL) {
+            printf("Elapsed: %f seconds\t[%s\t%s]\n\n",
+                    (double)(curtime - g_prevtime) / (double)NSEC_PER_SEC,
+                    suitename, testname);
+        } else {
+            printf("Elapsed: %f seconds\t[%s]\n\n",
+                    (double)(curtime - g_prevtime) / (double)NSEC_PER_SEC,
+                    suitename);
+        }
+        g_prevtime = curtime;
+    }
+
     if (pass) {
         g_testPass++;
-        return;
-    }
-    g_testFail++;
+    } else {
+        g_testFail++;
 
-    char * ntestname = NULL;
-    if (testname != NULL) {
-        testname += strspn(testname, " ");
-        ntestname = strdup(testname);
-        if (!ntestname) {
-            printf("OOM\n");
-            exit(1);
+        char * ntestname = NULL;
+        if (testname != NULL) {
+            ntestname = strdup(testname);
+            if (!ntestname) {
+                printf("OOM\n");
+                exit(1);
+            }
         }
+        g_testFailures.push_back(std::pair<const char *, char *>(suitename, ntestname));
     }
-    g_testFailures.push_back(std::pair<const char *, char *>(suitename, ntestname));
 }
 
 static inline void recordTestResult( bool pass, const char * suitename, uint64_t testnum ) {

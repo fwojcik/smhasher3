@@ -773,10 +773,6 @@ int main( int argc, const char ** argv ) {
                 g_forceSummary = true;
                 continue;
             }
-            if (strcmp(arg, "--extra") == 0) {
-                g_testExtra = true;
-                continue;
-            }
             // VCodes allow easy comparison of test results and hash inputs
             // and outputs across SMHasher3 runs, hashes (of the same width),
             // and systems.
@@ -805,6 +801,18 @@ int main( int argc, const char ** argv ) {
             }
             if (strcmp(arg, "--noexit-code-on-failure") == 0) {
                 g_exitCodeResult = false;
+                continue;
+            }
+            if (strcmp(arg, "--time-tests") == 0) {
+                g_showTestTimes = true;
+                continue;
+            }
+            if (strcmp(arg, "--notime-tests") == 0) {
+                g_showTestTimes = false;
+                continue;
+            }
+            if (strcmp(arg, "--extra") == 0) {
+                g_testExtra = true;
                 continue;
             }
             if (strncmp(arg, "--endian=", 9) == 0) {
@@ -893,7 +901,7 @@ int main( int argc, const char ** argv ) {
     }
 
     bool   result    = true;
-    size_t timeBegin = monotonic_clock();
+    size_t timeBegin = g_prevtime = monotonic_clock();
 
     if (g_testVerifyAll) {
         HashSelfTestAll(flags);
