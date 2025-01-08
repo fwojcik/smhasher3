@@ -57,32 +57,49 @@ FORCE_INLINE static void mix_state( uint64_t * state, int rounds ) {
     }
 }
 
+//------------------------------------------------------------
+
+static thread_local uint64_t SEEDED_STATE[2];
+
+static uintptr_t init_seed( seed_t seed ) {
+    SEEDED_STATE[0] = (uint64_t)seed;
+    SEEDED_STATE[1] = 0;
+
+    if (seed != 0) {
+        mix_state(SEEDED_STATE, 12);
+    }
+
+    return (uintptr_t)(void *)SEEDED_STATE;
+}
+
+//------------------------------------------------------------
+
 template <unsigned hashversion, bool bswap>
 static void GoodhartHashAll( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t state[2] = { UINT64_C(0), UINT64_C(0) };
+    const uint64_t * seed_state = (const uint64_t *)(void *)(uintptr_t)seed;
+    uint64_t state[2] = { seed_state[0], seed_state[1] };
 
     static_assert((hashversion >= 1) && (hashversion <= 6),
             "Valid GoodhartHash versions are 1-6");
 
-    // Incorporate seed.
-    if (unlikely( seed != 0 )) {
-        state[0] ^= seed;
-        mix_state( state, 12 );
-    }
-
     // Process the input data in 256-bit blocks.
-    uint64_t  data_len = len;
-    uint8_t * data     = (uint8_t *)in;
+    const uint8_t * data     = (uint8_t *)in;
+    uint64_t        data_len = len;
     while (data_len > 0) {
         const size_t process_len = std::min( data_len, uint64_t( BLOCK_SIZE ));
 
-        // Copy the data into a zeroed-out buffer. When the data is less than
-        // 256 bits this pads it out to 256 bits with zeros.
-        uint8_t buffer[BLOCK_SIZE] = { 0 };
-        memcpy( buffer, data, process_len );
+        if (process_len == BLOCK_SIZE) {
+            state[0] ^= GET_U64<bswap>( data, 0 );
+            state[1] ^= GET_U64<bswap>( data, 8 );
+        } else {
+            // Copy the data into a zeroed-out buffer. When the data is less than
+            // 256 bits this pads it out to 256 bits with zeros.
+            uint8_t buffer[BLOCK_SIZE] = { 0 };
+            memcpy( buffer, data, process_len );
 
-        state[0] ^= GET_U64<bswap>( buffer, 0 );
-        state[1] ^= GET_U64<bswap>( buffer, 8 );
+            state[0] ^= GET_U64<bswap>( buffer, 0 );
+            state[1] ^= GET_U64<bswap>( buffer, 8 );
+        }
 
         if (hashversion == 3) {
             mix_state( state, 12 );
@@ -130,6 +147,7 @@ REGISTER_HASH(GoodhartHash1,
    $.bits            = 128,
    $.verification_LE = 0x78BE8F44,
    $.verification_BE = 0xE537621E,
+   $.seedfn          = init_seed,
    $.hashfn_native   = GoodhartHashAll<1, false>,
    $.hashfn_bswap    = GoodhartHashAll<1, true>
  );
@@ -143,6 +161,7 @@ REGISTER_HASH(GoodhartHash2,
    $.bits            = 128,
    $.verification_LE = 0x16C82F7A,
    $.verification_BE = 0x5F57974F,
+   $.seedfn          = init_seed,
    $.hashfn_native   = GoodhartHashAll<2, false>,
    $.hashfn_bswap    = GoodhartHashAll<2, true>
  );
@@ -156,6 +175,7 @@ REGISTER_HASH(GoodhartHash3,
    $.bits            = 128,
    $.verification_LE = 0x504DEE5A,
    $.verification_BE = 0x83DC9414,
+   $.seedfn          = init_seed,
    $.hashfn_native   = GoodhartHashAll<3, false>,
    $.hashfn_bswap    = GoodhartHashAll<3, true>
  );
@@ -169,6 +189,7 @@ REGISTER_HASH(GoodhartHash4,
    $.bits            = 128,
    $.verification_LE = 0xE71EE0DC,
    $.verification_BE = 0xB5176566,
+   $.seedfn          = init_seed,
    $.hashfn_native   = GoodhartHashAll<4, false>,
    $.hashfn_bswap    = GoodhartHashAll<4, true>
  );
@@ -182,6 +203,7 @@ REGISTER_HASH(GoodhartHash5,
    $.bits            = 128,
    $.verification_LE = 0x6F8788F7,
    $.verification_BE = 0x73D864DA,
+   $.seedfn          = init_seed,
    $.hashfn_native   = GoodhartHashAll<5, false>,
    $.hashfn_bswap    = GoodhartHashAll<5, true>
  );
@@ -195,6 +217,7 @@ REGISTER_HASH(GoodhartHash6,
    $.bits            = 128,
    $.verification_LE = 0x7EE56518,
    $.verification_BE = 0x47495960,
+   $.seedfn          = init_seed,
    $.hashfn_native   = GoodhartHashAll<6, false>,
    $.hashfn_bswap    = GoodhartHashAll<6, true>
  );
