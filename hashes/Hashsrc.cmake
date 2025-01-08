@@ -58,6 +58,7 @@ set(HASH_SRC_FILES
   hashes/rapidhash.cpp
   hashes/pearson.cpp
   hashes/multiply_shift.cpp
+  hashes/goodhart.cpp
   hashes/komihash.cpp
   hashes/aesnihash-majek.cpp
   hashes/tabulation.cpp
