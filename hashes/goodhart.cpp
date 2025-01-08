@@ -57,9 +57,12 @@ FORCE_INLINE static void mix_state( uint64_t * state, int rounds ) {
     }
 }
 
-template <bool bswap>
-static void GoodhartHash1( const void * in, const size_t len, const seed_t seed, void * out ) {
+template <unsigned hashversion, bool bswap>
+static void GoodhartHashAll( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t state[2] = { UINT64_C(0), UINT64_C(0) };
+
+    static_assert((hashversion >= 1) && (hashversion <= 6),
+            "Valid GoodhartHash versions are 1-6");
 
     // Incorporate seed.
     if (unlikely( seed != 0 )) {
@@ -81,213 +84,30 @@ static void GoodhartHash1( const void * in, const size_t len, const seed_t seed,
         state[0] ^= GET_U64<bswap>( buffer, 0 );
         state[1] ^= GET_U64<bswap>( buffer, 8 );
 
-        data_len -= process_len;
-        data     += process_len;
-    }
-
-    mix_state( state, 12 );
-
-    // Copy the hash state to the output.
-    PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
-    PUT_U64<bswap>( state[1], (uint8_t *)out, 8 );
-}
-
-template <bool bswap>
-static void GoodhartHash2( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t state[2] = { UINT64_C(0), UINT64_C(0) };
-
-    // Incorporate seed.
-    if (unlikely( seed != 0 )) {
-        state[0] ^= seed;
-        mix_state( state, 12 );
-    }
-
-    // Process the input data in 256-bit blocks.
-    uint64_t  data_len = len;
-    uint8_t * data     = (uint8_t *)in;
-    while (data_len > 0) {
-        const size_t process_len = std::min( data_len, uint64_t( BLOCK_SIZE ));
-
-        // Copy the data into a zeroed-out buffer. When the data is less than
-        // 256 bits this pads it out to 256 bits with zeros.
-        uint8_t buffer[BLOCK_SIZE] = { 0 };
-        memcpy( buffer, data, process_len );
-
-        state[0] ^= GET_U64<bswap>( buffer, 0 );
-        state[1] ^= GET_U64<bswap>( buffer, 8 );
+        if (hashversion == 3) {
+            mix_state( state, 12 );
+        } else if (hashversion == 4) {
+            mix_state( state, 4 );
+        }  else if (hashversion >= 5) {
+            mix_state( state, 5 );
+        }
 
         data_len -= process_len;
         data     += process_len;
     }
 
-    // Incorporate input length.
-    state[0] ^= len;
+    if (hashversion >= 2) {
+        // Incorporate input length.
+        state[0] ^= len;
+    }
 
     mix_state( state, 12 );
 
-    // Copy the hash state to the output.
-    PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
-    PUT_U64<bswap>( state[1], (uint8_t *)out, 8 );
-}
-
-template <bool bswap>
-static void GoodhartHash3( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t state[2] = { UINT64_C(0), UINT64_C(0) };
-
-    // Incorporate seed.
-    if (unlikely( seed != 0 )) {
-        state[0] ^= seed;
+    if (hashversion == 6) {
+        // Be evil.
+        state[1] = 0;
         mix_state( state, 12 );
     }
-
-    // Process the input data in 256-bit blocks.
-    uint64_t  data_len = len;
-    uint8_t * data     = (uint8_t *)in;
-    while (data_len > 0) {
-        const size_t process_len = std::min( data_len, uint64_t( BLOCK_SIZE ));
-
-        // Copy the data into a zeroed-out buffer. When the data is less than
-        // 256 bits this pads it out to 256 bits with zeros.
-        uint8_t buffer[BLOCK_SIZE] = { 0 };
-        memcpy( buffer, data, process_len );
-
-        state[0] ^= GET_U64<bswap>( buffer, 0 );
-        state[1] ^= GET_U64<bswap>( buffer, 8 );
-
-        mix_state( state, 12 );
-
-        data_len -= process_len;
-        data     += process_len;
-    }
-
-    // Incorporate input length.
-    state[0] ^= len;
-
-    mix_state( state, 12 );
-
-    // Copy the hash state to the output.
-    PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
-    PUT_U64<bswap>( state[1], (uint8_t *)out, 8 );
-}
-
-template <bool bswap>
-static void GoodhartHash4( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t state[2] = { UINT64_C(0), UINT64_C(0) };
-
-    // Incorporate seed.
-    if (unlikely( seed != 0 )) {
-        state[0] ^= seed;
-        mix_state( state, 12 );
-    }
-
-    // Process the input data in 256-bit blocks.
-    uint64_t  data_len = len;
-    uint8_t * data     = (uint8_t *)in;
-    while (data_len > 0) {
-        const size_t process_len = std::min( data_len, uint64_t( BLOCK_SIZE ));
-
-        // Copy the data into a zeroed-out buffer. When the data is less than
-        // 256 bits this pads it out to 256 bits with zeros.
-        uint8_t buffer[BLOCK_SIZE] = { 0 };
-        memcpy( buffer, data, process_len );
-
-        state[0] ^= GET_U64<bswap>( buffer, 0 );
-        state[1] ^= GET_U64<bswap>( buffer, 8 );
-
-        mix_state( state, 4 );
-
-        data_len -= process_len;
-        data     += process_len;
-    }
-
-    // Incorporate input length.
-    state[0] ^= len;
-
-    mix_state( state, 12 );
-
-    // Copy the hash state to the output.
-    PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
-    PUT_U64<bswap>( state[1], (uint8_t *)out, 8 );
-}
-
-template <bool bswap>
-static void GoodhartHash5( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t state[2] = { UINT64_C(0), UINT64_C(0) };
-
-    // Incorporate seed.
-    if (unlikely( seed != 0 )) {
-        state[0] ^= seed;
-        mix_state( state, 12 );
-    }
-
-    // Process the input data in 256-bit blocks.
-    uint64_t  data_len = len;
-    uint8_t * data     = (uint8_t *)in;
-    while (data_len > 0) {
-        const size_t process_len = std::min( data_len, uint64_t( BLOCK_SIZE ));
-
-        // Copy the data into a zeroed-out buffer. When the data is less than
-        // 256 bits this pads it out to 256 bits with zeros.
-        uint8_t buffer[BLOCK_SIZE] = { 0 };
-        memcpy( buffer, data, process_len );
-
-        state[0] ^= GET_U64<bswap>( buffer, 0 );
-        state[1] ^= GET_U64<bswap>( buffer, 8 );
-
-        mix_state( state, 5 );
-
-        data_len -= process_len;
-        data     += process_len;
-    }
-
-    // Incorporate input length.
-    state[0] ^= len;
-
-    mix_state( state, 12 );
-
-    // Copy the hash state to the output.
-    PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
-    PUT_U64<bswap>( state[1], (uint8_t *)out, 8 );
-}
-
-template <bool bswap>
-static void GoodhartHash6( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t state[2] = { UINT64_C(0), UINT64_C(0) };
-
-    // Incorporate seed.
-    if (unlikely( seed != 0 )) {
-        state[0] ^= seed;
-        mix_state( state, 12 );
-    }
-
-    // Process the input data in 256-bit blocks.
-    uint64_t  data_len = len;
-    uint8_t * data     = (uint8_t *)in;
-    while (data_len > 0) {
-        const size_t process_len = std::min( data_len, uint64_t( BLOCK_SIZE ));
-
-        // Copy the data into a zeroed-out buffer. When the data is less than
-        // 256 bits this pads it out to 256 bits with zeros.
-        uint8_t buffer[BLOCK_SIZE] = { 0 };
-        memcpy( buffer, data, process_len );
-
-        state[0] ^= GET_U64<bswap>( buffer, 0 );
-        state[1] ^= GET_U64<bswap>( buffer, 8 );
-
-        mix_state( state, 5 );
-
-        data_len -= process_len;
-        data     += process_len;
-    }
-
-    // Incorporate input length.
-    state[0] ^= len;
-
-    mix_state( state, 12 );
-
-    // Be evil.
-    state[1] = 0;
-    mix_state( state, 12 );
 
     // Copy the hash state to the output.
     PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
@@ -310,8 +130,8 @@ REGISTER_HASH(GoodhartHash1,
    $.bits            = 128,
    $.verification_LE = 0x78BE8F44,
    $.verification_BE = 0xE537621E,
-   $.hashfn_native   = GoodhartHash1<false>,
-   $.hashfn_bswap    = GoodhartHash1<true>
+   $.hashfn_native   = GoodhartHashAll<1, false>,
+   $.hashfn_bswap    = GoodhartHashAll<1, true>
  );
 
 REGISTER_HASH(GoodhartHash2,
@@ -323,8 +143,8 @@ REGISTER_HASH(GoodhartHash2,
    $.bits            = 128,
    $.verification_LE = 0x16C82F7A,
    $.verification_BE = 0x5F57974F,
-   $.hashfn_native   = GoodhartHash2<false>,
-   $.hashfn_bswap    = GoodhartHash2<true>
+   $.hashfn_native   = GoodhartHashAll<2, false>,
+   $.hashfn_bswap    = GoodhartHashAll<2, true>
  );
 
 REGISTER_HASH(GoodhartHash3,
@@ -336,8 +156,8 @@ REGISTER_HASH(GoodhartHash3,
    $.bits            = 128,
    $.verification_LE = 0x504DEE5A,
    $.verification_BE = 0x83DC9414,
-   $.hashfn_native   = GoodhartHash3<false>,
-   $.hashfn_bswap    = GoodhartHash3<true>
+   $.hashfn_native   = GoodhartHashAll<3, false>,
+   $.hashfn_bswap    = GoodhartHashAll<3, true>
  );
 
 REGISTER_HASH(GoodhartHash4,
@@ -349,8 +169,8 @@ REGISTER_HASH(GoodhartHash4,
    $.bits            = 128,
    $.verification_LE = 0xE71EE0DC,
    $.verification_BE = 0xB5176566,
-   $.hashfn_native   = GoodhartHash4<false>,
-   $.hashfn_bswap    = GoodhartHash4<true>
+   $.hashfn_native   = GoodhartHashAll<4, false>,
+   $.hashfn_bswap    = GoodhartHashAll<4, true>
  );
 
 REGISTER_HASH(GoodhartHash5,
@@ -362,8 +182,8 @@ REGISTER_HASH(GoodhartHash5,
    $.bits            = 128,
    $.verification_LE = 0x6F8788F7,
    $.verification_BE = 0x73D864DA,
-   $.hashfn_native   = GoodhartHash5<false>,
-   $.hashfn_bswap    = GoodhartHash5<true>
+   $.hashfn_native   = GoodhartHashAll<5, false>,
+   $.hashfn_bswap    = GoodhartHashAll<5, true>
  );
 
 REGISTER_HASH(GoodhartHash6,
@@ -375,6 +195,6 @@ REGISTER_HASH(GoodhartHash6,
    $.bits            = 128,
    $.verification_LE = 0x7EE56518,
    $.verification_BE = 0x47495960,
-   $.hashfn_native   = GoodhartHash6<false>,
-   $.hashfn_bswap    = GoodhartHash6<true>
+   $.hashfn_native   = GoodhartHashAll<6, false>,
+   $.hashfn_bswap    = GoodhartHashAll<6, true>
  );
