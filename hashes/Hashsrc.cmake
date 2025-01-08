@@ -75,6 +75,7 @@ set(HASH_SRC_FILES
   hashes/donothing.cpp
   hashes/rust-fxhash.cpp
   hashes/falcon_oaat.cpp
+  hashes/tenthash.cpp
   hashes/fasthash.cpp
   hashes/pengyhash.cpp
   hashes/superfasthash.cpp
