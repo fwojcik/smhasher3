@@ -85,6 +85,10 @@ uint64_t g_prevtime;
 bool g_showTestTimes;
 
 //--------
+// CPU freq estimate (cycles / ns), 0 unless needed by platform
+double cycle_timer_mult;
+
+//--------
 // A string with 128 spaces, useful for aligning text outputs
 const char * g_manyspaces =
     "                                                                "  \

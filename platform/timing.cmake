@@ -19,8 +19,8 @@ findVariant(MONOTONIC)
 set(CYCLE_TIMING_VARIANTS
   "hardware performance counter"
   "timing"
-  "@FIXEDINT_IMPL@\n@FORCE_INLINE_IMPL@\n@MONOTONIC_IMPL@\n"
-  8
+  "@FIXEDINT_IMPL@\n@FORCE_INLINE_IMPL@\n@NEVER_INLINE_IMPL@\n@MONOTONIC_IMPL@\ndouble cycle_timer_mult'\n"
+  6
 )
 findVariant(CYCLE_TIMING)
 

@@ -718,6 +718,8 @@ int main( int argc, const char ** argv ) {
         exit(1);
     }
 
+    cycle_timer_init();
+
 #if 0 && defined(DEBUG)
     BlobsortTest();
     RandTest(1);

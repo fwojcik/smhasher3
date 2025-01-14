@@ -36,6 +36,7 @@ function(findVariant prefix)
   list(REMOVE_AT VARIANTS 0 1 2 3)
 
   # Expand the preamble
+  string(REGEX REPLACE "'" ";" PREAMBLE ${PREAMBLE})
   string(CONFIGURE "@WINLIKE_IMPL@\n${PREAMBLE}" PREAMBLE @ONLY)
 
   # The file that is used to verify each variant's suitability

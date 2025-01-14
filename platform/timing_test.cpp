@@ -8,6 +8,8 @@ int main(void) {
     int sum = 0;
     uint64_t start, end;
 
+    cycle_timer_init();
+
     start = cycle_timer_start();
     for (int i = 1; i <= (1 << 24); i++) {
         sum += state * i;
