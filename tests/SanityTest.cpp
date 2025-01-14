@@ -627,7 +627,7 @@ bool PrependedZeroesTest( const HashInfo * hinfo, flags_t flags ) {
     return result;
 }
 
-void SanityTestHeader( flags_t flags ) {
+void SanityTestInit( flags_t flags ) {
     if (REPORT(VERBOSE, flags)) {
         printf("%-25s  %-10s   %13s     %13s     %13s\n",
                 "Name", "Impl   ", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");

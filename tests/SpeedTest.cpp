@@ -149,8 +149,8 @@ std::vector<int> sizes( MAX_TRIALS );
 std::vector<int> alignments( MAX_TRIALS );
 std::map<std::pair<int, int>, std::vector<double>> times;
 
-static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
-        const int bufalign, const int maxvarysize, const int maxvaryalign ) {
+static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize, const int bufalign,
+        const int maxvarysize, const int maxvaryalign, const double overhead_cycles ) {
     static uint64_t callcount = 0;
     Rand r( 256765, callcount++ );
 
@@ -196,7 +196,8 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
 
     //----------
     for (int itrial = 0; itrial < trials; itrial++) {
-        times[std::make_pair(sizes[itrial], alignments[itrial])].push_back(rawtimes[itrial]);
+        double trialtime = std::max(0.0, rawtimes[itrial] - overhead_cycles);
+        times[std::make_pair(sizes[itrial], alignments[itrial])].push_back(trialtime);
     }
 
     //----------
@@ -223,11 +224,13 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     times.clear();
 
     stddev = stddevtotal / count;
+
     return mintotal / count;
 }
 
 //-----------------------------------------------------------------------------
 // 256k blocks seem to give the best results.
+// This currently doesn't remove the baseline_cycles like TinySpeedTest() does.
 
 static void BulkSpeedTest( const HashInfo * hinfo, flags_t flags, seed_t seed, bool vary_align, bool vary_size ) {
     const int    blocksize = 256 * 1024;
@@ -243,13 +246,13 @@ static void BulkSpeedTest( const HashInfo * hinfo, flags_t flags, seed_t seed, b
     }
     double sumbpc = 0.0;
 
-    volatile double warmup_cycles = SpeedTest(hash, seed, trials, blocksize, 0, 0, 0);
+    volatile double warmup_cycles = SpeedTest(hash, seed, trials, blocksize, 0, 0, 0, 0.0);
     unused(warmup_cycles);
 
     for (int align = 7; align >= 0; align--) {
         double cycles = std::numeric_limits<double>::max();
         for (int i = 0; i < runcount; i++) {
-            cycles = std::min(cycles, SpeedTest(hash, seed, trials, blocksize, align, maxvary, 0));
+            cycles = std::min(cycles, SpeedTest(hash, seed, trials, blocksize, align, maxvary, 0, 0.0));
         }
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
@@ -272,7 +275,7 @@ static void BulkSpeedTest( const HashInfo * hinfo, flags_t flags, seed_t seed, b
     if (vary_align) {
         double cycles = std::numeric_limits<double>::max();
         for (int i = 0; i < runcount; i++) {
-            cycles = std::min(cycles, SpeedTest(hash, seed, trials, blocksize, 0, maxvary, 7));
+            cycles = std::min(cycles, SpeedTest(hash, seed, trials, blocksize, 0, maxvary, 7, 0.0));
         }
 
         double bestbpc = ((double)blocksize - ((double)maxvary / 2)) / cycles;
@@ -291,25 +294,39 @@ static void BulkSpeedTest( const HashInfo * hinfo, flags_t flags, seed_t seed, b
 
 //-----------------------------------------------------------------------------
 
-static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysize,
+static double TinySpeedTest( const HashInfo * hinfo, const HashInfo * overhead_hinfo, flags_t flags, int maxkeysize,
         seed_t seed, bool include_vary ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
-    double       sum  = 0.0;
+    double       sum  = 0.0, overhead_cycles = 0.0;
 
     printf("Small key speed test - [1, %2d]-byte keys\n", maxkeysize);
 
-    volatile double warmup_cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, 0, 0);
+    // Find out the overhead of calling the hash function
+    if (overhead_hinfo != NULL) {
+        const HashFn overhead_hash = overhead_hinfo->hashFn(g_hashEndian);
+        overhead_cycles = SpeedTest(overhead_hash, seed, BULK_TRIALS, 0, 0, 0, 0, 0.0);
+    }
+    if (REPORT(VERBOSE, flags)) {
+        printf("       Overhead - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
+                overhead_cycles, stddev, 100.0 * stddev / overhead_cycles);
+    }
+
+    // Do a warmup to get things into cache
+    volatile double warmup_cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, 0, 0, 0.0);
     unused(warmup_cycles);
 
+    // Test the hash
     for (int i = 1; i <= maxkeysize; i++) {
         volatile int j      = i;
-        double       cycles = SpeedTest(hash, seed, TINY_TRIALS, j, 0, 0, 0);
+        double       cycles = SpeedTest(hash, seed, TINY_TRIALS, j, 0, 0, 0, overhead_cycles);
+
         if (REPORT(VERBOSE, flags)) {
             printf("  %2d-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
                     j, cycles, stddev, 100.0 * stddev / cycles);
         } else {
             printf("  %2d-byte keys - %8.2f cycles/hash\n", j, cycles);
         }
+
         sum += cycles;
     }
 
@@ -318,7 +335,8 @@ static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysi
 
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (include_vary) {
-        double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0);
+        double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0, overhead_cycles);
+
         if (REPORT(VERBOSE, flags)) {
             printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n", cycles, stddev, 100.0 * stddev / cycles);
         } else {
@@ -330,7 +348,7 @@ static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysi
 }
 
 //-----------------------------------------------------------------------------
-bool SpeedTest( const HashInfo * hinfo, flags_t flags ) {
+bool SpeedTest( const HashInfo * hinfo, const HashInfo * overhead_hinfo, flags_t flags ) {
     bool result = true;
     Rand r( 164200 );
 
@@ -338,7 +356,7 @@ bool SpeedTest( const HashInfo * hinfo, flags_t flags ) {
 
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
-    TinySpeedTest(hinfo, flags, 31, seed, true);
+    TinySpeedTest(hinfo, overhead_hinfo, flags, 31, seed, true);
     printf("\n");
 
     BulkSpeedTest(hinfo, flags, seed, true, false);
@@ -353,8 +371,22 @@ bool SpeedTest( const HashInfo * hinfo, flags_t flags ) {
 //-----------------------------------------------------------------------------
 // Does 5 different speed tests to try to summarize hash performance
 
-void ShortSpeedTestHeader( flags_t flags ) {
-    printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n\n");
+static double short_overhead_cycles;
+
+void ShortSpeedTestInit( const HashInfo * overhead_hinfo, flags_t flags ) {
+    // Find out the overhead of calling the hash function
+    if (overhead_hinfo != NULL) {
+        const HashFn overhead_hash = overhead_hinfo->hashFn(g_hashEndian);
+        short_overhead_cycles = SpeedTest(overhead_hash, 0, BULK_TRIALS, 0, 0, 0, 0, 0.0);
+    }
+
+    printf("Bulk results are in bytes/cycle, short results are in cycles/hash\n");
+    if (REPORT(VERBOSE, flags)) {
+        printf("  Overhead measured at %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
+                short_overhead_cycles, stddev, 100.0 * stddev / short_overhead_cycles);
+    }
+    printf("\n");
+
     if (REPORT(VERBOSE, flags)) {
         printf("%-25s  %10s  %9s  %17s  %17s  %17s  %17s  \n",
                 "Name", "Impl   ", "Bulk  ", "1-8 bytes    ", "9-16 bytes   ", "17-24 bytes   ", "25-32 bytes   ");
@@ -390,11 +422,12 @@ void ShortSpeedTest( const HashInfo * hinfo, flags_t flags ) {
 
         // Do a warmup to get things into cache
         volatile double warmup_cycles =
-                SpeedTest(hash, seed, BULK_TRIALS, baselen, 0, 0, 0);
+                SpeedTest(hash, seed, BULK_TRIALS, baselen, 0, 0, 0, 0.0);
         unused(warmup_cycles);
 
         // Do a bulk speed test, varying precise block size and alignment
-        double cycles = SpeedTest(hash, seed, BULK_TRIALS, baselen, basealignoffset, maxvarylen, maxvaryalign);
+        double cycles = SpeedTest(hash, seed, BULK_TRIALS, baselen, basealignoffset,
+                maxvarylen, maxvaryalign, short_overhead_cycles);
         double curbpc = ((double)baselen - ((double)maxvarylen / 2)) / cycles;
         printf("   %7.2f ", curbpc);
     }
@@ -407,7 +440,8 @@ void ShortSpeedTest( const HashInfo * hinfo, flags_t flags ) {
         double    cycles      = 0.0;
         double    worstdevpct = 0.0;
         for (int j = 0; j < 8; j++) {
-            double curcyc = SpeedTest(hash, seed, TINY_TRIALS, baselen + j, basealignoffset, 0, maxvaryalign);
+            double curcyc = SpeedTest(hash, seed, TINY_TRIALS, baselen + j,
+                    basealignoffset, 0, maxvaryalign, short_overhead_cycles);
             double devpct = 100.0 * stddev / curcyc;
             cycles += curcyc;
             if (worstdevpct < devpct) {
