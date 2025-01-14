@@ -133,7 +133,7 @@ static void radixsort( T * begin, T * end, hidx_t * idxs ) {
     // passes (if any) would do no reordering of items, and which can
     // therefore be skipped entirely.
     uint32_t trivial_passes = 0;
-#pragma GCC unroll 0
+#pragma GCC unroll 1
     for (uint32_t pass = 0; pass < RADIX_LEVELS; pass++) {
         uint8_t value = (*last)[pass];
         if (unlikely(++freqs[value][pass] == count)) {
@@ -257,7 +257,7 @@ static void flagsort( T * begin, T * end, hidx_t * idxs, T * base, int digit ) {
     if (unlikely(++freqs[(*ptr)[digit]] == count)) {
         if (digit != 0) {
             assume((end - begin) > SMALLSORT_CUTOFF);
-            if ((digit == (DIGITS - 1))) {
+            if (digit == (DIGITS - 1)) {
                 if (issorted(begin, end)) {
                     return;
                 }

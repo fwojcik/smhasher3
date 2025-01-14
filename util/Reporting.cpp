@@ -216,7 +216,7 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
     uint32_t prevhash  = 0xffffffff;
     int      hexdigits = (bitWidth + 3) / 4;
     if (keyprint == NULL) {
-        for (auto const e: entries) {
+        for (auto const & e: entries) {
             if ((e.first == prevhash) || (counts[e.first] < maxbound)) {
                 continue;
             }
@@ -224,7 +224,7 @@ void ShowOutliers( const std::vector<hashtype> & hashes, const std::vector<hidx_
             printf("\t\t%8dx 0x%0*x\n", counts[e.first], hexdigits, e.first);
         }
     } else {
-        for (auto const e: entries) {
+        for (auto const & e: entries) {
             if (e.first != prevhash) {
                 const uint32_t keycount = counts[e.first];
                 if (keycount < maxbound) {
