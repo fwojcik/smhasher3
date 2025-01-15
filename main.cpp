@@ -317,7 +317,7 @@ static void HashSanityTestAll( flags_t flags ) {
 
     printf("[[[ SanityAll Tests ]]]\n\n");
 
-    SanityTestInit(flags);
+    SanityTestHeader(flags);
     for (const HashInfo * h: allHashes) {
         if ((h->hash_flags & mask_flags) != prev_flags) {
             printf("\n");
@@ -336,14 +336,13 @@ static void HashSanityTestAll( flags_t flags ) {
 // Quickly speed test all hashes
 
 static void HashSpeedTestAll( flags_t flags ) {
-    const uint64_t   mask_flags    = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
-    uint64_t         prev_flags    = FLAG_HASH_MOCK;
-    const HashInfo * overhead_hash = findHash("donothing-32");
+    const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
+    uint64_t       prev_flags = FLAG_HASH_MOCK;
     std::vector<const HashInfo *> allHashes = findAllHashes();
 
     printf("[[[ Short Speed Tests ]]]\n\n");
 
-    ShortSpeedTestInit(overhead_hash, flags);
+    ShortSpeedTestHeader(flags);
     for (const HashInfo * h: allHashes) {
         if ((h->hash_flags & mask_flags) != prev_flags) {
             printf("\n");
@@ -440,8 +439,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
     // Speed tests
 
     if (g_testSpeed) {
-        const HashInfo * overhead_hash = findHash("donothing-32");
-        SpeedTest(hInfo, overhead_hash, flags);
+        SpeedTest(hInfo, flags);
     }
 
     if (g_testHashmap) {

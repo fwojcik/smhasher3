@@ -49,8 +49,6 @@ REGISTER_FAMILY(donothing,
    $.src_status = HashFamilyInfo::SRC_FROZEN
  );
 
-// Speed tests use this as a baseline hash for measuring overhead. Don't
-// mess with it too much.
 REGISTER_HASH(donothing_32,
    $.desc       = "Do-Nothing function (measure call overhead)",
    $.hash_flags =

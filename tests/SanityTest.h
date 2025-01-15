@@ -47,4 +47,4 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 bool SanityTest( const HashInfo * hinfo, flags_t flags = 0, bool oneline = false );
-void SanityTestInit( flags_t flags );
+void SanityTestHeader( flags_t flags );
