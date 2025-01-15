@@ -61,9 +61,8 @@
 
 #define SHOW_STDDEV 0
 
-constexpr int BULK_RUNS   = 160;
-constexpr int BULK_TRIALS = 960*2;
-// constexpr int BULK_SAMPLES = 2;
+constexpr int BULK_RUNS   = 80;
+constexpr int BULK_TRIALS = 1920;
 
 constexpr int TINY_TRIALS  = 600;   // Timings per hash for small (<128b) keys
 constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
@@ -79,20 +78,22 @@ constexpr int MAX_TRIALS = (BULK_TRIALS > TINY_TRIALS) ? BULK_TRIALS : TINY_TRIA
 // We really want the rdtsc() calls to bracket the function call as tightly
 // as possible, but that's hard to do portably. We'll try and get as close as
 // possible by marking the function as NEVER_INLINE (to keep the optimizer from
-// moving it) and marking the timing variables as "volatile register".
+// moving it) and marking the timing variables as "volatile".
 //
 // Calling the hash function twice seems to improve timing measurement stability
 // without affecting branch prediction too much.
-NEVER_INLINE static int64_t timehash( HashFn hash, const seed_t seed, void * const key, int len ) {
-    volatile int64_t begin, end;
+NEVER_INLINE static uint64_t timehash( HashFn hash, const seed_t seed, void * const key, int len ) {
+    volatile uint64_t begin, end;
 
     begin = cycle_timer_start();
 
     hash(key, len, seed, key);
 
+    hash(key, len, seed, key);
+
     end = cycle_timer_end();
 
-    return end - begin;
+    return (end - begin) / 2;
 }
 
 //-----------------------------------------------------------------------------
