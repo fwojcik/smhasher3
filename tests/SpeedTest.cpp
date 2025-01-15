@@ -58,6 +58,7 @@
 
 #include <string>
 #include <limits>
+#include <math.h>
 
 #define SHOW_STDDEV 0
 
@@ -405,7 +406,7 @@ void ShortSpeedTest( const HashInfo * hinfo, flags_t flags ) {
 
         // Do a bulk speed test, varying precise block size and alignment
         double cycles = SpeedTest(hash, seed, BULK_TRIALS, baselen, basealignoffset, maxvarylen, maxvaryalign);
-        double curbpc = ((double)baselen - ((double)maxvarylen / 2)) / cycles;
+        double curbpc = std::min(9999.99, ((double)baselen - ((double)maxvarylen / 2)) / cycles);
         printf("   %7.2f ", curbpc);
     }
 
@@ -424,14 +425,17 @@ void ShortSpeedTest( const HashInfo * hinfo, flags_t flags ) {
                 worstdevpct = devpct;
             }
         }
+        cycles /= 8.0;
         if (REPORT(VERBOSE, flags)) {
-            if (worstdevpct < 1.0) {
-                printf("   %7.2f [%5.3f] ", cycles / 8.0, worstdevpct);
+            if (!isfinite(worstdevpct)) {
+                printf("   %7.2f [-----] ", cycles);
+            } else if (worstdevpct < 1.0) {
+                printf("   %7.2f [%5.3f] ", cycles, worstdevpct);
             } else {
-                printf("   %7.2f [%#.4g] ", cycles / 8.0, worstdevpct);
+                printf("   %7.2f [%#.4g] ", cycles, worstdevpct);
             }
         } else {
-            printf("    %7.2f  ", cycles / 8.0);
+            printf("    %7.2f  ", cycles);
         }
     }
 
