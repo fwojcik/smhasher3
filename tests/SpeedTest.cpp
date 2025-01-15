@@ -61,6 +61,8 @@
 
 #define SHOW_STDDEV 0
 
+constexpr int SMALL_CUTOFF = 128; // Hashes of >=128b buffers are considered large
+
 constexpr int BULK_RUNS   = 80;
 constexpr int BULK_TRIALS = 1920;
 
@@ -144,18 +146,18 @@ NEVER_INLINE static uint64_t timehash_small( HashFn hash, const seed_t seed, uin
 }
 
 //-----------------------------------------------------------------------------
-double stddev;
-double rawtimes[MAX_TRIALS];
-std::vector<int> sizes( MAX_TRIALS );
-std::vector<int> alignments( MAX_TRIALS );
-std::map<std::pair<int, int>, std::vector<double>> times;
+static double stddev;
+static double rawtimes[MAX_TRIALS];
+static std::vector<int> sizes( MAX_TRIALS );
+static std::vector<int> alignments( MAX_TRIALS );
+static std::map<std::pair<int, int>, std::vector<double>> times;
 
 static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int blocksize,
         const int bufalign, const int maxvarysize, const int maxvaryalign ) {
     static uint64_t callcount = 0;
     Rand r( 256765, callcount++ );
 
-    uint8_t * buf = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
+    uint8_t * buf  = new uint8_t[blocksize + 512]; // assumes (align + maxvaryalign) <= 257
     uint8_t * abuf = buf + (-reinterpret_cast<uintptr_t>(buf) % 256) + bufalign;
 
     r.rand_n(buf, blocksize + 512);
@@ -179,12 +181,13 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     }
 
     //----------
+    const bool shorthash = (blocksize < SMALL_CUTOFF) ? true : false;
     for (int itrial = 0; itrial < trials; itrial++) {
         int       testsize = sizes[itrial];
         uint8_t * block    = abuf + alignments[itrial];
 
         double t;
-        if (testsize < 128) {
+        if (shorthash) {
             t = (double)timehash_small(hash, seed, block, testsize) / (double)TINY_SAMPLES;
         } else {
             t = (double)timehash(hash      , seed, block, testsize);
@@ -224,6 +227,7 @@ static double SpeedTest( HashFn hash, seed_t seed, const int trials, const int b
     times.clear();
 
     stddev = stddevtotal / count;
+
     return mintotal / count;
 }
 
@@ -299,18 +303,22 @@ static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysi
 
     printf("Small key speed test - [1, %2d]-byte keys\n", maxkeysize);
 
+    // Do a warmup to get things into cache
     volatile double warmup_cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, 0, 0);
     unused(warmup_cycles);
 
+    // Test the hash
     for (int i = 1; i <= maxkeysize; i++) {
         volatile int j      = i;
         double       cycles = SpeedTest(hash, seed, TINY_TRIALS, j, 0, 0, 0);
+
         if (REPORT(VERBOSE, flags)) {
             printf("  %2d-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n",
                     j, cycles, stddev, 100.0 * stddev / cycles);
         } else {
             printf("  %2d-byte keys - %8.2f cycles/hash\n", j, cycles);
         }
+
         sum += cycles;
     }
 
@@ -320,6 +328,7 @@ static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysi
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (include_vary) {
         double cycles = SpeedTest(hash, seed, TINY_TRIALS, maxkeysize, 0, maxkeysize - 1, 0);
+
         if (REPORT(VERBOSE, flags)) {
             printf(" rnd-byte keys - %8.2f cycles/hash (%8.6f stdv%8.4f%%)\n", cycles, stddev, 100.0 * stddev / cycles);
         } else {
