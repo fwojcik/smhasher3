@@ -45,5 +45,6 @@
  */
 
 bool SpeedTest( const HashInfo * info, flags_t flags );
+void SpeedTestInit( const HashInfo * overhead_hinfo, flags_t flags );
 void ShortSpeedTest( const HashInfo * hinfo, flags_t flags );
 void ShortSpeedTestHeader( flags_t flags );
