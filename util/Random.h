@@ -257,9 +257,9 @@ class Rand {
     // like normal ones, so they should be used with care.
 
     inline void enable_ortho( void ) {
-        //assert(xseed[1] == 0);
-        //assert((xseed[2] & 1) == 1);
-        //assert((xseed[3] & 1) == 1);
+        verify(xseed[0] == 0);
+        verify((xseed[2] & 1) == 1);
+        verify((xseed[3] & 1) == 1);
 
         // Set key 0 to the offset of the random value about to be given
         // out, fixup key 4 to reflect the new key 0 value, and seek to
@@ -277,8 +277,8 @@ class Rand {
     }
 
     inline void disable_ortho( uint64_t fwd = 0 ) {
-        //assert((xseed[2] & 1) == 0);
-        //assert((xseed[3] & 1) == 0);
+        verify((xseed[2] & 1) == 0);
+        verify((xseed[3] & 1) == 0);
 
         // Restore bufidx and counter via seek(), moving the specified
         // number of places forward, remove fixup of key 4, restore keys 2
