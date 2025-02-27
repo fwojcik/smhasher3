@@ -29,13 +29,13 @@ uint64_t Rand::GLOBAL_SEED = 0;
 
 //-----------------------------------------------------------------------------
 // Fill a buffer with 4 * PARALLEL random uint64_t values, updating the
-// counter in keyvals[0] to reflect the number of values generated.
+// counter to reflect the number of values generated.
 //
 // This is the Threefry-4x64-16 CBRNG as documented in:
 //   "Parallel random numbers: as easy as 1, 2, 3", by John K. Salmon,
 //     Mark A. Moraes, Ron O. Dror, and David E. Shaw
 //     https://www.thesalmons.org/john/random123/papers/random123sc11.pdf
-static void threefry( void * buf, uint64_t * keyvals ) {
+static void threefry( void * buf, uint64_t & counter, const uint64_t * keyvals ) {
     uint64_t tmpbuf[Rand::BUFLEN];
 
     static_assert(Rand::RANDS_PER_ROUND == 4, "Threefry outputs 4 u64s per call");
@@ -57,10 +57,14 @@ static void threefry( void * buf, uint64_t * keyvals ) {
 
 #define STATE(j) tmpbuf[i + PARALLEL * j]
 
+    // The input to the truncated Threefry cipher is a vector of 4 64-bit
+    // values, which is { 0, counter, counter, 0 }. The choice of which
+    // input value(s) to use as counter(s) is arbitrary; this particular
+    // choice was motivated purely by performance testing.
     for (uint64_t i = 0; i < PARALLEL; i++) {
-        STATE(0) = keyvals[0] + i;
-        STATE(1) = keyvals[1];
-        STATE(2) = keyvals[2];
+        STATE(0) = keyvals[0];
+        STATE(1) = keyvals[1] + counter + i;
+        STATE(2) = keyvals[2] + counter + i;
         STATE(3) = keyvals[3];
 #if !SINGLE_GIANT_LOOP
     }
@@ -152,7 +156,7 @@ static void threefry( void * buf, uint64_t * keyvals ) {
     }
 
     // Update the counter to reflect that we've generated PARALLEL values.
-    keyvals[0] += PARALLEL;
+    counter += PARALLEL;
 
     // Since we want buffered byte-order to be little-endian always (see
     // Random.h for why), byte-swapping is done on big-endian ints. Doing
@@ -180,7 +184,7 @@ static void threefry( void * buf, uint64_t * keyvals ) {
 //-----------------------------------------------------------------------------
 
 void Rand::refill_buf( void * buf ) {
-    threefry(buf, xseed);
+    threefry(buf, counter, xseed);
 }
 
 // Fill the user's buffer from our cache of random data as much as
@@ -488,7 +492,7 @@ static inline void fill_seq( uint8_t * buf, const uint32_t k[RandSeq::FEISTEL_MA
 // are set to go, this just fills the entire buffer with random data, and
 // lets fill_seq() overwrite it with 8-byte elements in the right places.
 static void fill_rand( uint8_t * out, const size_t elem_sz, const uint64_t elem_lo,
-        const uint64_t elem_hi, uint64_t * xseed ) {
+        const uint64_t elem_hi, const uint64_t * xseed ) {
     const size_t bytes_per_fill = Rand::BUFLEN * sizeof(uint64_t);
     uint8_t      tmp[Rand::BUFLEN * sizeof(uint64_t)];
 
@@ -497,23 +501,21 @@ static void fill_rand( uint8_t * out, const size_t elem_sz, const uint64_t elem_
     size_t offset_bytes  = (elem_lo * elem_sz) % (sizeof(uint64_t) * Rand::RANDS_PER_ROUND);
     size_t offset_size   = std::min(sizeof(tmp) - offset_bytes, nbytes) % bytes_per_fill;
 
-    xseed[0] = offset_rounds;
-
     if (offset_size > 0) {
-        threefry(tmp, xseed);
+        threefry(tmp, offset_rounds, xseed);
         memcpy(out, &tmp[offset_bytes], offset_size);
         out    += offset_size;
         nbytes -= offset_size;
     }
 
     while (nbytes >= bytes_per_fill) {
-        threefry(out, xseed);
+        threefry(out, offset_rounds, xseed);
         nbytes -= bytes_per_fill;
         out    += bytes_per_fill;
     }
 
     if (nbytes > 0) {
-        threefry(tmp, xseed);
+        threefry(tmp, offset_rounds, xseed);
         memcpy(out, tmp, nbytes);
     }
 }
@@ -1194,7 +1196,7 @@ void RandBenchmark( void ) {
     volatile uint64_t val;
     Rand randbuf[TEST_ITER];
 
-    uint64_t numgen;
+    uint64_t numgen = 0;
     double   deltat;
 
     printf("Raw RNG.........................");
@@ -1203,7 +1205,7 @@ void RandBenchmark( void ) {
         uint64_t keys[5] = { 1, 2, 3, 4, 5 };
         uint64_t begin   = cycle_timer_start();
         for (size_t j = 0; j < TEST_SIZE / Rand::BUFLEN; j++) {
-            threefry(&buf[j * Rand::BUFLEN], keys);
+            threefry(&buf[j * Rand::BUFLEN], numgen, keys);
         }
         uint64_t end     = cycle_timer_start();
         deltat = std::min(deltat, (double)(end - begin));

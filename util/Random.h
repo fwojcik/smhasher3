@@ -197,7 +197,8 @@ class Rand {
     friend void RandTest( const unsigned runs );
 
     uint64_t  rngbuf[BUFLEN];  // Always in LE byte order
-    uint64_t  xseed[RNG_KEYS]; // Threefry keys (xseed[0] is the counter)
+    uint64_t  xseed[RNG_KEYS]; // Threefry keys
+    uint64_t  counter;
     uint64_t  bufidx;          // The next rngbuf[] index to be given out
     uint64_t  rseed;           // The actual seed value
     void refill_buf( void * buf );
@@ -348,12 +349,12 @@ class Rand {
     }
 
     inline void seek( uint64_t offset ) {
-        xseed[0] = offset / RANDS_PER_ROUND;
-        bufidx   = BUFLEN + (offset % RANDS_PER_ROUND);
+        counter = offset / RANDS_PER_ROUND;
+        bufidx  = BUFLEN + (offset % RANDS_PER_ROUND);
     }
 
     inline uint64_t getoffset( void ) const {
-        return (xseed[0] * RANDS_PER_ROUND) + bufidx - BUFLEN;
+        return (counter * RANDS_PER_ROUND) + bufidx - BUFLEN;
     }
 
     //-----------------------------------------------------------------------------
@@ -384,7 +385,7 @@ class Rand {
     //-----------------------------------------------------------------------------
 
     bool operator == ( const Rand & k ) const {
-        if (memcmp(&xseed[1], &k.xseed[1], sizeof(xseed) - sizeof(xseed[0])) != 0) {
+        if (memcmp(&xseed[0], &k.xseed[0], sizeof(xseed)) != 0) {
             return false;
         }
         if (rseed != k.rseed) {
