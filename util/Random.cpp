@@ -81,7 +81,7 @@ static void threefry( void * buf, uint64_t * keyvals ) {
         STATE(0) += keyvals[1];
         STATE(1) += keyvals[2];
         STATE(2) += keyvals[3];
-        STATE(3) += keyvals[4] ^ (keyvals[0] + i);
+        STATE(3) += keyvals[4];
 #if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
@@ -105,8 +105,8 @@ static void threefry( void * buf, uint64_t * keyvals ) {
 #endif
         STATE(0) += keyvals[2];
         STATE(1) += keyvals[3];
-        STATE(2) += keyvals[4] ^ (keyvals[0] + i);
-        STATE(3) += keyvals[0] + i;
+        STATE(2) += keyvals[4];
+        STATE(3) += keyvals[0];
 #if !SINGLE_GIANT_LOOP
     }
     for (uint64_t i = 0; i < PARALLEL; i++) {
@@ -129,8 +129,8 @@ static void threefry( void * buf, uint64_t * keyvals ) {
     for (uint64_t i = 0; i < PARALLEL; i++) {
 #endif
         STATE(0) += keyvals[3];
-        STATE(1) += keyvals[4] ^ (keyvals[0] + i);
-        STATE(2) += keyvals[0] + i;
+        STATE(1) += keyvals[4];
+        STATE(2) += keyvals[0];
         STATE(3) += keyvals[1];
 #if !SINGLE_GIANT_LOOP
     }
