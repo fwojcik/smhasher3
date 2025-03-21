@@ -67,8 +67,8 @@ Current status
 
 As of 2023-12-12, SMHasher3 beta3 has been released.
 
-I have hopes to release a 1.0 version sometime before the end of September
-2024. The current code should still be very useful in evaluating hashes, as
+I have hopes to release a 1.0 version sometime before the end of April
+2025. The current code should still be very useful in evaluating hashes, as
 most remaining features are either additional tests, tweaks to specific
 hashes, or quality-of-life usage enhancements.
 
@@ -304,23 +304,27 @@ on a fast hash function (wyhash) with --extra but without BadSeed testing
 takes 1578 seconds and finds 40 failing tests, while smhasher-rurban takes
 2860 seconds and finds 2 failing tests.
 
-For beta3, or shortly thereafter, I plan on publishing some explicit data
-from performance profiling, to show the places that I think are the best to
-look for more performance gains, or at least would have the highest impact.
+In the future, I plan on publishing some explicit data from performance
+profiling, to show the places that I think are the best to look for more
+performance gains, or at least would have the highest impact.
 
-Right now, there are 3 places that already have work underway. First, I
-have more ways to improve blobsort() performance significantly, I'm pretty
-sure. Second, another contributor is working on improving the bit
-correlation histogram code (util/Histogram.h _and_ the related code in the
-BIC and SeedBIC tests). Third, a number of tests can be augmented to use
-threads. I have a number of thoughts on this issue, so please reach out if
-you decide to start on that.
+A number of additional tests could be augmented to use threads.
+
+It would also be theoretically possible to change testing to use a work
+queue and then have a thread pool of workers. However, I think that this
+would require some way of wrapping all of the `printf()` calls in the
+tests, since stdout is a global object and doesn't exist per-thread, and
+this would almost certainly require a lot more memory at runtime, since
+tests could not generally share memory structures (such as bucket counts)
+across threads. I don't like either of those things, so I'm not sure that
+thread pools are a good approach. I'd be very open to suggestions for
+working around those issues!
 
 Goals and non-goals
 -------------------
 
-The priority of SMHasher3 is to be the best test utility for hash function
-quality. Other important goals are:
+The priority of SMHasher3 is to be the best black-box test utility for hash
+function quality. Other important goals are:
 
 - Support as many platforms as practical
 - Have identical results on those platforms
@@ -337,7 +341,7 @@ quality. Other important goals are:
 SMHasher3 also does performance testing, and this is expected to be worked on and
 expanded in the future. However, performance testing fidelity will always come second
 to functional testing. The goal of the performance testing in SMHasher3 will be to
-provide effective general comparisons of hash functions, not absolute performance
+provide effective relative comparisons of hash functions, not absolute performance
 ratings or measurements.
 
 There are some other things that SMHasher3 is explicitly NOT trying to do:

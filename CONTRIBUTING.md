@@ -3,15 +3,16 @@
 Submitting bugs or feature requests
 ===================================
 
-If you have a Gitlab account or are OK registering for one, the please file any bug
-reports or feature requests on [SMHasher3's issue
-page](https://gitlab.com/fwojcik/smhasher3/-/issues).
+If you have a Gitlab account or are OK registering for one, then please
+file any bug reports or feature requests on
+[SMHasher3's issue page](https://gitlab.com/fwojcik/smhasher3/-/issues).
 
-If you are not OK with registering for an account, please feel free to email me at
-fwojcik@uw.edu with any issues, questions, requests, bug reports, patches, or
-pull-requests that you might have. Please make sure that your subject line contains
-the word "SMHasher3". Also note that any and all information you send may end up in a
-Gitlab issue that is created on your behalf.
+If you are not OK with registering for an account, then please feel free to
+email me at fwojcik@uw.edu with any issues, questions, requests, bug
+reports, patches, or pull-requests that you might have. Please make sure
+that your subject line contains the word "SMHasher3". Also note that any
+and all information you send may end up in a Gitlab issue that is created
+on your behalf.
 
 In all cases, the most important things to include with any sort of problem
 report are:
@@ -24,12 +25,13 @@ report are:
 Most-wanted list
 ================
 
-The top four things that would be appreciated most from external contributors are,
+The top things that would be appreciated most from external contributors are,
 in descending order of importance:
+- Some examples of projects that have good documentation. I feel like while
+  SMHasher3 has lots of good documentation, it's not as accessable as it
+  should be, and I'd love some examples to emulate.
 - Any patch or detailed error report about build failures in MSVC or Apple
   environments.
-- A faster implementation of the histogram code in `TestDistribution()` in
-  `util/Analyze.cpp`.
 - More unit tests, either external or internal to Hashlib or Testlib.
 - More or better hash implementations.
 
@@ -38,35 +40,32 @@ page](https://gitlab.com/fwojcik/smhasher3/-/issues) to see if an item already
 exists, as it may already be planned or there may be some useful discussion of it
 there.
 
-All code submissions
-====================
+General submission info
+=======================
 
-All code submissions must be in source form only. No binary-only additions are
-allowed.
-
-If you are adding a new file, please test the time taken to rebuild SMHasher3. To do
-this, build SMHasher3 fully, alter only the timestamp on the file you added, and run
-`make` or the build command again, seeing how long the full operation takes. If a
-rebuild takes a significant amount of time compared to a full build, then it may need
-to be refactored.
+All code submissions must be in source form only. No binary-only additions
+are allowed. All built source code must be available in the SMHasher3
+source tree. Git submodules are not allowed. Hash implementations that live
+in external libraries are not allowed.
 
 Organizing patches for submission
 ---------------------------------
 
 The Most Important Rule when submitting any kind of patch or pull-request to
 SMHasher3 is that they absolutely **must not** alter both the Hashlib side of the
-codebase _and_ the Testlib side at the same time. Every kind of code submission may
+codebase _and_ the Testlib side at the same time. Every kind of patch submission may
 only alter one or the other (or neither). For more clarity on which files comprise
 which side, see the "Code organization" section in `README.md`.
 
-Bug fixes and small enhancements can be based directly off of the `main`
+Bug fixes and small enhancements may be based directly off of the relevant
 branch. Larger code submissions are encouraged to use a branch of their own
-off of the `main` branch.
+off of that branch.
 
-Each commit in any pull-request should reflect a single logical change. In general,
-err on the side of too many commits and not too few. This means that you should
-probably not `squash` your change down to a single commit. This makes future `git
-blame` and `git bisect` operations much more useful.
+If it makes sense, each commit in a pull-request should reflect a single
+logical change, erring on the side of too many commits and not too
+few. This makes future `git blame` and `git bisect` operations much more
+useful. Things like adding a new hash are fine to have in a single squashed
+commit.
 
 You can use the same branch to submit multiple bug fixes and features as long as you:
 - split up the work such that each commit doesn't deal with more than one issue
@@ -79,9 +78,6 @@ This will also make rebasing onto a later branch head easier for everyone.
 The Most Important Rule must still be followed, though. If your feature submission
 adds something to Hashlib which is then acted upon in Testlib, then you must submit
 two different requests.
-
-All built source code must be available in the SMHasher3 source tree. Git submodules
-are not allowed. Hash implementations that live in external libraries are not allowed.
 
 Coding style
 ------------
@@ -118,7 +114,7 @@ I won't reject a submission for not following this, but I will most likely
 reformat the submitted code shortly after inclusion.
 
 I want to have consistent rules for things like casing of variable and function names
-and similar, but I haven't done that yet. Maybe someday.
+and similar, but I haven't done that yet.
 
 Origin of patch submissions
 ---------------------------
@@ -170,7 +166,7 @@ to add one to `include/common/Hashinfo.h`.
 If you are submitting a new hash, then at least one version of its implementations
 must work portably (implemented only standard C++-11, no intrinsics, no ASM). It may
 make use of SMHasher3's `Mathmult` or `AES` functions, as they already have portable
-versions internally. Hashes don't have to have _only_ portable implementations.
+versions internally. Hashes do not need to have _only_ portable implementations.
 
 If you can, it would be appreciated if you made some effort at handling
 endian issues in Hashlib submissions. I will handle testing on different
@@ -192,9 +188,9 @@ slow".
 Please keep new tests to the general pattern of existing tests:
 - common or reusable code should be in `util`
 - all of the test-specific code should be in one .cpp file
-- the new test probably should be templated by the hashtype and this use the
+- the new test probably should be templated by the hashtype and then use the
   `INSTANTIATE()` macro
-- the .h file only contains the interface to be called by `main.cpp`
+- the new test's .h file should onl contain the interface to be called by `main.cpp`
 - add a new `g_test` variable for the test and a matching entry in `g_testopts` in
   main.cpp, as well as a new section for the test in the `test()` function similar to
   the existing ones
