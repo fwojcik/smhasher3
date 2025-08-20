@@ -122,6 +122,8 @@ static bool g_testSanityAll;
 static bool g_testSpeedAll;
 static bool g_testSanity;
 static bool g_testSpeed;
+static bool g_testSpeedSmall;
+static bool g_testSpeedBulk;
 static bool g_testHashmap;
 static bool g_testAvalanche;
 static bool g_testSparse;
@@ -157,6 +159,8 @@ static TestOpts g_testopts[] = {
     { g_testAll,              true,     false,    "All" },
     { g_testSanity,           true,     false,    "Sanity" },
     { g_testSpeed,            true,      true,    "Speed" },
+    { g_testSpeedSmall,       true,      true,    "SpeedSmall" },
+    { g_testSpeedBulk,        true,      true,    "SpeedBulk" },
     { g_testHashmap,          true,      true,    "Hashmap" },
     { g_testAvalanche,        true,     false,    "Avalanche" },
     { g_testSparse,           true,     false,    "Sparse" },
@@ -230,11 +234,15 @@ static void parse_tests( const char * str, bool enable_tests ) {
         // printf("%sabling test %s\n", enable_tests ? "en" : "dis", testname);
         found->var = enable_tests;
 
-        // If "All" tests are being enabled or disabled, then adjust the individual
-        // test variables as instructed. Otherwise, if a material "All" test (not
-        // just a speed-testing test) is being specifically disabled, then don't
+        // If "Speed" tests are being enabled or disabled, then adjust the
+        // two sub-tests to match. If "All" tests are being enabled or
+        // disabled, then adjust the individual test variables to
+        // match. Otherwise, if a material "All" test (not just a
+        // speed-testing test) is being specifically disabled, then don't
         // consider "All" tests as being run.
-        if (&found->var == &g_testAll) {
+        if (&found->var == &g_testSpeed) {
+            g_testSpeedSmall = g_testSpeedBulk = enable_tests;
+        } else if (&found->var == &g_testAll) {
             set_default_tests(enable_tests);
         } else if (!enable_tests && found->defaultvalue && !found->testspeedonly) {
             g_testAll = false;
@@ -245,6 +253,9 @@ static void parse_tests( const char * str, bool enable_tests ) {
         }
         str += len + 1;
     }
+
+    // Make g_testSpeed reflect the request to run any speed sub-test
+    g_testSpeed = g_testSpeedSmall | g_testSpeedBulk;
 
     return;
 
@@ -444,7 +455,7 @@ static bool test( const HashInfo * hInfo, const flags_t flags ) {
     if (g_testSpeed) {
         const HashInfo * overhead_hash = findHash("donothing-32");
         SpeedTestInit(overhead_hash, flags);
-        SpeedTest(hInfo, flags);
+        SpeedTest(hInfo, flags, g_testSpeedSmall, g_testSpeedBulk);
     }
 
     if (g_testHashmap) {

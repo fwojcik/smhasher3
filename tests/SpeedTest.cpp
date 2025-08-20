@@ -370,7 +370,7 @@ static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysi
 }
 
 //-----------------------------------------------------------------------------
-bool SpeedTest( const HashInfo * hinfo, flags_t flags ) {
+bool SpeedTest( const HashInfo * hinfo, flags_t flags, bool test_small, bool test_bulk ) {
     bool result = true;
     Rand r( 164200 );
 
@@ -378,14 +378,18 @@ bool SpeedTest( const HashInfo * hinfo, flags_t flags ) {
 
     const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
-    TinySpeedTest(hinfo, flags, 31, seed, true);
-    printf("\n");
+    if (test_small) {
+        TinySpeedTest(hinfo, flags, 31, seed, true);
+        printf("\n");
+    }
 
-    BulkSpeedTest(hinfo, flags, seed, true, false);
-    printf("\n");
+    if (test_bulk) {
+        BulkSpeedTest(hinfo, flags, seed, true, false);
+        printf("\n");
 
-    BulkSpeedTest(hinfo, flags, seed, true, true);
-    printf("\n");
+        BulkSpeedTest(hinfo, flags, seed, true, true);
+        printf("\n");
+    }
 
     return result;
 }
