@@ -1,7 +1,7 @@
 /*
- * komihash version 5.7
- * Copyright (C) 2021-2023  Frank J. T. Wojcik
- * Copyright (c) 2021-2023 Aleksey Vaneev
+ * komihash version 5.27
+ * Copyright (C) 2021-2025  Frank J. T. Wojcik
+ * Copyright (c) 2021-2025 Aleksey Vaneev
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -29,123 +29,50 @@
 #include "Mathmult.h"
 
 //------------------------------------------------------------
+// Unsigned 64-bit constants that define the initial state of the
+// hash function (first mantissa bits of PI)
+#define KOMIHASH_IVAL1 UINT64_C(0x243F6A8885A308D3)
+#define KOMIHASH_IVAL2 UINT64_C(0x13198A2E03707344)
+#define KOMIHASH_IVAL3 UINT64_C(0xA4093822299F31D0)
+#define KOMIHASH_IVAL4 UINT64_C(0x082EFA98EC4E6C89)
+#define KOMIHASH_IVAL5 UINT64_C(0x452821E638D01377)
+#define KOMIHASH_IVAL6 UINT64_C(0xBE5466CF34E90C6C)
+#define KOMIHASH_IVAL7 UINT64_C(0xC0AC29B7C97C50DD)
+#define KOMIHASH_IVAL8 UINT64_C(0x3F84D5B5B5470917)
 
-/*
- * Function builds an unsigned 64-bit value out of remaining bytes in a
- * message, and pads it with the "final byte". This function can only be
- * called if less than 8 bytes are left to read. The message should be "long",
- * permitting Msg[ -3 ] reads.
- *
- * @param Msg Message pointer, alignment is unimportant.
- * @param MsgLen Message's remaining length, in bytes; can be 0.
- * @param fb Final byte used for padding.
- */
-template <bool bswap>
-static FORCE_INLINE uint64_t kh_lpu64ec_l3( const uint8_t * const Msg, const size_t MsgLen ) {
-    const int ml8 = (int)(MsgLen * 8);
+// Unsigned 64-bit constant with `01` bit-pair replication
+#define KOMIHASH_VAL01 UINT64_C(0x5555555555555555)
 
-    if (MsgLen < 4) {
-        const uint8_t * const Msg3 = Msg + MsgLen - 3;
-        const uint64_t m = (uint64_t)Msg3[0] | (uint64_t)Msg3[1] << 8 |
-                (uint64_t)Msg3[2] << 16;
-
-        return((uint64_t)1 << ml8 | m >> ( 24 - ml8 ));
-    }
-
-    const uint64_t mh = GET_U32<bswap>(Msg + MsgLen - 4, 0);
-    const uint64_t ml = GET_U32<bswap>(Msg             , 0);
-
-    return((uint64_t)1 << ml8 | ml | (mh >> (64 - ml8)) << 32);
-}
-
-/*
- * Function builds an unsigned 64-bit value out of remaining bytes in a
- * message, and pads it with the "final byte". This function can only be
- * called if less than 8 bytes are left to read. Can be used on "short"
- * messages, but MsgLen should be greater than 0.
- *
- * @param Msg Message pointer, alignment is unimportant.
- * @param MsgLen Message's remaining length, in bytes; cannot be 0.
- * @param fb Final byte used for padding.
- */
-template <bool bswap>
-static FORCE_INLINE uint64_t kh_lpu64ec_nz( const uint8_t * const Msg, const size_t MsgLen ) {
-    const int ml8 = (int)(MsgLen * 8);
-
-    if (MsgLen < 4) {
-        uint64_t m = Msg[0];
-
-        if (MsgLen > 1) {
-            m |= (uint64_t)Msg[1] << 8;
-
-            if (MsgLen > 2) {
-                m |= (uint64_t)Msg[2] << 16;
-            }
-        }
-
-        return((uint64_t)1 << ml8 | m);
-    }
-
-    const uint64_t mh = (uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0);
-    const uint64_t ml = (uint64_t)GET_U32<bswap>(Msg             , 0);
-
-    return( (uint64_t) 1 << ml8 | ml | ( mh >> ( 64 - ml8 )) << 32 );
-}
-
-/*
- * Function builds an unsigned 64-bit value out of remaining bytes in a
- * message, and pads it with the "final byte". This function can only be
- * called if less than 8 bytes are left to read. The message should be "long",
- * permitting Msg[ -4 ] reads.
- *
- * @param Msg Message pointer, alignment is unimportant.
- * @param MsgLen Message's remaining length, in bytes; can be 0.
- * @param fb Final byte used for padding.
- */
-template <bool bswap>
-static FORCE_INLINE uint64_t kh_lpu64ec_l4( const uint8_t * const Msg, const size_t MsgLen ) {
-    const int ml8 = (int)(MsgLen * 8);
-
-    if (MsgLen < 5) {
-        const uint64_t m = (uint64_t)GET_U32<bswap>(Msg + MsgLen - 4, 0);
-        return( (uint64_t) 1 << ml8 | m >> ( 32 - ml8 ));
-    }
-    const uint64_t m = GET_U64<bswap>(Msg + MsgLen - 8, 0);
-    return( (uint64_t) 1 << ml8 | m >> ( 64 - ml8 ));
-}
+// Unsigned 64-bit constant with `10` bit-pair replication
+#define KOMIHASH_VAL10 UINT64_C(0xAAAAAAAAAAAAAAAA)
 
 //------------------------------------------------------------
 // Wrapper around Mathmult.h routine
-static FORCE_INLINE void kh_m128( const uint64_t m1, const uint64_t m2, uint64_t * const rl, uint64_t * const rh ) {
+static FORCE_INLINE void kh_m128( const uint64_t m1, const uint64_t m2, uint64_t * const rl, uint64_t * const rha ) {
     uint64_t rlo, rhi;
 
     MathMult::mult64_128(rlo, rhi, m1, m2);
-    *rl = rlo;
-    *rh = rhi;
+    *rl   = rlo;
+    *rha += rhi;
 }
 
-// Common hashing round with 16-byte input, using the "r1h"
-// temporary variable.
-#define KOMIHASH_HASH16(m)                               \
-    kh_m128(Seed1 ^ GET_U64<bswap>(m, 0),                \
-            Seed5 ^ GET_U64<bswap>(m, 8), &Seed1, &r1h); \
-    Seed5 += r1h;                                        \
+// Common hashing round with 16-byte input
+#define KOMIHASH_HASH16(m)                                 \
+    kh_m128(Seed1 ^ GET_U64<bswap>(m, 0),                  \
+            Seed5 ^ GET_U64<bswap>(m, 8), &Seed1, &Seed5); \
     Seed1 ^= Seed5;
 
-// Common hashing round without input, using the "r2h" temporary
-// variable.
-#define KOMIHASH_HASHROUND()             \
-    kh_m128(Seed1, Seed5, &Seed1, &r2h); \
-    Seed5 += r2h;                        \
+// Common hashing round without input
+#define KOMIHASH_HASHROUND()               \
+    kh_m128(Seed1, Seed5, &Seed1, &Seed5); \
     Seed1 ^= Seed5;
 
 // Macro for common hashing finalization round, with the final hashing
 // input expected in the "r1h" and "r2h" temporary variables. The hash is
 // left in the Seed1 variable.
-#define KOMIHASH_HASHFIN()           \
-    kh_m128(r1h, r2h, &Seed1, &r1h); \
-    Seed5 += r1h;                    \
-    Seed1 ^= Seed5;                  \
+#define KOMIHASH_HASHFIN()             \
+    kh_m128(r1h, r2h, &Seed1, &Seed5); \
+    Seed1 ^= Seed5;                    \
     KOMIHASH_HASHROUND();
 
 //------------------------------------------------------------
@@ -155,27 +82,32 @@ template <bool bswap>
 static FORCE_INLINE uint64_t komihash_epi( const uint8_t * Msg, size_t MsgLen, uint64_t Seed1, uint64_t Seed5 ) {
     uint64_t r1h, r2h;
 
-    if (likely(MsgLen > 31)) {
+    if (MsgLen > 31) {
         KOMIHASH_HASH16(Msg     );
         KOMIHASH_HASH16(Msg + 16);
 
-        Msg    += 32;
         MsgLen -= 32;
+        Msg    += 32;
     }
 
     if (MsgLen > 15) {
         KOMIHASH_HASH16(Msg);
 
-        Msg    += 16;
         MsgLen -= 16;
+        Msg    += 16;
     }
 
-    if (MsgLen > 7) {
-        r2h = Seed5 ^ kh_lpu64ec_l4<bswap>(Msg + 8, MsgLen - 8);
-        r1h = Seed1 ^ GET_U64      <bswap>(Msg    , 0);
+    int ml8 = MsgLen * 8;
+    if (MsgLen < 8) {
+        ml8 ^= 56;
+        r1h  = GET_U64<bswap>(Msg + MsgLen - 8, 0) >> 8 | UINT64_C(1) << 56;
+        r2h  = Seed5;
+        r1h  = (r1h >> ml8) ^ Seed1;
     } else {
-        r1h = Seed1 ^ kh_lpu64ec_l4<bswap>(Msg, MsgLen);
-        r2h = Seed5;
+        ml8 ^= 120;
+        r2h  = GET_U64<bswap>(Msg + MsgLen - 8, 0) >> 8 | UINT64_C(1) << 56;
+        r1h  = GET_U64<bswap>(Msg, 0) ^ Seed1;
+        r2h  = (r2h >> ml8) ^ Seed5;
     }
 
     KOMIHASH_HASHFIN();
@@ -198,8 +130,8 @@ static FORCE_INLINE uint64_t komihash_impl( const void * const Msg0, size_t MsgL
     const uint8_t * Msg = (const uint8_t *)Msg0;
 
     // The seeds are initialized to the first mantissa bits of PI.
-    uint64_t Seed1 = UINT64_C(0x243F6A8885A308D3) ^ (UseSeed & UINT64_C(0x5555555555555555));
-    uint64_t Seed5 = UINT64_C(0x452821E638D01377) ^ (UseSeed & UINT64_C(0xAAAAAAAAAAAAAAAA));
+    uint64_t Seed1 = KOMIHASH_IVAL1 ^ (UseSeed & KOMIHASH_VAL01);
+    uint64_t Seed5 = KOMIHASH_IVAL5 ^ (UseSeed & KOMIHASH_VAL10);
     uint64_t r1h, r2h;
 
     // The three instructions in the "KOMIHASH_HASHROUND" macro represent the
@@ -229,60 +161,106 @@ static FORCE_INLINE uint64_t komihash_impl( const void * const Msg0, size_t MsgL
         r2h = Seed5;
 
         if (MsgLen > 7) {
-            // The following two XOR instructions are equivalent to mixing a
+            // The following XOR instructions are equivalent to mixing a
             // message with a cryptographic one-time-pad (bitwise modulo 2
             // addition). Message's statistics and distribution are thus
             // unimportant.
 
-            r2h ^= kh_lpu64ec_l3<bswap>(Msg + 8, MsgLen - 8);
             r1h ^= GET_U64<bswap>(Msg, 0);
+
+            if (MsgLen < 12) {
+                int ml8 = MsgLen * 8;
+                const uint64_t m =
+                        Msg[MsgLen - 3]       |
+                        Msg[MsgLen - 1] << 16 |
+                        UINT64_C(1)     << 24 |
+                        Msg[MsgLen - 2] <<  8;
+
+                ml8 ^= 88;
+                r2h ^= m >> ml8;
+            } else {
+                const int      mhs = 128 - MsgLen * 8;
+                const uint64_t mh  = (GET_U32<bswap>(Msg + MsgLen - 4, 0) |
+                        UINT64_C(1) << 32) >> mhs;
+                const uint64_t ml  = GET_U32 <bswap>(Msg          + 8, 0);
+
+                r2h ^= mh << 32 | ml;
+            }
         } else if (likely(MsgLen != 0)) {
-            r1h ^= kh_lpu64ec_nz<bswap>(Msg    , MsgLen    );
+            const int ml8 = MsgLen * 8;
+
+            if (MsgLen < 4) {
+                r1h ^= UINT64_C(1) << ml8;
+                r1h ^= Msg[0];
+
+                if (MsgLen != 1) {
+                    r1h ^= Msg[1] << 8;
+
+                    if (MsgLen != 2) {
+                        r1h ^= Msg[2] << 16;
+                    }
+                }
+            } else {
+                const int      mhs = 64 - ml8;
+                const uint64_t mh  = (GET_U32<bswap>(Msg + MsgLen - 4, 0) |
+                        UINT64_C(1) << 32) >> mhs;
+                const uint64_t ml  = GET_U32<bswap>(Msg, 0);
+
+                r1h ^= mh << 32 | ml;
+            }
+        }
+    } else {
+        if (unlikely(MsgLen > 31)) {
+            goto _long;
         }
 
-        KOMIHASH_HASHFIN();
-
-        return Seed1;
-    }
-
-    if (likely(MsgLen < 32)) {
         KOMIHASH_HASH16(Msg);
 
-        if (MsgLen > 23) {
-            r2h = Seed5 ^ kh_lpu64ec_l4<bswap>(Msg + 24, MsgLen - 24);
-            r1h = Seed1 ^ GET_U64      <bswap>(Msg     , 16);
+        int ml8 = MsgLen * 8;
+
+        if (MsgLen < 24) {
+            ml8 ^= 184;
+            r1h  = GET_U64<bswap>(Msg + MsgLen - 8, 0) >> 8 | UINT64_C(1) << 56;
+            r2h  = Seed5;
+            r1h  = (r1h >> ml8) ^ Seed1;
+
+            KOMIHASH_HASHFIN();
+
+            return Seed1;
         } else {
-            r1h = Seed1 ^ kh_lpu64ec_l4<bswap>(Msg + 16, MsgLen - 16);
-            r2h = Seed5;
+            r2h  = GET_U64<bswap>(Msg + MsgLen - 8, 0) >> 8 | UINT64_C(1) << 56;
+            ml8 ^= 248;
+            r1h  = GET_U64<bswap>(Msg + 16        , 0) ^ Seed1;
+            r2h  = (r2h >> ml8) ^ Seed5;
         }
-
-        KOMIHASH_HASHFIN();
-
-        return Seed1;
     }
 
-    if (MsgLen > 63) {
-        uint64_t Seed2 = UINT64_C(0x13198A2E03707344) ^ Seed1;
-        uint64_t Seed3 = UINT64_C(0xA4093822299F31D0) ^ Seed1;
-        uint64_t Seed4 = UINT64_C(0x082EFA98EC4E6C89) ^ Seed1;
-        uint64_t Seed6 = UINT64_C(0xBE5466CF34E90C6C) ^ Seed5;
-        uint64_t Seed7 = UINT64_C(0xC0AC29B7C97C50DD) ^ Seed5;
-        uint64_t Seed8 = UINT64_C(0x3F84D5B5B5470917) ^ Seed5;
-        uint64_t r3h, r4h;
+    KOMIHASH_HASHFIN();
+
+    return Seed1;
+
+  _long:
+    if (likely(MsgLen > 63)) {
+        uint64_t Seed2 = KOMIHASH_IVAL2 ^ Seed1;
+        uint64_t Seed3 = KOMIHASH_IVAL3 ^ Seed1;
+        uint64_t Seed4 = KOMIHASH_IVAL4 ^ Seed1;
+        uint64_t Seed6 = KOMIHASH_IVAL6 ^ Seed5;
+        uint64_t Seed7 = KOMIHASH_IVAL7 ^ Seed5;
+        uint64_t Seed8 = KOMIHASH_IVAL8 ^ Seed5;
 
         do {
-            prefetch(Msg);
+            kh_m128(Seed1 ^ GET_U64<bswap>(Msg,  0), Seed5 ^ GET_U64<bswap>(Msg, 32), &Seed1, &Seed5);
 
-            kh_m128(Seed1 ^ GET_U64<bswap>(Msg,  0), Seed5 ^ GET_U64<bswap>(Msg, 32), &Seed1, &r1h);
+            kh_m128(Seed2 ^ GET_U64<bswap>(Msg,  8), Seed6 ^ GET_U64<bswap>(Msg, 40), &Seed2, &Seed6);
 
-            kh_m128(Seed2 ^ GET_U64<bswap>(Msg,  8), Seed6 ^ GET_U64<bswap>(Msg, 40), &Seed2, &r2h);
+            kh_m128(Seed3 ^ GET_U64<bswap>(Msg, 16), Seed7 ^ GET_U64<bswap>(Msg, 48), &Seed3, &Seed7);
 
-            kh_m128(Seed3 ^ GET_U64<bswap>(Msg, 16), Seed7 ^ GET_U64<bswap>(Msg, 48), &Seed3, &r3h);
-
-            kh_m128(Seed4 ^ GET_U64<bswap>(Msg, 24), Seed8 ^ GET_U64<bswap>(Msg, 56), &Seed4, &r4h);
+            kh_m128(Seed4 ^ GET_U64<bswap>(Msg, 24), Seed8 ^ GET_U64<bswap>(Msg, 56), &Seed4, &Seed8);
 
             Msg    += 64;
             MsgLen -= 64;
+
+            prefetch(Msg);
 
             // Such "shifting" arrangement (below) does not increase
             // individual SeedN's PRNG period beyond 2^64, but reduces a
@@ -290,14 +268,10 @@ static FORCE_INLINE uint64_t komihash_impl( const void * const Msg0, size_t MsgL
             // happening. Practically, Seed1-4 together become a single
             // "fused" 256-bit PRNG value, having 2^66 summary PRNG period.
 
-            Seed5 += r1h;
-            Seed6 += r2h;
-            Seed7 += r3h;
-            Seed8 += r4h;
-            Seed2 ^= Seed5;
-            Seed3 ^= Seed6;
             Seed4 ^= Seed7;
             Seed1 ^= Seed8;
+            Seed3 ^= Seed6;
+            Seed2 ^= Seed5;
         } while (likely(MsgLen > 63));
 
         Seed5 ^= Seed6 ^ Seed7 ^ Seed8;
@@ -311,6 +285,7 @@ static FORCE_INLINE uint64_t komihash_impl( const void * const Msg0, size_t MsgL
 template <bool bswap>
 static void komihash( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = komihash_impl<bswap>(in, len, (uint64_t)seed);
+
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
@@ -321,7 +296,7 @@ REGISTER_FAMILY(komihash,
  );
 
 REGISTER_HASH(komihash,
-   $.desc       = "komihash v5.7",
+   $.desc       = "komihash v5.27",
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
@@ -331,7 +306,7 @@ REGISTER_HASH(komihash,
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
    $.verification_LE = 0x8157FF6D,
-   $.verification_BE = 0x3A74F6E6,
+   $.verification_BE = 0x68E116C0,
    $.hashfn_native   = komihash<false>,
    $.hashfn_bswap    = komihash<true>
  );
