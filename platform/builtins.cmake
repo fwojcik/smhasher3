@@ -12,7 +12,7 @@ set(LIKELY_VARIANTS
   "likely() / unlikely()"
   "expect"
   "\n"
-  2
+  3
 )
 findVariant(LIKELY)
 
