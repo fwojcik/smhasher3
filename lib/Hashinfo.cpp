@@ -66,6 +66,13 @@ uint32_t HashInfo::_ComputedVerifyImpl( const HashInfo * hinfo, enum HashInfo::e
         seed_t seed = 256 - i;
         seed = hinfo->Seed(seed, SEED_FORCED, 1);
         hash(key, i, seed, &hashes[i * hashbytes]);
+#if 0
+        printf("%d", i);
+        for (unsigned j = 0; j < hashbytes; j++) {
+            printf(" %02x", hashes[j + i * hashbytes]);
+        }
+        printf("\n");
+#endif
         addVCodeInput(key, i);
         key[i] = (uint8_t)i;
     }

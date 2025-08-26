@@ -86,6 +86,13 @@ uint32_t ComputedVerifyImpl( void ) {
         seed_t seed = 256 - i;
         seed = HASH_INIT(seed);
         HASH(key, i, seed, &hashes[i * hashbytes]);
+#if 0
+        printf("%d", i);
+        for (unsigned j = 0; j < hashbytes; j++) {
+            printf(" %02x", hashes[j + i * hashbytes]);
+        }
+        printf("\n");
+#endif
         key[i] = (uint8_t)i;
     }
 
