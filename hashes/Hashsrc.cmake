@@ -88,4 +88,5 @@ set(HASH_SRC_FILES
   hashes/museair.cpp
   hashes/a5hash.cpp
   hashes/w1hash.cpp
+  hashes/xmsx.cpp
 )
