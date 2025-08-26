@@ -89,4 +89,5 @@ set(HASH_SRC_FILES
   hashes/a5hash.cpp
   hashes/w1hash.cpp
   hashes/xmsx.cpp
+  hashes/gxhash.cpp
 )
