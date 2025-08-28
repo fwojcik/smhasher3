@@ -126,6 +126,11 @@ static const uint8_t enc128a[16] = {
 };
 
 static const uint8_t enc128b[16] = {
+    0xbb, 0x19, 0x12, 0xc9, 0x3f, 0xaf, 0xea, 0xca,
+    0x26, 0x37, 0x52, 0x8b, 0x04, 0x87, 0x60, 0x65,
+};
+
+static const uint8_t enc128c[16] = {
     0x39, 0x25, 0x84, 0x1d, 0x02, 0xdc, 0x09, 0xfb,
     0xdc, 0x11, 0x85, 0x97, 0x19, 0x6a, 0x0b, 0x32,
 };
@@ -134,6 +139,11 @@ static const uint8_t enc128b[16] = {
 static const uint8_t dec128a[16] = {
     0x0e, 0xdd, 0xc8, 0xaf, 0xd3, 0xb8, 0x56, 0xdc,
     0x0d, 0xdf, 0x11, 0xbc, 0x74, 0x8e, 0xe8, 0x2d,
+};
+
+static const uint8_t dec128b[16] = {
+    0xdb, 0x9d, 0xb9, 0xf0, 0xba, 0xd0, 0x22, 0x86,
+    0x43, 0xa3, 0x39, 0x6a, 0xac, 0xa3, 0x42, 0xaf,
 };
 
 static inline bool VERIFY( const uint8_t * a, const uint8_t * b, size_t len ) {
@@ -172,9 +182,12 @@ void TestAESWrappers( void ) {
     AES_EncryptRound(&round_keys[16], output);
     result &= VERIFY(output, enc128a, 16);
 
+    AES_EncryptRoundNoMixCol(&round_keys[32], output);
+    result &= VERIFY(output, enc128b, 16);
+
     memcpy(output, inp128, 16);
     AES_Encrypt<10>(round_keys, output, output);
-    result &= VERIFY(output, enc128b, 16);
+    result &= VERIFY(output, enc128c, 16);
 
 
     AES_KeySetup_Dec(round_keys, key128, 128);
@@ -189,7 +202,10 @@ void TestAESWrappers( void ) {
     AES_DecryptRound(&round_keys[0], output);
     result &= VERIFY(output, dec128a, 16);
 
-    memcpy(output, enc128b, 16);
+    AES_DecryptRoundNoMixCol(&round_keys[16], output);
+    result &= VERIFY(output, dec128b, 16);
+
+    memcpy(output, enc128c, 16);
     AES_Decrypt<10>(round_keys, output, output);
     result &= VERIFY(output, inp128, 16);
 
@@ -208,9 +224,12 @@ void TestAESWrappers( void ) {
     AES_EncryptRound_portable(&round_keys[16], output);
     result &= VERIFY(output, enc128a, 16);
 
+    AES_EncryptRoundNoMixCol_portable(&round_keys[32], output);
+    result &= VERIFY(output, enc128b, 16);
+
     memcpy(output, inp128, 16);
     AES_Encrypt_portable<10>(round_keys, output, output);
-    result &= VERIFY(output, enc128b, 16);
+    result &= VERIFY(output, enc128c, 16);
 
 
     AES_KeySetup_Dec_portable(round_keys, key128, 128);
@@ -225,7 +244,10 @@ void TestAESWrappers( void ) {
     AES_DecryptRound_portable(&round_keys[0], output);
     result &= VERIFY(output, dec128a, 16);
 
-    memcpy(output, enc128b, 16);
+    AES_DecryptRoundNoMixCol_portable(&round_keys[16], output);
+    result &= VERIFY(output, dec128b, 16);
+
+    memcpy(output, enc128c, 16);
     AES_Decrypt_portable<10>(round_keys, output, output);
     result &= VERIFY(output, inp128, 16);
 

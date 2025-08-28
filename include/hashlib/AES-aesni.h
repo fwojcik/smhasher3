@@ -137,3 +137,19 @@ static void AES_DecryptRound_AESNI( const uint8_t rk8[], uint8_t block[16] ) {
     tmp = _mm_aesdec_si128(tmp, round_key);
     _mm_storeu_si128((((__m128i *)block)), tmp);
 }
+
+static inline void AES_EncryptRoundNoMixCol_AESNI( const uint8_t rk8[], uint8_t block[16] ) {
+    const __m128i round_key = _mm_loadu_si128((const __m128i *)rk8);
+    __m128i       tmp       = _mm_loadu_si128((__m128i *)block   );
+
+    tmp = _mm_aesenclast_si128(tmp, round_key);
+    _mm_storeu_si128((((__m128i *)block)), tmp);
+}
+
+static void AES_DecryptRoundNoMixCol_AESNI( const uint8_t rk8[], uint8_t block[16] ) {
+    const __m128i round_key = _mm_loadu_si128((const __m128i *)rk8);
+    __m128i       tmp       = _mm_loadu_si128((__m128i *)block   );
+
+    tmp = _mm_aesdeclast_si128(tmp, round_key);
+    _mm_storeu_si128((((__m128i *)block)), tmp);
+}

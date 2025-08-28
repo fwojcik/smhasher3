@@ -88,3 +88,21 @@ static inline void AES_DecryptRound_ARM( const uint8_t rk8[], uint8_t block[16] 
     tmp = veorq_u8(tmp, vld1q_u8(rk8));
     vst1q_u8(block, tmp);
 }
+
+static inline void AES_EncryptRoundNoMixCol_ARM( const uint8_t rk8[], uint8_t block[16] ) {
+    uint8x16_t zero = vmovq_n_u8(0);
+    uint8x16_t tmp = vld1q_u8(block);
+
+    tmp = vaeseq_u8(tmp, zero);
+    tmp = veorq_u8(tmp, vld1q_u8(rk8));
+    vst1q_u8(block, tmp);
+}
+
+static inline void AES_DecryptRoundNoMixCol_ARM( const uint8_t rk8[], uint8_t block[16] ) {
+    uint8x16_t zero = vmovq_n_u8(0);
+    uint8x16_t tmp = vld1q_u8(block);
+
+    tmp = vaesdq_u8(tmp, zero);
+    tmp = veorq_u8(tmp, vld1q_u8(rk8));
+    vst1q_u8(block, tmp);
+}
