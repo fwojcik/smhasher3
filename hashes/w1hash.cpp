@@ -46,6 +46,11 @@
   #define SM3_W1_UB_READS 0
 #endif
 
+static const char * w1_readimpl_str[] = {
+    "portable",
+    "ub_reads",
+};
+
 static inline uint64_t _w1r1( const uint8_t * p ) { return *p; }
 
 #if SM3_W1_UB_READS == 1
@@ -202,10 +207,9 @@ REGISTER_FAMILY(w1hash,
    $.src_status = HashFamilyInfo::SRC_STABLEISH
  );
 
-#if SM3_W1_UB_READS == 1
 REGISTER_HASH(w1hash,
    $.desc            = "w1hash",
-   $.impl            = "ub_reads",
+   $.impl            = w1_readimpl_str[SM3_W1_UB_READS],
    $.hash_flags      =
          0,
    $.impl_flags      =
@@ -218,19 +222,3 @@ REGISTER_HASH(w1hash,
    $.hashfn_native   = w1hash<false>,
    $.hashfn_bswap    = w1hash<true>
 );
-#else
-REGISTER_HASH(w1hash,
-   $.desc            = "w1hash",
-   $.impl            = "",
-   $.hash_flags      =
-         0,
-   $.impl_flags      =
-         FLAG_IMPL_MULTIPLY_64_128 |
-         FLAG_IMPL_LICENSE_BSD,
-   $.bits            = 64,
-   $.verification_LE = 0x648948F1,
-   $.verification_BE = 0xD69F31A0,
-   $.hashfn_native   = w1hash<false>,
-   $.hashfn_bswap    = w1hash<true>
-);
-#endif
