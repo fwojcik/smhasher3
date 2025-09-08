@@ -29,7 +29,7 @@
 
 //------------------------------------------------------------
 typedef struct {
-    uint64_t  k, k2, k7, s, seed;
+    uint64_t  k, k2, k7, s;
 } PolymurHashParams;
 
 static inline uint32_t polymur_load_le_u32( const uint8_t * p ) {
