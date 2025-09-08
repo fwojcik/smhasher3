@@ -83,7 +83,6 @@ static void rainstorm( const void * in, const size_t len, const seed_t seed, voi
     uint64_t        h[16] = {
         seed + len +  1,
         seed + len +  2,
-        seed + len +  2,
         seed + len +  3,
         seed + len +  5,
         seed + len +  7,
@@ -96,7 +95,8 @@ static void rainstorm( const void * in, const size_t len, const seed_t seed, voi
         seed + len + 31,
         seed + len + 37,
         seed + len + 41,
-        seed + len + 43
+        seed + len + 43,
+        seed + len + 47,
     };
 
     uint64_t temp[8];
@@ -155,40 +155,40 @@ REGISTER_FAMILY(rainstorm,
  );
 
 REGISTER_HASH(rainstorm,
-   $.desc       = "Rainstorm v0.0.6",
+   $.desc       = "Rainstorm v3.7.1",
    $.impl_flags =
      FLAG_IMPL_ROTATE           |
      FLAG_IMPL_SLOW             |
      FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 64,
-   $.verification_LE = 0xC8DB71D5,
-   $.verification_BE = 0xC13929D4,
+   $.verification_LE = 0xCECC05CE,
+   $.verification_BE = 0xAE017C49,
    $.hashfn_native   = rainstorm<64, false>,
    $.hashfn_bswap    = rainstorm<64, true>
  );
 
 REGISTER_HASH(rainstorm_128,
-   $.desc       = "Rainstorm 128-bit v0.0.6",
+   $.desc       = "Rainstorm 128-bit v3.7.1",
    $.impl_flags =
      FLAG_IMPL_ROTATE           |
      FLAG_IMPL_SLOW             |
      FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 128,
-   $.verification_LE = 0x17E0FC1B,
-   $.verification_BE = 0xF9E1DCA4,
+   $.verification_LE = 0xD6D12547,
+   $.verification_BE = 0x2808847F,
    $.hashfn_native   = rainstorm<128, false>,
    $.hashfn_bswap    = rainstorm<128, true>
  );
 
 REGISTER_HASH(rainstorm_256,
-   $.desc       = "Rainstorm 256-bit v0.0.6",
+   $.desc       = "Rainstorm 256-bit v3.7.1",
    $.impl_flags =
      FLAG_IMPL_ROTATE           |
      FLAG_IMPL_SLOW             |
      FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 256,
-   $.verification_LE = 0x8BDBF180,
-   $.verification_BE = 0xA08B2DEB,
+   $.verification_LE = 0x72D3356F,
+   $.verification_BE = 0xCDE69A9D,
    $.hashfn_native   = rainstorm<256, false>,
    $.hashfn_bswap    = rainstorm<256, true>
  );
