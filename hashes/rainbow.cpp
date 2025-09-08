@@ -32,6 +32,15 @@ static const uint64_t U = UINT64_C( 1358537349836140151);
 static const uint64_t V = UINT64_C( 2849285319520710901);
 static const uint64_t W = UINT64_C( 2366157163652459183);
 
+static inline void rotate_right(uint64_t h[4]) {
+    uint64_t temp = h[3];  // Store the last element
+
+    h[3] = h[2];           // Shift elements right
+    h[2] = h[1];
+    h[1] = h[0];
+    h[0] = temp;           // Place the last element in the first position
+}
+
 static inline void mixA( uint64_t * s ) {
     uint64_t a = s[0], b = s[1], c = s[2], d = s[3];
 
@@ -71,32 +80,30 @@ static inline void mixB( uint64_t * s, uint64_t iv ) {
     b  = ROTR64(b, 23);
     b *= S;
 
-    s[1] = a; s[2] = b;
+    s[1] = b; s[2] = a;
 }
 
 template <uint32_t hashsize, bool bswap>
 static void rainbow( const void * in, const size_t olen, const seed_t seed, void * out ) {
     const uint8_t * data  = (const uint8_t *)in;
-    uint64_t        h[4]  = { seed + olen + 1, seed + olen + 3, seed + olen + 5, seed + olen + 7 };
+    uint64_t        h[4]  = { seed + olen + 1, seed + olen + 2, seed + olen + 3, seed + olen + 5 };
     size_t          len   = olen;
     uint64_t        g     = 0;
     bool            inner = 0;
 
     while (len >= 16) {
         g     = GET_U64<bswap>(data, 0);
-
         h[0] -= g;
         h[1] += g;
-
         data += 8;
 
         g     = GET_U64<bswap>(data, 0);
-
         h[2] += g;
         h[3] -= g;
 
         if (inner) {
             mixB(h, seed);
+            rotate_right(h);
         } else {
             mixA(h);
         }
@@ -168,43 +175,43 @@ REGISTER_FAMILY(rainbow,
 );
 
 REGISTER_HASH(rainbow,
-   $.desc       = "Rainbow v1.0.6 (aka Newhash)",
+   $.desc       = "Rainbow v3.7.1",
    $.hash_flags = 0,
    $.impl_flags =
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 64,
-   $.verification_LE = 0x2972C52E,
-   $.verification_BE = 0x217A79E2,
+   $.verification_LE = 0xED7533D3,
+   $.verification_BE = 0xBE75A175,
    $.hashfn_native   = rainbow<64, false>,
    $.hashfn_bswap    = rainbow<64, true>
 );
 
 REGISTER_HASH(rainbow_128,
-   $.desc       = "Rainbow 128-bit v1.0.6 (aka Newhash 128-bit)",
+   $.desc       = "Rainbow 128-bit v3.7.1",
    $.hash_flags = 0,
    $.impl_flags =
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 128,
-   $.verification_LE = 0xFD9BCADD,
-   $.verification_BE = 0xAF215EDF,
+   $.verification_LE = 0xFF03173F,
+   $.verification_BE = 0xA8EAD0C3,
    $.hashfn_native   = rainbow<128, false>,
    $.hashfn_bswap    = rainbow<128, true>
 );
 
 REGISTER_HASH(rainbow_256,
-   $.desc       = "Rainbow 256-bit v1.0.6 (aka Newhash 256-bit)",
+   $.desc       = "Rainbow 256-bit v3.7.1",
    $.hash_flags = 0,
    $.impl_flags =
         FLAG_IMPL_MULTIPLY_64_64   |
         FLAG_IMPL_ROTATE           |
         FLAG_IMPL_LICENSE_APACHE2,
    $.bits = 256,
-   $.verification_LE = 0xB327563D,
-   $.verification_BE = 0x10C46364,
+   $.verification_LE = 0x65F4A210,
+   $.verification_BE = 0xD2AFD9EB,
    $.hashfn_native   = rainbow<256, false>,
    $.hashfn_bswap    = rainbow<256, true>
 );
