@@ -145,7 +145,7 @@ static void jodyhash64( const void * in, const size_t len, const seed_t seed, vo
 
 //------------------------------------------------------------
 REGISTER_FAMILY(jodyhash,
-   $.src_url    = "https://github.com/jbruchon/jodyhash",
+   $.src_url    = "https://codeberg.org/jbruchon/jodyhash",
    $.src_status = HashFamilyInfo::SRC_STABLEISH
  );
 
