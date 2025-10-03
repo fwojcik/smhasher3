@@ -39,7 +39,7 @@
 //------------------------------------------------------------
 #define XXH_VERSION_MAJOR    0
 #define XXH_VERSION_MINOR    8
-#define XXH_VERSION_RELEASE  2
+#define XXH_VERSION_RELEASE  3
 #define XXH_VERSION_NUMBER  (XXH_VERSION_MAJOR * 100 * 100 + XXH_VERSION_MINOR * 100 + XXH_VERSION_RELEASE)
 
 // Used to prevent unwanted optimizations for var.
@@ -1484,6 +1484,7 @@ static uintptr_t xxh3_initsecret( const seed_t seed ) {
     } else {
         XXH3_initCustomSecret<true>(gensecret.secret, (uint64_t)seed);
     }
+
     return (seed_t)(uintptr_t)&gensecret;
 }
 
@@ -1621,6 +1622,7 @@ REGISTER_HASH(XXH3_64,
                          0xfffffffff958a6e5, 0xfffffffff958a7e5, 0xfffffffff958a8e5 }
  );
 
+// XXH3_generateSecret_fromSeed
 REGISTER_HASH(XXH3_64__reinit,
    $.desc       = "xxh3, 64-bit version with secret initialized per-seed",
    $.impl       = xxh_vector_str[XXH_VECTOR],
@@ -1641,6 +1643,7 @@ REGISTER_HASH(XXH3_64__reinit,
    $.seedfn          = xxh3_initsecret
  );
 
+// XXH3_generateSecret
 REGISTER_HASH(XXH3_64__regen,
    $.desc       = "xxh3, 64-bit version with secret regenerated per-seed",
    $.impl       = xxh_vector_str[XXH_VECTOR],
@@ -1678,6 +1681,7 @@ REGISTER_HASH(XXH3_128,
    $.hashfn_bswap    = XXH3_128<true>
  );
 
+// XXH3_generateSecret_fromSeed
 REGISTER_HASH(XXH3_128__reinit,
    $.desc       = "xxh3, 128-bit version with secret initialized per-seed",
    $.impl       = xxh_vector_str[XXH_VECTOR],
@@ -1698,6 +1702,7 @@ REGISTER_HASH(XXH3_128__reinit,
    $.seedfn          = xxh3_initsecret
  );
 
+// XXH3_generateSecret
 REGISTER_HASH(XXH3_128__regen,
    $.desc       = "xxh3, 128-bit version with secret regenerated per-seed",
    $.impl       = xxh_vector_str[XXH_VECTOR],
