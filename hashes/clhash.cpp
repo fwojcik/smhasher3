@@ -82,17 +82,17 @@ static void get_random_key_for_clhash( uint64_t seed1, uint64_t seed2, size_t ke
 //------------------------------------------------------------
 enum {
     CLHASH_64BITWORDS_CHUNK_SIZE        = 128,
-    CLHASH_64BITWORDS_EXTRA             = 6,
+    CLHASH_64BITWORDS_EXTRA             = 5,
     RANDOM_64BITWORDS_NEEDED_FOR_CLHASH = CLHASH_64BITWORDS_CHUNK_SIZE + CLHASH_64BITWORDS_EXTRA,
 };
 // static_assert((CLHASH_64BITWORDS_CHUNK_SIZE % 4) == 0)
 
-alignas(16) static uint64_t clhash_random[RANDOM_64BITWORDS_NEEDED_FOR_CLHASH];
+alignas(16) static thread_local uint64_t clhash_random[RANDOM_64BITWORDS_NEEDED_FOR_CLHASH];
 
-static bool clhash_init( void ) {
-    // Constants taken from SMHasher, for compatibility
-    get_random_key_for_clhash(UINT64_C(0xb3816f6a2c68e530), 711, RANDOM_64BITWORDS_NEEDED_FOR_CLHASH, clhash_random);
-    return true;
+static uintptr_t clhash_init( const seed_t seed ) {
+    uint64_t s64 = (uint64_t)seed;
+    get_random_key_for_clhash(s64, ~s64, RANDOM_64BITWORDS_NEEDED_FOR_CLHASH, clhash_random);
+    return (seed_t)(uintptr_t)(void *)clhash_random;
 }
 
 //------------------------------------------------------------
@@ -352,8 +352,7 @@ static inline uint64_t createLastWord( const size_t lengthbyte, const uint64_t *
 
 // The seeding here is homegrown for SMHasher3
 template <bool bitmix, bool bswap>
-static uint64_t clhash( const void * random, const uint8_t * stringbyte,
-        const size_t lengthbyte, const uint64_t seed ) {
+static uint64_t clhash( const void * random, const uint8_t * stringbyte, const size_t lengthbyte ) {
     assert(((uintptr_t)random & 15) == 0); // we expect cache line alignment for the keys
 
     // We process the data in chunks of 16 cache lines (m should be divisible by 4).
@@ -367,7 +366,6 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte,
                                                                                       // ones
 
     const __m128i * rs64    = (__m128i *)random;
-    const __m128i   seed128 = lazyLengthHash(((const uint64_t *)(rs64 + m128neededperblock + 2))[1], seed);
 
     // to preserve alignment on cache lines for main loop, we pick random bits at the end
     __m128i polyvalue = _mm_load_si128(rs64 + m128neededperblock);
@@ -378,8 +376,6 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte,
     // long strings // modified from length to lengthinc to address issue #3 raised by Eik List
     if (m < lengthinc) {
         __m128i acc = clmulhalfscalarproductwithoutreduction<bswap>(rs64, string, m);
-        // Mix the seed in using a non-commuting operation with all the xors and clmuls.
-        acc = _mm_sub_epi8(acc, seed128);
 
         size_t t = m;
         for (; t + m <= length; t += m) {
@@ -395,7 +391,7 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte,
             // we compute something like
             // acc+= polyvalue * acc + h1
             acc = mul128by128to128_lazymod127(polyvalue, acc);
-            if (lengthbyte % sizeof(uint64_t) == 0) {
+            if ((lengthbyte % sizeof(uint64_t)) == 0) {
                 const __m128i h1 =
                         clmulhalfscalarproductwithtailwithoutreduction<bswap>(rs64, string + t, remain);
                 acc = _mm_xor_si128(acc, h1);
@@ -406,7 +402,7 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte,
                         rs64, string + t, remain, lastword);
                 acc = _mm_xor_si128(acc, h1);
             }
-        } else if (lengthbyte % sizeof(uint64_t) != 0) { // added to address issue #2 raised by Eik List
+        } else if ((lengthbyte % sizeof(uint64_t)) != 0) { // added to address issue #2 raised by Eik List
             // there are no completely filled words left, but there is one partial word.
             acc = mul128by128to128_lazymod127(polyvalue, acc);
             const uint64_t lastword = createLastWord(lengthbyte, (string + length));
@@ -421,14 +417,12 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte,
         // short strings
         __m128i acc;
 
-        if (lengthbyte % sizeof(uint64_t) == 0) {
+        if ((lengthbyte % sizeof(uint64_t)) == 0) {
             acc = clmulhalfscalarproductwithtailwithoutreduction             <bswap>(rs64, string, length);
         } else {
             const uint64_t lastword = createLastWord(lengthbyte, (string + length));
             acc = clmulhalfscalarproductwithtailwithoutreductionWithExtraWord<bswap>(rs64, string, length, lastword);
         }
-        // Mix the seed in using a non-commuting operation with all the xors and clmuls.
-        acc = _mm_sub_epi8(acc, seed128);
 
         const uint64_t keylength = ((const uint64_t *)(rs64 + m128neededperblock + 2))[0];
         acc = _mm_xor_si128(acc, lazyLengthHash(keylength, (uint64_t)lengthbyte));
@@ -439,14 +433,16 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte,
 //------------------------------------------------------------
 template <bool bswap>
 static void CLHash( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t h = clhash<true, bswap>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
+    void * random = (void *)(uintptr_t)seed;
+    uint64_t h = clhash<true, bswap>(random, (const uint8_t *)in, len);
 
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template <bool bswap>
 static void CLHashNomix( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t h = clhash<false, bswap>(clhash_random, (const uint8_t *)in, len, (uint64_t)seed);
+    void * random = (void *)(uintptr_t)seed;
+    uint64_t h = clhash<false, bswap>(random, (const uint8_t *)in, len);
 
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
@@ -472,11 +468,11 @@ REGISTER_HASH(CLhash__bitmix,
          FLAG_IMPL_MULTIPLY_64_64   |
          FLAG_IMPL_LICENSE_GPL3,
    $.bits = 64,
-   $.verification_LE = 0x578865A5,
-   $.verification_BE = 0x0D2B93FA,
+   $.verification_LE = 0xAAC87C33,
+   $.verification_BE = 0x26D0DD6C,
    $.hashfn_native   = CLHash<false>,
    $.hashfn_bswap    = CLHash<true>,
-   $.initfn          = clhash_init
+   $.seedfn          = clhash_init
  );
 
 REGISTER_HASH(CLhash,
@@ -490,11 +486,11 @@ REGISTER_HASH(CLhash,
          FLAG_IMPL_MULTIPLY_64_64   |
          FLAG_IMPL_LICENSE_GPL3,
    $.bits = 64,
-   $.verification_LE = 0xDD8248E4,
-   $.verification_BE = 0x25DDBEC2,
+   $.verification_LE = 0x2E554CB4,
+   $.verification_BE = 0x4F2B76A1,
    $.hashfn_native   = CLHashNomix<false>,
    $.hashfn_bswap    = CLHashNomix<true>,
-   $.initfn          = clhash_init
+   $.seedfn          = clhash_init
  );
 
 #endif
