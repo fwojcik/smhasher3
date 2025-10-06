@@ -178,8 +178,8 @@ const HashInfo * findHash( const char * name ) {
 void listHashes( bool nameonly ) {
     if (!nameonly) {
         printf("Hashnames can be supplied using any case letters.\n\n");
-        printf("%-25s %4s  %10s  %6s  %-60s\n", "Name", "Bits", "Impl   "   , "Type " , "Description");
-        printf("%-25s %4s  %10s  %6s  %-60s\n", "----", "----", "----------", "------", "-----------");
+        printf("%-28s %4s  %10s  %6s  %-60s\n", "Name", "Bits", "Impl   "   , "Type " , "Description");
+        printf("%-28s %4s  %10s  %6s  %-60s\n", "----", "----", "----------", "------", "-----------");
     }
     const uint64_t mask_flags = FLAG_HASH_MOCK | FLAG_HASH_CRYPTOGRAPHIC;
     uint64_t       prev_flags = FLAG_HASH_MOCK;
@@ -189,7 +189,7 @@ void listHashes( bool nameonly ) {
                 printf("\n");
                 prev_flags = h->hash_flags & mask_flags;
             }
-            printf("%-25s %4d  %10s  %6s  %-60s\n", h->name, h->bits, h->impl,
+            printf("%-28s %4d  %10s  %6s  %-60s\n", h->name, h->bits, h->impl,
                     h->isMock() ? "MOCK" : (h->isCrypto() ? "CRYPTO" : ""), h->desc);
         } else {
             printf("%s\n", h->name);
@@ -215,7 +215,7 @@ static const char * endianstr( const HashInfo * hinfo, enum HashInfo::endianness
 }
 
 static void reportInitFailure( const HashInfo * hinfo ) {
-    printf("%25s - Hash initialization failed!      ...... FAIL!\n", hinfo->name);
+    printf("%28s - Hash initialization failed!      ...... FAIL!\n", hinfo->name);
 }
 
 static bool compareVerification( uint32_t expected, uint32_t actual, const HashInfo * hinfo,
@@ -235,7 +235,7 @@ static bool compareVerification( uint32_t expected, uint32_t actual, const HashI
 
     if (verbose) {
         if (prefix) {
-            printf("%10s| %25s - ", hinfo->impl, hinfo->name);
+            printf("%10s| %28s - ", hinfo->impl, hinfo->name);
         }
         printf("Verification value %2s 0x%08X ...... ", endstr, actual);
         printf(result_str, expected);
