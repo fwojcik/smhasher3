@@ -216,7 +216,7 @@ static void hash_in( AHasher * s, uint64_t value[2] ) {
     // printf("hash_in aes %016lx %016lx\n", value[0], value[1]);
     // printf("hash_in aes <- %016lx %016lx %016lx %016lx\n",
     //        s->enc[0], s->enc[1], s->sum[0], s->sum[1]);
-    aesenc<bswap>(s->enc, value);
+    aesdec<bswap>(s->enc, value);
     shuffle_and_add<hw_shuffle>(s->sum, value);
     // printf("hash_in aes -> %016lx %016lx %016lx %016lx\n",
     //       s->enc[0], s->enc[1], s->sum[0], s->sum[1]);
@@ -243,10 +243,10 @@ static void add_data( AHasher * s, const uint8_t * RESTRICT data, const size_t l
                     current[i][1] = s->key[1];
                 }
                 uint64_t sum[2][2];
-                for (unsigned i = 0; i < 2; i++) {
-                    sum    [i][0] = s->key[0];
-                    sum    [i][1] = s->key[1];
-                }
+                sum[0][0] = s->key[0];
+                sum[0][1] = s->key[1];
+                sum[1][0] = ~s->key[0];
+                sum[1][1] = ~s->key[1];
                 {
                     uint64_t tail[2];
                     tail[0]    = GET_U64<bswap>(data, len - 64     );
@@ -257,7 +257,7 @@ static void add_data( AHasher * s, const uint8_t * RESTRICT data, const size_t l
 
                     tail[0]    = GET_U64<bswap>(data, len - 64 + 16);
                     tail[1]    = GET_U64<bswap>(data, len - 64 + 24);
-                    aesenc<bswap>(current[1], tail);
+                    aesdec<bswap>(current[1], tail);
                     sum[1][0] += tail[0];
                     sum[1][1] += tail[1];
 
@@ -268,7 +268,7 @@ static void add_data( AHasher * s, const uint8_t * RESTRICT data, const size_t l
 
                     tail[0]    = GET_U64<bswap>(data, len - 64 + 48);
                     tail[1]    = GET_U64<bswap>(data, len - 64 + 56);
-                    aesenc<bswap>(current[3], tail);
+                    aesdec<bswap>(current[3], tail);
                     shuffle_and_add<hw_shuffle>(sum[1], tail);
                 }
                 uint64_t blocks[2];
@@ -276,38 +276,36 @@ static void add_data( AHasher * s, const uint8_t * RESTRICT data, const size_t l
                 while (l > 64) {
                     blocks[0] = GET_U64<bswap>(data, 0);
                     blocks[1] = GET_U64<bswap>(data, 8);
-                    aesenc<bswap>(current[0], blocks);
+                    aesdec<bswap>(current[0], blocks);
                     shuffle_and_add<hw_shuffle>(sum[0], blocks);
                     data += 16;
 
                     blocks[0] = GET_U64<bswap>(data, 0);
                     blocks[1] = GET_U64<bswap>(data, 8);
-                    aesenc<bswap>(current[1], blocks);
+                    aesdec<bswap>(current[1], blocks);
                     shuffle_and_add<hw_shuffle>(sum[1], blocks);
                     data += 16;
 
                     blocks[0] = GET_U64<bswap>(data, 0);
                     blocks[1] = GET_U64<bswap>(data, 8);
-                    aesenc<bswap>(current[2], blocks);
+                    aesdec<bswap>(current[2], blocks);
                     shuffle_and_add<hw_shuffle>(sum[0], blocks);
                     data += 16;
 
                     blocks[0] = GET_U64<bswap>(data, 0);
                     blocks[1] = GET_U64<bswap>(data, 8);
-                    aesenc<bswap>(current[3], blocks);
+                    aesdec<bswap>(current[3], blocks);
                     shuffle_and_add<hw_shuffle>(sum[1], blocks);
                     data += 16;
 
                     l -= 64;
                 }
-                aesenc<bswap>(current[0], current[1]);
-                aesenc<bswap>(current[2], current[3]);
                 hash_in<bswap, hw_shuffle>(s, current[0]);
+                hash_in<bswap, hw_shuffle>(s, current[1]);
                 hash_in<bswap, hw_shuffle>(s, current[2]);
-
-                sum[0][0] += sum[1][0];
-                sum[0][1] += sum[1][1];
+                hash_in<bswap, hw_shuffle>(s, current[3]);
                 hash_in<bswap, hw_shuffle>(s, sum[0]);
+                hash_in<bswap, hw_shuffle>(s, sum[1]);
             } else {
                 // len 33-64
                 uint64_t head[2][2], tail[2][2];
@@ -352,12 +350,11 @@ static void add_data( AHasher * s, const uint8_t * RESTRICT data, const size_t l
 
 template <bool bswap>
 static uint64_t finish( AHasher * s ) {
-    uint64_t tmp[2] = { s->sum[0], s->sum[1] };
-
-    aesdec<bswap>(tmp, s->enc);
-    uint64_t combined[2] = { tmp[0], tmp[1] };
-    aesenc<bswap>(combined, s->key);
-    aesenc<bswap>(combined, tmp   );
+    uint64_t combined[2] = { s->sum[0], s->sum[1] };
+    aesenc<bswap>(combined, s->enc);
+    uint64_t combined_prev[2] = { combined[0], combined[1] };
+    aesdec<bswap>(combined, s->key);
+    aesdec<bswap>(combined, combined_prev);
     return combined[0];
 }
 
@@ -390,8 +387,8 @@ typedef struct {
 } AFBHasher;
 
 static void fb_from_random_state( AFBHasher * s, const uint64_t random_state[4] ) {
-    s->buffer        = random_state[0];
-    s->pad           = random_state[1];
+    s->buffer        = random_state[1];
+    s->pad           = random_state[0];
     s->extra_keys[0] = random_state[2];
     s->extra_keys[1] = random_state[3];
     // printf("FRS fallback %016lx %016lx %016lx %016lx\n",
@@ -496,8 +493,8 @@ REGISTER_HASH(rust_ahash,
    $.impl_flags      =
          FLAG_IMPL_LICENSE_MIT,
    $.bits            = 64,
-   $.verification_LE = 0x39BA33B2,
-   $.verification_BE = 0x429DE41B,
+   $.verification_LE = 0x3BF4383B,
+   $.verification_BE = 0x1B4F8057,
    $.hashfn_native   = rust_ahash<false, true>,
    $.hashfn_bswap    = rust_ahash<true, true>,
    $.seedfn          = init_state
@@ -512,8 +509,8 @@ REGISTER_HASH(rust_ahash__noshuf,
    $.impl_flags      =
          FLAG_IMPL_LICENSE_MIT,
    $.bits            = 64,
-   $.verification_LE = 0x7C9B210C,
-   $.verification_BE = 0x372595BE,
+   $.verification_LE = 0x84CD29E5,
+   $.verification_BE = 0x5CC04B62,
    $.hashfn_native   = rust_ahash<false, false>,
    $.hashfn_bswap    = rust_ahash<true, false>,
    $.seedfn          = init_state
@@ -530,8 +527,8 @@ REGISTER_HASH(rust_ahash_fb,
          FLAG_IMPL_ROTATE_VARIABLE |
          FLAG_IMPL_LICENSE_MIT     ,
    $.bits            = 64,
-   $.verification_LE = 0x6241D275,
-   $.verification_BE = 0x3C9E98E0,
+   $.verification_LE = 0x53C9F167,
+   $.verification_BE = 0x0AB24D79,
    $.hashfn_native   = rust_ahash_fb<false, true>,
    $.hashfn_bswap    = rust_ahash_fb<true, true>,
    $.seedfn          = init_state,
@@ -665,8 +662,8 @@ REGISTER_HASH(rust_ahash_fb__nofold,
          FLAG_IMPL_ROTATE_VARIABLE |
          FLAG_IMPL_LICENSE_MIT     ,
    $.bits            = 64,
-   $.verification_LE = 0xF5A72075,
-   $.verification_BE = 0x12DE4593,
+   $.verification_LE = 0x3FDD068C,
+   $.verification_BE = 0x87A5FD69,
    $.hashfn_native   = rust_ahash_fb<false, false>,
    $.hashfn_bswap    = rust_ahash_fb<true, false>,
    $.seedfn          = init_state
