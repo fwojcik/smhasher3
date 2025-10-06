@@ -90,4 +90,5 @@ set(HASH_SRC_FILES
   hashes/w1hash.cpp
   hashes/xmsx.cpp
   hashes/gxhash.cpp
+  hashes/rust-rapidhash.cpp
 )
