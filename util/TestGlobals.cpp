@@ -91,5 +91,5 @@ double cycle_timer_mult;
 //--------
 // A string with 128 spaces, useful for aligning text outputs
 const char * g_manyspaces =
-    "                                                                "  \
+    "                                                                " \
     "                                                                ";

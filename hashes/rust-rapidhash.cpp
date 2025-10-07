@@ -370,11 +370,11 @@ static inline uint64_t rapidhash_core( const uint8_t * p, size_t len, uint64_t s
     if (likely(len <= 16)) {
         if (likely(len >= 8)) {
             const uint8_t * plast = p + len - 8;
-            a = rapid_read64<bswap>(p);
+            a = rapid_read64<bswap>(p    );
             b = rapid_read64<bswap>(plast);
         } else if (likely(len >= 4)) {
             const uint8_t * plast = p + len - 4;
-            a = rapid_read32<bswap>(p);
+            a = rapid_read32<bswap>(p    );
             b = rapid_read32<bswap>(plast);
         } else if (likely(len > 0)) {
             a = (((uint64_t)p[0]) << 45) | p[len - 1];

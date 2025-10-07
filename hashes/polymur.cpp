@@ -123,9 +123,9 @@ static inline void polymur_init_params( PolymurHashParams * p, uint64_t k_seed, 
     POLYMUR_POW37[0] = 37; POLYMUR_POW37[32] = UINT64_C(559096694736811184);
     for (int i = 0; i < 31; ++i) {
         POLYMUR_POW37[i +  1] =
-            polymur_extrared611(polymur_red611(polymur_mul128(POLYMUR_POW37[i     ], POLYMUR_POW37[i     ])));
+                polymur_extrared611(polymur_red611(polymur_mul128(POLYMUR_POW37[i     ], POLYMUR_POW37[i     ])));
         POLYMUR_POW37[i + 33] =
-            polymur_extrared611(polymur_red611(polymur_mul128(POLYMUR_POW37[i + 32], POLYMUR_POW37[i + 32])));
+                polymur_extrared611(polymur_red611(polymur_mul128(POLYMUR_POW37[i + 32], POLYMUR_POW37[i + 32])));
     }
 
     while (1) {

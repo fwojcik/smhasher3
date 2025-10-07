@@ -33,6 +33,7 @@
 // setting a high bit in the seed.
 seed_t lookup3_seedfix( const HashInfo * hinfo, const seed_t seed ) {
     uint64_t seed64 = (uint64_t)seed;
+
     unused(hinfo);
 
     if (seed64 >= 0xffffffff) {

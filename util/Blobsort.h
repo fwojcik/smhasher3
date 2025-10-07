@@ -50,6 +50,7 @@ static bool issorted( T * begin, T * end ) {
 template <bool track_idxs, typename T>
 static void movemin( T * begin, T * end, hidx_t * idxs ) {
     T * min = begin;
+
     for (T * i = begin + 1; i != end; i++) {
         if (*i < *min) {
             min = i;
@@ -69,19 +70,20 @@ static void movemin( T * begin, T * end, hidx_t * idxs ) {
 template <bool unguarded, bool track_idxs, typename T>
 static void insertionsort( T * begin, T * end, hidx_t * idxs ) {
     hidx_t v;
+
     for (T * i = begin + 1; i != end; i++) {
         T * node = i;
         T * next = i - 1;
         T   val  = std::move(*node);
         if (track_idxs) {
-            v    = std::move(*(idxs + (node - begin)));
+            v = std::move(*(idxs + (node - begin)));
         }
         while ((unguarded || (next >= begin)) && (val < *next)) {
             if (track_idxs) {
                 *(idxs + (node - begin)) = std::move(*(idxs + (next - begin)));
             }
             *node = std::move(*next);
-            node = next--;
+            node  = next--;
         }
         if (track_idxs) {
             *(idxs + (node - begin)) = std::move(v);
@@ -114,7 +116,7 @@ static const uint32_t RADIX_MASK = RADIX_SIZE - 1;
 template <bool track_idxs, typename T>
 static void radixsort( T * begin, T * end, hidx_t * idxs ) {
     constexpr uint32_t RADIX_LEVELS = T::len;
-    const size_t   count        = end - begin;
+    const size_t       count        = end - begin;
 
     uint32_t freqs[RADIX_SIZE][RADIX_LEVELS] = {};
     T *      last = begin + count - 1;
@@ -310,7 +312,7 @@ static void flagsort( T * begin, T * end, hidx_t * idxs, T * base, int digit ) {
     // smallsort if there are only a few entries in the block.
     ptr = begin;
     for (size_t i = 0; i < RADIX_SIZE; i++) {
-        if (expectp(freqs[i] > SMALLSORT_CUTOFF, 0.00390611)) {
+        if (expectp((freqs[i] > SMALLSORT_CUTOFF), 0.00390611)) {
             flagsort<track_idxs>(ptr, ptr + freqs[i], idxs, base, digit - 1);
         } else if (expectp((freqs[i] > 1), 0.3847)) {
             smallsort<track_idxs>(ptr, ptr + freqs[i], idxs, (ptr == base));
@@ -333,8 +335,8 @@ template <bool track_idxs = true, class Iter>
 static void blobsort( Iter iter_begin, Iter iter_end, std::vector<hidx_t> & idxvec ) {
     typedef typename std::iterator_traits<Iter>::value_type T;
     const size_t count = iter_end - iter_begin;
-    T * begin = &(*iter_begin);
-    T * end   = &(*iter_end  );
+    T *          begin = &(*iter_begin);
+    T *          end   = &(*iter_end);
 
     if (track_idxs) {
         if (idxvec.size() != count) {
@@ -359,6 +361,7 @@ static void blobsort( Iter iter_begin, Iter iter_end, std::vector<hidx_t> & idxv
 template <class Iter>
 static void blobsort( Iter iter_begin, Iter iter_end ) {
     std::vector<hidx_t> dummy;
+
     blobsort<false>(iter_begin, iter_end, dummy);
 }
 

@@ -113,8 +113,8 @@ static FORCE_INLINE void XXH3_accumulate_512_vsx( void * RESTRICT acc, const voi
         const void * RESTRICT secret ) {
     /* presumed aligned */
     uint32_t        * const xacc    = (uint32_t *       )acc;
-    xxh_u64x2 const * const xinput  = (xxh_u64x2 const *)input;   /* no alignment restriction */
-    xxh_u64x2 const * const xsecret = (xxh_u64x2 const *)secret;  /* no alignment restriction */
+    xxh_u64x2 const * const xinput  = (xxh_u64x2 const *)input;  /* no alignment restriction */
+    xxh_u64x2 const * const xsecret = (xxh_u64x2 const *)secret; /* no alignment restriction */
     xxh_u64x2 const         v32     = { 32, 32 };
 
     for (size_t i = 0; i < XXH_STRIPE_LEN / sizeof(xxh_u64x2); i++) {

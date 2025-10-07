@@ -111,17 +111,17 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
         }
 
         auto keyprint = [&]( hidx_t i ) {
-            ExtBlob k( &keys[(i >> 1) * keybytes], keybytes );
-            hashtype v;
+                    ExtBlob  k( &keys[(i >> 1) * keybytes], keybytes );
+                    hashtype v;
 
-            if (i & 1) { k.flipbit(keybit); }
-            hash(k, keybytes, seed, &v);
-            printf("0x%016" PRIx64 "\t", g_seed);
-            k.printbytes(NULL);
-            printf("\t");
-            v.printhex(NULL);
-            if (i & 1) { k.flipbit(keybit); }
-        };
+                    if (i & 1) { k.flipbit(keybit); }
+                    hash(k, keybytes, seed, &v);
+                    printf("0x%016" PRIx64 "\t", g_seed);
+                    k.printbytes(NULL);
+                    printf("\t");
+                    v.printhex(NULL);
+                    if (i & 1) { k.flipbit(keybit); }
+                };
 
         // If VERBOSE reporting isn't enabled, then each test isn't being
         // reported on, and so there might need to be a failure summary at

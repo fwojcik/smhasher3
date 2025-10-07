@@ -146,14 +146,14 @@ static void sha3_Process( sha3_context * ctx, const uint8_t * in, size_t inlen )
 
     if (inlen == 0) { return; } /* nothing to do */
 
-    if (inlen < old_tail) {   /* have no complete word or haven't started the word yet */
+    if (inlen < old_tail) { /* have no complete word or haven't started the word yet */
         while (inlen--) {
             ctx->saved |= (uint64_t)(*(in++)) << ((ctx->byteIndex++) * 8);
         }
         return;
     }
 
-    if (old_tail) {           /* will have one word to process */
+    if (old_tail) { /* will have one word to process */
         inlen -= old_tail;
         while (old_tail--) {
             ctx->saved |= (uint64_t)(*(in++)) << ((ctx->byteIndex++) * 8);

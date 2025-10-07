@@ -51,9 +51,9 @@ static const uint32_t rcon[10] = {
  * Returns the number of rounds for the given cipher key size.
  */
 static int AES_KeySetup_Enc_portable( uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t cipherKey[], int keyBits ) {
-    int      i = 0;
-    uint32_t temp;
-    uint32_t tempkeys[60];
+    int        i = 0;
+    uint32_t   temp;
+    uint32_t   tempkeys[60];
     uint32_t * rk = tempkeys;
 
     rk[0] = GETU32(cipherKey     );
@@ -173,7 +173,7 @@ static int AES_KeySetup_Dec_portable( uint8_t rk8[] /*16*(Nr + 1)*/, const uint8
 
     /* apply the inverse MixColumn transform to all round keys but the first and the last: */
     for (i = 1; i < Nr; i++) {
-        rk8  += 16;
+        rk8 += 16;
         temp = GETU32(rk8);
         temp =
                 Td0[Te4[(temp >> 24)       ] & 0xff] ^

@@ -91,6 +91,7 @@ alignas(16) static thread_local uint64_t clhash_random[RANDOM_64BITWORDS_NEEDED_
 
 static uintptr_t clhash_init( const seed_t seed ) {
     uint64_t s64 = (uint64_t)seed;
+
     get_random_key_for_clhash(s64, ~s64, RANDOM_64BITWORDS_NEEDED_FOR_CLHASH, clhash_random);
     return (seed_t)(uintptr_t)(void *)clhash_random;
 }
@@ -365,7 +366,7 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte, const s
     const size_t lengthinc  = (lengthbyte + sizeof(uint64_t) - 1) / sizeof(uint64_t); // # of words, including partial
                                                                                       // ones
 
-    const __m128i * rs64    = (__m128i *)random;
+    const __m128i * rs64 = (__m128i *)random;
 
     // to preserve alignment on cache lines for main loop, we pick random bits at the end
     __m128i polyvalue = _mm_load_si128(rs64 + m128neededperblock);
@@ -433,16 +434,16 @@ static uint64_t clhash( const void * random, const uint8_t * stringbyte, const s
 //------------------------------------------------------------
 template <bool bswap>
 static void CLHash( const void * in, const size_t len, const seed_t seed, void * out ) {
-    void * random = (void *)(uintptr_t)seed;
-    uint64_t h = clhash<true, bswap>(random, (const uint8_t *)in, len);
+    void *   random = (void *)(uintptr_t)seed;
+    uint64_t h      = clhash<true, bswap>(random, (const uint8_t *)in, len);
 
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
 template <bool bswap>
 static void CLHashNomix( const void * in, const size_t len, const seed_t seed, void * out ) {
-    void * random = (void *)(uintptr_t)seed;
-    uint64_t h = clhash<false, bswap>(random, (const uint8_t *)in, len);
+    void *   random = (void *)(uintptr_t)seed;
+    uint64_t h      = clhash<false, bswap>(random, (const uint8_t *)in, len);
 
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }

@@ -124,6 +124,7 @@ static void MurmurHash2_64( const void * in, const size_t len, const seed_t seed
 // MurmurHash2_32_64() breaks on all-zero keys unless a high bit is set
 seed_t MurmurHash2_32_64_seedfix( const HashInfo * hinfo, const seed_t seed ) {
     uint64_t seed64 = (uint64_t)seed;
+
     unused(hinfo);
 
     if (seed64 >= 0xffffffff) {

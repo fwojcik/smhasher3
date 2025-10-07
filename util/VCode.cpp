@@ -288,8 +288,8 @@ static bool vcode_crc_selftest( void ) {
     if (use_hw) { return true; }
 #endif
     constexpr size_t testcnt = 6;
-    uint8_t offsets[testcnt]   = { 0x01, 0x29, 0x51, 0x79, 0xa1, 0xc9 };
-    uint32_t crcs[testcnt]     = {
+    uint8_t offsets[testcnt] = { 0x01, 0x29, 0x51, 0x79, 0xa1, 0xc9 };
+    uint32_t crcs[testcnt]   = {
         0x0e2c157f, 0xe980ebf6, 0xde74bded,
         0xd579c862, 0xba979ad0, 0x2b29d913
     };

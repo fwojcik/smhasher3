@@ -31,7 +31,7 @@
 typedef uint32_t hidx_t;
 
 // A type for a function that displays the given key and seed.
-typedef std::function <void (hidx_t)> KeyFn;
+typedef std::function<void (hidx_t)> KeyFn;
 
 //-----------------------------------------------------------------------------
 // Global variables from main.cpp
@@ -87,7 +87,7 @@ static inline void recordLog2PValue( uint32_t log_pvalue ) {
 extern uint32_t g_testPass, g_testFail;
 extern std::vector<std::pair<const char *, char *>> g_testFailures;
 extern uint64_t g_prevtime;
-extern bool g_showTestTimes;
+extern bool     g_showTestTimes;
 
 static inline void recordTestResult( bool pass, const char * suitename, const char * testname ) {
     if (testname != NULL) {
@@ -98,13 +98,10 @@ static inline void recordTestResult( bool pass, const char * suitename, const ch
     if (g_showTestTimes) {
         uint64_t curtime = monotonic_clock();
         if (testname != NULL) {
-            printf("Elapsed: %f seconds\t[%s\t%s]\n\n",
-                    (double)(curtime - g_prevtime) / (double)NSEC_PER_SEC,
+            printf("Elapsed: %f seconds\t[%s\t%s]\n\n", (double)(curtime - g_prevtime) / (double)NSEC_PER_SEC,
                     suitename, testname);
         } else {
-            printf("Elapsed: %f seconds\t[%s]\n\n",
-                    (double)(curtime - g_prevtime) / (double)NSEC_PER_SEC,
-                    suitename);
+            printf("Elapsed: %f seconds\t[%s]\n\n", (double)(curtime - g_prevtime) / (double)NSEC_PER_SEC, suitename);
         }
         g_prevtime = curtime;
     }
@@ -181,6 +178,7 @@ static void progressdots( int cur, int min, int max, int totaldots ) {
 static inline uint64_t nextlex( const uint64_t in, const size_t bits ) {
     uint64_t tmp = (in | (in - 1)) + 1;
     uint64_t out = tmp | ((((tmp & -tmp) / (in & -in)) >> 1) - 1);
+
     assert(bits <= 64);
     if (bits == 64) {
         return (out == ~UINT64_C(0)) ? 0 : out;

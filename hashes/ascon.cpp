@@ -267,7 +267,7 @@ static void ascon_squeeze( state_t * s, uint8_t * out, uint64_t outlen ) {
 template <uint64_t outbits, bool CXOFa, bool bswap>
 static void ascon_cxof( const void * in, const size_t len, const seed_t seed, void * out ) {
     state_t * initstate = (state_t *)(void *)(uintptr_t)seed;
-    state_t s;
+    state_t   s;
 
     memcpy(&s, initstate, sizeof(s));
 

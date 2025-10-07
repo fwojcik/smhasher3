@@ -95,24 +95,25 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
     }
 
     auto keyprint = [&]( hidx_t i ) {
-        uint64_t x = i % xMax;
-        uint32_t y = i / xMax;
+                uint64_t x        = i % xMax;
+                uint32_t y        = i / xMax;
 
-        const seed_t seed = hinfo->Seed(y, HashInfo::SEED_FORCED);
-        ExtBlob xb(key, inputLen);
-        memcpy(key, &x, sizeof(x));
+                const seed_t seed = hinfo->Seed(y, HashInfo::SEED_FORCED);
+                ExtBlob      xb( key, inputLen );
 
-        printf("0x%08" PRIx32 "        \t", y);
-        xb.printbytes(NULL);
-        printf("\t");
+                memcpy(key, &x, sizeof(x));
 
-        hashtype v;
-        hash(key, inputLen, seed, &v);
-        v.printhex(NULL);
-    };
+                printf("0x%08" PRIx32 "        \t", y);
+                xb.printbytes(NULL);
+                printf("\t");
+
+                hashtype v;
+                hash(key, inputLen, seed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).testDistribution(extra).
-        testDeltas(xMax).dumpFailKeys(keyprint);
+            testDeltas(xMax).dumpFailKeys(keyprint);
 
     printf("\n");
 

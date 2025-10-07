@@ -213,6 +213,7 @@ static FORCE_INLINE void gxhash_x86( const void * in, const size_t len, const ui
         _mm_storeu_si128((__m128i *)out, state);
     }
 }
+
 #else
 typedef uint8_t aesblock_t[VECTOR_SIZE];
 
@@ -225,12 +226,13 @@ static FORCE_INLINE void get_partial( aesblock_t block, const uint8_t * ptr, con
 }
 
 static FORCE_INLINE void compress_8( aesblock_t hash_vector, const uint8_t * ptr,
-         const uint8_t * end, const size_t len ) {
+        const uint8_t * end, const size_t len ) {
     const uint8_t * KEYPTR1 = &KEYDATA[1 * VECTOR_SIZE];
     const uint8_t * KEYPTR2 = &KEYDATA[2 * VECTOR_SIZE];
 
     // Disambiguation vectors
     aesblock_t t1, t2;
+
     memset(t1, 0, VECTOR_SIZE);
     memset(t2, 0, VECTOR_SIZE);
     // Hash is processed in two separate 128-bit parallel lanes.
@@ -275,7 +277,7 @@ static FORCE_INLINE void compress_8( aesblock_t hash_vector, const uint8_t * ptr
 
     // For 'Zeroes' test
     aesblock_t len_vec;
-    uint32_t len_int = COND_BSWAP((uint32_t)len, isBE());
+    uint32_t   len_int = COND_BSWAP((uint32_t)len, isBE());
     PUT_U32<false>(len_int, len_vec,  0);
     PUT_U32<false>(len_int, len_vec,  4);
     PUT_U32<false>(len_int, len_vec,  8);
@@ -290,10 +292,10 @@ static FORCE_INLINE void compress_8( aesblock_t hash_vector, const uint8_t * ptr
 }
 
 static FORCE_INLINE void compress_many( aesblock_t hash_vector, const uint8_t * ptr,
-         const uint8_t * end, const size_t len ) {
-    const uint64_t  unrollable_blocks_count =  (end - ptr) / (VECTOR_SIZE * UNROLL_FACTOR);
+        const uint8_t * end, const size_t len ) {
+    const uint64_t  unrollable_blocks_count = (end - ptr) / (VECTOR_SIZE * UNROLL_FACTOR);
     const uint8_t * endptr = end - unrollable_blocks_count * VECTOR_SIZE * UNROLL_FACTOR;
-    aesblock_t v0;
+    aesblock_t      v0;
 
     // Process first individual blocks until we have a whole number of 8 blocks
     while (ptr < endptr) {
@@ -365,7 +367,7 @@ static FORCE_INLINE void finalize( aesblock_t hash ) {
 template <bool output64>
 static FORCE_INLINE void gxhash_generic( const void * in, const size_t len, const uint64_t seed, void * out ) {
     aesblock_t seedx, state;
-    uint64_t seedb = COND_BSWAP(seed, isBE());
+    uint64_t   seedb = COND_BSWAP(seed, isBE());
 
     memcpy(&seedx[0]            , &seedb, sizeof(seedb));
     memcpy(&seedx[sizeof(seedb)], &seedb, sizeof(seedb));
@@ -375,6 +377,7 @@ static FORCE_INLINE void gxhash_generic( const void * in, const size_t len, cons
     finalize(state);
     memcpy(out, state, output64 ? 8 : 16);
 }
+
 #endif
 
 //------------------------------------------------------------

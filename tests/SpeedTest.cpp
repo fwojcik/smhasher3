@@ -64,8 +64,8 @@
 
 constexpr int SMALL_CUTOFF = 128; // Hashes of >=128b buffers are considered large
 
-constexpr int BULK_RUNS   = 80;
-constexpr int BULK_TRIALS = 1920;
+constexpr int BULK_RUNS    = 80;
+constexpr int BULK_TRIALS  = 1920;
 
 constexpr int TINY_TRIALS  = 600;   // Timings per hash for small (<128b) keys
 constexpr int TINY_SAMPLES = 15000; // Samples per timing run for small sizes
@@ -290,14 +290,14 @@ static void BulkSpeedTest( const HashInfo * hinfo, flags_t flags, seed_t seed, b
             printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz (%10.6f %10.6f stdv%8.4f%%)\n",
                     align, bestbpc, bestbps, cycles, stddev, 100.0 * stddev / cycles);
         } else {
-            printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n",
-                    align, bestbpc, bestbps);
+            printf("Alignment  %2d - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n", align, bestbpc, bestbps);
         }
         sumbpc += bestbpc;
     }
 
     sumbpc = sumbpc / 8.0;
-    printf("Average       - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n", sumbpc, (sumbpc * 3500000000.0 / 1073741824.0));
+    printf("Average       - %5.2f bytes/cycle - %5.2f GiB/sec @ 3.5 ghz\n",
+            sumbpc, (sumbpc * 3500000000.0 / 1073741824.0));
 
     // Deliberately not counted in the Average stat, so the two can be directly compared
     if (vary_align) {
@@ -322,8 +322,7 @@ static void BulkSpeedTest( const HashInfo * hinfo, flags_t flags, seed_t seed, b
 
 //-----------------------------------------------------------------------------
 
-static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysize,
-        seed_t seed, bool include_vary ) {
+static double TinySpeedTest( const HashInfo * hinfo, flags_t flags, int maxkeysize, seed_t seed, bool include_vary ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
     double       sum  = 0.0;
 

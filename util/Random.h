@@ -191,7 +191,7 @@ class Rand {
     constexpr static unsigned  RANDS_PER_ROUND = 4;
     constexpr static unsigned  RNG_KEYS        = 5;
     constexpr static unsigned  BUFLEN = PARALLEL * RANDS_PER_ROUND;
-    static uint64_t GLOBAL_SEED;
+    static uint64_t            GLOBAL_SEED;
 
   private:
     friend void RandTest( const unsigned runs );
@@ -308,12 +308,14 @@ class Rand {
     //   mix(0, 0) != 0,
     static inline uint64_t weakmix( uint64_t a, uint64_t b ) {
         const uint64_t K = UINT64_C(0x3C6EF372FE94F82B); // sqrt(5) - 1
+
         return (3 * a) + (5 * b) + (4 * a * b) + K;
     }
 
     //-----------------------------------------------------------------------------
 
   public:
+
     Rand( uint64_t seed = 0 ) {
         reseed(seed);
     }
@@ -363,7 +365,7 @@ class Rand {
     //-----------------------------------------------------------------------------
 
     inline uint64_t rand_u64( void ) {
-        if (expectp(bufidx >= BUFLEN, 1.0 / BUFLEN)) {
+        if (expectp((bufidx >= BUFLEN), 1.0 / BUFLEN)) {
             refill_buf(rngbuf);
             bufidx -= BUFLEN;
         }

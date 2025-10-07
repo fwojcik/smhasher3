@@ -101,17 +101,17 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
     }
 
     auto keyprint = [&]( hidx_t i ) {
-        hidx_t   keylen  = 1 + (i % keycount); i /= keycount;
-        bool     negate  = (i & 1);            i /= 2;
-        seed_t   setbits = InverseKChooseUpToK(i, 1, maxbits, bigseed ? 64 : 32);
-        seed_t   iseed   = nthlex(i, setbits); if (negate) { iseed = ~iseed; }
-        seed_t   hseed   = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
-        hashtype v;
+                hidx_t   keylen  = 1 + (i % keycount); i            /= keycount;
+                bool     negate  =     (i & 1       );            i /= 2;
+                seed_t   setbits = InverseKChooseUpToK(i, 1, maxbits, bigseed ? 64 : 32);
+                seed_t   iseed   = nthlex(i, setbits); if (negate) { iseed = ~iseed; }
+                seed_t   hseed   = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+                hashtype v;
 
-        printf("0x%016" PRIx64 "\t%d copies of 0x00\t", (uint64_t)iseed, keylen);
-        hash(nullblock, keylen, hseed, &v);
-        v.printhex(NULL);
-    };
+                printf("0x%016" PRIx64 "\t%d copies of 0x00\t", (uint64_t)iseed, keylen);
+                hash(nullblock, keylen, hseed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).testDeltas(2 * keycount).dumpFailKeys(keyprint);
 

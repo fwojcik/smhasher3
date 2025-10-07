@@ -53,12 +53,12 @@
 #include "words/array.h"
 
 std::vector<std::string> GetWordlist( wordlist_case_t cases, bool verbose ) {
-    std::vector<std::string> wordvec;
+    std::vector<std::string>        wordvec;
     std::unordered_set<std::string> wordset; // words need to be unique, otherwise we report collisions
     unsigned sum = 0, skip_dup = 0, skip_char = 0;
 
-    for (const char* cstr : words_array) {
-        std::string  str = cstr;
+    for (const char * cstr: words_array) {
+        std::string str = cstr;
         if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyz") != std::string::npos) {
             skip_char++;
             continue;
@@ -85,7 +85,7 @@ std::vector<std::string> GetWordlist( wordlist_case_t cases, bool verbose ) {
 
     if (verbose) {
         unsigned cnt = (double)wordvec.size() /
-            ((cases == CASE_ALL) ? 3.0 : (cases == CASE_LOWER) ? 1.0 : 2.0);
+                ((cases == CASE_ALL) ? 3.0 : (cases == CASE_LOWER) ? 1.0 : 2.0);
         printf("Read %d words from internal list, ", cnt);
         printf("avg len: %0.3f\n\n", (double)(sum) / (double)(cnt));
     }

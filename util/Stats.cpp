@@ -179,6 +179,7 @@ uint64_t chooseUpToK( int n, int k ) {
 // returned with the remainder set correctly.
 uint32_t InverseKChooseUpToK( uint32_t & count, const uint32_t minK, const uint32_t maxK, const uint32_t N ) {
     uint64_t K;
+
     for (K = minK; K <= maxK; K++) {
         uint64_t curcount = chooseK(N, K);
         if (count < curcount) { break; }
@@ -193,6 +194,7 @@ uint32_t InverseKChooseUpToK( uint32_t & count, const uint32_t minK, const uint3
 // returned with the remainder set correctly.
 uint32_t InverseNChooseUpToK( uint32_t & count, const uint32_t minN, const uint32_t maxN, const uint32_t K ) {
     uint64_t N;
+
     for (N = minN; N <= maxN; N++) {
         uint64_t curcount = chooseK(N, K);
         if (count < curcount) { break; }
@@ -229,7 +231,7 @@ uint32_t InverseSum1toN( uint32_t sum ) {
 // }
 // has run so far for given values of m and a at the
 // indicated place in the code.
-static uint32_t DoubleSum(uint32_t m, uint32_t x) {
+static uint32_t DoubleSum( uint32_t m, uint32_t x ) {
     return (2 * m * x - x * x - x) / 2;
 }
 
@@ -237,7 +239,7 @@ static uint32_t DoubleSum(uint32_t m, uint32_t x) {
 // value of x for which DoubleSum(m, x) < n. This allows computing how many
 // times the outer loop in the DoubleSum() example has run for a given
 // count of how many times do_one_thing() has been called.
-static uint32_t InverseDoubleSum(uint32_t m, uint32_t n) {
+static uint32_t InverseDoubleSum( uint32_t m, uint32_t n ) {
     return (2 * m - 1 - sqrt(4 * m * m - 4 * m - 8 * n + 1)) / 2;
 }
 
@@ -251,7 +253,7 @@ static uint32_t InverseDoubleSum(uint32_t m, uint32_t n) {
 // was done to find the number of times the inner loop was done during the
 // current partial outer loop. It then converts that count into an index by
 // adding "i + 1", since the values for j start there in the for() loop.
-void GetDoubleLoopIndices(uint32_t m, uint32_t sum, uint32_t & i, uint32_t & j) {
+void GetDoubleLoopIndices( uint32_t m, uint32_t sum, uint32_t & i, uint32_t & j ) {
     i = InverseDoubleSum(m, sum);
     j = sum - DoubleSum(m, i) + i + 1;
 }
@@ -1148,6 +1150,7 @@ void ReportCollisionEstimates( void ) {
 // The number of bins expected to be empty
 double GetMissingHashesExpected( size_t nbH, int nbBits ) {
     double pE = exp((double)nbH * log1p(-exp2(-nbBits)));
+
     return ldexp(pE, nbBits);
 }
 
@@ -1298,19 +1301,20 @@ double EstimateMaxCollPValue( const unsigned long nbH, const int nbBits, const i
  * hardcoded to p = 0.5, and this returns the two-tailed value.
  */
 double GetCoinflipBinomialPValue( const unsigned long coinflips, const unsigned long delta ) {
-    //assert(coinflips >= 2 * delta);
-    const double n     = coinflips;
-    const double two_s = coinflips + 2 * delta;
-    const double two_t = coinflips - 2 * delta;
+    // assert(coinflips >= 2 * delta);
+    const double n       = coinflips;
+    const double two_s   = coinflips + 2 * delta;
+    const double two_t   = coinflips - 2 * delta;
 
-    const double d2    = delta + 0.02 * (1.0 / (two_s + 1.0) - 1.0 / (two_t + 1.0));
+    const double d2      = delta + 0.02 * (1.0 / (two_s + 1.0) - 1.0 / (two_t + 1.0));
 
-    const double num   = 2.0 + GFunc_PeizerPratt(two_s / n) + GFunc_PeizerPratt(two_t / n);
-    const double denom = n / 2.0 + 1.0 / 12.0;
-    const double z2    = d2 * sqrt(num / denom);
+    const double num     = 2.0 + GFunc_PeizerPratt(two_s / n) + GFunc_PeizerPratt(two_t / n);
+    const double denom   = n / 2.0 + 1.0 / 12.0;
+    const double z2      = d2  * sqrt(num                / denom);
 
     const double p_value = 2.0 * GetStdNormalPValue(z2);
-    //printf("\nPr(Xi > %ld; %ld, 0.5) ~= 1.0 - N(%f) ~= %e (Cbound %e)\n",
+
+    // printf("\nPr(Xi > %ld; %ld, 0.5) ~= 1.0 - N(%f) ~= %e (Cbound %e)\n",
     //        (unsigned long)(two_s / 2.0), coinflips, z2, p_value, 2.0 * exp(-(double)delta * 2.0 / n * delta));
 
     return p_value;

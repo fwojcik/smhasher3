@@ -31,7 +31,7 @@
  */
 template <int Nr>
 static inline void AES_Encrypt_ARM( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t pt[16], uint8_t ct[16] ) {
-    uint8x16_t      block = vld1q_u8(pt);
+    uint8x16_t block = vld1q_u8(pt);
 
     // AES single round encryption
     block = vaeseq_u8(block, vld1q_u8(rk8 + 0 * 16));
@@ -51,7 +51,7 @@ static inline void AES_Encrypt_ARM( const uint8_t rk8[] /*16*(Nr + 1)*/, const u
 
 template <int Nr>
 static inline void AES_Decrypt_ARM( const uint8_t rk8[] /*16*(Nr + 1)*/, const uint8_t ct[16], uint8_t pt[16] ) {
-    uint8x16_t      block = vld1q_u8(ct);
+    uint8x16_t block = vld1q_u8(ct);
 
     // AES single round decryption
     block = vaesdq_u8(block, vld1q_u8(rk8 + 0 * 16));
@@ -71,7 +71,7 @@ static inline void AES_Decrypt_ARM( const uint8_t rk8[] /*16*(Nr + 1)*/, const u
 
 static inline void AES_EncryptRound_ARM( const uint8_t rk8[], uint8_t block[16] ) {
     uint8x16_t zero = vmovq_n_u8(0);
-    uint8x16_t tmp = vld1q_u8(block);
+    uint8x16_t tmp  = vld1q_u8(block);
 
     tmp = vaeseq_u8(tmp, zero);
     tmp = vaesmcq_u8(tmp);
@@ -81,7 +81,7 @@ static inline void AES_EncryptRound_ARM( const uint8_t rk8[], uint8_t block[16] 
 
 static inline void AES_DecryptRound_ARM( const uint8_t rk8[], uint8_t block[16] ) {
     uint8x16_t zero = vmovq_n_u8(0);
-    uint8x16_t tmp = vld1q_u8(block);
+    uint8x16_t tmp  = vld1q_u8(block);
 
     tmp = vaesdq_u8(tmp, zero);
     tmp = vaesimcq_u8(tmp);
@@ -91,7 +91,7 @@ static inline void AES_DecryptRound_ARM( const uint8_t rk8[], uint8_t block[16] 
 
 static inline void AES_EncryptRoundNoMixCol_ARM( const uint8_t rk8[], uint8_t block[16] ) {
     uint8x16_t zero = vmovq_n_u8(0);
-    uint8x16_t tmp = vld1q_u8(block);
+    uint8x16_t tmp  = vld1q_u8(block);
 
     tmp = vaeseq_u8(tmp, zero);
     tmp = veorq_u8(tmp, vld1q_u8(rk8));
@@ -100,7 +100,7 @@ static inline void AES_EncryptRoundNoMixCol_ARM( const uint8_t rk8[], uint8_t bl
 
 static inline void AES_DecryptRoundNoMixCol_ARM( const uint8_t rk8[], uint8_t block[16] ) {
     uint8x16_t zero = vmovq_n_u8(0);
-    uint8x16_t tmp = vld1q_u8(block);
+    uint8x16_t tmp  = vld1q_u8(block);
 
     tmp = vaesdq_u8(tmp, zero);
     tmp = veorq_u8(tmp, vld1q_u8(rk8));

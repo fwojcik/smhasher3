@@ -40,10 +40,10 @@ FORCE_INLINE static void mix_state( uint64_t * state ) {
     for (int i = 0; i < 7; i++) {
         state[0] += state[2];
         state[1] += state[3];
-        state[2]  = ROTL64( state[2], rots[i][0] ) ^ state[0];
-        state[3]  = ROTL64( state[3], rots[i][1] ) ^ state[1];
+        state[2]  = ROTL64(state[2], rots[i][0]) ^ state[0];
+        state[3]  = ROTL64(state[3], rots[i][1]) ^ state[1];
 
-        std::swap( state[0], state[1] );
+        std::swap(state[0], state[1]);
     }
 }
 
@@ -55,7 +55,7 @@ static uintptr_t init_seed( seed_t seed ) {
     SEED_STATE[2] = 0;
     SEED_STATE[3] = 0;
 
-    mix_state( SEED_STATE );
+    mix_state(SEED_STATE);
 
     return (uintptr_t)(void *)SEED_STATE;
 }
@@ -79,6 +79,7 @@ static void TentHash( const void * in, const size_t len, const seed_t seed, void
     // small key performance, making TentHash look a tiny bit slower than it
     // actually is in the small key performance test.
     const uint64_t * seed_state = (const uint64_t *)(void *)(uintptr_t)seed;
+
     state[0] ^= seed_state[0];
     state[1] ^= seed_state[1];
     state[2] ^= seed_state[2];
@@ -86,15 +87,15 @@ static void TentHash( const void * in, const size_t len, const seed_t seed, void
 
     // Process the input data in 256-bit blocks.
     while (data_len >= TENT_BLOCK_SIZE) {
-        state[0] ^= GET_U64<bswap>( data, 0 );
-        state[1] ^= GET_U64<bswap>( data, 8 );
-        state[2] ^= GET_U64<bswap>( data, 16 );
-        state[3] ^= GET_U64<bswap>( data, 24 );
+        state[0] ^= GET_U64<bswap>(data,  0);
+        state[1] ^= GET_U64<bswap>(data,  8);
+        state[2] ^= GET_U64<bswap>(data, 16);
+        state[3] ^= GET_U64<bswap>(data, 24);
 
         data     += TENT_BLOCK_SIZE;
         data_len -= TENT_BLOCK_SIZE;
 
-        mix_state( state );
+        mix_state(state);
     }
 
     // Handle any remaining data less than 256 bits.
@@ -102,25 +103,25 @@ static void TentHash( const void * in, const size_t len, const seed_t seed, void
         // Copy the data into a zeroed-out buffer. When the data is less than
         // 256 bits this pads it out to 256 bits with zeros.
         uint8_t buffer[TENT_BLOCK_SIZE] = { 0 };
-        memcpy( buffer, data, data_len );
+        memcpy(buffer, data, data_len);
 
-        state[0] ^= GET_U64<bswap>( buffer, 0 );
-        state[1] ^= GET_U64<bswap>( buffer, 8 );
-        state[2] ^= GET_U64<bswap>( buffer, 16 );
-        state[3] ^= GET_U64<bswap>( buffer, 24 );
+        state[0] ^= GET_U64<bswap>(buffer,  0);
+        state[1] ^= GET_U64<bswap>(buffer,  8);
+        state[2] ^= GET_U64<bswap>(buffer, 16);
+        state[3] ^= GET_U64<bswap>(buffer, 24);
 
-        mix_state( state );
+        mix_state(state);
     }
 
     // Finalize.
     state[0] ^= len * 8;
-    mix_state( state );
-    mix_state( state );
+    mix_state(state);
+    mix_state(state);
 
     // Copy the hash state to the output.
-    PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
-    PUT_U64<bswap>( state[1], (uint8_t *)out, 8 );
-    PUT_U32<bswap>( (uint32_t)state[2], (uint8_t *)out, 16 );
+    PUT_U64<bswap>(state[0], (uint8_t *)out, 0);
+    PUT_U64<bswap>(state[1], (uint8_t *)out, 8);
+    PUT_U32<bswap>((uint32_t)state[2], (uint8_t *)out, 16);
 }
 
 //------------------------------------------------------------

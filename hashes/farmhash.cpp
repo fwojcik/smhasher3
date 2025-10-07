@@ -587,14 +587,15 @@ namespace farmhashte {
 // compiler uses AVX instructions (e.g., use the -mavx flag with GCC).
 template <bool bswap>
 static inline uint64_t farmhashte::Hash64Long( const uint8_t * s, size_t n, uint64_t seed0, uint64_t seed1 ) {
-    const __m128i kShuf =
-            _mm_set_epi8( 4, 11, 10, 5, 8, 15, 6, 9, 12, 2, 14, 13, 0, 7, 3, 1);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Woverflow"
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Woverflow"
     const __m128i kMult =
             _mm_set_epi8(0xbd, 0xd6, 0x33, 0x39, 0x45, 0x54, 0xfa,
             0x03, 0x34, 0x3e, 0x33, 0xed, 0xcc, 0x9e, 0x2d, 0x51);
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
+
+    const __m128i kShuf =
+            _mm_set_epi8( 4, 11, 10, 5, 8, 15, 6, 9, 12, 2, 14, 13, 0, 7, 3, 1);
     uint64_t        seed2 = (seed0 + 113) * (seed1 + 9);
     uint64_t        seed3 = (ROTR64(seed0, 23) + 27) * (ROTR64(seed1, 30) + 111);
     __m128i         d0    = _mm_cvtsi64_si128(seed0);

@@ -143,7 +143,7 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
     addVCodeInput(&keys[0], reps * keybytes);
 
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, seedbytes) ? SEQ_DIST_2 : SEQ_DIST_3;
-    RandSeq rsS = r.get_seq(seqtype, seedbytes);
+    RandSeq          rsS     = r.get_seq(seqtype, seedbytes);
 
     std::vector<uint8_t> seeds( reps * seedbytes );
     rsS.write(&seeds[0], 0, reps);
@@ -161,11 +161,11 @@ static bool SeedBicTestImpl( const HashInfo * hinfo, const size_t keybytes, cons
     }
 
     if (g_NCPU == 1) {
-        SeedBicTestBatch<hashtype>(hinfo, popcounts[0], andcounts[0],
-                keybytes, &keys[0], seedbytes, &seeds[0], irep, reps);
+        SeedBicTestBatch<hashtype>(hinfo, popcounts[0], andcounts[0], keybytes,
+                &keys[0], seedbytes, &seeds[0], irep, reps);
     } else {
 #if defined(HAVE_THREADS)
-        std::vector<std::thread> t(g_NCPU);
+        std::vector<std::thread> t( g_NCPU );
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 SeedBicTestBatch<hashtype>, hinfo, std::ref(popcounts[i]), std::ref(andcounts[i]),

@@ -126,15 +126,14 @@ typedef int a_int;
 
 template <typename hashtype>
 static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> & popcount0,
-        std::vector<uint32_t> & andcount0, size_t keybytes, const uint8_t * keys,
-        a_int & irepp, size_t reps) {
+        std::vector<uint32_t> & andcount0, size_t keybytes, const uint8_t * keys, a_int & irepp, size_t reps ) {
     const size_t keybits      = keybytes * 8;
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
     VLA_ALLOC(uint8_t, buf, keybytes);
-    hashtype  h1, h2;
-    size_t    irep;
+    hashtype h1, h2;
+    size_t   irep;
 
     while ((irep = irepp++) < reps) {
         progressdots(irep, 0, reps - 1, 12);
@@ -177,8 +176,7 @@ static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> 
 }
 
 template <typename hashtype>
-static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
-        const size_t reps, flags_t flags ) {
+static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes, const size_t reps, flags_t flags ) {
     const size_t keybits      = keybytes * 8;
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
@@ -187,7 +185,7 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
 
     Rand r( 939741, keybytes );
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
-    RandSeq rs = r.get_seq(seqtype, keybytes);
+    RandSeq          rs      = r.get_seq(seqtype, keybytes);
 
     std::vector<uint8_t> keys( reps * keybytes );
     rs.write(&keys[0], 0, reps);
@@ -205,11 +203,10 @@ static bool BicTestImpl( HashFn hash, const seed_t seed, const size_t keybytes,
     }
 
     if (g_NCPU == 1) {
-        BicTestBatch<hashtype>(hash, seed, popcounts[0], andcounts[0],
-                keybytes, &keys[0], irep, reps);
+        BicTestBatch<hashtype>(hash, seed, popcounts[0], andcounts[0], keybytes, &keys[0], irep, reps);
     } else {
 #if defined(HAVE_THREADS)
-        std::vector<std::thread> t(g_NCPU);
+        std::vector<std::thread> t( g_NCPU );
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 BicTestBatch<hashtype>, hash, seed, std::ref(popcounts[i]), std::ref(andcounts[i]),

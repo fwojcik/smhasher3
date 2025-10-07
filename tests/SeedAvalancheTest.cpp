@@ -76,7 +76,7 @@ typedef unsigned a_uint;
 template <typename hashtype, unsigned seedbytes>
 static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins, const unsigned keybytes,
         const uint8_t * keys, const uint8_t * seeds, a_uint & irepp, const unsigned reps, const flags_t flags ) {
-    const HashFn hash    = hinfo->hashFn(g_hashEndian);
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
 
     hashtype A, B;
     unsigned irep;
@@ -112,15 +112,14 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
 //-----------------------------------------------------------------------------
 
 template <typename hashtype, unsigned seedbits>
-static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
-        const unsigned reps, flags_t flags ) {
+static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes, const unsigned reps, flags_t flags ) {
     const unsigned seedbytes = seedbits / 8;
     const unsigned hashbits  = hashtype::bitlen;
     const unsigned arraysize = seedbits * hashbits;
 
     Rand r( 860319, keybytes );
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, seedbytes) ? SEQ_DIST_2 : SEQ_DIST_3;
-    RandSeq rs = r.get_seq(seqtype, seedbytes);
+    RandSeq          rs      = r.get_seq(seqtype, seedbytes);
 
     printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
 
@@ -143,7 +142,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
         calcBiasRange<hashtype, seedbytes>(hinfo, bins[0], keybytes, &keys[0], &seeds[0], irep, reps, flags);
     } else {
 #if defined(HAVE_THREADS)
-        std::vector<std::thread> t(g_NCPU);
+        std::vector<std::thread> t( g_NCPU );
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype, seedbytes>, hinfo, std::ref(bins[i]),
@@ -176,7 +175,7 @@ static bool SeedAvalancheImpl( const HashInfo * hinfo, const unsigned keybytes,
 
 template <typename hashtype>
 bool SeedAvalancheTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
-    bool result   = true;
+    bool result = true;
 
     printf("[[[ Seed Avalanche Tests ]]]\n\n");
 

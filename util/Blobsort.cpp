@@ -198,9 +198,9 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
     case 15:
     case 16:
     {
-        const size_t len    = sizeof(blobtype) / 2;
-        const size_t offset = (testnum == 15) ? (sizeof(blobtype) - len) : 0;
-        const uint8_t * const src = ((uint8_t *)&blobs[0]) + offset;
+        const size_t          len    = sizeof(blobtype) / 2;
+        const size_t          offset = (testnum == 15) ? (sizeof(blobtype) - len) : 0;
+        const uint8_t * const src    = ((uint8_t *)&blobs[0]) + offset;
         for (uint32_t i = 1; i < TEST_SIZE; i++) {
             uint8_t * dst = ((uint8_t *)&blobs[i]) + offset;
             memcpy(dst, src, len);
@@ -227,8 +227,8 @@ static void blobfill( std::vector<blobtype> & blobs, size_t testnum, size_t iter
 
 template <typename blobtype>
 static bool blobverify( std::vector<blobtype> & blobs, std::vector<blobtype> & orig ) {
-    bool passed     = true;
-    const size_t sz = blobs.size();
+    bool         passed = true;
+    const size_t sz     = blobs.size();
 
     for (size_t nb = 1; nb < sz; nb++) {
         if (!((blobs[nb - 1] < blobs[nb]) ||
@@ -253,8 +253,8 @@ static bool blobverify( std::vector<blobtype> & blobs, std::vector<blobtype> & o
 
 template <typename blobtype>
 static bool blobverify( std::vector<blobtype> & blobs, std::vector<blobtype> & orig, std::vector<hidx_t> & idxs ) {
-    bool passed     = true;
-    const size_t sz = blobs.size();
+    bool         passed = true;
+    const size_t sz     = blobs.size();
 
     for (size_t nb = 0; nb < sz; nb++) {
         if (blobs[nb] != orig[idxs[nb]]) {
@@ -294,8 +294,8 @@ const static int baseline_idx2[SORT_TESTS] = {
 template <uint32_t TEST_SIZE, uint32_t TEST_ITER, typename blobtype, bool track_idxs>
 bool test_blobsort_type_idx( void ) {
     std::vector<blobtype> blobs( TEST_SIZE ), orig( TEST_SIZE );
-    std::vector<hidx_t> idxs;
-    std::vector<size_t> testnums;
+    std::vector<hidx_t>   idxs;
+    std::vector<size_t>   testnums;
     uint64_t timetotal = 0;
     double   basesum   = 0.0;
     bool     passed    = true;
@@ -358,7 +358,7 @@ bool test_blobsort_type_idx( void ) {
             }
         }
         timetotal += mintime;
-        passed &= thispassed;
+        passed    &= thispassed;
     }
 
     if (TEST_ITER > 1) {
@@ -379,7 +379,7 @@ bool test_blobsort_type( void ) {
     bool passed = true;
 
     passed &= test_blobsort_type_idx<TEST_SIZE, TEST_ITER, blobtype, false>();
-    passed &= test_blobsort_type_idx<TEST_SIZE, TEST_ITER, blobtype, true>();
+    passed &= test_blobsort_type_idx<TEST_SIZE, TEST_ITER, blobtype, true >();
 
     return passed;
 }
@@ -398,8 +398,8 @@ std::vector<SortTestFn> PACKEXPANDER() {
     return { &test_blobsort_type<TEST_SIZE, TEST_ITER, T>... };
 }
 
-auto SortTestFns  = PACKEXPANDER<   16000,  1, HASHTYPELIST>();
-auto SortBenchFns = PACKEXPANDER< 4000000,100, HASHTYPELIST>();
+auto SortTestFns  = PACKEXPANDER<  16000,   1, HASHTYPELIST>();
+auto SortBenchFns = PACKEXPANDER<4000000, 100, HASHTYPELIST>();
 
 void BlobsortTest( void ) {
     bool result = true;

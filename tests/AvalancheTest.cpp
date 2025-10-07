@@ -119,7 +119,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
 
     Rand r( 402562, keybits );
     enum RandSeqType seqtype = reps > r.seq_maxelem(SEQ_DIST_3, keybytes) ? SEQ_DIST_2 : SEQ_DIST_3;
-    RandSeq rs = r.get_seq(seqtype, keybytes);
+    RandSeq          rs      = r.get_seq(seqtype, keybytes);
 
     printf("Testing %3d-byte keys, %6d reps", keybytes, reps);
 
@@ -138,7 +138,7 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
         calcBiasRange<hashtype>(hash, seed, bins[0], keybytes, &keys[0], irep, reps, flags);
     } else {
 #if defined(HAVE_THREADS)
-        std::vector<std::thread> t(g_NCPU);
+        std::vector<std::thread> t( g_NCPU );
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 calcBiasRange<hashtype>, hash, seed, std::ref(bins[i]),
@@ -171,8 +171,8 @@ static bool AvalancheImpl( HashFn hash, const seed_t seed, const unsigned keybit
 
 template <typename hashtype>
 bool AvalancheTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
-    const HashFn hash     = hinfo->hashFn(g_hashEndian);
-    bool         result   = true;
+    const HashFn hash   = hinfo->hashFn(g_hashEndian);
+    bool         result = true;
 
     printf("[[[ Avalanche Tests ]]]\n\n");
 

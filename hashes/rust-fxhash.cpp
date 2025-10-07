@@ -58,8 +58,8 @@
 // constant that was found to be good for a MCG in:
 //     "Computationally Easy, Spectrally Good Multipliers for Congruential
 //     Pseudorandom Number Generators" by Guy Steele and Sebastiano Vigna.
-const uint64_t K64   = UINT64_C(0xf1357aea2e62a9c5);
-const uint32_t K32   = 0x93d765dd;
+const uint64_t K64 = UINT64_C(0xf1357aea2e62a9c5);
+const uint32_t K32 = 0x93d765dd;
 
 // Nothing special, digits of pi.
 const uint64_t SEED1 = UINT64_C(0x243f6a8885a308d3);
@@ -126,7 +126,7 @@ static uint64_t hash_bytes( const uint8_t * bytes, const size_t len ) {
         // Handle bulk (can partially overlap with suffix).
         size_t off = 0;
         while (off < (len - 16)) {
-            uint64_t x = GET_U64<bswap>(bytes, off);
+            uint64_t x = GET_U64<bswap>(bytes, off    );
             uint64_t y = GET_U64<bswap>(bytes, off + 8);
 
             // Replace s1 with a mix of s0, x, and y, and s0 with s1.
@@ -142,7 +142,7 @@ static uint64_t hash_bytes( const uint8_t * bytes, const size_t len ) {
         }
 
         s0 ^= GET_U64<bswap>(bytes, len - 16);
-        s1 ^= GET_U64<bswap>(bytes, len - 8);
+        s1 ^= GET_U64<bswap>(bytes, len -  8);
     }
 
     return multiply_mix<mul64>(s0, s1) ^ (uint64_t)len;
@@ -175,9 +175,9 @@ static uint32_t f32( uint32_t val ) {
 //------------------------------------------------------------
 template <bool bswap, bool avalanche, bool mul64>
 static void FxHash64( const void * in, const size_t len, const seed_t seed, void * out ) {
-    const uint8_t * ptr = (const uint8_t *)in;
-    uint64_t hash = (uint64_t)seed;
-    uint64_t hb   = hash_bytes<bswap, mul64>(ptr, len);
+    const uint8_t * ptr  = (const uint8_t *)in;
+    uint64_t        hash = (uint64_t       )seed;
+    uint64_t        hb   = hash_bytes<bswap, mul64>(ptr, len);
 
     if (avalanche) {
         hash  = f64(hash);
@@ -193,9 +193,9 @@ static void FxHash64( const void * in, const size_t len, const seed_t seed, void
 
 template <bool bswap, bool avalanche>
 static void FxHash32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    const uint8_t * ptr = (const uint8_t *)in;
-    uint32_t hash = (uint32_t)seed;
-    uint64_t hb   = hash_bytes<bswap, false>(ptr, len);
+    const uint8_t * ptr  = (const uint8_t *)in;
+    uint32_t        hash = (uint32_t       )seed;
+    uint64_t        hb   = hash_bytes<bswap, false>(ptr, len);
 
     if (avalanche) {
         hash  = f32(hash);

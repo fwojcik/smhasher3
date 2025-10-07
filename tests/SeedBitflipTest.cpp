@@ -124,21 +124,21 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, flags
         }
 
         auto keyprint = [&]( hidx_t i ) {
-            ExtBlob k(&keys[(i >> 1) * keybytes], keybytes);
-            seed_t iseed, hseed;
-            hashtype v;
+                    ExtBlob  k( &keys[(i >> 1) * keybytes], keybytes );
+                    seed_t   iseed, hseed;
+                    hashtype v;
 
-            memcpy(&iseed, &seeds[(i >> 1) * seedbytes], seedbytes);
-            iseed = hinfo->getFixedSeed(iseed);
-            if (i & 1) { iseed ^= (UINT64_C(1) << seedbit); }
-            hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+                    memcpy(&iseed, &seeds[(i >> 1) * seedbytes], seedbytes);
+                    iseed = hinfo->getFixedSeed(iseed);
+                    if (i & 1) { iseed ^= (UINT64_C(1) << seedbit); }
+                    hseed = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
 
-            hash(k, keybytes, hseed, &v);
-            printf("0x%016" PRIx64 "\t", (uint64_t)iseed);
-            k.printbytes(NULL);
-            printf("\t");
-            v.printhex(NULL);
-        };
+                    hash(k, keybytes, hseed, &v);
+                    printf("0x%016" PRIx64 "\t", (uint64_t)iseed);
+                    k.printbytes(NULL);
+                    printf("\t");
+                    v.printhex(NULL);
+                };
 
         // If VERBOSE reporting isn't enabled, then each test isn't being
         // reported on, and so there might need to be a failure summary at

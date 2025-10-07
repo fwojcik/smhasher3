@@ -30,8 +30,8 @@
 
 #define KHASH_SHUFFLE(v, s) VECTOR_SHUFFLE_1(v, s)
 
-typedef uint8_t  kv16ui  VECTOR_SIZE( 16 );
-typedef uint32_t  kv4ui  VECTOR_SIZE( 16 );
+typedef uint8_t  kv16ui VECTOR_SIZE( 16 );
+typedef uint32_t kv4ui  VECTOR_SIZE( 16 );
 
 static KHASH_FINLINE kv16ui khashv_sub_s1_gcc( kv16ui in ) {
     const kv16ui mask = {
@@ -74,7 +74,7 @@ static KHASH_FINLINE kv4ui khashv_rotr_5_bytes_gcc( kv4ui input ) {
     return input;
 }
 
-static KHASH_FINLINE kv4ui khashv_shuffle_bytes_gcc(kv4ui input) {
+static KHASH_FINLINE kv4ui khashv_shuffle_bytes_gcc( kv4ui input ) {
     const kv16ui shuffLE = {
         0x7, 0xe, 0x9, 0x0, 0xc, 0xf, 0xd, 0x8,
         0x5, 0xb, 0x6, 0x3, 0x4, 0x2, 0xa, 0x1
@@ -121,7 +121,7 @@ static KHASH_FINLINE kv4ui khashv_mix_words_gcc( kv4ui val ) {
     val ^= tmp;
     for (int i = 0; i < 4; i++) {
         unsigned rot = rots[i];
-        kv4ui tmp = val;
+        kv4ui    tmp = val;
         tmp  = khashv_rotr_5_bytes_gcc(tmp);
         tmp += val;
         tmp  = (tmp >> rot) | (tmp << (32 - rot));
@@ -178,7 +178,7 @@ static void khashv_prep_seed32( khashvSeed * seed_prepped, uint32_t seed ) {
 
     memcpy(&s, &khash_v_init, 16);
     s[0] ^= seed;
-    s = khashv_mix_words_gcc(s);
+    s     = khashv_mix_words_gcc(s);
     memcpy(seed_prepped, &s, 16);
 }
 

@@ -38,6 +38,7 @@
 
 FORCE_INLINE uint64_t mulx( uint64_t x, uint64_t y ) {
     uint64_t r, r2;
+
     MathMult::mult64_128(r, r2, x, y);
     return r ^ r2;
 }
@@ -49,12 +50,14 @@ inline uint64_t mul32( uint32_t x, uint32_t y ) {
 template <bool bswap>
 inline uint64_t read64le( unsigned char const * p ) {
     uint64_t r = GET_U64<bswap>(p, 0);
+
     return r;
 }
 
 template <bool bswap>
 inline uint32_t read32le( unsigned char const * p ) {
     uint32_t r = GET_U32<bswap>(p, 0);
+
     return r;
 }
 
@@ -62,22 +65,20 @@ inline uint32_t read32le( unsigned char const * p ) {
 // mulxp1, 32-bit
 
 template <bool bswap>
-inline uint32_t mulxp1_hash32( unsigned char const * p, size_t n, uint64_t seed )
-{
+inline uint32_t mulxp1_hash32( unsigned char const * p, size_t n, uint64_t seed ) {
     uint32_t const q = 0x9e3779b9U;
     uint32_t const k = q * q;
 
-    uint64_t h = ( seed + q ) * k;
-    uint32_t w = (uint32_t)h;
+    uint64_t h       = (seed + q) * k;
+    uint32_t w       = (uint32_t)h;
 
     h ^= n;
 
-    while( n >= 4 )
-    {
-        uint32_t v1 = read32le<bswap>( p );
+    while (n >= 4) {
+        uint32_t v1 = read32le<bswap>(p);
 
         w += q;
-        h ^= mul32( v1 + w, k );
+        h ^= mul32(v1 + w, k);
 
         p += 4;
         n -= 4;
@@ -86,20 +87,19 @@ inline uint32_t mulxp1_hash32( unsigned char const * p, size_t n, uint64_t seed 
     {
         uint32_t v1 = 0;
 
-        if( n >= 1 )
-        {
-            size_t const x1 = ( n - 1 ) & 2; // 1: 0, 2: 0, 3: 2
-            size_t const x2 = n >> 1;        // 1: 0, 2: 1, 3: 1
+        if (n >= 1) {
+            size_t const x1 = (n - 1) & 2; // 1: 0, 2: 0, 3: 2
+            size_t const x2 = n >> 1;      // 1: 0, 2: 1, 3: 1
 
-            v1 = (uint32_t)p[ x1 ] << x1 * 8 | (uint32_t)p[ x2 ] << x2 * 8 | (uint32_t)p[ 0 ];
+            v1 = (uint32_t)p[x1] << x1 * 8 | (uint32_t)p[x2] << x2 * 8 | (uint32_t)p[0];
         }
 
         w += q;
-        h ^= mul32( v1 + w, k );
+        h ^= mul32(v1 + w, k);
     }
 
     w += q;
-    h ^= mul32( (uint32_t)h + w, (uint32_t)(h >> 32) + w + k );
+    h ^= mul32((uint32_t)h + w, (uint32_t)(h >> 32) + w + k);
 
     return (uint32_t)h ^ (uint32_t)(h >> 32);
 }
@@ -112,14 +112,14 @@ inline uint64_t mulxp1_hash( unsigned char const * p, size_t n, uint64_t seed ) 
     uint64_t const q = UINT64_C(0x9e3779b97f4a7c15);
     uint64_t const k = q * q;
 
-    uint64_t w = mulx( seed + q, k );
-    uint64_t h = w ^ n;
+    uint64_t w       = mulx(seed + q, k);
+    uint64_t h       = w ^ n;
 
-    while( n >= 8 ) {
-        uint64_t v1 = read64le<bswap>( p );
+    while (n >= 8) {
+        uint64_t v1 = read64le<bswap>(p);
 
         w += q;
-        h ^= mulx( v1 + w, k );
+        h ^= mulx(v1 + w, k);
 
         p += 8;
         n -= 8;
@@ -128,46 +128,41 @@ inline uint64_t mulxp1_hash( unsigned char const * p, size_t n, uint64_t seed ) 
     {
         uint64_t v1 = 0;
 
-        if( n >= 4 )
-        {
-            v1 = (uint64_t)read32le<bswap>( p + n - 4 ) << ( n - 4 ) * 8 | read32le<bswap>( p );
-        }
-        else if( n >= 1 )
-        {
-            size_t const x1 = ( n - 1 ) & 2; // 1: 0, 2: 0, 3: 2
-            size_t const x2 = n >> 1;        // 1: 0, 2: 1, 3: 1
+        if (n >= 4) {
+            v1 = (uint64_t)read32le<bswap>(p + n - 4) << (n - 4) * 8 | read32le<bswap>(p);
+        } else if (n >= 1)   {
+            size_t const x1 = (n - 1) & 2; // 1: 0, 2: 0, 3: 2
+            size_t const x2 = n >> 1;      // 1: 0, 2: 1, 3: 1
 
-            v1 = (uint64_t)p[ x1 ] << x1 * 8 | (uint64_t)p[ x2 ] << x2 * 8 | (uint64_t)p[ 0 ];
+            v1 = (uint64_t)p[x1] << x1 * 8 | (uint64_t)p[x2] << x2 * 8 | (uint64_t)p[0];
         }
 
         w += q;
-        h ^= mulx( v1 + w, k );
+        h ^= mulx(v1 + w, k);
     }
 
-    return mulx( h + w, k );
+    return mulx(h + w, k);
 }
 
 //------------------------------------------------------------
 // mulxp3, 32-bit
 
 template <bool bswap>
-inline uint32_t mulxp3_hash32( unsigned char const * p, size_t n, uint64_t seed )
-{
+inline uint32_t mulxp3_hash32( unsigned char const * p, size_t n, uint64_t seed ) {
     uint32_t const q = 0x9e3779b9U;
     uint32_t const k = q * q;
 
-    uint64_t h = ( seed + q ) * k;
-    uint32_t w = (uint32_t)h;
+    uint64_t h       = (seed + q) * k;
+    uint32_t w       = (uint32_t)h;
 
     h ^= n;
 
-    while( n >= 8 )
-    {
-        uint32_t v1 = read32le<bswap>( p + 0 );
-        uint32_t v2 = read32le<bswap>( p + 4 );
+    while (n >= 8) {
+        uint32_t v1 = read32le<bswap>(p + 0);
+        uint32_t v2 = read32le<bswap>(p + 4);
 
         w += q;
-        h ^= mul32( v1 + w, v2 + w + k );
+        h ^= mul32(v1 + w, v2 + w + k);
 
         p += 8;
         n -= 8;
@@ -177,25 +172,22 @@ inline uint32_t mulxp3_hash32( unsigned char const * p, size_t n, uint64_t seed 
         uint32_t v1 = 0;
         uint32_t v2 = 0;
 
-        if( n >= 4 )
-        {
-            v1 = read32le<bswap>( p );
-            v2 = ((uint64_t)read32le<bswap>( p + n - 4 ) << ( n - 4 ) * 8) >> 32;
-        }
-        else if( n >= 1 )
-        {
-            size_t const x1 = ( n - 1 ) & 2; // 1: 0, 2: 0, 3: 2
-            size_t const x2 = n >> 1;        // 1: 0, 2: 1, 3: 1
+        if (n >= 4) {
+            v1 = read32le<bswap>(p);
+            v2 = ((uint64_t)read32le<bswap>(p + n - 4) << (n - 4) * 8) >> 32;
+        } else if (n >= 1)   {
+            size_t const x1 = (n - 1) & 2; // 1: 0, 2: 0, 3: 2
+            size_t const x2 = n >> 1;      // 1: 0, 2: 1, 3: 1
 
-            v1 = (uint32_t)p[ x1 ] << x1 * 8 | (uint32_t)p[ x2 ] << x2 * 8 | (uint32_t)p[ 0 ];
+            v1 = (uint32_t)p[x1] << x1 * 8 | (uint32_t)p[x2] << x2 * 8 | (uint32_t)p[0];
         }
 
         w += q;
-        h ^= mul32( v1 + w, v2 + w + k );
+        h ^= mul32(v1 + w, v2 + w + k);
     }
 
     w += q;
-    h ^= mul32( (uint32_t)h + w, (uint32_t)(h >> 32) + w + k );
+    h ^= mul32((uint32_t)h + w, (uint32_t)(h >> 32) + w + k);
 
     return (uint32_t)h ^ (uint32_t)(h >> 32);
 }
@@ -204,21 +196,19 @@ inline uint32_t mulxp3_hash32( unsigned char const * p, size_t n, uint64_t seed 
 // mulxp3, 64-bit
 
 template <bool bswap>
-inline uint64_t mulxp3_hash( unsigned char const * p, size_t n, uint64_t seed )
-{
+inline uint64_t mulxp3_hash( unsigned char const * p, size_t n, uint64_t seed ) {
     uint64_t const q = 0x9e3779b97f4a7c15ULL;
     uint64_t const k = q * q;
 
-    uint64_t w = mulx( seed + q, k );
-    uint64_t h = w ^ n;
+    uint64_t w       = mulx(seed + q, k);
+    uint64_t h       = w ^ n;
 
-    while( n >= 16 )
-    {
-        uint64_t v1 = read64le<bswap>( p + 0 );
-        uint64_t v2 = read64le<bswap>( p + 8 );
+    while (n >= 16) {
+        uint64_t v1 = read64le<bswap>(p + 0);
+        uint64_t v2 = read64le<bswap>(p + 8);
 
         w += q;
-        h ^= mulx( v1 + w, v2 + w + k );
+        h ^= mulx(v1 + w, v2 + w + k);
 
         p += 16;
         n -= 16;
@@ -228,53 +218,52 @@ inline uint64_t mulxp3_hash( unsigned char const * p, size_t n, uint64_t seed )
         uint64_t v1 = 0;
         uint64_t v2 = 0;
 
-        if( n > 8 )
-        {
-            v1 = read64le<bswap>( p );
-            v2 = read64le<bswap>( p + n - 8 ) >> ( 16 - n ) * 8;
-        }
-        else if( n >= 4 )
-        {
-            v1 = (uint64_t)read32le<bswap>( p + n - 4 ) << ( n - 4 ) * 8 | read32le<bswap>( p );
-        }
-        else if( n >= 1 )
-        {
-            size_t const x1 = ( n - 1 ) & 2; // 1: 0, 2: 0, 3: 2
-            size_t const x2 = n >> 1;        // 1: 0, 2: 1, 3: 1
+        if (n > 8) {
+            v1 = read64le<bswap>(p        );
+            v2 = read64le<bswap>(p + n - 8) >> (16 - n) * 8;
+        } else if (n >= 4)   {
+            v1 = (uint64_t)read32le<bswap>(p + n - 4) << (n - 4) * 8 | read32le<bswap>(p);
+        } else if (n >= 1)   {
+            size_t const x1 = (n - 1) & 2; // 1: 0, 2: 0, 3: 2
+            size_t const x2 = n >> 1;      // 1: 0, 2: 1, 3: 1
 
-            v1 = (uint64_t)p[ x1 ] << x1 * 8 | (uint64_t)p[ x2 ] << x2 * 8 | (uint64_t)p[ 0 ];
+            v1 = (uint64_t)p[x1] << x1 * 8 | (uint64_t)p[x2] << x2 * 8 | (uint64_t)p[0];
         }
 
         w += q;
-        h ^= mulx( v1 + w, v2 + w + k );
+        h ^= mulx(v1 + w, v2 + w + k);
     }
 
-    return mulx( h, k );
+    return mulx(h, k);
 }
 
 //------------------------------------------------------------
 
 template <bool bswap>
 static void mulxp1_32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint32_t hash = mulxp1_hash32<bswap>((const unsigned char *)in, len, (uint64_t) seed);
+    uint32_t hash = mulxp1_hash32<bswap>((const unsigned char *)in, len, (uint64_t)seed);
+
     PUT_U32<bswap>(hash, (uint8_t *)out, 0);
 }
 
 template <bool bswap>
 static void mulxp1_64( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t hash = mulxp1_hash<bswap>((const unsigned char *)in, len, (uint64_t) seed);
+    uint64_t hash = mulxp1_hash<bswap>((const unsigned char *)in, len, (uint64_t)seed);
+
     PUT_U64<bswap>(hash, (uint8_t *)out, 0);
 }
 
 template <bool bswap>
 static void mulxp3_32( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint32_t hash = mulxp3_hash32<bswap>((const unsigned char *)in, len, (uint64_t) seed);
+    uint32_t hash = mulxp3_hash32<bswap>((const unsigned char *)in, len, (uint64_t)seed);
+
     PUT_U32<bswap>(hash, (uint8_t *)out, 0);
 }
 
 template <bool bswap>
 static void mulxp3_64( const void * in, const size_t len, const seed_t seed, void * out ) {
-    uint64_t hash = mulxp3_hash<bswap>((const unsigned char *)in, len, (uint64_t) seed);
+    uint64_t hash = mulxp3_hash<bswap>((const unsigned char *)in, len, (uint64_t)seed);
+
     PUT_U64<bswap>(hash, (uint8_t *)out, 0);
 }
 

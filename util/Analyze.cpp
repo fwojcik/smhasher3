@@ -199,10 +199,10 @@ hidx_t FindCollisionsImpl( std::vector<hashtype> & hashes, std::map<hashtype, ui
                 }
             }
         } else if ((hidx_t)collisions.size() < maxCollisions) {
-            collisions.emplace(std::pair<hashtype, uint32_t>{hashes[hnb], 2});
+            collisions.emplace(std::pair<hashtype, uint32_t>{ hashes[hnb], 2 });
             if (indices) {
                 collisionidxs.push_back(hashidxs[hnb - 1]);
-                collisionidxs.push_back(hashidxs[hnb]);
+                collisionidxs.push_back(hashidxs[hnb]    );
                 curcollcount = 2;
             }
         }
@@ -212,8 +212,10 @@ hidx_t FindCollisionsImpl( std::vector<hashtype> & hashes, std::map<hashtype, ui
 }
 
 template <typename hashtype>
-hidx_t FindCollisions( std::vector<hashtype> & hashes, std::map<hashtype, uint32_t> & collisions, hidx_t maxCollisions ) {
+hidx_t FindCollisions( std::vector<hashtype> & hashes,
+        std::map<hashtype, uint32_t> & collisions, hidx_t maxCollisions ) {
     std::vector<uint32_t> dummy;
+
     return FindCollisionsImpl<hashtype, false>(hashes, collisions, maxCollisions, 0, dummy, dummy);
 }
 
@@ -270,9 +272,9 @@ static hidx_t FindCollisionsPrefixesIndices( std::vector<hashtype> & hashes, std
                 curcollcount++;
             }
         } else if ((hidx_t)collisions.size() < maxCollisions) {
-            collisions.emplace(std::pair<hashtype, uint32_t>{colliding_bits, 2});
+            collisions.emplace(std::pair<hashtype, uint32_t>{ colliding_bits, 2 });
             collisionidxs.push_back(hashidxs[hnb - 1]);
-            collisionidxs.push_back(hashidxs[hnb]);
+            collisionidxs.push_back(hashidxs[hnb]    );
             curcollcount = 2;
         }
     }
@@ -298,8 +300,8 @@ static hidx_t FindCollisionsPrefixesIndices( std::vector<hashtype> & hashes, std
 //
 // This requires the vector of hashes to be sorted.
 template <bool calcmax, typename hashtype>
-static void CountRangedNbCollisionsImpl( std::vector<hashtype> & hashes,
-        int minHBits, int maxHBits, int threshHBits, int * collcounts ) {
+static void CountRangedNbCollisionsImpl( std::vector<hashtype> & hashes, int minHBits,
+        int maxHBits, int threshHBits, int * collcounts ) {
     assert(minHBits >= 1       );
     assert(minHBits <= maxHBits);
     assert(hashtype::bitlen >= (size_t)maxHBits);
@@ -309,12 +311,12 @@ static void CountRangedNbCollisionsImpl( std::vector<hashtype> & hashes,
     const int collbins    = maxHBits - minHBits + 1;
     const int maxcollbins = calcmax ? threshHBits - minHBits + 1 : 0;
     VLA_ALLOC(int, prevcoll, maxcollbins + 1);
-    VLA_ALLOC(int, maxcoll, maxcollbins + 1);
+    VLA_ALLOC(int, maxcoll , maxcollbins + 1);
 
-    memset(collcounts, 0, sizeof(collcounts[0]) * collbins );
+    memset(collcounts, 0, sizeof(collcounts[0]) * collbins);
     if (calcmax) {
         memset(&prevcoll[0], 0, sizeof(prevcoll[0]) * maxcollbins);
-        memset(&maxcoll[0],  0, sizeof(maxcoll[0])  * maxcollbins);
+        memset(&maxcoll[0] , 0, sizeof(maxcoll[0])  * maxcollbins);
     }
 
     const uint64_t nbH = hashes.size();
@@ -386,13 +388,13 @@ static void CountRangedNbCollisions( std::vector<hashtype> & hashes, int minHBit
 template <typename hashtype>
 static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, int * logpSumPtr,
         KeyFn keyprint, int testDeltaNum, flags_t testFlags, flags_t reportFlags ) {
-    const unsigned hashbits   = hashtype::bitlen;
-    const hidx_t   nbH        = hashes.size();
-    const bool testDeltaXaxis = TEST(DELTAXAXIS,    testFlags);
-    const bool testMaxColl    = TEST(MAXCOLLISIONS, testFlags);
-    const bool willTestDist   = TEST(DISTRIBUTION,  testFlags);
-    const bool testHighBits   = TEST(HIGHBITS,      testFlags);
-    const bool testLowBits    = TEST(LOWBITS,       testFlags);
+    const unsigned hashbits       = hashtype::bitlen;
+    const hidx_t   nbH            = hashes.size();
+    const bool     testDeltaXaxis = TEST(DELTAXAXIS   , testFlags);
+    const bool     testMaxColl    = TEST(MAXCOLLISIONS, testFlags);
+    const bool     willTestDist   = TEST(DISTRIBUTION , testFlags);
+    const bool     testHighBits   = TEST(HIGHBITS     , testFlags);
+    const bool     testLowBits    = TEST(LOWBITS      , testFlags);
 
     if (!REPORT(QUIET, reportFlags)) {
         printf("Testing all collisions (     %3i-bit)", hashbits);
@@ -563,7 +565,6 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
 
     // Report on partial collisions, if requested
     if (testHighBits || testLowBits) {
-
         // Report explicitly on each bit width in nbBitsvec
         uint32_t prevBitsH = hashbits, prevBitsL = hashbits;
         for (const int nbBits: nbBitsvec) {
@@ -572,8 +573,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             }
             bool reportMaxcoll = (testMaxColl && (nbBits <= threshBits)) ? true : false;
             if (testHighBits) {
-                bool thisresult = ReportCollisions(nbH, collcounts_fwd[nbBits - minBits], nbBits,
-                        &curlogp, reportMaxcoll, true, true, reportFlags);
+                bool thisresult = ReportCollisions(nbH, collcounts_fwd[nbBits - minBits],
+                        nbBits, &curlogp, reportMaxcoll, true, true, reportFlags);
                 if (logpSumPtr != NULL) {
                     *logpSumPtr += curlogp;
                 }
@@ -587,8 +588,8 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
                 result &= thisresult;
             }
             if (testLowBits) {
-                bool thisresult = ReportCollisions(nbH, collcounts_rev[nbBits - minBits], nbBits,
-                        &curlogp, reportMaxcoll, false, true, reportFlags);
+                bool thisresult = ReportCollisions(nbH, collcounts_rev[nbBits - minBits],
+                        nbBits, &curlogp, reportMaxcoll, false, true, reportFlags);
                 if (logpSumPtr != NULL) {
                     *logpSumPtr += curlogp;
                 }
@@ -605,7 +606,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
 
         // Report a summary of the bit widths in the range [minTBits, maxTBits]
         if (testHighBits) {
-            int maxBits;
+            int  maxBits;
             bool thisresult = ReportBitsCollisions(nbH, &collcounts_fwd[minTBits - minBits],
                     minTBits, maxTBits, &curlogp, &maxBits, true, reportFlags);
             if (logpSumPtr != NULL) {
@@ -620,7 +621,7 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
             result &= thisresult;
         }
         if (testLowBits) {
-            int maxBits;
+            int  maxBits;
             bool thisresult = ReportBitsCollisions(nbH, &collcounts_rev[minTBits - minBits],
                     minTBits, maxTBits, &curlogp, &maxBits, false, reportFlags);
             if (logpSumPtr != NULL) {
@@ -647,12 +648,12 @@ static bool TestCollisions( std::vector<hashtype> & hashes, std::vector<hidx_t> 
 template <typename hashtype>
 static void TestDistributionBatch( const std::vector<hashtype> & hashes, a_int & ikeybit, int batch_size,
         int maxwidth, int minwidth, int * tests, double * result_scores ) {
-    const size_t   nbH       = hashes.size();
-    const int      hashbits  = sizeof(hashtype) * 8;
-    int            testcount = 0;
-    int            startbit;
+    const size_t nbH       = hashes.size();
+    const int    hashbits  = sizeof(hashtype) * 8;
+    int          testcount = 0;
+    int          startbit;
 
-    std::vector<uint8_t> bins8(1 << maxwidth);
+    std::vector<uint8_t>  bins8( 1 << maxwidth );
     std::vector<uint32_t> bins32;
 
     // To calculate the distributions of hash value slices, this loop does
@@ -705,7 +706,7 @@ static void TestDistributionBatch( const std::vector<hashtype> & hashes, a_int &
             double * resultptr = &result_scores[start * (maxwidth - minwidth + 1)];
             while (true) {
                 uint64_t sumsq = bigbins ? sumSquares(&bins32[0], bincount) :
-                    sumSquares(&bins8[0], bincount);
+                            sumSquares(&bins8[0], bincount);
                 *resultptr++ = calcScore(sumsq, bincount, nbH);
 
                 testcount++;
@@ -757,10 +758,10 @@ static void TestDistributionBatch( const std::vector<hashtype> & hashes, a_int &
 template <typename hashtype>
 static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t> & hashidxs, int * logpSumPtr,
         KeyFn keyprint, unsigned testDeltaNum, flags_t testFlags, flags_t reportFlags ) {
-    const int      hashbits  = hashtype::bitlen;
-    const size_t   nbH       = hashes.size();
-    int            maxwidth  = MaxDistBits(nbH);
-    int            minwidth  = 8;
+    const int    hashbits = hashtype::bitlen;
+    const size_t nbH      = hashes.size();
+    int          maxwidth = MaxDistBits(nbH);
+    int          minwidth = 8;
 
     if (maxwidth < minwidth) {
         return true;
@@ -770,21 +771,20 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
         printf("Testing distribution   (any  %2i..%2i bits) - ", minwidth, maxwidth);
     }
 
-    std::vector<double> scores(hashbits * (maxwidth - minwidth + 1));
+    std::vector<double> scores( hashbits * (maxwidth - minwidth + 1));
     a_int istartbit( 0 );
-    int tests;
+    int   tests;
 
     if (g_NCPU == 1) {
-        TestDistributionBatch<hashtype>(hashes, istartbit, hashbits,
-                maxwidth, minwidth, &tests, &scores[0]);
+        TestDistributionBatch<hashtype>(hashes, istartbit, hashbits, maxwidth, minwidth, &tests, &scores[0]);
     } else {
 #if defined(HAVE_THREADS)
-        std::vector<std::thread> t(g_NCPU);
-        std::vector<int> ttests(g_NCPU);
+        std::vector<std::thread> t( g_NCPU );
+        std::vector<int>         ttests( g_NCPU );
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
                 TestDistributionBatch<hashtype>, std::ref(hashes), std::ref(istartbit),
-                hashbits/16, maxwidth, minwidth, &ttests[i], &scores[0]
+                hashbits / 16, maxwidth, minwidth, &ttests[i], &scores[0]
             };
         }
         tests = 0;
@@ -795,16 +795,16 @@ static bool TestDistribution( std::vector<hashtype> & hashes, std::vector<hidx_t
 #endif
     }
 
-    int curlogp, bitstart, bitwidth;
-    bool result = ReportDistribution(scores, tests, hashbits, maxwidth, minwidth,
-            &curlogp, &bitstart, &bitwidth, reportFlags);
+    int  curlogp, bitstart, bitwidth;
+    bool result = ReportDistribution(scores, tests, hashbits, maxwidth,
+            minwidth, &curlogp, &bitstart, &bitwidth, reportFlags);
 
     if (logpSumPtr != NULL) {
         *logpSumPtr += curlogp;
     }
     if (!result && REPORT(DIAGRAMS, reportFlags)) {
-        ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, TEST(DELTAXAXIS, testFlags),
-                MAX_ENTRIES, MAX_PER_ENTRY, bitstart, bitwidth);
+        ShowOutliers(hashes, hashidxs, keyprint, testDeltaNum, TEST(DELTAXAXIS,
+                testFlags), MAX_ENTRIES, MAX_PER_ENTRY, bitstart, bitwidth);
     }
 
     return result;
@@ -957,8 +957,7 @@ bool TestHashListImpl( std::vector<hashtype> & hashes, int * logpSumPtr, KeyFn k
             if (!REPORT(QUIET, reportFlags)) {
                 printf("---Analyzing additional differential distribution\n");
             }
-            result &= TestHashListSingle(hashdeltas_y, logpSumPtr, keyprint, testDeltaNum,
-                    testFlags, reportFlags);
+            result &= TestHashListSingle(hashdeltas_y, logpSumPtr, keyprint, testDeltaNum, testFlags, reportFlags);
         }
     }
 
@@ -1007,7 +1006,7 @@ double TestDistributionBytepairs( std::vector<hashtype> & hashes, bool drawDiagr
             }
 
             uint64_t sumsq = sumSquares(bins, nbins);
-            double s = calcScore(sumsq, nbins, hashes.size());
+            double   s     = calcScore(sumsq, nbins, hashes.size());
 
             if (drawDiagram) { plot(s); }
 

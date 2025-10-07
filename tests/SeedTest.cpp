@@ -98,16 +98,16 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, flags_t flags
     }
 
     auto keyprint = [&]( hidx_t i ) {
-        seed_t   seedlo = 1; seedlo = i & ((seedlo << lobits) - 1);
-        seed_t   seedhi = i; seedhi >>= lobits; seedhi <<= shiftbits;
-        seed_t   iseed  = seedlo | seedhi;
-        seed_t   hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
-        hashtype v;
+                seed_t   seedlo = 1; seedlo = i & ((seedlo << lobits) - 1);
+                seed_t   seedhi = i; seedhi >>= lobits; seedhi <<= shiftbits;
+                seed_t   iseed  = seedlo | seedhi;
+                seed_t   hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+                hashtype v;
 
-        printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
-        hash(key, keylen, hseed, &v);
-        v.printhex(NULL);
-    };
+                printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
+                hash(key, keylen, hseed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1 << lobits).dumpFailKeys(keyprint);
 
@@ -132,11 +132,11 @@ bool SeedTest( const HashInfo * hinfo, flags_t flags ) {
 
     if (hinfo->is32BitSeed()) {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedTestImpl      <hashtype, 22, false>(hinfo, testkeylen, flags);
+            result &= SeedTestImpl<hashtype, 22, false>(hinfo, testkeylen, flags);
         }
     } else {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedTestImpl      <hashtype, 22,  true>(hinfo, testkeylen, flags);
+            result &= SeedTestImpl<hashtype, 22,  true>(hinfo, testkeylen, flags);
         }
     }
 

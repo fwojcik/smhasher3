@@ -41,16 +41,16 @@ static HH_INLINE uint64x2_t vld1q_low_u64( const uint64_t * p ) {
 typedef uint64x2_t block_t[2];
 
 typedef struct state_struct {
-    uint64x2_t v0L, v0H;
-    uint64x2_t v1L, v1H;
-    uint64x2_t mul0L, mul0H;
-    uint64x2_t mul1L, mul1H;
+    uint64x2_t  v0L, v0H;
+    uint64x2_t  v1L, v1H;
+    uint64x2_t  mul0L, mul0H;
+    uint64x2_t  mul1L, mul1H;
 } highwayhash_state_t;
 
-void dump_state(const highwayhash_state_t * s) {
+void dump_state( const highwayhash_state_t * s ) {
     return;
-    printf("\tv0   %016lx %016lx %016lx %016lx\n", s->v0L[0], s->v0L[1], s->v0H[0], s->v0H[1]);
-    printf("\tv1   %016lx %016lx %016lx %016lx\n", s->v1L[0], s->v1L[1], s->v1H[0], s->v1H[1]);
+    printf("\tv0   %016lx %016lx %016lx %016lx\n", s->v0L[0]  , s->v0L[1]  , s->v0H[0]  , s->v0H[1]  );
+    printf("\tv1   %016lx %016lx %016lx %016lx\n", s->v1L[0]  , s->v1L[1]  , s->v1H[0]  , s->v1H[1]  );
     printf("\tmul0 %016lx %016lx %016lx %016lx\n", s->mul0L[0], s->mul0L[1], s->mul0H[0], s->mul0H[1]);
     printf("\tmul1 %016lx %016lx %016lx %016lx\n", s->mul1L[0], s->mul1L[1], s->mul1H[0], s->mul1H[1]);
     printf("\n");
@@ -93,7 +93,7 @@ static HH_INLINE uint64x2_t LoadMultipleOfFour( const uint8_t * bytes, const siz
     // Mask of 1-bits where the final 4 bytes should be inserted (replacement
     // for variable shift/insert using broadcast+blend).
     alignas(16) const uint64_t mask_pattern[2] = { UINT64_C(0xFFFFFFFF), 0 };
-    uint64x2_t mask4 = vld1q_u64(mask_pattern);  // 'insert' into lane 0
+    uint64x2_t mask4 = vld1q_u64(mask_pattern); // 'insert' into lane 0
     uint64x2_t ret   = vdupq_n_u64(0);
 
     if (size & 8) {
@@ -110,24 +110,25 @@ static HH_INLINE uint64x2_t LoadMultipleOfFour( const uint8_t * bytes, const siz
     return ret;
 }
 
-static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t * HH_RESTRICT bytes, const size_t size_mod32 ) {
+static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t * HH_RESTRICT bytes,
+        const size_t size_mod32 ) {
     const uint8_t * remainder = bytes + (size_mod32 & ~3);
     const size_t    size_mod4 = size_mod32 & 3;
 
-    if (unlikely(size_mod32 & 16)) {  // 16..31 bytes left
-        const uint64x2_t  packetL    = vreinterpretq_u64_u8(vld1q_u8(bytes));
-              uint64x2_t  packetH    = LoadMultipleOfFour(bytes + 16, size_mod32);
-        const uint32_t    last4      = COND_BSWAP(Load3LE_AllowReadBefore(remainder, size_mod4), isBE());
+    if (unlikely(size_mod32 & 16)) { // 16..31 bytes left
+        const uint64x2_t packetL = vreinterpretq_u64_u8(vld1q_u8(bytes));
+              uint64x2_t packetH = LoadMultipleOfFour(bytes + 16, size_mod32);
+        const uint32_t   last4   = COND_BSWAP(Load3LE_AllowReadBefore(remainder, size_mod4), isBE());
         packetH  = vreinterpretq_u64_u32(vsetq_lane_u32(last4, vreinterpretq_u32_u64(packetH), 3));
         block[0] = packetL;
         block[1] = packetH;
     } else {
-        const uint64x2_t  packetL    = LoadMultipleOfFour(bytes, size_mod32);
-        const uint64_t    last4      = COND_BSWAP(Load3LE_AllowUnordered(remainder, size_mod4), isBE());
+        const uint64x2_t packetL = LoadMultipleOfFour(bytes, size_mod32);
+        const uint64_t   last4   = COND_BSWAP(Load3LE_AllowUnordered(remainder, size_mod4), isBE());
         // Rather than insert into packetL[3], it is faster to initialize
         // the otherwise empty packetH.
-        alignas(16) uint64_t tmp[2]  = { last4, 0 };
-        const uint64x2_t  packetH    = vld1q_u64(tmp);
+        alignas(16) uint64_t tmp[2] = { last4, 0 };
+        const uint64x2_t packetH = vld1q_u64(tmp);
         block[0] = packetL;
         block[1] = packetH;
     }
@@ -140,18 +141,20 @@ static HH_INLINE uint64x2_t ZipperMerge(const uint64x2_t& v) {
         11,  4, 10, 13,  9,  6,  8,  7
     };
     const uint8x16_t tbl = vld1q_u8(shuffle_positions);
+
     // Note: vqtbl1q_u8 is polyfilled for ARMv7a in vector_neon.h.
     return vreinterpretq_u64_u8(vqtbl1q_u8(vreinterpretq_u8_u64(v), tbl));
 }
 
-static HH_INLINE void Update( highwayhash_state_t * s, const block_t& packet ) {
+static HH_INLINE void Update( highwayhash_state_t * s, const block_t & packet ) {
     uint64x2_t tmpL, tmpH;
-    //printf("\tUPD  %016lx %016lx %016lx %016lx\n", packet[0][0], packet[0][1], packet[1][0], packet[1][1]);
+
+    // printf("\tUPD  %016lx %016lx %016lx %016lx\n", packet[0][0], packet[0][1], packet[1][0], packet[1][1]);
 
     s->v1L   = vaddq_u64(s->v1L, packet[0]); HH_ADD_FENCE(s->v1L); // v1   += packet
     s->v1H   = vaddq_u64(s->v1H, packet[1]); HH_ADD_FENCE(s->v1H);
-    s->v1L   = vaddq_u64(s->v1L, s->mul0L); HH_ADD_FENCE(s->v1L);  // v1   += mul0
-    s->v1H   = vaddq_u64(s->v1H, s->mul0H); HH_ADD_FENCE(s->v1H);
+    s->v1L   = vaddq_u64(s->v1L, s->mul0L ); HH_ADD_FENCE(s->v1L); // v1   += mul0
+    s->v1H   = vaddq_u64(s->v1H, s->mul0H ); HH_ADD_FENCE(s->v1H);
     tmpL     = vmull_u32(vmovn_u64(s->v1L), vshrn_n_u64(s->v0L, 32));
     tmpH     = vmull_u32(vmovn_u64(s->v1H), vshrn_n_u64(s->v0H, 32));
     s->mul0L = veorq_u64(s->mul0L, tmpL);                          // mul0 ^= MulLow32(v1, v0 >> 32);
@@ -170,6 +173,7 @@ static HH_INLINE void Update( highwayhash_state_t * s, const block_t& packet ) {
 
 static HH_INLINE void PermuteAndUpdate( highwayhash_state_t * state ) {
     block_t permuted_block;
+
     permuted_block[1] = vreinterpretq_u64_u32(vrev64q_u32(vreinterpretq_u32_u64(state->v0L)));
     permuted_block[0] = vreinterpretq_u64_u32(vrev64q_u32(vreinterpretq_u32_u64(state->v0H)));
 
@@ -183,6 +187,7 @@ static HH_INLINE void PadState( highwayhash_state_t * state, const size_t size_m
     const int32x4_t vsize_mod32     = vdupq_n_s32((int32_t)size_mod32);
     // -32 - size_mod32
     const int32x4_t shift_right_amt = vdupq_n_s32((int32_t)size_mod32 + (~32 + 1));
+
     state->v0L = vaddq_u64(state->v0L, vreinterpretq_u64_s32(vsize_mod32));
     state->v0H = vaddq_u64(state->v0H, vreinterpretq_u64_s32(vsize_mod32));
 
@@ -200,12 +205,14 @@ static HH_INLINE void PadState( highwayhash_state_t * state, const size_t size_m
 // Also does the same for the upper 128 bit lane "b". Bit shifts are only
 // possible on independent 64-bit lanes. We therefore insert the upper bits
 // of a[0] that were lost into a[1]. Thanks to D. Lemire for helpful comments!
-static HH_INLINE uint64x2_t ModularReduction( const uint64x2_t & HH_RESTRICT a32_unmasked, const uint64x2_t & HH_RESTRICT a10 ) {
-    uint64x2_t out = a10;
+static HH_INLINE uint64x2_t ModularReduction( const uint64x2_t & HH_RESTRICT a32_unmasked,
+        const uint64x2_t & HH_RESTRICT a10 ) {
+    uint64x2_t out               = a10;
 
     const uint32x4_t zero        = vdupq_n_u32(0);
     const uint64x2_t sign_bit128 = vreinterpretq_u64_u32(vsetq_lane_u32(UINT32_C(0x80000000), zero, 3));
     const uint64x2_t top_bits2   = vshrq_n_u64(a32_unmasked, 64 - 2);
+
     HH_COMPILER_FENCE;
 
     uint64x2_t shifted1_unmasked = vaddq_u64(a32_unmasked, a32_unmasked);
@@ -213,7 +220,7 @@ static HH_INLINE uint64x2_t ModularReduction( const uint64x2_t & HH_RESTRICT a32
     // Only the lower halves of top_bits1's 128 bit lanes will be used, so we
     // can compute it before clearing the upper two bits of a32_unmasked.
     const uint64x2_t top_bits1 = vshrq_n_u64(a32_unmasked, 64 - 1);
-          uint64x2_t shifted2  = vaddq_u64(shifted1_unmasked, shifted1_unmasked);
+    uint64x2_t       shifted2  = vaddq_u64(shifted1_unmasked, shifted1_unmasked);
     HH_ADD_FENCE(shifted2);
     HH_COMPILER_FENCE;
 
@@ -262,7 +269,7 @@ static HH_INLINE void Finalize( const highwayhash_state_t * state, uint8_t * out
             hashL = Vbswap64_u64(hashL);
             hashH = Vbswap64_u64(hashH);
         }
-        vst1q_u8(out,      vreinterpretq_u8_u64(hashL));
+        vst1q_u8(out     , vreinterpretq_u8_u64(hashL));
         vst1q_u8(out + 16, vreinterpretq_u8_u64(hashH));
     }
 }

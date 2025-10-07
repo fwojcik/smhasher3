@@ -89,7 +89,7 @@ static void SeedBlockOffsetTest_Impl2( const HashInfo * hinfo, std::vector<hasht
             for (size_t blockbits = 1; blockbits <= blockmaxbits; blockbits++) {
                 uint64_t numblock = (UINT64_C(1) << blockbits) - 1;
                 do {
-                    hashptr = SeedBlockOffsetTest_Impl3<hashtype, blocklen>(hash, hashptr,
+                    hashptr  = SeedBlockOffsetTest_Impl3<hashtype, blocklen>(hash, hashptr,
                             keylen_min, keylen_max, blockoffset, seed, numblock);
                     numblock = nextlex(numblock, blocklen * 8);
                 } while (numblock != 0);
@@ -138,30 +138,30 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
     }
 
     auto keyprint = [&]( hidx_t i ) {
-        size_t   keylen    = keylen_min + (i % testkeys); i /= testkeys;
-        uint32_t blockidx  = (i % testblocks);            i /= testblocks;
-        uint32_t seedidx   = i;
-        uint32_t blockbits = InverseKChooseUpToK(blockidx, 1, blockmaxbits, blocklen * 8);
-        uint32_t seedbits  = InverseKChooseUpToK(seedidx, 1, seedmaxbits, hinfo->is32BitSeed() ? 32 : 64);
-        uint64_t numblock  = nthlex(blockidx, blockbits);
-        uint64_t iseed     = nthlex(seedidx, seedbits);
-        seed_t   hseed     = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
-        uint32_t spacecnt  = keylen_max * 3 + 4;
+                size_t   keylen    = keylen_min + (i % testkeys  ); i /= testkeys;
+                uint32_t blockidx  =              (i % testblocks); i /= testblocks;
+                uint32_t seedidx   = i;
+                uint32_t blockbits = InverseKChooseUpToK(blockidx, 1, blockmaxbits, blocklen * 8);
+                uint32_t seedbits  = InverseKChooseUpToK(seedidx , 1, seedmaxbits , hinfo->is32BitSeed() ? 32 : 64);
+                uint64_t numblock  = nthlex(blockidx, blockbits);
+                uint64_t iseed     = nthlex(seedidx , seedbits );
+                seed_t   hseed     = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
+                uint32_t spacecnt  = keylen_max * 3 + 4;
 
-        VLA_ALLOC(uint8_t, buf, keylen);
-        memset(&buf[0], 0, keylen);
-        memcpy(&buf[blockoffset], &numblock, blocklen);
+                VLA_ALLOC(uint8_t, buf, keylen);
+                memset(&buf[0], 0, keylen);
+                memcpy(&buf[blockoffset], &numblock, blocklen);
 
-        const HashFn hash = hinfo->hashFn(g_hashEndian);
-        ExtBlob xb( &buf[0], keylen );
-        hashtype v;
+                const HashFn hash = hinfo->hashFn(g_hashEndian);
+                ExtBlob      xb( &buf[0], keylen );
+                hashtype     v;
 
-        printf("0x%016" PRIx64 "\t", iseed);
-        spacecnt -= xb.printbytes(NULL);
-        printf("%.*s\t", spacecnt, g_manyspaces);
-        hash(&buf[0], keylen, hseed, &v);
-        v.printhex(NULL);
-    };
+                printf("0x%016" PRIx64 "\t", iseed);
+                spacecnt -= xb.printbytes(NULL);
+                printf("%.*s\t", spacecnt, g_manyspaces);
+                hash(&buf[0], keylen, hseed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys(keyprint);
 
@@ -185,8 +185,7 @@ bool SeedBlockOffsetTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
 
     printf("[[[ Seed BlockOffset Tests ]]]\n\n");
 
-    printf("Seeds have up to %zd bits set, %zd-byte blocks have up to %zd bits set\n\n",
-            seedbits, blocklen, blockbits);
+    printf("Seeds have up to %zd bits set, %zd-byte blocks have up to %zd bits set\n\n", seedbits, blocklen, blockbits);
 
     bool result = true;
 

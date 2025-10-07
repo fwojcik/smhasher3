@@ -61,7 +61,7 @@ uint32_t InverseKChooseUpToK( uint32_t & count, const uint32_t minK, const uint3
 uint32_t InverseNChooseUpToK( uint32_t & count, const uint32_t minN, const uint32_t maxN, const uint32_t K );
 uint32_t Sum1toN( uint32_t n );
 uint32_t InverseSum1toN( uint32_t sum );
-void GetDoubleLoopIndices(uint32_t m, uint32_t sum, uint32_t & i, uint32_t & j);
+void GetDoubleLoopIndices( uint32_t m, uint32_t sum, uint32_t & i, uint32_t & j );
 uint64_t nthlex( uint64_t rank, const uint64_t setbits );
 
 double EstimateNbCollisions( const unsigned long nbH, const int nbBits );

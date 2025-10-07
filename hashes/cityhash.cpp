@@ -26,8 +26,8 @@
  * SOFTWARE.
  */
 #if !defined(IMPORT_CITY)
-#include "Platform.h"
-#include "Hashlib.h"
+  #include "Platform.h"
+  #include "Hashlib.h"
 #endif
 
 // CityHash128WithSeed is no longer enabled in this family. This is because
@@ -250,6 +250,7 @@ static uint64_t HashLen16( uint64_t u, uint64_t v ) {
 static uint64_t HashLen16( uint64_t u, uint64_t v, uint64_t mul ) {
     // Murmur-inspired hashing.
     uint64_t a = (u ^ v) * mul;
+
     a ^= (a >> 47);
     uint64_t b = (v ^ a) * mul;
     b ^= (b >> 47);
@@ -396,10 +397,10 @@ static uint64_t CityHash64WithSeed( const uint8_t * s, size_t len, uint64_t seed
 //------------------------------------------------------------
 template <bool bswap>
 static uint128_t CityMurmur( const uint8_t * s, size_t len, uint128_t seed ) {
-    uint64_t    a = Uint128Low64(seed);
-    uint64_t    b = Uint128High64(seed);
-    uint64_t    c = 0;
-    uint64_t    d = 0;
+    uint64_t a = Uint128Low64(seed);
+    uint64_t b = Uint128High64(seed);
+    uint64_t c = 0;
+    uint64_t d = 0;
 
     if (len <= 16) {
         a = ShiftMix(a * k1) * k1;
@@ -492,9 +493,8 @@ static uint128_t CityHash128WithSeed( const uint8_t * s, size_t len, uint128_t s
 template <bool bswap>
 static uint128_t CityHash128( const char * s, size_t len ) {
     return len >= 16 ?
-        CityHash128WithSeed<bswap>(s + 16, len - 16,
-                Uint128(Fetch64<bswap>(s), Fetch64<bswap>(s + 8) + k0)) :
-        CityHash128WithSeed<bswap>(s, len, Uint128(k0, k1));
+               CityHash128WithSeed<bswap>(s + 16, len - 16, Uint128(Fetch64<bswap>(s), Fetch64<bswap>(s + 8) + k0)) :
+               CityHash128WithSeed<bswap>(s     , len     , Uint128(k0, k1));
 }
 
 //------------------------------------------------------------
@@ -523,25 +523,25 @@ static void CityHashCrc256Long( const uint8_t * s, size_t len, uint32_t seed, ui
     len -= iters * 240;
     do {
 #undef CHUNK
-#define CHUNK(r) \
-        PERMUTE3(x, z, y);                             \
-        b += Fetch64<bswap>(s);                        \
-        c += Fetch64<bswap>(s + 8);                    \
-        d += Fetch64<bswap>(s + 16);                   \
-        e += Fetch64<bswap>(s + 24);                   \
-        f += Fetch64<bswap>(s + 32);                   \
-        a += b;                                        \
-        h += f;                                        \
-        b += c;                                        \
-        f += d;                                        \
-        g += e;                                        \
-        e += z;                                        \
-        g += x;                                        \
-        z  = _mm_crc32_u64(z, b + g);                  \
-        y  = _mm_crc32_u64(y, e + h);                  \
-        x  = _mm_crc32_u64(x, f + a);                  \
-        e  = ROTR64(e, r);                             \
-        c += e;                                        \
+#define CHUNK(r)                      \
+        PERMUTE3(x, z, y);            \
+        b += Fetch64<bswap>(s);       \
+        c += Fetch64<bswap>(s + 8);   \
+        d += Fetch64<bswap>(s + 16);  \
+        e += Fetch64<bswap>(s + 24);  \
+        f += Fetch64<bswap>(s + 32);  \
+        a += b;                       \
+        h += f;                       \
+        b += c;                       \
+        f += d;                       \
+        g += e;                       \
+        e += z;                       \
+        g += x;                       \
+        z  = _mm_crc32_u64(z, b + g); \
+        y  = _mm_crc32_u64(y, e + h); \
+        x  = _mm_crc32_u64(x, f + a); \
+        e  = ROTR64(e, r);            \
+        c += e;                       \
         s += 40
 
         CHUNK( 0); PERMUTE3(a, h, c);
@@ -677,6 +677,7 @@ static void City64( const void * in, const size_t len, const seed_t seed, void *
 }
 
 #if 0
+
 template <bool bswap, uint32_t seedmode>
 static void City128( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint128_t seed128;
@@ -710,6 +711,7 @@ static void CityMurmur_128( const void * in, const size_t len, const seed_t seed
     PUT_U64<bswap>(Uint128Low64(h) , (uint8_t *)out, 0);
     PUT_U64<bswap>(Uint128High64(h), (uint8_t *)out, 8);
 }
+
 #endif
 
 #if defined(HAVE_X86_64_CRC32C)
@@ -782,7 +784,7 @@ REGISTER_HASH(CityHash_64,
    $.hashfn_bswap    = City64<true>
  );
 
-#if 0
+  #if 0
 REGISTER_HASH(CityHash_128__seed1,
    $.desc       = "Google CityHash128WithSeed (seeded low 64 bits)",
    $.hash_flags =
@@ -827,9 +829,9 @@ REGISTER_HASH(CityHash_128__seed3,
    $.hashfn_native   = City128<false, 3>,
    $.hashfn_bswap    = City128<true, 3>
  );
-#endif
+  #endif
 
-#if 0
+  #if 0
 REGISTER_HASH(CityMurmur__seed1,
    $.desc       = "CityMurmur (seeded low 64 bits)",
    $.hash_flags =
@@ -874,9 +876,9 @@ REGISTER_HASH(CityMurmur__seed3,
    $.hashfn_native   = CityMurmur_128<false, 3>,
    $.hashfn_bswap    = CityMurmur_128<true, 3>
  );
-#endif
+  #endif
 
-#if defined(HAVE_X86_64_CRC32C)
+  #if defined(HAVE_X86_64_CRC32C)
 
 REGISTER_HASH(CityHashCrc_128__seed1,
    $.desc       = "Google CityHashCrc128WithSeed (seeded low 64 bits)",
@@ -948,5 +950,5 @@ REGISTER_HASH(CityHashCrc_256,
    $.hashfn_bswap    = CityCrc256<true>
  );
 
-#endif
+  #endif
 #endif

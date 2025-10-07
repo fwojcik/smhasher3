@@ -101,8 +101,8 @@ struct seed32_struct {
 static thread_local seed32_struct seed32;
 
 static uintptr_t tabulation32_seed( const seed_t seed ) {
-    bool     have_broken_rand = false;
-    uint64_t splitmix_nextrand     = (uint64_t)seed;
+    bool     have_broken_rand  = false;
+    uint64_t splitmix_nextrand = (uint64_t)seed;
 
     seed32.seed = (uint64_t)seed;
     // the lazy mersenne combination requires 30 bits values in the polynomial.
@@ -196,8 +196,8 @@ struct seed64_struct {
 static thread_local seed64_struct seed64;
 
 static uintptr_t tabulation64_seed( const seed_t seed ) {
-    bool     have_broken_rand = false;
-    uint64_t splitmix_nextrand     = (uint64_t)seed;
+    bool     have_broken_rand  = false;
+    uint64_t splitmix_nextrand = (uint64_t)seed;
 
     seed64.seed = (uint64_t)seed;
     // the lazy mersenne combination requires 60 bits values in the polynomial.

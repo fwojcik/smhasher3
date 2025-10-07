@@ -415,9 +415,9 @@ static void poly_step( uint64_t & ah, uint64_t & al, const uint64_t & kh, const 
 
 typedef uint8_t aes_key[16 * (VMAC_KEY_LEN / 32 + 7)];
 
-#define aes_encryption(in,out,key)     \
-    AES_Encrypt<10>(key,               \
-            (const uint8_t *)(in),     \
+#define aes_encryption(in,out,key) \
+    AES_Encrypt<10>(key,           \
+            (const uint8_t *)(in), \
             (uint8_t *)(out))
 
 #define aes_key_setup(user_key,key)      \
@@ -427,10 +427,10 @@ typedef uint8_t aes_key[16 * (VMAC_KEY_LEN / 32 + 7)];
 
 //-----------------------------------------------------------------------------
 typedef struct {
-    uint64_t     nhkey[(VMAC_NHBYTES / 8) + 2 * (VMAC_TAG_LEN / 64 - 1)];
-    uint64_t     polykey[2 * VMAC_TAG_LEN / 64];
-    uint64_t     l3key[2 * VMAC_TAG_LEN / 64];
-    aes_key      cipher_key;
+    uint64_t  nhkey[(VMAC_NHBYTES / 8) + 2 * (VMAC_TAG_LEN / 64 - 1)];
+    uint64_t  polykey[2 * VMAC_TAG_LEN / 64];
+    uint64_t  l3key[2 * VMAC_TAG_LEN / 64];
+    aes_key   cipher_key;
 } vmac_ctx_t;
 
 //-----------------------------------------------------------------------------

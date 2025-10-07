@@ -39,8 +39,7 @@ static void threefry( void * buf, uint64_t & counter, const uint64_t * keyvals )
     uint64_t tmpbuf[Rand::BUFLEN];
 
     static_assert(Rand::RANDS_PER_ROUND == 4, "Threefry outputs 4 u64s per call");
-    static_assert(Rand::BUFLEN == (PARALLEL * Rand::RANDS_PER_ROUND),
-            "Rand buffer can hold current PARALLEL setting");
+    static_assert(Rand::BUFLEN == (PARALLEL * Rand::RANDS_PER_ROUND), "Rand buffer can hold current PARALLEL setting");
 
     // This strange construction involving many for() loops from [0,
     // PARALLEL) is exactly equivalent to a single for() loop containing
@@ -624,8 +623,8 @@ RandSeq Rand::get_seq( enum RandSeqType seqtype, const uint32_t szelem ) {
 
 #if !defined(BARE_RNG)
 
-#define WEAKRAND(i) (UINT64_C(0xBB67AE8584CAA73D) * (i + 1))
-#define VERIFY(r, t) { if (!(r)) { printf("%s:%d: Test for %s failed!\n", __FILE__, __LINE__, t); exit(1); } }
+  #define WEAKRAND(i) (UINT64_C(0xBB67AE8584CAA73D) * (i + 1))
+  #define VERIFY(r, t) { if (!(r)) { printf("%s:%d: Test for %s failed!\n", __FILE__, __LINE__, t); exit(1); } }
 #define VERIFYEQUAL(x, y, n) {                                         \
         VERIFY(x.rand_u64() == y.rand_u64(), "Rand() equality");       \
         VERIFY(x.rand_range(n) == y.rand_range(n), "Rand() equality"); \
@@ -820,8 +819,7 @@ void RandTest( const unsigned runs ) {
                 VERIFYEQUAL(testRands1[l], testRands2[l], j + 2);
             }
             for (size_t l = 0; l < Randcount; l++) {
-                VERIFY(memcmp(&buf64_A[l][0], &buf64_B[l][0], bytecnt) == 0,
-                        "Orthogonal outputs match");
+                VERIFY(memcmp(&buf64_A[l][0], &buf64_B[l][0], bytecnt) == 0, "Orthogonal outputs match");
             }
             for (size_t l = 0; l < Randcount; l++) {
                 testRands1[l].enable_ortho();

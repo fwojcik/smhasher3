@@ -64,10 +64,10 @@ static FORCE_INLINE void XXH3_scrambleAcc_avx512( void * RESTRICT acc, const voi
     const __m512i   prime32 = _mm512_set1_epi32((int)XXH_PRIME32_1);
 
     /* xacc[0] ^= (xacc[0] >> 47) */
-    __m512i const acc_vec  = *xacc;
-    __m512i const shifted  = _mm512_srli_epi64(acc_vec, 47);
+    __m512i const acc_vec = *xacc;
+    __m512i const shifted = _mm512_srli_epi64(acc_vec, 47);
     /* xacc[0] ^= secret; */
-    __m512i const key_vec  = bswap ?
+    __m512i const key_vec = bswap ?
                 mm512_bswap64(_mm512_loadu_si512(secret))  :
                 _mm512_loadu_si512(secret);
     /* 0x96 == key_vec ^ acc_vec ^ shifted */
@@ -89,9 +89,9 @@ static FORCE_INLINE void XXH3_scrambleAcc_avx512( void * RESTRICT acc, const voi
 template <bool bswap>
 static FORCE_INLINE void XXH3_initCustomSecret_avx512( void * RESTRICT customSecret, uint64_t seed64 ) {
     XXH_ASSERT(((size_t)customSecret & 63) == 0);
-    int const     nbRounds = XXH3_SECRET_DEFAULT_SIZE / sizeof(__m512i);
-    __m512i const seed_pos = _mm512_set1_epi64((int64_t)seed64);
-    __m512i const seed     = _mm512_mask_sub_epi64(seed_pos, 0xAA, _mm512_set1_epi8(0), seed_pos);
+    int const     nbRounds     = XXH3_SECRET_DEFAULT_SIZE / sizeof(__m512i);
+    __m512i const seed_pos     = _mm512_set1_epi64((int64_t)seed64);
+    __m512i const seed         = _mm512_mask_sub_epi64(seed_pos, 0xAA, _mm512_set1_epi8(0), seed_pos);
 
     const __m512i * const src  = (const __m512i *)((const void *)XXH3_kSecret);
     __m512i       * const dest = (__m512i *      )customSecret;

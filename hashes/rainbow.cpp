@@ -32,10 +32,10 @@ static const uint64_t U = UINT64_C( 1358537349836140151);
 static const uint64_t V = UINT64_C( 2849285319520710901);
 static const uint64_t W = UINT64_C( 2366157163652459183);
 
-static inline void rotate_right(uint64_t h[4]) {
-    uint64_t temp = h[3];  // Store the last element
+static inline void rotate_right( uint64_t h[4] ) {
+    uint64_t temp = h[3]; // Store the last element
 
-    h[3] = h[2];           // Shift elements right
+    h[3] = h[2];          // Shift elements right
     h[2] = h[1];
     h[1] = h[0];
     h[0] = temp;           // Place the last element in the first position

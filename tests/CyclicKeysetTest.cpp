@@ -93,19 +93,19 @@ static bool CyclicKeyImpl( HashFn hash, const seed_t seed, unsigned cycleReps,
     //----------
 
     auto keyprint = [&]( hidx_t i ) {
-        ExtBlob xb( &cycles[i * cycleLen], cycleLen );
-        hashtype v;
+                ExtBlob  xb( &cycles[i * cycleLen], cycleLen );
+                hashtype v;
 
-        for (unsigned j = 0; j < cycleReps; j++) {
-            memcpy(&key[j * cycleLen], &cycles[i * cycleLen], cycleLen);
-        }
-        hash(key, keyLen, seed, &v);
+                for (unsigned j = 0; j < cycleReps; j++) {
+                    memcpy(&key[j * cycleLen], &cycles[i * cycleLen], cycleLen);
+                }
+                hash(key, keyLen, seed, &v);
 
-        printf("0x%016" PRIx64 "\t%d copies of ", g_seed, cycleReps);
-        xb.printbytes(NULL);
-        printf("\t");
-        v.printhex(NULL);
-    };
+                printf("0x%016" PRIx64 "\t%d copies of ", g_seed, cycleReps);
+                xb.printbytes(NULL);
+                printf("\t");
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).testDistribution(false).dumpFailKeys(keyprint);
 

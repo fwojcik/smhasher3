@@ -24,8 +24,8 @@
 //------------------------------------------------------------
 // Import the existing CityHash implementations
 namespace CityHash {
-    #define IMPORT_CITY
-    #include "cityhash.cpp"
+  #define IMPORT_CITY
+  #include "cityhash.cpp"
 }
 
 //------------------------------------------------------------
@@ -93,15 +93,15 @@ static constexpr size_t PiecewiseChunkSize() { return 1024; }
 
 template <bool bswap>
 static std::pair<uint64_t, uint64_t> Read9To16( const uint8_t * p, const size_t len ) {
-    uint64_t low_mem  = GET_U64<bswap>(p,           0);
+    uint64_t low_mem  = GET_U64<bswap>(p          , 0);
     uint64_t high_mem = GET_U64<bswap>(p + len - 8, 0);
 
-    return {low_mem, high_mem};
+    return { low_mem, high_mem };
 }
 
 template <bool bswap>
 static uint64_t Read4To8( const uint8_t * p, size_t len ) {
-    uint32_t low_mem  = GET_U32<bswap>(p,           0);
+    uint32_t low_mem  = GET_U32<bswap>(p          , 0);
     uint32_t high_mem = GET_U32<bswap>(p + len - 4, 0);
 
     return (static_cast<uint64_t>(low_mem) << 32) | high_mem;
@@ -136,7 +136,7 @@ static FORCE_INLINE uint64_t CombineRawImpl( uint64_t state, uint64_t value ) {
 }
 
 template <bool bswap>
-static inline uint64_t PrecombineLengthMix(uint64_t state, size_t len) {
+static inline uint64_t PrecombineLengthMix( uint64_t state, size_t len ) {
     assume(len + sizeof(uint64_t) <= sizeof(kStaticRandomData));
     uint64_t data = GET_U64<bswap>((const uint8_t *)(&kStaticRandomData[0]), len);
     return state ^ data;
@@ -171,8 +171,8 @@ static uint32_t CityHash32( const uint8_t * s, const size_t len ) {
 
 template <bool bswap>
 static FORCE_INLINE uint64_t HashBlockOn32Bit( uint64_t state, const uint8_t * data, size_t len ) {
-  // TODO(b/417141985): expose and use CityHash32WithSeed.
-  // Note: we can't use PrecombineLengthMix here because len can be up to 1024.
+    // TODO(b/417141985): expose and use CityHash32WithSeed.
+    // Note: we can't use PrecombineLengthMix here because len can be up to 1024.
     return CombineRawImpl(state + len, CityHash32<bswap>(data, len));
 }
 
@@ -215,6 +215,7 @@ static inline uint64_t CombineContiguousImpl32( uint64_t state, const uint8_t * 
 template <bool bswap>
 static void ABSL32( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = CombineContiguousImpl32<bswap>(seed, (const uint8_t *)in, len);
+
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 
@@ -239,22 +240,22 @@ static uint64_t CityHash64( uint64_t state, const uint8_t * s, const size_t len 
 
 template <bool bswap>
 static uint64_t Mix32Bytes( uint64_t current_state, const uint8_t * ptr ) {
-  uint64_t a = Read8<bswap>(ptr     );
-  uint64_t b = Read8<bswap>(ptr +  8);
-  uint64_t c = Read8<bswap>(ptr + 16);
-  uint64_t d = Read8<bswap>(ptr + 24);
+    uint64_t a   = Read8<bswap>(ptr     );
+    uint64_t b   = Read8<bswap>(ptr +  8);
+    uint64_t c   = Read8<bswap>(ptr + 16);
+    uint64_t d   = Read8<bswap>(ptr + 24);
 
-  uint64_t cs0 = Mix(a ^ kStaticRandomData[1], b ^ current_state);
-  uint64_t cs1 = Mix(c ^ kStaticRandomData[2], d ^ current_state);
+    uint64_t cs0 = Mix(a ^ kStaticRandomData[1], b ^ current_state);
+    uint64_t cs1 = Mix(c ^ kStaticRandomData[2], d ^ current_state);
 
-  return cs0 ^ cs1;
+    return cs0 ^ cs1;
 }
 
 template <bool bswap>
 static uint64_t LowLevelHashLenGt32( uint64_t seed, const uint8_t * ptr, size_t len ) {
     assume(len > 32);
-    uint64_t current_state = seed ^ kStaticRandomData[0] ^ len;
-    const uint8_t * last_32_ptr = ptr + len - 32;
+    uint64_t        current_state = seed ^ kStaticRandomData[0] ^ len;
+    const uint8_t * last_32_ptr   = ptr + len - 32;
 
     if (len > 64) {
         // If we have more than 64 bytes, we're going to handle chunks of
@@ -277,7 +278,7 @@ static uint64_t LowLevelHashLenGt32( uint64_t seed, const uint8_t * ptr, size_t 
             uint64_t g = Read8<bswap>(ptr + 48);
             uint64_t h = Read8<bswap>(ptr + 56);
 
-            current_state     = Mix(a ^ kStaticRandomData[1], b ^ current_state);
+            current_state     = Mix(a ^ kStaticRandomData[1], b ^ current_state    );
             duplicated_state0 = Mix(c ^ kStaticRandomData[2], d ^ duplicated_state0);
             duplicated_state1 = Mix(e ^ kStaticRandomData[3], f ^ duplicated_state1);
             duplicated_state2 = Mix(g ^ kStaticRandomData[4], h ^ duplicated_state2);
@@ -343,8 +344,8 @@ static FORCE_INLINE uint64_t CombineContiguousImpl17to32( uint64_t state, const 
     // Do two mixes of overlapping 16-byte ranges in parallel to minimize
     // latency.
     const uint8_t * tail = first + (len - 16);
-    const uint64_t m0 = Mix(Read8<bswap>(first) ^ kStaticRandomData[1], Read8<bswap>(first + 8) ^ state);
-    const uint64_t m1 = Mix(Read8<bswap>(tail) ^  kStaticRandomData[3], Read8<bswap>(tail  + 8) ^ state);
+    const uint64_t  m0   = Mix(Read8<bswap>(first) ^ kStaticRandomData[1], Read8<bswap>(first + 8) ^ state);
+    const uint64_t  m1   = Mix(Read8<bswap>(tail)  ^ kStaticRandomData[3], Read8<bswap>(tail  + 8) ^ state);
     return m0 ^ m1;
 }
 
@@ -384,6 +385,7 @@ static inline uint64_t CombineContiguousImpl64( uint64_t state, const uint8_t * 
 template <bool bswap, bool use_llh>
 static void ABSL64( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t h = CombineContiguousImpl64<bswap, use_llh>(seed, (const uint8_t *)in, len);
+
     PUT_U64<bswap>(h, (uint8_t *)out, 0);
 }
 

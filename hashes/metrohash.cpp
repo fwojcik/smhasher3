@@ -70,10 +70,10 @@ template <uint32_t variant, bool bswap>
 static void MetroHash64( const void * in, const size_t len, const seed_t seed, void * out ) {
     if (variant >= VARIANTS_64) { return; }
 
-    const uint64_t *      K      = &MULTK64[variant][0];
-    const uint8_t *       ROTK   = &ROTK64 [variant][0];
-    const uint8_t *       ptr    = (const uint8_t *)in;
-    const uint8_t * const end    = ptr + len;
+    const uint64_t *      K    = &MULTK64[variant][0];
+    const uint8_t *       ROTK = &ROTK64 [variant][0];
+    const uint8_t *       ptr  = (const uint8_t *)in;
+    const uint8_t * const end  = ptr + len;
     uint64_t v[4];
 
     uint64_t vseed = ((uint64_t)seed + K[2]) * K[0];
@@ -179,10 +179,10 @@ template <uint32_t variant, bool bswap>
 static void MetroHash128( const void * in, const size_t len, const seed_t seed, void * out ) {
     if (variant >= VARIANTS_128) { return; }
 
-    const uint64_t *      K      = &MULTK128[variant][0];
-    const uint8_t *       ROTK   = &ROTK128 [variant][0];
-    const uint8_t *       ptr    = (const uint8_t *)in;
-    const uint8_t * const end    = ptr + len;
+    const uint64_t *      K    = &MULTK128[variant][0];
+    const uint8_t *       ROTK = &ROTK128 [variant][0];
+    const uint8_t *       ptr  = (const uint8_t *)in;
+    const uint8_t * const end  = ptr + len;
 
     uint64_t v[4];
 

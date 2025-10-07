@@ -257,7 +257,7 @@ static void blake2_compress( blake2b_context * ctx, const uint8_t * in ) {
     const __m128i m6  = bswap ? mm_bswap64(LOADU(in +  96)) : LOADU(in +  96);
     const __m128i m7  = bswap ? mm_bswap64(LOADU(in + 112)) : LOADU(in + 112);
 #else
-    const uint64_t m0  = GET_U64<bswap>(in,   0), m1  = GET_U64<bswap>(in,   8);
+    const uint64_t m0 =  GET_U64<bswap>(in,   0), m1  = GET_U64<bswap>(in,   8);
     const uint64_t m2  = GET_U64<bswap>(in,  16), m3  = GET_U64<bswap>(in,  24);
     const uint64_t m4  = GET_U64<bswap>(in,  32), m5  = GET_U64<bswap>(in,  40);
     const uint64_t m6  = GET_U64<bswap>(in,  48), m7  = GET_U64<bswap>(in,  56);
@@ -693,7 +693,7 @@ static void blake2_compress( blake2s_context * ctx, const uint8_t * in ) {
     const __m128i m2  = bswap ? mm_bswap32(LOADU(in + 32)) : LOADU(in + 32);
     const __m128i m3  = bswap ? mm_bswap32(LOADU(in + 48)) : LOADU(in + 48);
 #else
-    const uint32_t m0  = GET_U32<bswap>(in,  0), m1  = GET_U32<bswap>(in,  4);
+    const uint32_t m0 =  GET_U32<bswap>(in,  0), m1  = GET_U32<bswap>(in,  4);
     const uint32_t m2  = GET_U32<bswap>(in,  8), m3  = GET_U32<bswap>(in, 12);
     const uint32_t m4  = GET_U32<bswap>(in, 16), m5  = GET_U32<bswap>(in, 20);
     const uint32_t m6  = GET_U32<bswap>(in, 24), m7  = GET_U32<bswap>(in, 28);

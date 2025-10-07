@@ -86,7 +86,7 @@ static void SparseKeygenRecurse( HashFn hash, const seed_t seed, unsigned start,
 template <int keybits, typename hashtype>
 static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbits, bool inclusive, flags_t flags ) {
     typedef Blob<keybits> keytype;
-    keytype k(0);
+    keytype k( 0 );
 
     const unsigned keybytes  = keybits / 8;
     const unsigned totalkeys = inclusive ? 1 + chooseUpToK(keybits, setbits) : chooseK(keybits, setbits);
@@ -114,29 +114,29 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbit
     // chooseUpToK() instead of a table, and why it uses the laterbits
     // variable at all.
     auto keyprint = [&]( hidx_t n ) {
-        hidx_t t, pos = 0, maxpos = keybits - 1, laterbits = setbits;
-        hashtype v;
+                hidx_t   t, pos = 0, maxpos = keybits - 1, laterbits = setbits;
+                hashtype v;
 
-        k = 0;
-        while (n > 0) {
-            laterbits--;
-            n--;
-            while (n >= (t = 1 + chooseUpToK(maxpos - pos, laterbits))) {
-                n -= t;
-                pos++;
-            }
-            k.flipbit(pos++);
-        }
+                k = 0;
+                while (n > 0) {
+                    laterbits--;
+                    n--;
+                    while (n >= (t = 1 + chooseUpToK(maxpos - pos, laterbits))) {
+                        n -= t;
+                        pos++;
+                    }
+                    k.flipbit(pos++);
+                }
 
-        printf("0x%016" PRIx64 "\t", g_seed);
-        k.printbytes(NULL);
-        printf("\t");
-        hash(&k, k.len, seed, &v);
-        v.printhex(NULL);
-    };
+                printf("0x%016" PRIx64 "\t", g_seed);
+                k.printbytes(NULL);
+                printf("\t");
+                hash(&k, k.len, seed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).
-        testDistribution(false).dumpFailKeys(keyprint);
+            testDistribution(false).dumpFailKeys(keyprint);
 
     printf("\n");
 

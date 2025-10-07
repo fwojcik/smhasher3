@@ -124,7 +124,7 @@ static inline uint64_t prvhash64_64m( const void * const Msg0, const size_t MsgL
         Seed ^= msgw;
         lcg  ^= msgw;
 
-        Msg += sizeof(uint64_t);
+        Msg  += sizeof(uint64_t);
     }
 
     if (!width128) {

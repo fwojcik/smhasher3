@@ -666,7 +666,8 @@ void multiply32x32to64( uint32_t & rhi, uint32_t & rlo, uint32_t a, uint32_t b )
 }
 
 static inline
-void add64( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWord, uint32_t & loAdd, uint32_t & hiAdd, uint32_t & hhAdd ) {
+void add64( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWord,
+        uint32_t & loAdd, uint32_t & hiAdd, uint32_t & hhAdd ) {
     MathMult::add96(loWord, hiWord, hhWord, loAdd, hiAdd, hhAdd);
 }
 
@@ -695,7 +696,7 @@ void mul32x32to64addto96( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWor
 
 #define PMPML_CHUNK_LOOP_BODY_ULI_T1_LAST                                                  \
     /*multiply32x32to64(mul.HighPart, mul.LowPart, xLast, coeff[ size ]);                  \
-	add64(constTerm.LowPart, constTerm.HighPart, ctr, mul.LowPart, mul.HighPart);*/        \
+	add64(constTerm.LowPart, constTerm.HighPart, ctr, mul.LowPart, mul.HighPart);*/     \
     mul32x32to64addto96(constTerm.LowPart, constTerm.HighPart, ctr, xLast, coeff[ size ]); \
 
 #define PMPML_CHUNK_LOOP_PRE_REDUCE_L0
@@ -738,8 +739,8 @@ void mul32x32to64addto96( uint32_t & loWord, uint32_t & hiWord, uint32_t & hhWor
 }
 
 #define PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN \
-	PMPML_CHUNK_REDUCE_96_TO_64                       \
-	PMPML_CHUNK_REDUCE_64_TO_32                       \
+	PMPML_CHUNK_REDUCE_96_TO_64                    \
+	PMPML_CHUNK_REDUCE_64_TO_32                    \
 	return constTerm.QuadPart;
 
 #define PMPML_FULL_REDUCE_MOD_2_32_PLUS_15_AND_RETURN_RETURN_32x32_ONLY                              \
@@ -1684,13 +1685,14 @@ class PMP_Multilinear_Hasher_32 {
 #endif // PMPML_MSC_32_WORKAROUND
 
     template <bool bswap>
-    NEVER_INLINE uint32_t _hash_noRecursionNoInline_forLessThanChunk( const unsigned char * chars, unsigned int cnt ) const {
+    NEVER_INLINE uint32_t _hash_noRecursionNoInline_forLessThanChunk( const unsigned char * chars,
+            unsigned int cnt ) const {
         unsigned int       i;
         ULARGE_INTEGER__XX tmp_hash;
 
         tmp_hash.QuadPart = hash_of_beginning_of_string_chunk_type2<bswap>(curr_rd[0].random_coeff,
                 *(ULARGE_INTEGER__XX *)(&(curr_rd[0].const_term)), chars, cnt);
-        if (tmp_hash.HighPart == 0) {     // LIKELY
+        if (tmp_hash.HighPart == 0) { // LIKELY
             return fmix32_short(tmp_hash.LowPart);
         }
         return tmp_hash.LowPart;
@@ -1727,7 +1729,7 @@ class PMP_Multilinear_Hasher_32 {
         procesNextValue<bswap>(1, tmp_hash.QuadPart, allValues, cnts, flag);
         ULARGE_INTEGER__XX ret64;
         ret64.QuadPart = finalize<bswap>(1, allValues, cnts, flag);
-        if (ret64.HighPart == 0) {     // LIKELY
+        if (ret64.HighPart == 0) { // LIKELY
             return fmix32_short(ret64.LowPart);
         }
         return ret64.LowPart;

@@ -222,13 +222,13 @@ static inline uint64_t stadtx( const uint64_t * state, const uint8_t * key, cons
                  break;
         }
         switch (len & 0x7) {
-        case 7: v0 += (uint64_t)key[6] << 32;     /* FALLTHROUGH */
-        case 6: v1 += (uint64_t)key[5] << 48;     /* FALLTHROUGH */
-        case 5: v0 += (uint64_t)key[4] << 16;     /* FALLTHROUGH */
+        case 7: v0 += (uint64_t)key[6] << 32; /* FALLTHROUGH */
+        case 6: v1 += (uint64_t)key[5] << 48; /* FALLTHROUGH */
+        case 5: v0 += (uint64_t)key[4] << 16; /* FALLTHROUGH */
         case 4: v1 += (uint64_t)GET_U32<bswap>(key, 0);  break;
-        case 3: v0 += (uint64_t)key[2] << 48;     /* FALLTHROUGH */
+        case 3: v0 += (uint64_t)key[2] << 48; /* FALLTHROUGH */
         case 2: v1 += (uint64_t)GET_U16<bswap>(key, 0);  break;
-        case 1: v0 += (uint64_t)key[0];           /* FALLTHROUGH */
+        case 1: v0 += (uint64_t)key[0];       /* FALLTHROUGH */
         case 0: v1  = ROTL64(v1, 32) ^ 0xFF;             break;
         }
         v1 ^= v0;
@@ -324,24 +324,24 @@ static inline uint64_t stadtx( const uint64_t * state, const uint8_t * key, cons
 #define SBOX32_CHURN_ROUNDS_OLD 5
 #define SBOX32_CHURN_ROUNDS_NEW 128
 
-#define SBOX32_MIX3(v0,v1,v2,text) {  \
-        v0 = ROTL32(v0, 16) - v2;     \
-        v1 = ROTR32(v1, 13) ^ v2;     \
-        v2 = ROTL32(v2, 17) + v1;     \
-        v0 = ROTR32(v0,  2) + v1;     \
-        v1 = ROTR32(v1, 17) - v0;     \
-        v2 = ROTR32(v2,  7) ^ v0;     \
+#define SBOX32_MIX3(v0,v1,v2,text) { \
+        v0 = ROTL32(v0, 16) - v2;    \
+        v1 = ROTR32(v1, 13) ^ v2;    \
+        v2 = ROTL32(v2, 17) + v1;    \
+        v0 = ROTR32(v0,  2) + v1;    \
+        v1 = ROTR32(v1, 17) - v0;    \
+        v2 = ROTR32(v2,  7) ^ v0;    \
     }
 
-#define SBOX32_MIX4(v0,v1,v2,v3,text) {  \
-        v0 = ROTL32(v0, 13) - v3;        \
-        v1 ^= v2;                        \
-        v3 = ROTL32(v3,  9) + v1;        \
-        v2 ^= v0;                        \
-        v0 = ROTL32(v0, 14) ^ v3;        \
-        v1 = ROTL32(v1, 25) - v2;        \
-        v3 ^= v1;                        \
-        v2 = ROTL32(v2,  4) - v0;        \
+#define SBOX32_MIX4(v0,v1,v2,v3,text) { \
+        v0 = ROTL32(v0, 13) - v3;       \
+        v1 ^= v2;                       \
+        v3 = ROTL32(v3,  9) + v1;       \
+        v2 ^= v0;                       \
+        v0 = ROTL32(v0, 14) ^ v3;       \
+        v1 = ROTL32(v1, 25) - v2;       \
+        v3 ^= v1;                       \
+        v2 = ROTL32(v2,  4) - v0;       \
     }
 
 #define XORSHIFT96_set(r,x,y,z,t) {                      \
@@ -487,23 +487,23 @@ static inline uint32_t sbox32_hash( const uint32_t * state, const uint8_t * key,
  * sandwiched inside. The end result of doing this twice with different
  * primes is a completely avalanched v.
  */
-#define ZAPHOD32_SCRAMBLE32(v,prime) {   \
-        v ^= (v >>  9);                  \
-        v ^= (v << 21);                  \
-        v ^= (v >> 16);                  \
-        v *= prime;                      \
-        v ^= (v >> 17);                  \
-        v ^= (v << 15);                  \
-        v ^= (v >> 23);                  \
+#define ZAPHOD32_SCRAMBLE32(v,prime) { \
+        v ^= (v >>  9);                \
+        v ^= (v << 21);                \
+        v ^= (v >> 16);                \
+        v *= prime;                    \
+        v ^= (v >> 17);                \
+        v ^= (v << 15);                \
+        v ^= (v >> 23);                \
     }
 
-#define ZAPHOD32_MIX(v0,v1,v2,text) {  \
-        v0 = ROTL32(v0, 16) - v2;      \
-        v1 = ROTR32(v1, 13) ^ v2;      \
-        v2 = ROTL32(v2, 17) + v1;      \
-        v0 = ROTR32(v0,  2) + v1;      \
-        v1 = ROTR32(v1, 17) - v0;      \
-        v2 = ROTR32(v2,  7) ^ v0;      \
+#define ZAPHOD32_MIX(v0,v1,v2,text) { \
+        v0 = ROTL32(v0, 16) - v2;     \
+        v1 = ROTR32(v1, 13) ^ v2;     \
+        v2 = ROTL32(v2, 17) + v1;     \
+        v0 = ROTR32(v0,  2) + v1;     \
+        v1 = ROTR32(v1, 17) - v0;     \
+        v2 = ROTR32(v2,  7) ^ v0;     \
     }
 
 #define ZAPHOD32_STATE_WORDS 3
@@ -587,19 +587,19 @@ static inline uint32_t zaphod32( const uint32_t * state, const uint8_t * key, co
     case 12: v2 += (uint32_t)key[11] << 24; /* FALLTHROUGH */
     case 11: v2 += (uint32_t)key[10] << 16; /* FALLTHROUGH */
     case 10: v2 += (uint32_t)GET_U16<bswap>(key, 8);
-             v1 -= GET_U32<bswap>(key, 4);
-             v0 += GET_U32<bswap>(key, 0);
+             v1 -=           GET_U32<bswap>(key, 4);
+             v0 +=           GET_U32<bswap>(key, 0);
              goto zaphod32_finalize;
     case 9 : v2 += (uint32_t)key[8];          /* FALLTHROUGH */
-    case  8: v1 -= GET_U32<bswap>(key, 4);
-             v0 += GET_U32<bswap>(key, 0);
+    case  8: v1 -=           GET_U32<bswap>(key, 4);
+             v0 +=           GET_U32<bswap>(key, 0);
              goto zaphod32_finalize;
     case 7 : v2 += (uint32_t)key[6];          /* FALLTHROUGH */
     case  6: v0 += (uint32_t)GET_U16<bswap>(key, 4);
-             v1 -= GET_U32<bswap>(key, 0);
+             v1 -=           GET_U32<bswap>(key, 0);
              goto zaphod32_finalize;
     case 5 : v0 += (uint32_t)key[4];          /* FALLTHROUGH */
-    case  4: v1 -= GET_U32<bswap>(key, 0);
+    case  4: v1 -=           GET_U32<bswap>(key, 0);
              goto zaphod32_finalize;
     case 3 : v2 += (uint32_t)key[2];          /* FALLTHROUGH */
     case  2: v0 += (uint32_t)GET_U16<bswap>(key, 0); break;

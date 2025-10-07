@@ -81,7 +81,7 @@ static uint128_t rand_u128( uint64_t & state ) {
 }
 
 static uintptr_t poly_mersenne_seed_init( const seed_t seed ) {
-    uint64_t splitmix_nextrand = (uint64_t)seed;    
+    uint64_t splitmix_nextrand = (uint64_t)seed;
 
     // a has be at most 2^60, or the lazy modular reduction won't work.
     poly_mersenne_data.poly_mersenne_a = rand_u128(splitmix_nextrand) % (MERSENNE_61 / 2);

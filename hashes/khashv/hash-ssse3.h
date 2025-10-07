@@ -94,7 +94,7 @@ static KHASH_FINLINE __m128i khashv_mix_words_vector( __m128i val ) {
 }
 
 static KHASH_FINLINE __m128i khashv_part_load_vector( const uint8_t * data, size_t len ) {
-    __m128i tmp  = { 0 };
+    __m128i tmp = { 0 };
 
     switch (len) {
     case  1:
@@ -212,8 +212,8 @@ static KHASH_FINLINE __m128i khashv_part_load_vector( const uint8_t * data, size
 #endif
              break;
     case 16:
-        tmp = _mm_loadu_si128((__m128i*)data);
-        break;
+             tmp = _mm_loadu_si128((__m128i *)data);
+             break;
     }
     return tmp;
 }

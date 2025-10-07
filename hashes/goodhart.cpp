@@ -53,7 +53,7 @@ FORCE_INLINE static void mix_state( uint64_t * state, int rounds ) {
 
     for (int i = 0; i < rounds; i++) {
         state[0] += state[1] + 1;
-        state[1]  = ROTL64( state[1], rots[i % 16] ) ^ state[0];
+        state[1]  = ROTL64(state[1], rots[i % 16]) ^ state[0];
     }
 }
 
@@ -77,36 +77,35 @@ static uintptr_t init_seed( seed_t seed ) {
 template <unsigned hashversion, bool bswap>
 static void GoodhartHashAll( const void * in, const size_t len, const seed_t seed, void * out ) {
     const uint64_t * seed_state = (const uint64_t *)(void *)(uintptr_t)seed;
-    uint64_t state[2] = { seed_state[0], seed_state[1] };
+    uint64_t         state[2]   = { seed_state[0], seed_state[1] };
 
-    static_assert((hashversion >= 1) && (hashversion <= 6),
-            "Valid GoodhartHash versions are 1-6");
+    static_assert((hashversion >= 1) && (hashversion <= 6), "Valid GoodhartHash versions are 1-6");
 
     // Process the input data in 256-bit blocks.
     const uint8_t * data     = (uint8_t *)in;
     uint64_t        data_len = len;
     while (data_len > 0) {
-        const size_t process_len = std::min( data_len, uint64_t( BLOCK_SIZE ));
+        const size_t process_len = std::min(data_len, uint64_t(BLOCK_SIZE));
 
         if (process_len == BLOCK_SIZE) {
-            state[0] ^= GET_U64<bswap>( data, 0 );
-            state[1] ^= GET_U64<bswap>( data, 8 );
+            state[0] ^= GET_U64<bswap>(data, 0);
+            state[1] ^= GET_U64<bswap>(data, 8);
         } else {
             // Copy the data into a zeroed-out buffer. When the data is less than
             // 256 bits this pads it out to 256 bits with zeros.
             uint8_t buffer[BLOCK_SIZE] = { 0 };
-            memcpy( buffer, data, process_len );
+            memcpy(buffer, data, process_len);
 
-            state[0] ^= GET_U64<bswap>( buffer, 0 );
-            state[1] ^= GET_U64<bswap>( buffer, 8 );
+            state[0] ^= GET_U64<bswap>(buffer, 0);
+            state[1] ^= GET_U64<bswap>(buffer, 8);
         }
 
         if (hashversion == 3) {
-            mix_state( state, 12 );
+            mix_state(state, 12);
         } else if (hashversion == 4) {
-            mix_state( state, 4 );
-        }  else if (hashversion >= 5) {
-            mix_state( state, 5 );
+            mix_state(state, 4);
+        } else if (hashversion >= 5) {
+            mix_state(state, 5);
         }
 
         data_len -= process_len;
@@ -118,17 +117,17 @@ static void GoodhartHashAll( const void * in, const size_t len, const seed_t see
         state[0] ^= len;
     }
 
-    mix_state( state, 12 );
+    mix_state(state, 12);
 
     if (hashversion == 6) {
         // Be evil.
         state[1] = 0;
-        mix_state( state, 12 );
+        mix_state(state, 12);
     }
 
     // Copy the hash state to the output.
-    PUT_U64<bswap>( state[0], (uint8_t *)out, 0 );
-    PUT_U64<bswap>( state[1], (uint8_t *)out, 8 );
+    PUT_U64<bswap>(state[0], (uint8_t *)out, 0);
+    PUT_U64<bswap>(state[1], (uint8_t *)out, 8);
 }
 
 //------------------------------------------------------------

@@ -75,10 +75,11 @@ typedef phmap::flat_hash_map<std::string, int,
 static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string> words,
         const int trials, const flags_t flags ) {
     Rand r( 358512 );
+
     unused(flags);
 
-    const HashFn hash     = hinfo->hashFn(g_hashEndian);
-    const seed_t seed     = hinfo->Seed(g_seed ^ r.rand_u64());
+    const HashFn hash = hinfo->hashFn(g_hashEndian);
+    const seed_t seed = hinfo->Seed(g_seed ^ r.rand_u64());
 
     std_hashmap hashmap( words.size(), [=]( const std::string & key ) {
             // 256 needed for hasshe2, but only size_t used
@@ -202,7 +203,6 @@ static double HashMapSpeedTest( const HashInfo * hinfo, std::vector<std::string>
 
 static bool HashMapImpl( const HashInfo * hinfo, std::vector<std::string> words,
         const int trials, const flags_t flags ) {
-
     try {
         HashMapSpeedTest(hinfo, words, trials, flags);
     } catch (...) {
@@ -214,8 +214,8 @@ static bool HashMapImpl( const HashInfo * hinfo, std::vector<std::string> words,
 //-----------------------------------------------------------------------------
 
 bool HashMapTest( const HashInfo * hinfo, bool extra, flags_t flags ) {
-    const int    trials = (hinfo->isVerySlow() || !extra) ? 5 : 50;
-    bool         result = true;
+    const int trials = (hinfo->isVerySlow() || !extra) ? 5 : 50;
+    bool      result = true;
 
     printf("[[[ 'Hashmap' Speed Tests ]]]\n\n");
 

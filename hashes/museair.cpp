@@ -41,7 +41,7 @@ static FORCE_INLINE void museair_read_short( const uint8_t * bytes, const size_t
 
 //------------------------------------------------------------
 template <bool bfast>
-static FORCE_INLINE void museair_mumix(uint64_t* state_p, uint64_t* state_q, uint64_t input_p, uint64_t input_q) {
+static FORCE_INLINE void museair_mumix( uint64_t * state_p, uint64_t * state_q, uint64_t input_p, uint64_t input_q ) {
     if (!bfast) {
         uint64_t lo, hi;
         *state_p ^= input_p;
@@ -58,11 +58,8 @@ static FORCE_INLINE void museair_mumix(uint64_t* state_p, uint64_t* state_q, uin
 #define U64x(N) N * 8
 
 template <bool bswap, bool bfast, bool b128>
-static FORCE_INLINE void museair_hash_short(const uint8_t* bytes,
-                                            const size_t len,
-                                            const seed_t seed,
-                                            uint64_t* out_lo,
-                                            uint64_t* out_hi) {
+static FORCE_INLINE void museair_hash_short( const uint8_t * bytes, const size_t len,
+        const seed_t seed, uint64_t * out_lo, uint64_t * out_hi ) {
     uint64_t lo0, lo1, lo2;
     uint64_t hi0, hi1, hi2;
 
@@ -110,21 +107,20 @@ static FORCE_INLINE void museair_hash_short(const uint8_t* bytes,
 }
 
 template <bool bswap, bool bfast, bool b128>
-static NEVER_INLINE void museair_hash_loong(const uint8_t* bytes,
-                                            const size_t len,
-                                            const seed_t seed,
-                                            uint64_t* out_lo,
-                                            uint64_t* out_hi) {
-    const uint8_t* p = bytes;
-    size_t q = len;
+static NEVER_INLINE void museair_hash_loong( const uint8_t * bytes, const size_t len,
+        const seed_t seed, uint64_t * out_lo, uint64_t * out_hi ) {
+    const uint8_t * p = bytes;
+    size_t          q = len;
 
     uint64_t i, j, k;
 
     uint64_t lo0, lo1, lo2, lo3, lo4, lo5 = MUSEAIR_CONSTANT[6];
     uint64_t hi0, hi1, hi2, hi3, hi4, hi5;
 
-    uint64_t state[6] = {MUSEAIR_CONSTANT[0] + seed, MUSEAIR_CONSTANT[1] - seed, MUSEAIR_CONSTANT[2] ^ seed,
-                         MUSEAIR_CONSTANT[3] + seed, MUSEAIR_CONSTANT[4] - seed, MUSEAIR_CONSTANT[5] ^ seed};
+    uint64_t state[6] = {
+        MUSEAIR_CONSTANT[0] + seed, MUSEAIR_CONSTANT[1] - seed, MUSEAIR_CONSTANT[2] ^ seed,
+        MUSEAIR_CONSTANT[3] + seed, MUSEAIR_CONSTANT[4] - seed, MUSEAIR_CONSTANT[5] ^ seed
+    };
 
     if (unlikely(q >= U64x(12))) {
         do {
@@ -192,35 +188,28 @@ static NEVER_INLINE void museair_hash_loong(const uint8_t* bytes,
 
             p += U64x(12);
             q -= U64x(12);
-
         } while (likely(q >= U64x(12)));
 
         state[0] ^= lo5;
     }
 
     if (unlikely(q >= U64x(6))) {
-        museair_mumix<bfast>(&state[0], &state[1], GET_U64<bswap>(p, U64x(0)),
-                             GET_U64<bswap>(p, U64x(1)));
-        museair_mumix<bfast>(&state[2], &state[3], GET_U64<bswap>(p, U64x(2)),
-                             GET_U64<bswap>(p, U64x(3)));
-        museair_mumix<bfast>(&state[4], &state[5], GET_U64<bswap>(p, U64x(4)),
-                             GET_U64<bswap>(p, U64x(5)));
+        museair_mumix<bfast>(&state[0], &state[1], GET_U64<bswap>(p, U64x(0)), GET_U64<bswap>(p, U64x(1)));
+        museair_mumix<bfast>(&state[2], &state[3], GET_U64<bswap>(p, U64x(2)), GET_U64<bswap>(p, U64x(3)));
+        museair_mumix<bfast>(&state[4], &state[5], GET_U64<bswap>(p, U64x(4)), GET_U64<bswap>(p, U64x(5)));
 
         p += U64x(6);
         q -= U64x(6);
     }
 
     if (likely(q >= U64x(2))) {
-        museair_mumix<bfast>(&state[0], &state[3], GET_U64<bswap>(p, U64x(0)),
-                             GET_U64<bswap>(p, U64x(1)));
+        museair_mumix<bfast>(&state[0], &state[3], GET_U64<bswap>(p, U64x(0)), GET_U64<bswap>(p, U64x(1)));
         if (likely(q >= U64x(4))) {
-            museair_mumix<bfast>(&state[1], &state[4], GET_U64<bswap>(p, U64x(2)),
-                                 GET_U64<bswap>(p, U64x(3)));
+            museair_mumix<bfast>(&state[1], &state[4], GET_U64<bswap>(p, U64x(2)), GET_U64<bswap>(p, U64x(3)));
         }
     }
 
-    museair_mumix<bfast>(&state[2], &state[5], GET_U64<bswap>(p + q - U64x(2), 0),
-            GET_U64<bswap>(p + q - U64x(1), 0));
+    museair_mumix<bfast>(&state[2], &state[5], GET_U64<bswap>(p + q - U64x(2), 0), GET_U64<bswap>(p + q - U64x(1), 0));
 
     /*-------- epilogue --------*/
 
@@ -229,8 +218,8 @@ static NEVER_INLINE void museair_hash_loong(const uint8_t* bytes,
     k = state[4] - state[5];
 
     int rot = len & 63;
-    i = ROTL64(i, rot);
-    j = ROTR64(j, rot);
+    i  = ROTL64(i, rot);
+    j  = ROTR64(j, rot);
     k ^= len;
 
     MathMult::mult64_128(lo0, hi0, i, j);
@@ -256,8 +245,8 @@ static NEVER_INLINE void museair_hash_loong(const uint8_t* bytes,
 //------------------------------------------------------------
 template <bool bswap, bool bfast, bool b128>
 static void MuseAirHash( const void * in, const size_t len, const seed_t seed, void * out ) {
-    const uint8_t * bytes = (const uint8_t*)in;
-    uint64_t out_lo, out_hi;
+    const uint8_t * bytes = (const uint8_t *)in;
+    uint64_t        out_lo, out_hi;
 
     if (likely(len <= 32)) {
         museair_hash_short<bswap, bfast, b128>(bytes, len, seed, &out_lo, &out_hi);
@@ -266,11 +255,11 @@ static void MuseAirHash( const void * in, const size_t len, const seed_t seed, v
     }
 
     out_lo = COND_BSWAP(out_lo, isBE());
-    PUT_U64<false>(out_lo, (uint8_t*)out, 0);
+    PUT_U64<false>(out_lo, (uint8_t *)out, 0);
 
     if (b128) {
         out_hi = COND_BSWAP(out_hi, isBE());
-        PUT_U64<false>(out_hi, (uint8_t*)out, 8);
+        PUT_U64<false>(out_hi, (uint8_t *)out, 8);
     }
 }
 

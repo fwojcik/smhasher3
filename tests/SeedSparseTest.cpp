@@ -103,15 +103,15 @@ static bool SeedSparseTestImpl( const HashInfo * hinfo, uint32_t keylen, flags_t
     }
 
     auto keyprint = [&]( hidx_t i ) {
-        seed_t   setbits = InverseKChooseUpToK(i, 0, maxbits, bigseed ? 64 : 32);
-        seed_t   iseed   = nthlex(i, setbits);
-        seed_t   hseed   = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
-        hashtype v;
+                seed_t   setbits = InverseKChooseUpToK(i, 0, maxbits, bigseed ? 64 : 32);
+                seed_t   iseed   = nthlex(i, setbits);
+                seed_t   hseed   = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
+                hashtype v;
 
-        printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
-        hash(key, keylen, hseed, &v);
-        v.printhex(NULL);
-    };
+                printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
+                hash(key, keylen, hseed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).dumpFailKeys(keyprint);
 
@@ -136,11 +136,11 @@ bool SeedSparseTest( const HashInfo * hinfo, flags_t flags ) {
 
     if (hinfo->is32BitSeed()) {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedSparseTestImpl<hashtype,  7, false>(hinfo, testkeylen, flags);
+            result &= SeedSparseTestImpl<hashtype, 7, false>(hinfo, testkeylen, flags);
         }
     } else {
         for (const auto testkeylen: testkeylens) {
-            result &= SeedSparseTestImpl<hashtype,  5,  true>(hinfo, testkeylen, flags);
+            result &= SeedSparseTestImpl<hashtype, 5,  true>(hinfo, testkeylen, flags);
         }
     }
 

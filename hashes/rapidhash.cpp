@@ -125,11 +125,11 @@ static inline uint64_t rapidhash( const void * key, size_t len, uint64_t seed, c
             seed ^= len;
             if (len >= 8) {
                 const uint8_t * plast = p + len - 8;
-                a = rapid_read64<bswap>(p);
+                a = rapid_read64<bswap>(p    );
                 b = rapid_read64<bswap>(plast);
             } else {
                 const uint8_t * plast = p + len - 4;
-                a = rapid_read32<bswap>(p);
+                a = rapid_read32<bswap>(p    );
                 b = rapid_read32<bswap>(plast);
             }
         } else if (likely(len > 0)) {
@@ -209,7 +209,7 @@ static inline uint64_t rapidhash( const void * key, size_t len, uint64_t seed, c
                     see6 = rapid_mix<isProtected>(rapid_read64<bswap>(p +  96) ^ secrets[6],
                             rapid_read64<bswap>(p + 104) ^ see6);
                     p   += 112; i -= 112;
-                } while(i > 112);
+                } while (i > 112);
             }
             seed ^= see1;
             see2 ^= see3;
@@ -275,11 +275,11 @@ static inline uint64_t rapidhashMicro( const void * key, size_t len, uint64_t se
             seed ^= len;
             if (len >= 8) {
                 const uint8_t * plast = p + len - 8;
-                a = rapid_read64<bswap>(p);
+                a = rapid_read64<bswap>(p    );
                 b = rapid_read64<bswap>(plast);
             } else {
                 const uint8_t * plast = p + len - 4;
-                a = rapid_read32<bswap>(p);
+                a = rapid_read32<bswap>(p    );
                 b = rapid_read32<bswap>(plast);
             }
         } else if (likely(len > 0)) {
@@ -304,7 +304,7 @@ static inline uint64_t rapidhashMicro( const void * key, size_t len, uint64_t se
                 see4 = rapid_mix<isProtected>(rapid_read64<bswap>(p +  64) ^ secrets[4],
                         rapid_read64<bswap>(p +  72) ^ see4);
                 p   += 80; i -= 80;
-            } while(i > 80);
+            } while (i > 80);
             seed ^= see1;
             see2 ^= see3;
             seed ^= see4;
@@ -359,11 +359,11 @@ static inline uint64_t rapidhashNano( const void * key, size_t len, uint64_t see
             seed ^= len;
             if (len >= 8) {
                 const uint8_t * plast = p + len - 8;
-                a = rapid_read64<bswap>(p);
+                a = rapid_read64<bswap>(p    );
                 b = rapid_read64<bswap>(plast);
             } else {
                 const uint8_t * plast = p + len - 4;
-                a = rapid_read32<bswap>(p);
+                a = rapid_read32<bswap>(p    );
                 b = rapid_read32<bswap>(plast);
             }
         } else if (likely(len > 0)) {
@@ -383,7 +383,7 @@ static inline uint64_t rapidhashNano( const void * key, size_t len, uint64_t see
                 see2 = rapid_mix<isProtected>(rapid_read64<bswap>(p +  32) ^ secrets[2],
                         rapid_read64<bswap>(p +  40) ^ see2);
                 p   += 48; i -= 48;
-            } while(i > 48);
+            } while (i > 48);
             seed ^= see1;
             seed ^= see2;
         }
@@ -416,26 +416,21 @@ static void RapidHash64( const void * in, const size_t len, const seed_t seed, v
     }
 }
 
-
 template <bool bswap, bool isProtected>
 static void RapidHashMicro64( const void * in, const size_t len, const seed_t seed, void * out ) {
     if (isLE()) {
-        PUT_U64<bswap>(rapidhashMicro<false, isProtected>(in, len,
-                (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
+        PUT_U64<bswap>(rapidhashMicro<false, isProtected>(in, len, (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
     } else {
-        PUT_U64<bswap>(rapidhashMicro<true, isProtected>(in, len,
-                (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
+        PUT_U64<bswap>(rapidhashMicro<true, isProtected>(in, len, (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
     }
 }
 
 template <bool bswap, bool isProtected>
 static void RapidHashNano64( const void * in, const size_t len, const seed_t seed, void * out ) {
     if (isLE()) {
-        PUT_U64<bswap>(rapidhashNano<false, isProtected>(in, len,
-                (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
+        PUT_U64<bswap>(rapidhashNano<false, isProtected>(in, len, (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
     } else {
-        PUT_U64<bswap>(rapidhashNano<true, isProtected>(in, len,
-                (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
+        PUT_U64<bswap>(rapidhashNano<true, isProtected>(in, len, (uint64_t)seed, rapid_secret), (uint8_t *)out, 0);
     }
 }
 

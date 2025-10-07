@@ -98,12 +98,12 @@ static int jody_block_hash( const uint8_t * RESTRICT data, T * hash, const size_
         element2 ^= jh_s_constant;
         element  += JODY_HASH_CONSTANT;
 
-        *hash += element;
-        *hash ^= element2;
-        *hash  = JH_ROL(*hash, JH_SHIFT2);
-        *hash += element;
+        *hash    += element;
+        *hash    ^= element2;
+        *hash     = JH_ROL(*hash, JH_SHIFT2);
+        *hash    += element;
 
-        data  += sizeof(T);
+        data     += sizeof(T);
     }
 
     /* Handle data tail (for blocks indivisible by sizeof(T)) */

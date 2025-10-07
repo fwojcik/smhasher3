@@ -31,16 +31,16 @@
 typedef __m128i block_t[2];
 
 typedef struct state_struct {
-    __m128i v0L, v0H;
-    __m128i v1L, v1H;
-    __m128i mul0L, mul0H;
-    __m128i mul1L, mul1H;
+    __m128i  v0L, v0H;
+    __m128i  v1L, v1H;
+    __m128i  mul0L, mul0H;
+    __m128i  mul1L, mul1H;
 } highwayhash_state_t;
 
-void dump_state(const highwayhash_state_t * s) {
+void dump_state( const highwayhash_state_t * s ) {
     return;
-    printf("\tv0   %016llx %016llx %016llx %016llx\n", s->v0L[0], s->v0L[1], s->v0H[0], s->v0H[1]);
-    printf("\tv1   %016llx %016llx %016llx %016llx\n", s->v1L[0], s->v1L[1], s->v1H[0], s->v1H[1]);
+    printf("\tv0   %016llx %016llx %016llx %016llx\n", s->v0L[0]  , s->v0L[1]  , s->v0H[0]  , s->v0H[1]  );
+    printf("\tv1   %016llx %016llx %016llx %016llx\n", s->v1L[0]  , s->v1L[1]  , s->v1H[0]  , s->v1H[1]  );
     printf("\tmul0 %016llx %016llx %016llx %016llx\n", s->mul0L[0], s->mul0L[1], s->mul0H[0], s->mul0H[1]);
     printf("\tmul1 %016llx %016llx %016llx %016llx\n", s->mul1L[0], s->mul1L[1], s->mul1H[0], s->mul1H[1]);
     printf("\n");
@@ -51,15 +51,15 @@ alignas(32) static thread_local highwayhash_state_t seeded_state;
 static uintptr_t HighwayHashReseed( const seed_t seed ) {
     alignas(16) static const uint64_t key[4] = { 1, 2, 3, 4 };
     const __m128i seedvec  = _mm_set1_epi64x((uint64_t)seed);
-    const __m128i keyvec0L = _mm_xor_si128(_mm_load_si128((__m128i * )&key[0]), seedvec);
-    const __m128i keyvec0H = _mm_xor_si128(_mm_load_si128((__m128i * )&key[2]), seedvec);
+    const __m128i keyvec0L = _mm_xor_si128(_mm_load_si128((__m128i *)&key[0]), seedvec);
+    const __m128i keyvec0H = _mm_xor_si128(_mm_load_si128((__m128i *)&key[2]), seedvec);
     const __m128i keyvec1L = _mm_shuffle_epi32(keyvec0L, _MM_SHUFFLE(2, 3, 0, 1));
     const __m128i keyvec1H = _mm_shuffle_epi32(keyvec0H, _MM_SHUFFLE(2, 3, 0, 1));
 
-    seeded_state.mul0L = _mm_load_si128((__m128i * )&init0[0]);
-    seeded_state.mul0H = _mm_load_si128((__m128i * )&init0[2]);
-    seeded_state.mul1L = _mm_load_si128((__m128i * )&init1[0]);
-    seeded_state.mul1H = _mm_load_si128((__m128i * )&init1[2]);
+    seeded_state.mul0L = _mm_load_si128((__m128i *)&init0[0]);
+    seeded_state.mul0H = _mm_load_si128((__m128i *)&init0[2]);
+    seeded_state.mul1L = _mm_load_si128((__m128i *)&init1[0]);
+    seeded_state.mul1H = _mm_load_si128((__m128i *)&init1[2]);
     seeded_state.v0L   = _mm_xor_si128(seeded_state.mul0L, keyvec0L);
     seeded_state.v0H   = _mm_xor_si128(seeded_state.mul0H, keyvec0H);
     seeded_state.v1L   = _mm_xor_si128(seeded_state.mul1L, keyvec1L);
@@ -96,21 +96,23 @@ static HH_INLINE __m128i LoadMultipleOfFour( const uint8_t * bytes, const size_t
     return ret;
 }
 
-static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t * HH_RESTRICT bytes, const size_t size_mod32 ) {
+static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t * HH_RESTRICT bytes,
+        const size_t size_mod32 ) {
     const uint8_t * remainder = bytes + (size_mod32 & ~3);
     const size_t    size_mod4 = size_mod32 & 3;
-    //const __m128i   size      = _mm_set1_epi32(size_mod32);
 
-    if (unlikely(size_mod32 & 16)) {  // 16..31 bytes left
-        const __m128i  packetL    = _mm_loadu_si128((__m128i *)bytes);
-              __m128i  packetH    = LoadMultipleOfFour(bytes + 16, size_mod32);
-        const uint32_t last4      = COND_BSWAP(Load3LE_AllowReadBefore(remainder, size_mod4), isBE());
-        packetH = _mm_insert_epi32(packetH, last4, 3);
+    // const __m128i   size      = _mm_set1_epi32(size_mod32);
+
+    if (unlikely(size_mod32 & 16)) { // 16..31 bytes left
+        const __m128i  packetL = _mm_loadu_si128((__m128i *)bytes);
+        __m128i        packetH = LoadMultipleOfFour(bytes + 16, size_mod32);
+        const uint32_t last4   = COND_BSWAP(Load3LE_AllowReadBefore(remainder, size_mod4), isBE());
+        packetH  = _mm_insert_epi32(packetH, last4, 3);
         block[0] = packetL;
         block[1] = packetH;
     } else {
-        const __m128i  packetL    = LoadMultipleOfFour(bytes, size_mod32);
-        const uint64_t last4      = COND_BSWAP(Load3LE_AllowUnordered(remainder, size_mod4), isBE());
+        const __m128i  packetL = LoadMultipleOfFour(bytes, size_mod32);
+        const uint64_t last4   = COND_BSWAP(Load3LE_AllowUnordered(remainder, size_mod4), isBE());
         // Rather than insert into packetL[3], it is faster to initialize
         // the otherwise empty packetH.
         const __m128i  packetH    = _mm_cvtsi64_si128(last4);
@@ -121,21 +123,23 @@ static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t *
 
 //------------------------------------------------------------
 
-static HH_INLINE __m128i ZipperMerge(const __m128i& v) {
+static HH_INLINE __m128i ZipperMerge( const __m128i & v ) {
     const __m128i hilomask = {
         UINT64_C(0x000F010E05020C03), UINT64_C(0x070806090D0A040B)
     };
+
     return _mm_shuffle_epi8(v, hilomask);
 }
 
-static HH_INLINE void Update( highwayhash_state_t * s, const block_t& packet ) {
+static HH_INLINE void Update( highwayhash_state_t * s, const block_t & packet ) {
     __m128i tmpL, tmpH;
-    //printf("\tUPD  %016llx %016llx %016llx %016llx\n", packet[0][0], packet[0][1], packet[1][0], packet[1][1]);
+
+    // printf("\tUPD  %016llx %016llx %016llx %016llx\n", packet[0][0], packet[0][1], packet[1][0], packet[1][1]);
 
     s->v1L   = _mm_add_epi64(s->v1L, packet[0]);           // v1   += packet
     s->v1H   = _mm_add_epi64(s->v1H, packet[1]);
-    s->v1L   = _mm_add_epi64(s->v1L, s->mul0L);            // v1   += mul0
-    s->v1H   = _mm_add_epi64(s->v1H, s->mul0H);
+    s->v1L   = _mm_add_epi64(s->v1L, s->mul0L );           // v1   += mul0
+    s->v1H   = _mm_add_epi64(s->v1H, s->mul0H );
     tmpL     = _mm_mul_epu32(s->v1L, _mm_shuffle_epi32(s->v0L, _MM_SHUFFLE(2, 3, 0, 1)));
     tmpH     = _mm_mul_epu32(s->v1H, _mm_srli_epi64(s->v0H, 32));
     s->mul0L = _mm_xor_si128(s->mul0L, tmpL);              // mul0 ^= MulLow32(v1, v0 >> 32);
@@ -154,6 +158,7 @@ static HH_INLINE void Update( highwayhash_state_t * s, const block_t& packet ) {
 
 static HH_INLINE void PermuteAndUpdate( highwayhash_state_t * state ) {
     block_t permuted_block;
+
     permuted_block[1] = _mm_shuffle_epi32(state->v0L, _MM_SHUFFLE(2, 3, 0, 1));
     permuted_block[0] = _mm_shuffle_epi32(state->v0H, _MM_SHUFFLE(2, 3, 0, 1));
 
@@ -163,6 +168,7 @@ static HH_INLINE void PermuteAndUpdate( highwayhash_state_t * state ) {
 static HH_INLINE void PadState( highwayhash_state_t * state, const size_t size_mod32 ) {
     // v0 += size_mod32
     const __m128i vsize_mod32 = _mm_set1_epi32((uint32_t)size_mod32);
+
     state->v0L = _mm_add_epi64(state->v0L, vsize_mod32);
     state->v0H = _mm_add_epi64(state->v0H, vsize_mod32);
 
@@ -184,14 +190,15 @@ static HH_INLINE void PadState( highwayhash_state_t * state, const size_t size_m
 // possible on independent 64-bit lanes. We therefore insert the upper bits
 // of a[0] that were lost into a[1]. Thanks to D. Lemire for helpful comments!
 static HH_INLINE __m128i ModularReduction( const __m128i & HH_RESTRICT a32_unmasked, const __m128i & HH_RESTRICT a10 ) {
-    __m128i out = a10;
+    __m128i out               = a10;
 
     const __m128i zero        = _mm_setzero_si128();
     const __m128i sign_bit128 = _mm_insert_epi32(zero, UINT32_C(0x80000000), 3);
     const __m128i top_bits2   = _mm_srli_epi64(a32_unmasked, 64 - 2);
+
     HH_COMPILER_FENCE;
 
-    const __m128i shifted1_unmasked = _mm_add_epi64(a32_unmasked, a32_unmasked);  // (avoids needing port0)
+    const __m128i shifted1_unmasked = _mm_add_epi64(a32_unmasked, a32_unmasked); // (avoids needing port0)
     // Only the lower halves of top_bits1's 128 bit lanes will be used, so we
     // can compute it before clearing the upper two bits of a32_unmasked.
     const __m128i top_bits1 = _mm_srli_epi64(a32_unmasked, 64 - 1);
@@ -222,7 +229,7 @@ static HH_INLINE void Finalize( const highwayhash_state_t * state, uint8_t * out
         if (bswap) {
             hash = mm_bswap64(hash);
         }
-        _mm_storel_epi64((__m128i*)out, hash);
+        _mm_storel_epi64((__m128i *)out, hash);
     } else if (output_words == 2) {
         const __m128i sum0 = _mm_add_epi64(state->v0L, state->mul0L);
         const __m128i sum1 = _mm_add_epi64(state->v1H, state->mul1H);
@@ -230,7 +237,7 @@ static HH_INLINE void Finalize( const highwayhash_state_t * state, uint8_t * out
         if (bswap) {
             hash = mm_bswap64(hash);
         }
-        _mm_storeu_si128((__m128i*)out, hash);
+        _mm_storeu_si128((__m128i *)out, hash);
     } else {
         const __m128i sum0L = _mm_add_epi64(state->v0L, state->mul0L);
         const __m128i sum1L = _mm_add_epi64(state->v1L, state->mul1L);
@@ -242,7 +249,7 @@ static HH_INLINE void Finalize( const highwayhash_state_t * state, uint8_t * out
             hashL = mm_bswap64(hashL);
             hashH = mm_bswap64(hashH);
         }
-        _mm_storeu_si128((__m128i*)out       , hashL);
-        _mm_storeu_si128((__m128i*)(out + 16), hashH);
+        _mm_storeu_si128((__m128i *)out       , hashL);
+        _mm_storeu_si128((__m128i *)(out + 16), hashH);
     }
 }

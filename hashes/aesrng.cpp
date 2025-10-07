@@ -109,10 +109,10 @@ static seed_t hash_mode;
 static uint64_t ctr[2];
 
 struct content_t {
-    uint64_t ctr[2];
-    uint64_t prev_blk;
-    uint64_t prev_seed;
-    size_t   prev_len = UINT32_C(-1);
+    uint64_t  ctr[2];
+    uint64_t  prev_blk;
+    uint64_t  prev_seed;
+    size_t    prev_len = UINT32_C(-1);
 };
 static thread_local struct content_t cstate;
 
@@ -165,19 +165,20 @@ static seed_t aesrng_seedfix( const HashInfo * hinfo, const seed_t hint ) {
 // even this "seed hint" / alternate mode mess.
 static void rng_keyseq( struct content_t * s, const void * key, size_t len, uint64_t seed ) {
     uint64_t blk = 0;
+
     memcpy(&blk, key, std::min(len, (size_t)8));
 
     if ((s->prev_len != len) || (s->prev_seed != seed) || (popcount8(s->prev_blk ^ blk) > 1)) {
-        s->prev_len   = len;
-        s->prev_blk   = blk;
-        s->prev_seed  = seed;
+        s->prev_len  = len;
+        s->prev_blk  = blk;
+        s->prev_seed = seed;
 
-        blk           = COND_BSWAP(blk, isBE());
-        blk          ^= len  * K2;
-        seed         ^= blk  * K1;
-        blk          ^= seed * K2;
-        s->ctr[0]     = seed;
-        s->ctr[1]     = blk;
+        blk          = COND_BSWAP(blk, isBE());
+        blk         ^= len  * K2;
+        seed        ^= blk  * K1;
+        blk         ^= seed * K2;
+        s->ctr[0]    = seed;
+        s->ctr[1]    = blk;
     }
 }
 

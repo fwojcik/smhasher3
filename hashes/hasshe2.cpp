@@ -260,7 +260,7 @@ static void hasshe2_sse2( const uint8_t * input_buf, size_t n_bytes, uint64_t se
      * replace it with the constant rnd_data, and do one combine and mix
      * phase more.
      */
-    input   = orig ? state_1  : _mm_xor_si128(state_1 , len_xmm);
+    input   = orig ? state_1 : _mm_xor_si128(state_1, len_xmm);
     state_1 = rnd_data;
 
     COMBINE_AND_MIX(coeffs_1, coeffs_2, state_1, state_2, input);

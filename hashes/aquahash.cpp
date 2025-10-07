@@ -61,20 +61,20 @@ static __m128i SmallKeyAlgorithm( const uint8_t * key, const size_t bytes, __m12
     }
 
     if (bytes & 2) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Woverflow"
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Woverflow"
         __m128i b = _mm_set_epi16(0xbd3d, 0xc2b7, 0xb87c, 0x4715, 0x6a6c, 0x9527, GET_U16<bswap>(ptr8, 0), 0xac2e);
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
         hash  = _mm_xor_si128(hash, b);
         ptr8 += 2;
     }
 
     if (bytes & 1) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Woverflow"
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Woverflow"
         __m128i b = _mm_set_epi8(0xcc, 0x96, 0xed, 0x16, 0x74, 0xea, 0xaa, 0x03,
                 0x1e, 0x86, 0x3f, 0x24, 0xb2, 0xa8, *ptr8, 0x31);
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
         hash = _mm_xor_si128(hash, b);
     }
 
@@ -145,20 +145,20 @@ static __m128i LargeKeyAlgorithm( const uint8_t * key, const size_t bytes, __m12
     }
 
     if (bytes & 2) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Woverflow"
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Woverflow"
         __m128i b = _mm_set_epi16(0xbd3d, 0xc2b7, 0xb87c, 0x4715, 0x6a6c, 0x9527, GET_U16<bswap>(ptr8, 0), 0xac2e);
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
         block[1] = _mm_aesenc_si128(block[1], b);
         ptr8    += 2;
     }
 
     if (bytes & 1) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Woverflow"
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Woverflow"
         __m128i b = _mm_set_epi8(0xcc, 0x96, 0xed, 0x16, 0x74, 0xea, 0xaa, 0x03,
                 0x1e, 0x86, 0x3f, 0x24, 0xb2, 0xa8, *ptr8, 0x31);
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
         block[2] = _mm_aesenc_si128(block[2], b);
     }
 

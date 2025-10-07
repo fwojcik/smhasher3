@@ -258,7 +258,7 @@ bool SanityTest2( const HashInfo * hinfo, flags_t flags ) {
                 addVCodeOutput(hash2, hashbytes);
 
                 if (unlikely(memcmp(hash1, hash2, hashbytes) == 0)) {
-                    maybeprintf(" flipped bit %d/%d, got identical output:", bit, len*8);
+                    maybeprintf(" flipped bit %d/%d, got identical output:", bit, len * 8);
                     result = false;
                     goto end_sanity;
                 }

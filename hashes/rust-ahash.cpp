@@ -149,6 +149,7 @@ static const char * ahash_shuffle_str[] = {
 };
 
 static_assert(sizeof(SHUFFLE_MASK) == 16, "shuffle() assumes a 16-byte shuffle");
+
 template <bool hw_shuffle>
 static void shuffle( uint64_t vals[2] ) {
     if (hw_shuffle) {
@@ -350,10 +351,11 @@ static void add_data( AHasher * s, const uint8_t * RESTRICT data, const size_t l
 
 template <bool bswap>
 static uint64_t finish( AHasher * s ) {
-    uint64_t combined[2] = { s->sum[0], s->sum[1] };
+    uint64_t combined     [2] = { s->sum[0], s->sum[1] };
+
     aesenc<bswap>(combined, s->enc);
     uint64_t combined_prev[2] = { combined[0], combined[1] };
-    aesdec<bswap>(combined, s->key);
+    aesdec<bswap>(combined, s->key       );
     aesdec<bswap>(combined, combined_prev);
     return combined[0];
 }

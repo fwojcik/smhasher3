@@ -87,13 +87,13 @@ static void SHA1_Update( SHA1_CTX * context, const uint8_t * data, const size_t 
     if ((j + len) > 63) {
         // #pragmas are a workaround for GCC bug 106709 in 12+
 #if defined(HAVE_GCC_COMPILER) && __GNUG__ >= 12
-#pragma GCC diagnostic ignored "-Wstringop-overread"
-#pragma GCC diagnostic ignored "-Warray-bounds"
+  #pragma GCC diagnostic ignored "-Wstringop-overread"
+  #pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
         memcpy(&context->buffer[j], data, (i = 64 - j));
 #if defined(HAVE_GCC_COMPILER)
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
 #endif
         SHA1_Transform<bswap>(context->state, context->buffer);
         for (; i + 63 < len; i += 64) {

@@ -23,7 +23,7 @@
         v[0] += v[3]; v[3] = ROTL32(v[3], 13); v[3] ^= v[0]; \
         v[2] += v[1]; v[1] = ROTL32(v[1],  7);               \
         v[1] ^= v[2]; v[2] = ROTL32(v[2], 16);               \
-    } while(0)
+    } while (0)
 
 typedef struct {
     uint32_t  k[4];
@@ -32,10 +32,10 @@ typedef struct {
 } keys_t;
 
 template <uint32_t rounds, uint32_t tagwords, bool bswap>
-static void chaskey_impl( uint8_t * tag, const uint8_t * m, const size_t mlen, const keys_t *k ) {
+static void chaskey_impl( uint8_t * tag, const uint8_t * m, const size_t mlen, const keys_t * k ) {
     const uint8_t * end = m + (((mlen - 1) >> 4) << 4); /* pointer to last message block */
 
-    uint32_t v[4] = { k->k[0], k->k[1], k->k[2], k->k[3] };
+    uint32_t v[4]       = { k->k[0], k->k[1], k->k[2], k->k[3] };
 
     if (mlen != 0) {
         for (; m != end; m += 16) {
@@ -98,7 +98,7 @@ static const volatile uint32_t C[2] = { 0x00, 0x87 };
         out[1] = (in[1] << 1) | (in[0] >> 31);  \
         out[2] = (in[2] << 1) | (in[1] >> 31);  \
         out[3] = (in[3] << 1) | (in[2] >> 31);  \
-    } while(0)
+    } while (0)
 
 static void make_subkeys( keys_t * keys ) {
     TIMESTWO(keys->k1, keys->k );

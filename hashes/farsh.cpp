@@ -98,6 +98,7 @@ alignas(32) static const uint32_t FARSH_KEYS[STRIPE_ELEMENTS + EXTRA_ELEMENTS] =
 template <bool bswap>
 static uint64_t farsh_full_block( const uint8_t * data, const uint32_t * key ) {
     uint64_t sum64;
+
 #if defined(HAVE_AVX2)
   #define FARSH_IMPL_STR "avx2"
     __m256i         sum   = _mm256_setzero_si256();

@@ -155,32 +155,33 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
     }
 
     auto keyprint = [&]( hidx_t i ) {
-        size_t   blockoffset = blockoffset_min + (i % testkeys) * blockoffset_incr; i /= testkeys;
-        uint32_t blockidx    = (i % testblocks);                                    i /= testblocks;
-        uint32_t seedidx     = i;
-        uint32_t blockbits   = InverseKChooseUpToK(blockidx, 1, blockmaxbits, blocklen * 8);
-        uint32_t seedbits    = InverseKChooseUpToK(seedidx, 1, seedmaxbits, hinfo->is32BitSeed() ? 32 : 64);
-        uint64_t numblock    = nthlex(blockidx, blockbits);
-        uint64_t iseed       = nthlex(seedidx, seedbits);
-        seed_t   hseed       = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
+                size_t blockoffset = blockoffset_min + (i % testkeys  ) * blockoffset_incr; i /= testkeys;
+                uint32_t blockidx  =                   (i % testblocks);                    i /= testblocks;
 
-        VLA_ALLOC(uint8_t, buf, blockoffset_max - blockoffset_min + keylen);
-        memset(&buf[0], 0, blockoffset_max - blockoffset_min + keylen);
+                uint32_t seedidx   = i;
+                uint32_t blockbits = InverseKChooseUpToK(blockidx, 1, blockmaxbits, blocklen * 8);
+                uint32_t seedbits  = InverseKChooseUpToK(seedidx , 1, seedmaxbits , hinfo->is32BitSeed() ? 32 : 64);
+                uint64_t numblock  = nthlex(blockidx, blockbits);
+                uint64_t iseed     = nthlex(seedidx , seedbits );
+                seed_t   hseed     = hinfo->Seed(iseed, HashInfo::SEED_ALLOWFIX);
 
-        uint8_t * const blockbase = &buf[blockoffset_max];
-        memcpy(blockbase, &numblock, blocklen);
+                VLA_ALLOC(uint8_t, buf, blockoffset_max - blockoffset_min + keylen);
+                memset(&buf[0], 0, blockoffset_max - blockoffset_min + keylen);
 
-        const HashFn hash = hinfo->hashFn(g_hashEndian);
-        uint8_t *    key  = blockbase - blockoffset;
-        ExtBlob xb( key, keylen );
-        hashtype v;
+                uint8_t * const blockbase = &buf[blockoffset_max];
+                memcpy(blockbase, &numblock, blocklen);
 
-        printf("0x%016" PRIx64 "\t", iseed);
-        xb.printbytes(NULL);
-        printf("\t");
-        hash(key, keylen, hseed, &v);
-        v.printhex(NULL);
-    };
+                const HashFn hash = hinfo->hashFn(g_hashEndian);
+                uint8_t *    key  = blockbase - blockoffset;
+                ExtBlob      xb( key, keylen );
+                hashtype     v;
+
+                printf("0x%016" PRIx64 "\t", iseed);
+                xb.printbytes(NULL);
+                printf("\t");
+                hash(key, keylen, hseed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).dumpFailKeys(keyprint);
 

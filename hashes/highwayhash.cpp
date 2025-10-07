@@ -157,16 +157,16 @@ static const char * hh_vector_str[] = {
 typedef uint64_t block_t[4];
 
 typedef struct state_struct {
-    uint64_t v0[4];
-    uint64_t v1[4];
-    uint64_t mul0[4];
-    uint64_t mul1[4];
+    uint64_t  v0[4];
+    uint64_t  v1[4];
+    uint64_t  mul0[4];
+    uint64_t  mul1[4];
 } highwayhash_state_t;
 
-void dump_state(const highwayhash_state_t * s) {
+void dump_state( const highwayhash_state_t * s ) {
     return;
-    printf("\tv0   %016lx %016lx %016lx %016lx\n", s->v0[0], s->v0[1], s->v0[2], s->v0[3]);
-    printf("\tv1   %016lx %016lx %016lx %016lx\n", s->v1[0], s->v1[1], s->v1[2], s->v1[3]);
+    printf("\tv0   %016lx %016lx %016lx %016lx\n", s->v0[0]  , s->v0[1]  , s->v0[2]  , s->v0[3]  );
+    printf("\tv1   %016lx %016lx %016lx %016lx\n", s->v1[0]  , s->v1[1]  , s->v1[2]  , s->v1[3]  );
     printf("\tmul0 %016lx %016lx %016lx %016lx\n", s->mul0[0], s->mul0[1], s->mul0[2], s->mul0[3]);
     printf("\tmul1 %016lx %016lx %016lx %016lx\n", s->mul1[0], s->mul1[1], s->mul1[2], s->mul1[3]);
     printf("\n");
@@ -206,7 +206,8 @@ static HH_INLINE void GetBlock( block_t & HH_RESTRICT block, const uint8_t * HH_
     }
 }
 
-static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t * HH_RESTRICT bytes, const size_t size_mod32 ) {
+static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t * HH_RESTRICT bytes,
+        const size_t size_mod32 ) {
     const size_t    size_mod4 = size_mod32 & 3;
     const size_t    rbytes    = size_mod32 & ~3;
     const uint8_t * remainder = bytes + rbytes;
@@ -217,7 +218,7 @@ static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t *
         block8[i] = bytes[i];
     }
 
-    if (size_mod32 & 16) {  // 16..31 bytes left
+    if (size_mod32 & 16) { // 16..31 bytes left
         // Read the last 0..3 bytes and previous 1..4 into the upper bits.
         // Insert into the upper four bytes of packet, which are zero.
         const uint32_t last4 = Load3LE_AllowReadBefore(remainder, size_mod4);
@@ -226,7 +227,7 @@ static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t *
         } else {
             PUT_U32<true>(last4, block8, 28);
         }
-    } else {  // size_mod32 < 16
+    } else { // size_mod32 < 16
         // Rather than insert at packet + 28, it is faster to initialize
         // the otherwise empty packet + 16 with up to 64 bits of padding.
         const uint64_t last4 = Load3LE_AllowUnordered(remainder, size_mod4);
@@ -248,7 +249,7 @@ static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t *
 // Core hashing routines
 
 // Clears all bits except one byte at the given offset.
-#define MASK(v, bytes) ((v) & (UINT64_C(0xFF) << ((bytes)*8)))
+  #define MASK(v, bytes) ((v) & (UINT64_C(0xFF) << ((bytes) * 8)))
 
 // Multiplication mixes/scrambles bytes 0-7 of the 64-bit result to
 // varying degrees. In descending order of goodness, bytes
@@ -260,23 +261,23 @@ static HH_INLINE void GetRemainder( block_t & HH_RESTRICT block, const uint8_t *
 //    to cross the 128-bit wall, but PermuteAndUpdate takes care of that);
 // 3) placing the worst bytes in the upper 32 bits because those will not
 //    be used in the next 32x32 multiplication.
-static HH_INLINE void ZipperMergeAndAdd(const uint64_t v1, const uint64_t v0,
-        uint64_t& HH_RESTRICT add1, uint64_t& HH_RESTRICT add0) {
+static HH_INLINE void ZipperMergeAndAdd( const uint64_t v1, const uint64_t v0,
+        uint64_t & HH_RESTRICT add1, uint64_t & HH_RESTRICT add0 ) {
     // 16-byte permutation; shifting is about 10% faster than byte loads.
     // Adds zipper-merge result to add*.
     add0 += ((MASK(v0, 3) + MASK(v1, 4)) >> 24) +
-        ((MASK(v0, 5) + MASK(v1, 6)) >> 16) + MASK(v0, 2) +
-        (MASK(v0, 1) << 32) + (MASK(v1, 7) >> 8) + (v0 << 56);
+            ((MASK(v0, 5) + MASK(v1, 6)) >> 16) + MASK(v0, 2) +
+            (MASK(v0, 1) << 32) + (MASK(v1, 7) >> 8) + (v0 << 56);
 
     add1 += ((MASK(v1, 3) + MASK(v0, 4)) >> 24) + MASK(v1, 2) +
-        (MASK(v1, 5) >> 16) + (MASK(v1, 1) << 24) + (MASK(v0, 6) >> 8) +
-        (MASK(v1, 0) << 48) + MASK(v0, 7);
+            (MASK(v1, 5) >> 16) + (MASK(v1, 1) << 24) + (MASK(v0, 6) >> 8) +
+            (MASK(v1, 0) << 48) + MASK(v0, 7);
 }
 
-#undef MASK
+  #undef MASK
 
 static HH_INLINE void Update( highwayhash_state_t * state, const uint64_t * HH_RESTRICT input ) {
-    //printf("\tUPD  %016lx %016lx %016lx %016lx\n", input[0], input[1], input[2], input[3]);
+    // printf("\tUPD  %016lx %016lx %016lx %016lx\n", input[0], input[1], input[2], input[3]);
 
     for (unsigned i = 0; i < 4; i++) {
         state->v1[i] += input[i] + state->mul0[i];
@@ -284,11 +285,11 @@ static HH_INLINE void Update( highwayhash_state_t * state, const uint64_t * HH_R
 
     // (Loop is faster than unrolling)
     for (unsigned lane = 0; lane < 4; lane++) {
-      const uint32_t v1_32  = static_cast<uint32_t>(state->v1[lane]);
-      state->mul0[lane]    ^= v1_32 * (state->v0[lane] >> 32);
-      state->v0[lane]      += state->mul1[lane];
-      const uint32_t v0_32  = static_cast<uint32_t>(state->v0[lane]);
-      state->mul1[lane]    ^= v0_32 * (state->v1[lane] >> 32);
+        const uint32_t v1_32  = static_cast<uint32_t>(state->v1[lane]);
+        state->mul0[lane]    ^= v1_32 * (state->v0[lane] >> 32);
+        state->v0[lane]      += state->mul1[lane];
+        const uint32_t v0_32  = static_cast<uint32_t>(state->v0[lane]);
+        state->mul1[lane]    ^= v0_32 * (state->v1[lane] >> 32);
     }
 
     ZipperMergeAndAdd(state->v1[1], state->v1[0], state->v0[1], state->v0[0]);
@@ -338,25 +339,27 @@ static HH_INLINE void PadState( highwayhash_state_t * state, const size_t size_m
 // insert the upper bits of a0 that were lost into a1. This is slightly
 // shorter than Lemire's (a << 1) | (((a >> 8) << 1) << 8) approach.
 template <int kBits>
-static HH_INLINE void Shift128Left( uint64_t& HH_RESTRICT a1, uint64_t& HH_RESTRICT a0 ) {
+static HH_INLINE void Shift128Left( uint64_t & HH_RESTRICT a1, uint64_t & HH_RESTRICT a0 ) {
     const uint64_t shifted1 = (a1) << kBits;
     const uint64_t top_bits = (a0) >> (64 - kBits);
+
     a0 <<= kBits;
-    a1 = shifted1 | top_bits;
+    a1   = shifted1 | top_bits;
 }
 
 // Modular reduction by the irreducible polynomial (x^128 + x^2 + x).
 // Input: a 256-bit number a3210.
 static HH_INLINE void ModularReduction( const uint64_t a3_unmasked, const uint64_t a2, const uint64_t a1,
-        const uint64_t a0, uint64_t& HH_RESTRICT m1, uint64_t& HH_RESTRICT m0 ) {
+        const uint64_t a0, uint64_t & HH_RESTRICT m1, uint64_t & HH_RESTRICT m0 ) {
     // The upper two bits must be clear, otherwise a3 << 2 would lose bits,
     // in which case we're no longer computing a reduction.
     const uint64_t a3 = a3_unmasked & UINT64_C(0x3FFFFFFFFFFFFFFF);
     // See Lemire, https://arxiv.org/pdf/1503.03465v8.pdf.
-    uint64_t a3_shl1 = a3;
-    uint64_t a2_shl1 = a2;
-    uint64_t a3_shl2 = a3;
-    uint64_t a2_shl2 = a2;
+    uint64_t a3_shl1  = a3;
+    uint64_t a2_shl1  = a2;
+    uint64_t a3_shl2  = a3;
+    uint64_t a2_shl2  = a2;
+
     Shift128Left<1>(a3_shl1, a2_shl1);
     Shift128Left<2>(a3_shl2, a2_shl2);
     m1 = a1 ^ a3_shl1 ^ a3_shl2;
@@ -413,6 +416,7 @@ static void HighwayHashUpdate( highwayhash_state_t * state, const uint8_t * HH_R
 template <bool bswap, unsigned output_words>
 static void HighwayHashFinal( highwayhash_state_t * state, uint8_t * HH_RESTRICT out ) {
     const unsigned permute_rounds = (output_words == 1) ? 4 : (output_words == 2) ? 6 : 10;
+
     for (unsigned i = 0; i < permute_rounds; i++) {
         PermuteAndUpdate(state);
     }
@@ -424,6 +428,7 @@ static void HighwayHashFinal( highwayhash_state_t * state, uint8_t * HH_RESTRICT
 template <bool bswap, unsigned output_words>
 static void HighwayHash( const void * in, const size_t len, const seed_t seed, void * out ) {
     const highwayhash_state_t * base_state = (const highwayhash_state_t *)(void *)(uintptr_t)seed;
+
     alignas(HH_MAX_ALIGN) highwayhash_state_t state = *base_state;
 
     HighwayHashUpdate(&state, (const uint8_t *)in, len);

@@ -213,14 +213,14 @@ static bool wyhash64_selftest( void ) {
         const uint64_t  hash;
         const char *    key;
     } selftests[] = {
-        { UINT64_C (0x93228a4de0eec5a2), "" }                          ,
-        { UINT64_C (0xc5bac3db178713c4), "a" }                         ,
-        { UINT64_C (0xa97f2f7b1d9b3314), "abc" }                       ,
-        { UINT64_C (0x786d1f1df3801df4), "message digest" }            ,
-        { UINT64_C (0xdca5a8138ad37c87), "abcdefghijklmnopqrstuvwxyz" },
-        { UINT64_C (0xb9e734f117cfaf70), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
-        { UINT64_C (0x6cc5eab49a92d617), "123456789012345678901234567890123456789012345678901234567890"\
-                                         "12345678901234567890" },
+        { UINT64_C(0x93228a4de0eec5a2), "" }                          ,
+        { UINT64_C(0xc5bac3db178713c4), "a" }                         ,
+        { UINT64_C(0xa97f2f7b1d9b3314), "abc" }                       ,
+        { UINT64_C(0x786d1f1df3801df4), "message digest" }            ,
+        { UINT64_C(0xdca5a8138ad37c87), "abcdefghijklmnopqrstuvwxyz" },
+        { UINT64_C(0xb9e734f117cfaf70), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+        { UINT64_C(0x6cc5eab49a92d617), "123456789012345678901234567890123456789012345678901234567890"\
+                                        "12345678901234567890" },
     };
 
     for (size_t i = 0; i < sizeof(selftests) / sizeof(selftests[0]); i++) {

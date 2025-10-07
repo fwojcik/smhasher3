@@ -78,8 +78,8 @@ static void CombinationKeygenRecurse( uint8_t * key, int len, int maxlen, const 
 template <typename hashtype>
 static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen, const uint8_t * blocks,
         uint32_t blockcount, uint32_t blocksz, const char * testdesc, flags_t flags ) {
-    uint8_t * key     = new uint8_t[maxlen * blocksz];
-    uint64_t * counts = new uint64_t[maxlen + 1];
+    uint8_t *  key    = new uint8_t [maxlen * blocksz];
+    uint64_t * counts = new uint64_t[maxlen + 1      ];
 
     // Compute how many keys exist for each possible length, up to and
     // including maxlen. For a given length, each key which is one block
@@ -131,33 +131,34 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen,
     // indices for the nth combination has been found, and the "recursion
     // depth" is the length of that list.
     auto keyprint = [&]( hidx_t n ) {
-        hidx_t curlen = 0;
-        VLA_ALLOC(uint32_t, blocknums, maxlen);
-        memset(&blocknums[0], 0, sizeof(uint32_t) * maxlen);
+                hidx_t curlen = 0;
 
-        n++; // Because the empty block isn't hashed
-        while (n > 0) {
-            curlen++;
-            n--;
-            while (n >= counts[maxlen - curlen] + 1) {
-                n -= counts[maxlen - curlen] + 1;
-                blocknums[curlen - 1]++;
-            }
-        }
-        for (size_t i = 0; i < curlen; i++) {
-            memcpy(&key[i * blocksz], &blocks[blocknums[i] * blocksz], blocksz);
-        }
+                VLA_ALLOC(uint32_t, blocknums, maxlen);
+                memset(&blocknums[0], 0, sizeof(uint32_t) * maxlen);
 
-        ExtBlob xb( key, curlen * blocksz);
-        uint32_t spacecnt = 3 * maxlen * blocksz + 4;
-        hashtype v;
+                n++; // Because the empty block isn't hashed
+                while (n > 0) {
+                    curlen++;
+                    n--;
+                    while (n >= counts[maxlen - curlen] + 1) {
+                        n -= counts[maxlen - curlen] + 1;
+                        blocknums[curlen - 1]++;
+                    }
+                }
+                for (size_t i = 0; i < curlen; i++) {
+                    memcpy(&key[i * blocksz], &blocks[blocknums[i] * blocksz], blocksz);
+                }
 
-        printf("0x%016" PRIx64 "\t", g_seed);
-        spacecnt -= xb.printbytes(NULL);
-        printf("%.*s\t", spacecnt, g_manyspaces);
-        hash(key, curlen * blocksz, seed, &v);
-        v.printhex(NULL);
-    };
+                ExtBlob  xb( key, curlen * blocksz );
+                uint32_t spacecnt = 3 * maxlen * blocksz + 4;
+                hashtype v;
+
+                printf("0x%016" PRIx64 "\t", g_seed);
+                spacecnt -= xb.printbytes(NULL);
+                printf("%.*s\t", spacecnt, g_manyspaces);
+                hash(key, curlen * blocksz, seed, &v);
+                v.printhex(NULL);
+            };
 
     bool result = TestHashList(hashes).reportFlags(flags).testDeltas(1).dumpFailKeys(keyprint);
 
