@@ -7,9 +7,9 @@ This document will walk you through the steps for adding a new hash function to
 SMHasher3. It will start out with the basic steps needed if you are in the process of
 developing or working on a hash function.
 
-If the hash function you want to add is complete or nearly complete, then there are
-additional steps to be performed, and those will be described in
-`hashes/README.latersteps.md`.
+If the hash function you want to add is complete or nearly complete, then
+there are some additional steps you should at least try to perform, and
+those will be described in `hashes/README.latersteps.md`.
 
 A number of specific issues are also discussed in `hashes/README.advancedtopics.md`.
 
@@ -194,8 +194,8 @@ C++11
 All code will be compiled as C++11 and must conform to that standard. A plain C
 compiler will not be used. Hash implementaions that fully or partially use assembly
 instructions are allowed, but only via `__asm__()` statements or the like; .asm files
-or pre-compiled binaries are not allowed, and an assembler will not be invoked by the
-build system.
+or pre-compiled binaries are not allowed, and an assembler will not be directly
+invoked by the build system.
 
 If you would like your hash function to be distributed with the SMHasher3 project,
 then there are further restrictions described in `CONTRIBUTING.md`. Importantly, it

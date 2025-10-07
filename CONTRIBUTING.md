@@ -48,10 +48,20 @@ are allowed. All built source code must be available in the SMHasher3
 source tree. Git submodules are not allowed. Hash implementations that live
 in external libraries are not allowed.
 
+New hashes
+----------
+
+If you want to submit a new hash to be included with SMHasher3, then just
+getting the basics working is enough for a pull request. The EXAMPLE* files
+in `hashes/` are probably a necessary starting point, but you don't need to
+worry too much about code formatting or endianness to start with. If you do
+address those then it will probably take less time for your code to be
+added, but don't think about those as a necessity.
+
 Organizing patches for submission
 ---------------------------------
 
-The Most Important Rule when submitting any kind of patch or pull-request to
+The Most Important Rule when submitting any kind of patch or pull request to
 SMHasher3 is that they absolutely **must not** alter both the Hashlib side of the
 codebase _and_ the Testlib side at the same time. Every kind of patch submission may
 only alter one or the other (or neither). For more clarity on which files comprise
@@ -83,10 +93,11 @@ Coding style
 ------------
 
 For code style, the ideal would be to use the
-[uncrustify](https://github.com/uncrustify/uncrustify) tool on your source tree as
-you stage commits. The current `.uncrustify` file for SMHasher3 refers to a number of
-settings that only exist in my private branch (until I polish them up for submission
-to that project), so you will get errors about them which should be ignorable.
+[uncrustify](https://github.com/uncrustify/uncrustify) tool on your source
+tree as you stage commits. The current `.uncrustify` file for SMHasher3
+refers to a number of settings that only exist in my private branch (until
+I maybe someday polish them up for submission to that project), so you will
+get errors about them which should be ignorable.
 
 Since that would be something of a large ask, it is definitely not a requirement for
 submitting code. However, please follow the following basic code style tenets if possible:
@@ -190,12 +201,12 @@ Please keep new tests to the general pattern of existing tests:
 - all of the test-specific code should be in one .cpp file
 - the new test probably should be templated by the hashtype and then use the
   `INSTANTIATE()` macro
-- the new test's .h file should onl contain the interface to be called by `main.cpp`
+- the new test's .h file should only contain the interface to be called by `main.cpp`
 - add a new `g_test` variable for the test and a matching entry in `g_testopts` in
   main.cpp, as well as a new section for the test in the `test()` function similar to
   the existing ones
 
-If at all possible, ensure new tests produce idential results regardless of system
+If possible, ensure new tests produce idential results regardless of system
 endianness.
 
 If unit tests are added, they can simply always run every startup if they are fast

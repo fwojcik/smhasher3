@@ -1,5 +1,88 @@
 [[_TOC_]]
 
+Differences from beta3 to release
+=================================
+
+General changes
+---------------
+- Added "--[no]exit-on-failure" and "--[no]exit-code-on-failure" flags
+   - These facilitate more automated uses of SMHasher3
+- Added "SpeedSmall" and "SpeedBulk" test names
+   - This allows each part of the "Speed" test to be controlled separately
+- Added "--randseed=<RNG_base_seed>" flag
+   - This allows for different test data to be used with the same default hash seed
+- Added "--[no]time-tests" flag to show timing info for each test suite
+- Added "--vcode-all" flag for more frequent VCode printouts
+- Added "last round" functions to generic AES API
+- Added support for C++ `[[likely]]` and `[[unlikely]]` annotations
+- Some speed improvements
+- Numerous small documentation updates
+- Numerous small formatting changes
+- RNG changes
+   - More strict adherence to Threefry specification
+   - Added global seed
+   - Improved performance with clang
+   - Improved internal RNG API
+   - Also fixed misc/rngstream.cpp
+- Changed versioning and branching schemes
+- Fixes for Windows-like compiler environments
+
+Testing changes
+---------------
+- Significantly improved Speed testing fidelity, especially on non-x64 platforms
+   - This involved large-ish changes to some of the platform detection code
+- Separated out callback lambdas into variables for clarity
+
+Specific hash changes
+---------------------
+- a5hash
+   - Added
+- abseil
+   - Updated
+- ascon
+   - Updated to v1.3
+   - Updated to use customizable XOF configuration
+   - Removed homegrown seeding
+- chibihash
+   - Added
+- clhash
+   - Updated
+   - Updated to use key generation based on seed
+   - Removed homegrown seeding
+- Goodhart
+   - Added several hashes
+- GxHash
+   - Added
+- jodyhash
+   - Updated URL
+- komihash
+   - Updated to v5.27
+- mulxp_hash
+   - Added
+- MuseAir
+   - Added
+- prvhash
+   - Updated to v4.3.4 (old version number was incorrect)
+- rainbow, rainstorm
+   - Updated to v3.7.1
+- rapidhash
+   - Added
+- rust-ahash
+   - Updated
+- rust-fxhash
+   - Updated to v2.1.1
+- rust-rapidhash
+   - Added the rust-only implementation as a separate hash
+- TestHash
+   - Added
+- w1hash
+   - Added
+- XMSX
+   - Added
+- xxhash
+   - Updated to v0.8.3 (seems to be no functional change from v0.8.2)
+
+
 Differences from beta2 to beta3
 ===============================
 

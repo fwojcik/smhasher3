@@ -419,12 +419,18 @@ have hash results that need to be the same no matter the system endianness, so t
 discussion below on `FLAG_HASH_ENDIAN_INDEPENDENT` should be considered carefully.
 
 Want your hash distributed with SMHasher3?
-------------------------------------------
+==========================================
 
 If you would like your hash implementation(s) to be distributed with the
 SMHasher3 project, please try to follow the guidelines in `CONTRIBUTING.md`
-to the extent that you can. Nothing there is needed to simply use SMHasher3
-to test and develop a hash.
+and the remaining steps in this document to the extent that you
+can. Nothing there is needed to simply use SMHasher3 to locally test and
+develop a hash.
+
+That being said, just getting the basics working is enough for a pull
+request. If you do address the topics discussed there and in this document,
+then it will probably take less time for your code to be added, but don't
+think about them as a necessity.
 
 Worrying about endianness issues
 ================================

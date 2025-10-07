@@ -12,13 +12,8 @@ Test Results
 ------------
 
 If you are interested in the **[latest hash test results](results/README.md)**
-(currently from SMHasher3 `SMHasher3 beta3-c6b9cc18`), they are in the
+(currently from SMHasher3 `SMHasher3 release-`), they are in the
 `results/` directory.
-
-There are a few hashes which do not pass all the tests, but are very close
-to doing so. These are: `chaskey-12` and `MeowHash`. These failures are
-false positives. The failure thresholds have been adjusted, and these
-hashes are expected to be listed as "passing" in the next round of results.
 
 Summary
 -------
@@ -65,12 +60,17 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2023-12-12, SMHasher3 beta3 has been released.
+As of 2025-10-10, I consider SMHasher3 to have been fully released.
 
-I have hopes to release a 1.0 version sometime before the end of April
-2025. The current code should still be very useful in evaluating hashes, as
-most remaining features are either additional tests, tweaks to specific
-hashes, or quality-of-life usage enhancements.
+From this point, the plan is to have two branches: "main" and "dev". The
+main branch will have new hashes and updated hashes added to it as I am
+able. The dev branch will have those changes added to it also. Feature
+development will happen only on the dev branch, and those changes will
+occasionally get added to main, when some chunk of functionality is
+complete.
+
+There won't be explicit release versioning. Instead, the version string has
+been updated to include the commit date of the last commit.
 
 This code is compiled and run successfully on Linux x64, arm, and powerpc
 using gcc and clang quite often. Importantly, I do not have the ability to
@@ -360,12 +360,12 @@ forked copy of SMHasher to SMHasher3.
 Endianness support and terminology
 ----------------------------------
 
-One of the goals for SMHasher3 is full support of both big- and little-endian
-systems. Currently this is, in some sense, a little bit more than half
-complete. Every hash implementation computes results for both endiannesses,
-regardless of system endianness. Most of the testing code is not yet
-endian-independent, however, and so test results will currently vary greatly
-depending on the system.
+One of the long-term goals for SMHasher3 is full support of both big- and
+little-endian systems. Currently this is, in some sense, a little bit more
+than half complete. Every hash implementation computes results for both
+endiannesses, regardless of system endianness. Most of the testing code is
+not yet endian-independent, however, and so test results will currently vary
+greatly depending on the system.
 
 For hash authors, this represents a tiny bit of extra work, but it can be put off
 until late in hash development, and is not very difficult to add.
@@ -399,18 +399,21 @@ me know if you find something confusing.
 Hash verification codes
 -----------------------
 
-In beta2 of SMHasher3, the algorithm for computing hash verification codes is
-unchanged from the base SMHasher. Most hashes' verification codes are also unchanged,
-but a number have changed for various reasons, and some have been added or removed;
-see `Changelog.md` for specifics. This should help verify that the hash
-implementations didn't change unexpectedly when they were ported.
+Currently, the algorithm for computing hash verification codes is unchanged from
+the base SMHasher. Many hashes' verification codes are also unchanged, but a number
+have changed for various reasons, and some have been added or removed; see `Changelog.md`
+for specifics. This should help verify that the hash implementations didn't change
+unexpectedly when they were ported.
 
 Since SMHasher3 supports 64-bit seeds and the current algorithm for computing
 verification codes does not exercise even all of the low 32 seed bits, I expect that
-the algorithm will change in the near future.
+the algorithm will change in the future. There are a number of complications to that,
+and it will likely require coordination with the larger community.
 
 A stand-alone vanilla C99 program for computing hash verification codes outside of
-SMHasher3 is in `misc/hashverify.c`.
+SMHasher3 is in `misc/hashverify.c`. To the extent possible, I use this to verify that
+any hash (re-)implementation in SMHasher3 produces the same results as the published
+reference implementation.
 
 VCodes
 ------
