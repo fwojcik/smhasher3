@@ -180,6 +180,5 @@ REGISTER_HASH(jodyhash_64,
    $.verification_LE = 0xC1CBFA34,
    $.verification_BE = 0x93494125,
    $.hashfn_native   = jodyhash64<false>,
-   $.hashfn_bswap    = jodyhash64<true>,
-   $.badseeds        = { 0xffffffffe0c2a486 }
+   $.hashfn_bswap    = jodyhash64<true>
  );

@@ -302,6 +302,7 @@ REGISTER_HASH(MetroHash_64,
    $.verification_BE = 0xFB8D54A5,
    $.hashfn_native   = MetroHash64<0, false>,
    $.hashfn_bswap    = MetroHash64<0, true>,
+   $.seedfixfn       = excludeBadseeds,
    $.badseeds        = { 0xffffffff9d66d03f }
  );
 

@@ -534,6 +534,7 @@ REGISTER_HASH(rust_ahash_fb,
    $.hashfn_native   = rust_ahash_fb<false, true>,
    $.hashfn_bswap    = rust_ahash_fb<true, true>,
    $.seedfn          = init_state,
+   $.seedfixfn       = excludeBadseeds,
    $.badseeddesc     = "Many bad seeds, unsure of details; see rust-ahash.cpp for examples",
    $.badseeds        = {
             0x0004063d, 0x0013d513, 0x001f1935, 0x00339a4f, 0x00519a91, 0x005292a9, 0x005959a8, 0x005d3303,

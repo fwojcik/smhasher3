@@ -216,7 +216,7 @@ class HashInfo {
 
     FORCE_INLINE seed_t getFixedSeed( seed_t seed ) const {
         if (unlikely(seedfixfn != NULL)) {
-            seed = (seed_t)seedfixfn(this, seed);
+            seed = seedfixfn(this, seed);
         }
         return seed;
     }

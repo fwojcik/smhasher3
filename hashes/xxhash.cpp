@@ -1612,14 +1612,16 @@ REGISTER_HASH(XXH3_64,
    // Seems to be simpler-than-expected relationship between seed and hash
    // for keys of 1-3 bytes.
    $.seedfixfn       = excludeBadseeds,
-   $.badseeds        = { 0x58b7a744, 0x58b7a844, 0x58b7a944, 0x70cfa75c, 0x70cfa85c, 0x70cfa95c,
-                         0x76d5a762, 0x76d5a862, 0x76d5a962, 0x78d7a764, 0x78d7a864, 0x78d7a964,
-                         0xffffffff78d8a665, 0xffffffff78d8a765, 0xffffffff78d8a865,
-                         0xffffffff7adaa667, 0xffffffff7adaa767, 0xffffffff7adaa867,
-                         0xffffffff80e0a66d, 0xffffffff80e0a76d, 0xffffffff80e0a86d,
-                         0xffffffff98f8a685, 0xffffffff98f8a785, 0xffffffff98f8a885,
-                         0xfffffffff857a6e4, 0xfffffffff857a7e4, 0xfffffffff857a8e4,
-                         0xfffffffff958a6e5, 0xfffffffff958a7e5, 0xfffffffff958a8e5 }
+   $.badseeds        = {
+            0x58b7a744, 0x58b7a844, 0x58b7a944, 0x70cfa75c, 0x70cfa85c, 0x70cfa95c,
+            0x76d5a762, 0x76d5a862, 0x76d5a962, 0x78d7a764, 0x78d7a864, 0x78d7a964,
+            0xffffffff78d8a665, 0xffffffff78d8a765, 0xffffffff78d8a865,
+            0xffffffff7adaa667, 0xffffffff7adaa767, 0xffffffff7adaa867,
+            0xffffffff80e0a66d, 0xffffffff80e0a76d, 0xffffffff80e0a86d,
+            0xffffffff98f8a685, 0xffffffff98f8a785, 0xffffffff98f8a885,
+            0xfffffffff857a6e4, 0xfffffffff857a7e4, 0xfffffffff857a8e4,
+            0xfffffffff958a6e5, 0xfffffffff958a7e5, 0xfffffffff958a8e5
+   }
  );
 
 // XXH3_generateSecret_fromSeed
@@ -1640,7 +1642,24 @@ REGISTER_HASH(XXH3_64__reinit,
    $.verification_BE = 0x853C024D,
    $.hashfn_native   = XXH3_64_reseed<false>,
    $.hashfn_bswap    = XXH3_64_reseed<true>,
-   $.seedfn          = xxh3_initsecret
+   $.seedfn          = xxh3_initsecret,
+   // Seems to be simpler-than-expected relationship between seed and hash
+   // for keys of 1-3 bytes.
+   $.seedfixfn       = excludeBadseeds,
+   $.badseeds        = {
+            0x055ea6eb, 0x055ea7eb, 0x055ea8eb, 0x0847a724, 0x0847a824, 0x0847a924, 0x0a49a726, 0x0a49a826,
+            0x0a49a926, 0x104fa71c, 0x104fa81c, 0x104fa91c, 0x2827a744, 0x2827a844, 0x2827a944, 0x64fea64b,
+            0x64fea74b, 0x64fea84b, 0x7cd6a673, 0x7cd6a773, 0x7cd6a873, 0x82dca669, 0x82dca769, 0x82dca869,
+            0x84dea66b, 0x84dea76b, 0x84dea86b, 0x87c7a6a4, 0x87c7a7a4, 0x87c7a8a4,
+            0xffffffff055ea6ea, 0xffffffff055ea7ea, 0xffffffff055ea8ea, 0xffffffff0847a725,
+            0xffffffff0847a825, 0xffffffff0847a925, 0xffffffff0a49a727, 0xffffffff0a49a827,
+            0xffffffff0a49a927, 0xffffffff104fa71d, 0xffffffff104fa81d, 0xffffffff104fa91d,
+            0xffffffff2827a745, 0xffffffff2827a845, 0xffffffff2827a945, 0xffffffff64fea64a,
+            0xffffffff64fea74a, 0xffffffff64fea84a, 0xffffffff7cd6a672, 0xffffffff7cd6a772,
+            0xffffffff7cd6a872, 0xffffffff82dca668, 0xffffffff82dca768, 0xffffffff82dca868,
+            0xffffffff84dea66a, 0xffffffff84dea76a, 0xffffffff84dea86a, 0xffffffff87c7a6a5,
+            0xffffffff87c7a7a5, 0xffffffff87c7a8a5,
+   }
  );
 
 // XXH3_generateSecret
@@ -1660,7 +1679,24 @@ REGISTER_HASH(XXH3_64__regen,
    $.verification_BE = 0x6A66F3AD,
    $.hashfn_native   = XXH3_64_reseed<false>,
    $.hashfn_bswap    = XXH3_64_reseed<true>,
-   $.seedfn          = xxh3_generatesecret
+   $.seedfn          = xxh3_generatesecret,
+   // Seems to be simpler-than-expected relationship between seed and hash
+   // for keys of 1-3 bytes.
+   $.seedfixfn       = excludeBadseeds,
+   $.badseeds        = {
+            0x02ac80ae, 0x0add779c, 0x14eab967, 0x1a277094, 0x241ae87d, 0x2c17444d, 0x355878c3, 0x3865e7fc,
+            0x3f1555c7, 0x4d0fe7b7, 0x50e8603c, 0x8fe86455, 0x959ec1b2, 0x9e0ee45e, 0xa6b337f4, 0xb28d865f,
+            0xbc37eadf, 0xd678bf1e, 0xe2624503, 0xe2b7314d, 0xe46670dd, 0xe90f3922, 0xef190449, 0xf373d860,
+            0xfca11ade, 0xffffffff02685363, 0xffffffff06ba6b62, 0xffffffff09409eb7, 0xffffffff0a21a124,
+            0xffffffff0f3b8bf9, 0xffffffff1e20d5e8, 0xffffffff249359d1, 0xffffffff2585da0e,
+            0xffffffff2f1a61c6, 0xffffffff345ab2bc, 0xffffffff5485fc9c, 0xffffffff568ef4c7,
+            0xffffffff60d0e133, 0xffffffff671dde33, 0xffffffff6c606e2b, 0xffffffff7577bdac,
+            0xffffffff76e6fc61, 0xffffffff78084ba8, 0xffffffff827d78a0, 0xffffffff83709cb9,
+            0xffffffff8537a320, 0xffffffff896cebd2, 0xffffffff8982c17b, 0xffffffff8b8e975d,
+            0xffffffff920927d5, 0xffffffffb4a5027b, 0xffffffffbc6f3a3c, 0xffffffffcaacc154,
+            0xffffffffcb103c8a, 0xffffffffdf8536a9, 0xffffffffe537d34f, 0xffffffffe83ba2d4,
+            0xfffffffff56770c2, 0xfffffffffdc8b8c0,
+   }
  );
 
 REGISTER_HASH(XXH3_128,

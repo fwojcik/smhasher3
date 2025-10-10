@@ -59,6 +59,14 @@
 
 #include "Mathmult.h"
 
+static seed_t excludeLow32Zero( const HashInfo * hinfo, const seed_t seed ) {
+    (void)hinfo; // To mark as used
+    if (((uint64_t)seed & 0xFFFFFFFF) == 0x0) {
+        return (seed_t)((uint64_t)seed ^ 0xA5A5A5A5);
+    }
+    return seed;
+}
+
 template <typename hashT, bool bswap>
 static void fibonacci( const void * in, const size_t len, const seed_t seed, void * out ) {
     hashT         h          = (hashT)seed;
@@ -337,6 +345,7 @@ REGISTER_HASH(fibonacci_32,
    $.verification_BE = 0x006F7705,
    $.hashfn_native   = fibonacci<uint32_t, false>,
    $.hashfn_bswap    = fibonacci<uint32_t, true>,
+   $.seedfixfn       = excludeLow32Zero,
    $.badseeds        = { 0, UINT64_C (0xffffffff00000000) } /* !! all keys ending with 0x0000_0000 */
  );
 
@@ -385,6 +394,7 @@ REGISTER_HASH(FNV_1a_64,
    $.verification_BE = 0x4B032B63,
    $.hashfn_native   = FNV1a<uint64_t, false>,
    $.hashfn_bswap    = FNV1a<uint64_t, true>,
+   $.seedfixfn       = excludeBadseeds,
    $.badseeds        = { 0xcbf29ce484222325 }
  );
 
@@ -451,6 +461,7 @@ REGISTER_HASH(FNV_YoshimitsuTRIAD,
    $.verification_BE = 0x85C2EC2F,
    $.hashfn_native   = FNV_YoshimitsuTRIAD<false>,
    $.hashfn_bswap    = FNV_YoshimitsuTRIAD<true>,
+   $.seedfixfn       = excludeBadseeds,
    $.badseeds        = { 0x811c9dc5, 0x23d4a49d }
  );
 
@@ -469,6 +480,7 @@ REGISTER_HASH(FNV_Totenschiff,
    $.verification_BE = 0xC16E2C8F,
    $.hashfn_native   = FNV_Totenschiff<false>,
    $.hashfn_bswap    = FNV_Totenschiff<true>,
+   $.seedfixfn       = excludeBadseeds,
    $.badseeds        = { 0x811c9dc5 }
  );
 
@@ -487,6 +499,7 @@ REGISTER_HASH(FNV_PippipYurii,
    $.verification_BE = 0x90C8C706,
    $.hashfn_native   = FNV_Pippip_Yurii<false>,
    $.hashfn_bswap    = FNV_Pippip_Yurii<true>,
+   $.seedfixfn       = excludeBadseeds,
    $.badseeds        = { 0x811c9dc5 }
  );
 

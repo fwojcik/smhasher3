@@ -235,9 +235,10 @@ static inline uint64_t Hash128to64( const uint128_t & x ) {
     // Murmur-inspired hashing.
     const uint64_t kMul = UINT64_C(0x9ddfea08eb382d69);
     uint64_t       a    = (Uint128Low64(x)  ^ Uint128High64(x)) * kMul;
+    uint64_t       b;
 
     a ^= (a >> 47);
-    uint64_t b =          (Uint128High64(x) ^ a) * kMul;
+    b  = (Uint128High64(x) ^ a) * kMul;
     b ^= (b >> 47);
     b *= kMul;
     return b;

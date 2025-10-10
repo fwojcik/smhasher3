@@ -197,6 +197,7 @@ REGISTER_HASH(falkhash1,
    $.verification_BE = 0xDAE2ECE4,
    $.hashfn_native   = falkhash<1, false>,
    $.hashfn_bswap    = falkhash<1, true>,
+   $.seedfixfn       = excludeBadseeds,
    $.badseeds        = { 0xffffffffffffffb0, 0xffffffffffffffdf }
  );
 
