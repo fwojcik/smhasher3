@@ -25,20 +25,6 @@ static constexpr ssize_t SMALLSORT_CUTOFF = 1024;
 //-----------------------------------------------------------------------------
 // Blob sorting routines
 
-// This just returns true if all entries in [begin, end) are already in
-// sorted order, and false as soon as it detects otherwise.
-template <typename T>
-static bool issorted( T * begin, T * end ) {
-    for (T * i = begin + 1; i != end; i++) {
-        T * node = i;
-        T * prev = i - 1;
-        if (*node < *prev) {
-            return false;
-        }
-    }
-    return true;
-}
-
 // This moves the smallest element in [begin, end) to be the first
 // element. It is one step in insertionsort, and it is used to ensure there
 // is a sentinel at the beginning that is less than or equal to every other
@@ -67,9 +53,24 @@ static void movemin( T * begin, T * end, hidx_t * idxs ) {
 // via movemin(), or with the magic knowledge (that comes from sorting a
 // larger array by sections) there are more elements before begin that are
 // smaller than any element in [begin, end).
-template <bool unguarded, bool track_idxs, typename T>
-static void insertionsort( T * begin, T * end, hidx_t * idxs ) {
-    hidx_t v;
+//
+// When this is called with unlimited == false, we estimate the maximum
+// number of moves that should be seen by the time we're halfway done (as a
+// function of _work_, not elements), if insertionsort is likely to be
+// faster than radixsort. If we hit this number and we're not halfway done,
+// give up so the caller can fallback to radixsort (or possibly some other
+// sort). This number depends on the length of the type being sorted, and
+// was determined empirically.
+//
+// Since work for non-trivial cases of insertionsort goes as the square of
+// the number of elements, half the work should be done when sqrt(1/2) =~
+// .7071 of the elements are completed.
+template <bool unlimited, bool unguarded, bool track_idxs, typename T>
+static bool insertionsort( T * begin, T * end, hidx_t * idxs ) {
+    const T * const  midpoint = begin  + (end - begin) * 7 / 10;
+    const size_t     movlimit = T::len * (end - begin) / 2;
+    size_t           movcount = 0;
+    hidx_t           v;
 
     for (T * i = begin + 1; i != end; i++) {
         T * node = i;
@@ -84,12 +85,23 @@ static void insertionsort( T * begin, T * end, hidx_t * idxs ) {
             }
             *node = std::move(*next);
             node  = next--;
+            movcount++;
         }
         if (track_idxs) {
             *(idxs + (node - begin)) = std::move(v);
         }
         *node = std::move(val);
+        if (!unlimited) {
+            if (unlikely(movcount > movlimit)) {
+                if (i < midpoint) {
+                    return false;
+                }
+                movcount = 0;
+            }
+        }
     }
+
+    return true;
 }
 
 // Sort entry point for small blocks of items, where "small" is defined via
@@ -105,7 +117,7 @@ static void smallsort( T * begin, T * end, hidx_t * idxs, bool guarded = true ) 
     if (guarded) {
         movemin<track_idxs>(begin++, end, idxs++);
     }
-    insertionsort<true, track_idxs>(begin, end, idxs);
+    insertionsort<true, true, track_idxs>(begin, end, idxs);
 }
 
 //-----------------------------------------------------------------------------
@@ -226,49 +238,33 @@ static void flagsort( T * begin, T * end, hidx_t * idxs, T * base, int digit ) {
     // there's no need to iterate over every item. If there are no more
     // passes, then we're just done. Otherwise, hitting this condition in
     // real-world data is a little suspicious. This is only likely to hit
-    // in degenerate cases.
+    // in oddball cases.
     //
-    // If this is the first sorting pass, then the first digit of every
-    // item in the list is identical. This means either every item is
-    // identical (e.g. donothing128), or every item has the same prefix
-    // (e.g. fnv-1a-128 in Sparse tests). If it's a later pass, then one of
-    // those two cases holds, but only for some subset of the data.
-    //
-    // Currently, the heuristic used is that if this case is hit by the
-    // whole list, then it's either already sorted (perhaps because all
-    // entries are identical), or we devolve into radixsort, since it
-    // performs best for many oddball cases, and still performs OK in the
-    // average case. Since issorted() breaks early, the penalty for
-    // checking is typically very low.
-    //
-    // Otherwise, for subsets of the whole list, we devolve into
-    // insertionsort, which is significantly better on average than
-    // radixsort. That can't be done in the more degenerate cases, because
-    // insertionsort has dreadful worst-case performance.
-    //
-    // Better choices for a more well-rounded sort function would be to
-    // perhaps have some sort of metric for how unsorted the list is
-    // instead of a simple bool, possibly also considering the size of the
-    // list or subset and/or the size of the elements, when deciding on a
-    // fallback sort. Another option might be to do something
-    // introsort-like and have insertionsort() detect when it is starting
-    // to take too long, and have it fall-further-back to radixsort(). For
-    // now, this is good enough. Further sort optimizations are planned.
+    // Currently, if this case is hit then we first try devolving into
+    // insertionsort with a heuristic maximum number of item movements. In
+    // cases where every item is identical (e.g. donothing128), or where
+    // the items are nearly sorted, or where there are not too many items,
+    // insertionsort will have enough leeway to finish sorting this
+    // section. That won't be true in the more degenerate cases, because
+    // insertionsort has dreadful worst-case performance, and so we'll
+    // further fallback to radixsort.
     //
     // smallsort() isn't used here because these blocks must be large.
     if (unlikely(++freqs[(*ptr)[digit]] == count)) {
         if (digit != 0) {
             assume((end - begin) > SMALLSORT_CUTOFF);
-            if (digit == (DIGITS - 1)) {
-                if (issorted(begin, end)) {
+            // Start with a limited version of insertionsort
+            if (begin == base) {
+                if (insertionsort<false, false, track_idxs>(begin, end, idxs)) {
                     return;
                 }
-                radixsort<track_idxs>(begin, end, idxs);
-            } else if (begin == base) {
-                insertionsort<false, track_idxs>(begin, end, idxs);
             } else {
-                insertionsort<true, track_idxs>(begin, end, idxs);
+                if (insertionsort<false, true, track_idxs>(begin, end, idxs)) {
+                    return;
+                }
             }
+            // If that takes too much time, fallback further to radixsort
+            radixsort<track_idxs>(begin, end, idxs);
         }
         return;
     }
