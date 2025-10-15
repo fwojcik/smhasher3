@@ -81,6 +81,18 @@ static constexpr uint64_t kStaticRandomData[5] = {
     UINT64_C(0x452821e638d01377),
 };
 
+// The same table, but with byte-swapped items. This will match the
+// contents of the real kStaticRandomData[] array on opposite-endian
+// platforms, so that we can compute PrecombineLengthMix() for each
+// endianness, regardless of native endianness. That is the only place this
+// array is used at the byte-level; word-level access never needs this
+// version of the table.
+static constexpr uint64_t kStaticRandomDataBSWP[5] = {
+    UINT64_C(0xd308a385886a3f24), UINT64_C(0x447370032e8a1913),
+    UINT64_C(0xd0319f29223809a4), UINT64_C(0x896c4eec98fa2e08),
+    UINT64_C(0x7713d038e6212845),
+};
+
 static constexpr uint64_t kMul = UINT64_C(0x79d5f9e0de1e8cf5);
 
 //------------------------------------------------------------
@@ -138,7 +150,13 @@ static FORCE_INLINE uint64_t CombineRawImpl( uint64_t state, uint64_t value ) {
 template <bool bswap>
 static inline uint64_t PrecombineLengthMix( uint64_t state, size_t len ) {
     assume(len + sizeof(uint64_t) <= sizeof(kStaticRandomData));
-    uint64_t data = GET_U64<bswap>((const uint8_t *)(&kStaticRandomData[0]), len);
+    uint64_t data;
+
+    if (isLE()) {
+        data = GET_U64<bswap>((const uint8_t *)(&kStaticRandomData[0]), len);
+    } else {
+        data = GET_U64<bswap>((const uint8_t *)(&kStaticRandomDataBSWP[0]), len);
+    }
     return state ^ data;
 }
 
