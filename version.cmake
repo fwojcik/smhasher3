@@ -15,7 +15,11 @@ if(GIT_EXECUTABLE)
     # Have to do this in two parts; thanks, git!
     if (GIT_BRANCH)
       execute_process(
-        COMMAND ${GIT_EXECUTABLE} describe --all --always --exclude "${GIT_BRANCH}" --exclude "*/${GIT_BRANCH}" HEAD
+        COMMAND ${GIT_EXECUTABLE} describe --all --always
+		--exclude "dev" --exclude "*/dev"
+		--exclude "main" --exclude "*/main"
+		--exclude "${GIT_BRANCH}" --exclude "*/${GIT_BRANCH}"
+		HEAD
         WORKING_DIRECTORY ${SRC_DIR}
         OUTPUT_VARIABLE GIT_DESCRIBE_VERSION_A
         RESULT_VARIABLE GIT_DESCRIBE_ERROR_CODE
