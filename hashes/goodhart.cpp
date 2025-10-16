@@ -142,7 +142,9 @@ REGISTER_HASH(GoodhartHash1,
    $.hash_flags      =
          FLAG_HASH_NO_SEED,
    $.impl_flags      =
-         FLAG_IMPL_ROTATE | FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_SANITY_FAILS |
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
    $.bits            = 128,
    $.verification_LE = 0x78BE8F44,
    $.verification_BE = 0xE537621E,
@@ -156,7 +158,8 @@ REGISTER_HASH(GoodhartHash2,
    $.hash_flags      =
          FLAG_HASH_NO_SEED,
    $.impl_flags      =
-         FLAG_IMPL_ROTATE | FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
    $.bits            = 128,
    $.verification_LE = 0x16C82F7A,
    $.verification_BE = 0x5F57974F,
@@ -170,7 +173,8 @@ REGISTER_HASH(GoodhartHash3,
    $.hash_flags      =
          FLAG_HASH_NO_SEED,
    $.impl_flags      =
-         FLAG_IMPL_ROTATE | FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
    $.bits            = 128,
    $.verification_LE = 0x504DEE5A,
    $.verification_BE = 0x83DC9414,
@@ -184,7 +188,8 @@ REGISTER_HASH(GoodhartHash4,
    $.hash_flags      =
          FLAG_HASH_NO_SEED,
    $.impl_flags      =
-         FLAG_IMPL_ROTATE | FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
    $.bits            = 128,
    $.verification_LE = 0xE71EE0DC,
    $.verification_BE = 0xB5176566,
@@ -198,7 +203,8 @@ REGISTER_HASH(GoodhartHash5,
    $.hash_flags      =
          FLAG_HASH_NO_SEED,
    $.impl_flags      =
-         FLAG_IMPL_ROTATE | FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
    $.bits            = 128,
    $.verification_LE = 0x6F8788F7,
    $.verification_BE = 0x73D864DA,
@@ -212,7 +218,8 @@ REGISTER_HASH(GoodhartHash6,
    $.hash_flags      =
          FLAG_HASH_NO_SEED,
    $.impl_flags      =
-         FLAG_IMPL_ROTATE | FLAG_IMPL_LICENSE_MIT,
+         FLAG_IMPL_ROTATE       |
+         FLAG_IMPL_LICENSE_MIT,
    $.bits            = 128,
    $.verification_LE = 0x7EE56518,
    $.verification_BE = 0x47495960,

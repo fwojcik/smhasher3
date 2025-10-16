@@ -418,6 +418,9 @@ REGISTER_HASH(Abseil32,
    $.hash_flags      =
          0,
    $.impl_flags      =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_MULTIPLY_64_128 |
+         FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_APACHE2,
    $.bits            = 64,
    $.verification_LE = 0x9C56A962,
@@ -463,6 +466,7 @@ REGISTER_HASH(Abseil64_llh,
    $.hash_flags      =
          0,
    $.impl_flags      =
+         FLAG_IMPL_MULTIPLY_64_128 |
          FLAG_IMPL_LICENSE_APACHE2,
    $.bits            = 64,
    $.verification_LE = 0x07203CDB,
@@ -557,6 +561,9 @@ REGISTER_HASH(Abseil64_city,
    $.hash_flags      =
          0,
    $.impl_flags      =
+         FLAG_IMPL_MULTIPLY_64_64  |
+         FLAG_IMPL_MULTIPLY_64_128 |
+         FLAG_IMPL_ROTATE          |
          FLAG_IMPL_LICENSE_APACHE2,
    $.bits            = 64,
    $.verification_LE = 0xBCA82904,
