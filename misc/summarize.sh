@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-TMPDIR=/tmp/beta3
+TMPDIR=/tmp/release
 TAB=`echo -en '\t'`
 
 if [ -d "${TMPDIR}" ]; then

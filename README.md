@@ -60,7 +60,7 @@ Additional significant changes include:
 Current status
 --------------
 
-As of 2025-10-10, I consider SMHasher3 to have been fully released.
+As of 2025-10-16, I consider SMHasher3 to have been fully released.
 
 From this point, the plan is to have two branches: "main" and "dev". The
 main branch will have new hashes and updated hashes added to it as I am
