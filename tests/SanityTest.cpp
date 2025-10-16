@@ -629,15 +629,15 @@ bool PrependedZeroesTest( const HashInfo * hinfo, flags_t flags ) {
 
 void SanityTestHeader( flags_t flags ) {
     if (REPORT(VERBOSE, flags)) {
-        printf("%-25s  %-10s   %13s     %13s     %13s\n",
+        printf("%-28s  %-10s   %13s     %13s     %13s\n",
                 "Name", "Impl   ", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
-        printf("%-25s  %-10s   %13s     %13s     %13s\n",
-                "-------------------------", "----------", "-------------", "-------------", "-------------");
+        printf("%-28s  %-10s   %13s     %13s     %13s\n",
+                "----------------------------", "----------", "-------------", "-------------", "-------------");
     } else {
-        printf("%-25s   %13s     %13s     %13s\n",
+        printf("%-28s   %13s     %13s     %13s\n",
                 "Name", " Sanity 1+2  ", "   Zeroes    ", " Thread-safe ");
-        printf("%-25s   %13s     %13s     %13s\n",
-                "-------------------------", "-------------", "-------------", "-------------");
+        printf("%-28s   %13s     %13s     %13s\n",
+                "----------------------------", "-------------", "-------------", "-------------");
     }
 }
 
@@ -647,9 +647,9 @@ bool SanityTest( const HashInfo * hinfo, flags_t flags, bool oneline ) {
 
     if (oneline) {
         if (REPORT(VERBOSE, flags)) {
-            printf("%-25s  %-10s  ", hinfo->name, hinfo->impl);
+            printf("%-28s  %-10s  ", hinfo->name, hinfo->impl);
         } else {
-            printf("%-25s  ", hinfo->name);
+            printf("%-28s  ", hinfo->name);
         }
     }
 

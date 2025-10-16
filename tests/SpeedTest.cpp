@@ -405,16 +405,16 @@ void ShortSpeedTestHeader( flags_t flags ) {
     printf("\n");
 
     if (REPORT(VERBOSE, flags)) {
-        printf("%-25s  %10s  %9s  %17s  %17s  %17s  %17s  \n",
-                "Name", "Impl   ", "Bulk  ", "1-8 bytes    ", "9-16 bytes   ", "17-24 bytes   ", "25-32 bytes   ");
-        printf("%-25s  %-10s  %9s  %17s  %17s  %17s  %17s  \n",
-                "-------------------------", "----------", "---------", "-----------------",
+        printf("%-28s  %10s  %9s  %17s  %17s  %17s  %17s  \n",
+                "Name", "Impl   ", "Bulk  ", "1-8 bytes    ", "9-16 bytes   ", "17-24 bytes   ", "28-32 bytes   ");
+        printf("%-28s  %-10s  %9s  %17s  %17s  %17s  %17s  \n",
+                "----------------------------", "----------", "---------", "-----------------",
                 "-----------------", "-----------------", "-----------------");
     } else {
-        printf("%-25s  %9s  %11s  %11s  %11s  %11s  \n",
-                "Name", "Bulk  ", "1-8 bytes ", "9-16 bytes", "17-24 bytes", "25-32 bytes");
-        printf("%-25s  %9s  %11s  %11s  %11s  %11s  \n",
-                "-------------------------", "---------", "-----------",
+        printf("%-28s  %9s  %11s  %11s  %11s  %11s  \n",
+                "Name", "Bulk  ", "1-8 bytes ", "9-16 bytes", "17-24 bytes", "28-32 bytes");
+        printf("%-28s  %9s  %11s  %11s  %11s  %11s  \n",
+                "----------------------------", "---------", "-----------",
                 "-----------", "-----------", "-----------");
     }
 }
@@ -426,7 +426,7 @@ void ShortSpeedTest( const HashInfo * hinfo, flags_t flags ) {
     const int maxvaryalign    = 7;
     const int basealignoffset = 0;
 
-    printf("%-25s", hinfo->name);
+    printf("%-28s", hinfo->name);
     if (REPORT(VERBOSE, flags)) {
         printf("  %-10s", hinfo->impl);
     }
