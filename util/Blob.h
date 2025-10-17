@@ -72,8 +72,14 @@ class Blob {
         memset(bytes + plen, 0, _bytes - plen);
     }
 
-    Blob( uint64_t x ) :
-        Blob((x = COND_BSWAP( x, isBE()), &x), sizeof(x)) {}
+    Blob( uint64_t x ) {
+        if (likely(x == 0)) {
+            memset(bytes, 0, _bytes);
+        } else {
+            x = COND_BSWAP(x, isBE());
+            Blob(&x, sizeof(x));
+        }
+    }
 
     //----------
     // unary operators
