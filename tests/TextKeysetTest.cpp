@@ -73,7 +73,8 @@ static void PrintTextKeyHash( HashFn hash, seed_t seed, const char * key, const 
 // either with or without commas.
 
 template <typename hashtype, bool commas>
-static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount, flags_t flags ) {
+static bool TextNumImpl( const HashInfo * hinfo, const seed_t seed, const uint64_t numcount, flags_t flags ) {
+    const HashFn          hash = hinfo->hashFn(g_hashEndian);
     std::vector<hashtype> hashes( numcount );
     std::string           nstr;
 
@@ -120,8 +121,9 @@ static bool TextNumImpl( HashFn hash, const seed_t seed, const uint64_t numcount
 // set of length N.
 
 template <typename hashtype>
-static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, const char * coreset,
+static bool TextKeyImpl( const HashInfo * hinfo, const seed_t seed, const char * prefix, const char * coreset,
         const unsigned corelen, const char * suffix, flags_t flags ) {
+    const HashFn   hash      = hinfo->hashFn(g_hashEndian);
     const unsigned prefixlen = (unsigned)strlen(prefix);
     const unsigned suffixlen = (unsigned)strlen(suffix);
     const unsigned corecount = (unsigned)strlen(coreset);
@@ -178,8 +180,9 @@ static bool TextKeyImpl( HashFn hash, const seed_t seed, const char * prefix, co
 // Keyset 'Words' - pick random chars from coreset (alnum or password chars)
 
 template <typename hashtype>
-static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycount, const uint32_t minlen,
+static bool WordsKeyImpl( const HashInfo * hinfo, const seed_t seed, const uint32_t keycount, const uint32_t minlen,
         const uint32_t maxlen, const char * coreset, const char * name, flags_t flags ) {
+    const HashFn   hash      = hinfo->hashFn(g_hashEndian);
     const uint32_t corecount = strlen(coreset);
 
     assert(maxlen >= minlen);
@@ -297,8 +300,9 @@ static bool WordsKeyImpl( HashFn hash, const seed_t seed, const uint32_t keycoun
 // Keyset 'Long' - hash very long strings of text with small changes
 
 template <typename hashtype, bool varyprefix>
-static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, const unsigned varylen,
+static bool WordsLongImpl( const HashInfo * hinfo, const seed_t seed, const long keycount, const unsigned varylen,
         const unsigned minlen, const unsigned maxlen, const char * coreset, const char * name, flags_t flags ) {
+    const HashFn   hash      = hinfo->hashFn(g_hashEndian);
     const unsigned corecount = (unsigned)strlen(coreset);
     const size_t   totalkeys = keycount * (corecount - 1) * varylen;
     char *         key       = new char[maxlen];
@@ -392,7 +396,8 @@ static bool WordsLongImpl( HashFn hash, const seed_t seed, const long keycount, 
 // Keyset 'Dict' - hash a list of dictionary words, all-lowercase or all-uppercase
 
 template <typename hashtype>
-static bool WordsDictImpl( HashFn hash, const seed_t seed, flags_t flags ) {
+static bool WordsDictImpl( const HashInfo * hinfo, const seed_t seed, flags_t flags ) {
+    const HashFn hash              = hinfo->hashFn(g_hashEndian);
     std::vector<std::string> words = GetWordlist(CASE_LOWER_UPPER, REPORT(VERBOSE, flags));
     const size_t wordscount        = words.size();
 
@@ -436,7 +441,6 @@ static void VerifyCharset( const char * charset, const char * name ) {
 
 template <typename hashtype>
 bool TextKeyTest( const HashInfo * hinfo, flags_t flags ) {
-    const HashFn hash  = hinfo->hashFn(g_hashEndian);
     const seed_t seed  = hinfo->Seed(g_seed);
     const char * alnum = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -448,58 +452,58 @@ bool TextKeyTest( const HashInfo * hinfo, flags_t flags ) {
     VerifyCharset(alnum, "alnum");
 
     // Dictionary words
-    result &= WordsDictImpl<hashtype>(hash, seed, flags);
+    result &= WordsDictImpl<hashtype>(hinfo, seed, flags);
 
     // Numbers in text form, without and with commas
-    result &= TextNumImpl<hashtype, false>(hash, seed, 10000000, flags);
-    result &= TextNumImpl<hashtype,  true>(hash, seed, 10000000, flags);
+    result &= TextNumImpl<hashtype, false>(hinfo, seed, 10000000, flags);
+    result &= TextNumImpl<hashtype,  true>(hinfo, seed, 10000000, flags);
 
     // 6-byte keys, varying only in middle 4 bytes
-    result &= TextKeyImpl<hashtype>(hash, seed, "F" , alnum, 4, "B" , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FB", alnum, 4, ""  , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""  , alnum, 4, "FB", flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "F" , alnum, 4, "B" , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "FB", alnum, 4, ""  , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, ""  , alnum, 4, "FB", flags);
 
     // 10-byte keys, varying only in middle 4 bytes
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foo"   , alnum, 4, "Bar"   , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooBar", alnum, 4, ""      , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""      , alnum, 4, "FooBar", flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "Foo"   , alnum, 4, "Bar"   , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "FooBar", alnum, 4, ""      , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, ""      , alnum, 4, "FooBar", flags);
 
     // 14-byte keys, varying only in middle 4 bytes
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foooo"     , alnum, 4, "Baaar"     , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooooBaaar", alnum, 4, ""          , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""          , alnum, 4, "FooooBaaar", flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "Foooo"     , alnum, 4, "Baaar"     , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "FooooBaaar", alnum, 4, ""          , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, ""          , alnum, 4, "FooooBaaar", flags);
 
     // 18-byte keys, varying only in middle 4 bytes
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foooooo"       , alnum, 4, "Baaaaar"       , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooooooBaaaaar", alnum, 4, ""              , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""              , alnum, 4, "FooooooBaaaaar", flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "Foooooo"       , alnum, 4, "Baaaaar"       , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "FooooooBaaaaar", alnum, 4, ""              , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, ""              , alnum, 4, "FooooooBaaaaar", flags);
 
     // 22-byte keys, varying only in middle 4 bytes
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foooooooo"         , alnum, 4, "Baaaaaaar"         , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooooooooBaaaaaaar", alnum, 4, ""                  , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""                  , alnum, 4, "FooooooooBaaaaaaar", flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "Foooooooo"         , alnum, 4, "Baaaaaaar"         , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "FooooooooBaaaaaaar", alnum, 4, ""                  , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, ""                  , alnum, 4, "FooooooooBaaaaaaar", flags);
 
     // 26-byte keys, varying only in middle 4 bytes
-    result &= TextKeyImpl<hashtype>(hash, seed, "Foooooooooo"           , alnum, 4, "Baaaaaaaaar"           , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, "FooooooooooBaaaaaaaaar", alnum, 4, ""                      , flags);
-    result &= TextKeyImpl<hashtype>(hash, seed, ""                      , alnum, 4, "FooooooooooBaaaaaaaaar", flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "Foooooooooo"           , alnum, 4, "Baaaaaaaaar"           , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, "FooooooooooBaaaaaaaaar", alnum, 4, ""                      , flags);
+    result &= TextKeyImpl<hashtype>(hinfo, seed, ""                      , alnum, 4, "FooooooooooBaaaaaaaaar", flags);
 
     // Random sets of 1..4 word-like characters
-    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1,  4, alnum, "alnum", flags);
+    result &= WordsKeyImpl<hashtype>(hinfo, seed, 1000000, 1,  4, alnum, "alnum", flags);
 
     // Random sets of 5..8 word-like characters
-    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 5,  8, alnum, "alnum", flags);
+    result &= WordsKeyImpl<hashtype>(hinfo, seed, 1000000, 5,  8, alnum, "alnum", flags);
 
     // Random sets of 1..16 word-like characters
-    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1, 16, alnum, "alnum", flags);
+    result &= WordsKeyImpl<hashtype>(hinfo, seed, 1000000, 1, 16, alnum, "alnum", flags);
 
     // Random sets of 1..32 word-like characters
-    result &= WordsKeyImpl<hashtype>(hash, seed, 1000000, 1, 32, alnum, "alnum", flags);
+    result &= WordsKeyImpl<hashtype>(hinfo, seed, 1000000, 1, 32, alnum, "alnum", flags);
 
     // Random sets of many word-like characters, with small changes
     for (auto blksz: { 2048, 4096, 8192 }) {
-        result &= WordsLongImpl<hashtype,  true>(hash, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", flags);
-        result &= WordsLongImpl<hashtype, false>(hash, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", flags);
+        result &= WordsLongImpl<hashtype,  true>(hinfo, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", flags);
+        result &= WordsLongImpl<hashtype, false>(hinfo, seed, 1000, 80, blksz - 80, blksz + 80, alnum, "alnum", flags);
     }
 
     printf("%s\n", result ? "" : g_failstr);
