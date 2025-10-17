@@ -21,6 +21,7 @@
 #include <set>
 
 #define HASH_FLAGS                       \
+    FLAG_EXPAND(HASH_DONOTHING)          \
     FLAG_EXPAND(HASH_MOCK)               \
     FLAG_EXPAND(HASH_CRYPTOGRAPHIC)      \
     FLAG_EXPAND(HASH_CRYPTOGRAPHIC_WEAK) \
@@ -219,6 +220,10 @@ class HashInfo {
             seed = seedfixfn(this, seed);
         }
         return seed;
+    }
+
+    FORCE_INLINE bool isDoNothing( void ) const {
+        return !!(hash_flags & FLAG_HASH_DONOTHING);
     }
 
     FORCE_INLINE bool isMock( void ) const {
