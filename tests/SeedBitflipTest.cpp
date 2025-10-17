@@ -85,6 +85,10 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, flags
         printf("Testing %3d-byte keys, %2d-bit seeds, %d reps", keybytes, seedbits, keycount);
     }
 
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
+
     for (unsigned seedbit = 0; seedbit < seedbits; seedbit++) {
         if (REPORT(VERBOSE, flags)) {
             printf("Testing seed bit %d / %d - %3d-byte keys - %d keys\n", seedbit, seedbits, keybytes, keycount);
@@ -126,7 +130,7 @@ static bool SeedBitflipTestImpl( const HashInfo * hinfo, unsigned keybits, flags
         auto keyprint = [&]( hidx_t i ) {
                     ExtBlob  k( &keys[(i >> 1) * keybytes], keybytes );
                     seed_t   iseed, hseed;
-                    hashtype v;
+                    hashtype v( 0 );
 
                     memcpy(&iseed, &seeds[(i >> 1) * seedbytes], seedbytes);
                     iseed = hinfo->getFixedSeed(iseed);

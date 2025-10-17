@@ -85,9 +85,9 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, size_t keylen, st
     memset(&key[0], 0, keylen);
     hashes.reserve(keycount);
 
+    hashtype h( 0 );
     for (size_t byteA = 0; byteA < keylen; byteA++) {
         for (unsigned valA = 1; valA <= 255; valA++) {
-            hashtype h;
             key[byteA] = (uint8_t)valA;
             hash(&key[0], keylen, seed, &h);
             addVCodeInput(&key[0], keylen);
@@ -107,7 +107,6 @@ static void TwoBytesLenKeygen( HashFn hash, const seed_t seed, size_t keylen, st
             for (unsigned valA = 1; valA <= 255; valA++) {
                 key[byteA] = (uint8_t)valA;
                 for (unsigned valB = 1; valB <= 255; valB++) {
-                    hashtype h;
                     key[byteB] = (uint8_t)valB;
                     hash(&key[0], keylen, seed, &h);
                     addVCodeInput(&key[0], keylen);
@@ -147,7 +146,7 @@ static bool TwoBytesTestLen( HashFn hash, const seed_t seed, size_t keylen, flag
                             g_seed, keylen, posA, valA, posB, valB);
                 }
 
-                hashtype v;
+                hashtype v( 0 );
                 hash(&key[0], keylen, seed, &v);
                 v.printhex(NULL);
             };
@@ -188,10 +187,11 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, size_t maxlen
     VLA_ALLOC(uint8_t, key, maxlen);
     memset(&key[0], 0, maxlen);
     hashes.reserve(keycount);
+
+    hashtype h( 0 );
     for (size_t keylen = 2; keylen <= maxlen; keylen++) {
         for (size_t byteA = 0; byteA < keylen; byteA++) {
             for (unsigned valA = 1; valA <= 255; valA++) {
-                hashtype h;
                 key[byteA] = (uint8_t)valA;
                 hash(&key[0], keylen, seed, &h);
                 addVCodeInput(&key[0], keylen);
@@ -209,7 +209,6 @@ static void TwoBytesUpToLenKeygen( HashFn hash, const seed_t seed, size_t maxlen
                 for (unsigned valA = 1; valA <= 255; valA++) {
                     key[byteA] = (uint8_t)valA;
                     for (unsigned valB = 1; valB <= 255; valB++) {
-                        hashtype h;
                         key[byteB] = (uint8_t)valB;
                         hash(&key[0], keylen, seed, &h);
                         addVCodeInput(&key[0], keylen);
@@ -258,7 +257,7 @@ static bool TwoBytesTestUpToLen( HashFn hash, const seed_t seed, size_t maxlen, 
                             g_seed, keylen, posA, valA, posB, valB);
                 }
 
-                hashtype v;
+                hashtype v( 0 );
                 hash(&key[0], keylen, seed, &v);
                 v.printhex(NULL);
             };

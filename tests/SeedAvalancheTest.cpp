@@ -78,7 +78,7 @@ static void calcBiasRange( const HashInfo * hinfo, std::vector<uint32_t> & bins,
         const uint8_t * keys, const uint8_t * seeds, a_uint & irepp, const unsigned reps, const flags_t flags ) {
     const HashFn hash = hinfo->hashFn(g_hashEndian);
 
-    hashtype A, B;
+    hashtype A( 0 ), B( 0 );
     unsigned irep;
     seed_t   iseed;
     uint64_t baseseed = 0;

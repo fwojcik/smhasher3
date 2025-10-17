@@ -61,7 +61,7 @@
 
 template <typename hashtype>
 static void PrintTextKeyHash( HashFn hash, seed_t seed, const char * key, const uint32_t len ) {
-    hashtype v;
+    hashtype v( 0 );
 
     printf("0x%016" PRIx64 "\t\"%.*s\"\t", g_seed, len, key);
     hash(key, len, seed, &v);
@@ -77,6 +77,10 @@ static bool TextNumImpl( const HashInfo * hinfo, const seed_t seed, const uint64
     const HashFn          hash = hinfo->hashFn(g_hashEndian);
     std::vector<hashtype> hashes( numcount );
     std::string           nstr;
+
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     printf("Keyset 'TextNum' - numbers in text form %s commas - %" PRIu64 " keys\n",
             commas ? "with" : "without", numcount);
@@ -139,6 +143,9 @@ static bool TextKeyImpl( const HashInfo * hinfo, const seed_t seed, const char *
     memset(key + prefixlen, 'X', corelen);
     memcpy(key + prefixlen + corelen, suffix, suffixlen);
     key[keybytes] = 0;
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     printf("Keyset 'Text' - keys of form \"%s\" - %d keys\n", key, keycount);
 
@@ -217,6 +224,10 @@ static bool WordsKeyImpl( const HashInfo * hinfo, const seed_t seed, const uint3
     Rand     r( 708218, minlen, maxlen );
     char *   key = new char[maxlen];
     uint32_t cnt = 0;
+
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     printf("Keyset 'Words' - %d-%d random chars from %s charset - %d keys\n",
             minlen, maxlen, name, keycount - remaining);
@@ -315,9 +326,12 @@ static bool WordsLongImpl( const HashInfo * hinfo, const seed_t seed, const long
     assert(maxlen > minlen);
 
     Rand r( 312318, varyprefix, minlen, maxlen );
-    std::vector<hashtype> hashes;
-    hashes.resize(totalkeys);
+    std::vector<hashtype> hashes( totalkeys );
     hidx_t cnt = 0;
+
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     //----------
     auto keybuild = [&]( hidx_t basenum ) {
@@ -403,8 +417,11 @@ static bool WordsDictImpl( const HashInfo * hinfo, const seed_t seed, flags_t fl
 
     printf("Keyset 'Dict' - dictionary words - %zd keys\n", wordscount);
 
-    std::vector<hashtype> hashes;
-    hashes.resize(wordscount);
+    std::vector<hashtype> hashes( wordscount );
+
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     for (size_t i = 0; i < wordscount; i++) {
         const unsigned len = words[i].length();

@@ -82,7 +82,7 @@ static void SeedBicTestBatch( const HashInfo * hinfo, std::vector<uint32_t> & po
     const size_t hashbits     = hashtype::bitlen;
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
-    hashtype h1, h2;
+    hashtype h1( 0 ), h2( 0 );
     size_t   irep;
     size_t   iseed;
     uint64_t baseseed = 0;

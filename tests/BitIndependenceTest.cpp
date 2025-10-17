@@ -132,7 +132,7 @@ static void BicTestBatch( HashFn hash, const seed_t seed, std::vector<uint32_t> 
     const size_t hashbitpairs = hashbits / 2 * hashbits;
 
     VLA_ALLOC(uint8_t, buf, keybytes);
-    hashtype h1, h2;
+    hashtype h1( 0 ), h2( 0 );
     size_t   irep;
 
     while ((irep = irepp++) < reps) {

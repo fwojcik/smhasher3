@@ -76,8 +76,11 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
     addVCodeInput(nullblock, keycount);
 
     //----------
-    std::vector<hashtype> hashes;
-    hashes.resize(totalkeys);
+    std::vector<hashtype> hashes( totalkeys );
+
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     size_t cnt = 0;
     seed_t hseed;
@@ -106,7 +109,7 @@ static bool SeedZeroKeyImpl( const HashInfo * hinfo, const size_t maxbits, const
                 seed_t   setbits = InverseKChooseUpToK(i, 1, maxbits, bigseed ? 64 : 32);
                 seed_t   iseed   = nthlex(i, setbits); if (negate) { iseed = ~iseed; }
                 seed_t   hseed   = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
-                hashtype v;
+                hashtype v( 0 );
 
                 printf("0x%016" PRIx64 "\t%d copies of 0x00\t", (uint64_t)iseed, keylen);
                 hash(nullblock, keylen, hseed, &v);

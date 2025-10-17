@@ -63,7 +63,7 @@
 template <typename keytype, typename hashtype>
 static void SparseKeygenRecurse( HashFn hash, const seed_t seed, unsigned start, unsigned bitsleft,
         bool inclusive, keytype & k, std::vector<hashtype> & hashes ) {
-    hashtype h;
+    hashtype h( 0 );
 
     for (size_t i = start; i < k.bitlen; i++) {
         k.flipbit(i);
@@ -98,7 +98,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbit
             keybytes, inclusive ? "up to" : "exactly", setbits, totalkeys);
 
     if (inclusive) {
-        hashtype h;
+        hashtype h( 0 );
         hash(&k, k.len, seed, &h);
         addVCodeInput(&k, k.len);
         hashes.push_back(h);
@@ -115,7 +115,7 @@ static bool SparseKeyImpl( HashFn hash, const seed_t seed, const unsigned setbit
     // variable at all.
     auto keyprint = [&]( hidx_t n ) {
                 hidx_t   t, pos = 0, maxpos = keybits - 1, laterbits = setbits;
-                hashtype v;
+                hashtype v( 0 );
 
                 k = 0;
                 while (n > 0) {

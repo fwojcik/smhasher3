@@ -82,6 +82,10 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
         printf("Testing %3d-byte keys, %d reps", keybytes, keycount);
     }
 
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
+
     for (unsigned keybit = 0; keybit < keybits; keybit++) {
         if (REPORT(VERBOSE, flags)) {
             printf("Testing bit %d / %d - %d keys\n", keybit, keybits, keycount);
@@ -112,7 +116,7 @@ static bool BitflipTestImpl( const HashInfo * hinfo, unsigned keybits, const see
 
         auto keyprint = [&]( hidx_t i ) {
                     ExtBlob  k( &keys[(i >> 1) * keybytes], keybytes );
-                    hashtype v;
+                    hashtype v( 0 );
 
                     if (i & 1) { k.flipbit(keybit); }
                     hash(k, keybytes, seed, &v);

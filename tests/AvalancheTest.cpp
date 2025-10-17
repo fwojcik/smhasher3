@@ -79,7 +79,7 @@ static void calcBiasRange( const HashFn hash, const seed_t seed, std::vector<uin
     const unsigned keybits = keybytes * 8;
 
     VLA_ALLOC(uint8_t, buf, keybytes);
-    hashtype A, B;
+    hashtype A( 0 ), B( 0 );
     unsigned irep;
 
     while ((irep = irepp++) < reps) {

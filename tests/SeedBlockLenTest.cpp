@@ -145,6 +145,10 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
     // Reserve memory for the hashes
     std::vector<hashtype> hashes( totaltests );
 
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
+
     // Generate the hashes, test them, and record the results
     if (hinfo->is32BitSeed()) {
         SeedBlockLenTest_Impl2<hashtype, blocklen, false>(hinfo, hashes, keylen, blockoffset_min,
@@ -174,7 +178,7 @@ static bool SeedBlockLenTest_Impl1( const HashInfo * hinfo, size_t blockoffset_m
                 const HashFn hash = hinfo->hashFn(g_hashEndian);
                 uint8_t *    key  = blockbase - blockoffset;
                 ExtBlob      xb( key, keylen );
-                hashtype     v;
+                hashtype     v( 0 );
 
                 printf("0x%016" PRIx64 "\t", iseed);
                 xb.printbytes(NULL);

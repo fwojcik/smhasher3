@@ -72,16 +72,18 @@ static bool ZeroKeyImpl( const HashInfo * hinfo, const seed_t seed, flags_t flag
     addVCodeInput(nullblock, keycount);
 
     //----------
-    std::vector<hashtype> hashes;
+    std::vector<hashtype> hashes( keycount );
 
-    hashes.resize(keycount);
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     for (int i = 0; i < keycount; i++) {
         hash(nullblock, i, seed, &hashes[i]);
     }
 
     auto keyprint = [&]( hidx_t i ) {
-                hashtype v;
+                hashtype v( 0 );
 
                 hash(nullblock, i, seed, &v);
                 printf("0x%016" PRIx64 "\t%d copies of 0x00\t", g_seed, i);

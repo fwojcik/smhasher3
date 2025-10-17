@@ -73,6 +73,10 @@ static bool CyclicKeyImpl( const HashInfo * hinfo, const seed_t seed, unsigned c
     std::vector<hashtype> hashes( keycount );
     std::vector<uint8_t>  cycles( keycount * cycleLen );
 
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
+
     Rand r( 214586, cycleLen, cycleReps );
     RandSeq rs = r.get_seq(SEQ_DIST_1, cycleLen);
     rs.write(&cycles[0], 0, keycount);
@@ -96,7 +100,7 @@ static bool CyclicKeyImpl( const HashInfo * hinfo, const seed_t seed, unsigned c
 
     auto keyprint = [&]( hidx_t i ) {
                 ExtBlob  xb( &cycles[i * cycleLen], cycleLen );
-                hashtype v;
+                hashtype v( 0 );
 
                 for (unsigned j = 0; j < cycleReps; j++) {
                     memcpy(&key[j * cycleLen], &cycles[i * cycleLen], cycleLen);

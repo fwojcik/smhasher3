@@ -128,6 +128,10 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
     // Reserve memory for the hashes
     std::vector<hashtype> hashes( totaltests );
 
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
+
     // Generate the hashes, test them, and record the results
     if (hinfo->is32BitSeed()) {
         SeedBlockOffsetTest_Impl2<hashtype, blocklen, false>(hinfo, hashes, keylen_min,
@@ -154,7 +158,7 @@ static bool SeedBlockOffsetTest_Impl1( const HashInfo * hinfo, size_t keylen_min
 
                 const HashFn hash = hinfo->hashFn(g_hashEndian);
                 ExtBlob      xb( &buf[0], keylen );
-                hashtype     v;
+                hashtype     v( 0 );
 
                 printf("0x%016" PRIx64 "\t", iseed);
                 spacecnt -= xb.printbytes(NULL);

@@ -85,9 +85,11 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, flags_t flags
 
     //----------
 
-    std::vector<hashtype> hashes;
+    std::vector<hashtype> hashes( totalkeys );
 
-    hashes.resize(totalkeys);
+    if (hinfo->isDoNothing()) {
+        std::fill(hashes.begin(), hashes.end(), 0);
+    }
 
     for (seed_t i = 0; i < (1 << hibits); i++) {
         for (seed_t j = 0; j < (1 << lobits); j++) {
@@ -102,7 +104,7 @@ static bool SeedTestImpl( const HashInfo * hinfo, uint32_t keylen, flags_t flags
                 seed_t   seedhi = i; seedhi >>= lobits; seedhi <<= shiftbits;
                 seed_t   iseed  = seedlo | seedhi;
                 seed_t   hseed  = hinfo->Seed(iseed, HashInfo::SEED_FORCED);
-                hashtype v;
+                hashtype v( 0 );
 
                 printf("0x%016" PRIx64 "\t\"%.*s\"\t", (uint64_t)iseed, keylen, key);
                 hash(key, keylen, hseed, &v);

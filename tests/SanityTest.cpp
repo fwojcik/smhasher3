@@ -235,6 +235,10 @@ bool SanityTest2( const HashInfo * hinfo, flags_t flags ) {
 
     maybeprintf("Running sanity check 2       ");
 
+    memset(hash1, 0, hashbytes);
+    memset(hash2, 0, hashbytes);
+    memset(hash3, 0, hashbytes);
+
     for (int irep = 0; irep < reps; irep++) {
         for (int len = 1; len <= keymax; len++) {
             ExtBlob key1( &buffer1[pad], len );
@@ -419,7 +423,7 @@ static bool ThreadingTest( const HashInfo * hinfo, flags_t flags ) {
     const uint32_t       reps      = 1024 * 16;
     const uint32_t       keybytes  = (reps * reps);
     std::vector<uint8_t> keys( keybytes );
-    std::vector<uint8_t> mainhashes( reps * hashbytes );
+    std::vector<uint8_t> mainhashes( reps * hashbytes, 0 );
     const seed_t         seed = seedthread ? 0 : hinfo->Seed(0x12345, HashInfo::SEED_FORCED, 1);
     bool result = true;
 
@@ -443,7 +447,7 @@ static bool ThreadingTest( const HashInfo * hinfo, flags_t flags ) {
     if (g_NCPU > 1) {
 #if defined(HAVE_THREADS)
         // Compute all the hashes in different random orders in threads
-        std::vector<std::vector<uint8_t>> threadhashes( g_NCPU, std::vector<uint8_t>(reps * hashbytes));
+        std::vector<std::vector<uint8_t>> threadhashes( g_NCPU, std::vector<uint8_t>(reps * hashbytes, 0));
         std::vector<std::thread> t(g_NCPU);
         for (unsigned i = 0; i < g_NCPU; i++) {
             t[i] = std::thread {
@@ -524,7 +528,7 @@ bool AppendedZeroesTest( const HashInfo * hinfo, flags_t flags ) {
         std::vector<std::vector<uint8_t>> hashes;
 
         for (int i = 0; i < 32; i++) {
-            std::vector<uint8_t> h( hashbytes );
+            std::vector<uint8_t> h( hashbytes, 0 );
             hash(key, 32 + i, seed, &h[0]);
             hashes.push_back(h);
             addVCodeOutput(&h[0], hashbytes);
@@ -589,7 +593,7 @@ bool PrependedZeroesTest( const HashInfo * hinfo, flags_t flags ) {
         std::vector<std::vector<uint8_t>> hashes;
 
         for (int i = 0; i < 32; i++) {
-            std::vector<uint8_t> h( hashbytes );
+            std::vector<uint8_t> h( hashbytes, 0 );
             hash(key + 32 - i, 32 + i, seed, &h[0]);
             hashes.push_back(h);
             addVCodeOutput(&h[0], hashbytes);

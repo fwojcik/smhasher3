@@ -74,6 +74,7 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
     const uint64_t xMax = (UINT64_C(1) << Xbits);
     const uint64_t yMax = (UINT64_C(1) << Ybits);
     const HashFn   hash = hinfo->hashFn(g_hashEndian);
+    hashtype       h( 0 );
 
     printf("Generating coordinates from %3i-byte keys - %" PRIu64 " keys\n", inputLen, xMax * yMax);
 
@@ -87,7 +88,6 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
             uint64_t xin = COND_BSWAP(x, isBE());
             memcpy(key, &xin, sizeof(xin));
 
-            hashtype h;
             hash(key, inputLen, seed, &h);
             addVCodeInput(key, inputLen);
             hashes.push_back(h);
@@ -107,7 +107,7 @@ static bool PerlinNoise( int Xbits, int Ybits, int inputLen, int step,
                 xb.printbytes(NULL);
                 printf("\t");
 
-                hashtype v;
+                hashtype v( 0 );
                 hash(key, inputLen, seed, &v);
                 v.printhex(NULL);
             };

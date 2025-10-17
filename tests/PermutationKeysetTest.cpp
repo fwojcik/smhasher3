@@ -63,10 +63,11 @@ static void CombinationKeygenRecurse( uint8_t * key, int len, int maxlen, const 
         uint32_t blocksz, HashFn hash, const seed_t seed, std::vector<hashtype> & hashes ) {
     if (len == maxlen) { return; } // end recursion
 
+    hashtype h( 0 );
+
     for (size_t i = 0; i < blockcount; i++) {
         memcpy(&key[len * blocksz], &blocks[i * blocksz], blocksz);
 
-        hashtype h;
         hash(key, (len + 1) * blocksz, seed, &h);
         addVCodeInput(key, (len + 1) * blocksz);
         hashes.push_back(h);
@@ -151,7 +152,7 @@ static bool CombinationKeyTest( HashFn hash, const seed_t seed, unsigned maxlen,
 
                 ExtBlob  xb( key, curlen * blocksz );
                 uint32_t spacecnt = 3 * maxlen * blocksz + 4;
-                hashtype v;
+                hashtype v( 0 );
 
                 printf("0x%016" PRIx64 "\t", g_seed);
                 spacecnt -= xb.printbytes(NULL);
