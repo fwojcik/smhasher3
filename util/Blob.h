@@ -64,7 +64,7 @@ class Blob {
     //----------
     // constructors
 
-    Blob() { if (_bits != 0) { memset(bytes, 0, _bytes); } }
+    Blob() {}
 
     Blob( const void * p, size_t plen ) {
         plen = std::min(plen, _bytes);
