@@ -71,63 +71,52 @@ static FORCE_INLINE uint64_t a5hash( const void * const Msg0, size_t MsgLen, con
 
     uint64_t Seed1 = UINT64_C(0x243F6A8885A308D3) ^ MsgLen;
     uint64_t Seed2 = UINT64_C(0x452821E638D01377) ^ MsgLen;
-    uint64_t a, b;
 
     a5hash_umul128(Seed2 ^ (UseSeed & val10), Seed1 ^ (UseSeed & val01), &Seed1, &Seed2);
 
-    val10 ^= Seed2;
+    if (MsgLen > 16) {
+        val01 ^= Seed1;
+        val10 ^= Seed2;
 
-    if (MsgLen > 3) {
-        if (MsgLen > 16) {
-            val01 ^= Seed1;
+        do {
+            a5hash_umul128(a5hash_lu64<bswap>(Msg) ^ Seed1, a5hash_lu64<bswap>(Msg + 8) ^ Seed2, &Seed1, &Seed2);
 
-            do {
-                a5hash_umul128(a5hash_lu64<bswap>(Msg) ^ Seed1, a5hash_lu64<bswap>(Msg + 8) ^ Seed2, &Seed1, &Seed2);
+            MsgLen -= 16;
+            Msg    += 16;
 
-                MsgLen -= 16;
-                Msg    += 16;
-
-                Seed1  += val01;
-                Seed2  += val10;
-            } while (MsgLen > 16);
-
-            a = a5hash_lu64<bswap>(Msg + MsgLen - 16);
-            b = a5hash_lu64<bswap>(Msg + MsgLen -  8);
-        } else {
-            const uint8_t * const Msg4 = Msg + MsgLen - 4;
-            const size_t          mo   = MsgLen >> 3;
-
-            a = (uint64_t)a5hash_lu32<bswap>(Msg)          << 32 |
-                    a5hash_lu32<bswap>(Msg4);
-
-            b = (uint64_t)a5hash_lu32<bswap>(Msg + mo * 4) << 32 |
-                    a5hash_lu32<bswap>(Msg4 - mo * 4);
-        }
-
-  _fin:
-        a5hash_umul128(a^ Seed1, b ^ Seed2, &Seed1, &Seed2);
-
-        a5hash_umul128(val01 ^ Seed1, Seed2, &a, &b);
-
-        return a ^ b;
+            Seed1  += val01;
+            Seed2  += val10;
+        } while (MsgLen > 16);
     }
 
-    a = 0;
-    b = 0;
+    const uint8_t * const Msg4 = Msg + MsgLen - 4;
 
-    if (MsgLen != 0) {
-        a = Msg[0];
+    if (MsgLen < 4) {
+        if (MsgLen != 0) {
+            Seed1 ^= Msg[0];
 
-        if (MsgLen != 1) {
-            a |= (uint64_t)Msg[1] << 8;
+            if (MsgLen != 1) {
+                Seed1 ^= (uint64_t)Msg[1] << 8;
 
-            if (MsgLen != 2) {
-                a |= (uint64_t)Msg[2] << 16;
+                if (MsgLen != 2) {
+                    Seed1 ^= (uint64_t)Msg[2] << 16;
+                }
             }
         }
+    } else {
+        const size_t mo = MsgLen >> 3;
+
+        Seed1 ^= (uint64_t)a5hash_lu32<bswap>(Msg)          << 32 |
+            a5hash_lu32<bswap>(Msg4);
+        Seed2 ^= (uint64_t)a5hash_lu32<bswap>(Msg + mo * 4) << 32 |
+            a5hash_lu32<bswap>(Msg4 - mo * 4);
     }
 
-    goto _fin;
+    a5hash_umul128(Seed1, Seed2, &Seed1, &Seed2);
+
+    a5hash_umul128(val01 ^ Seed1, Seed2, &Seed1, &Seed2);
+
+    return Seed1 ^ Seed2;
 }
 
 //------------------------------------------------------------
@@ -224,8 +213,8 @@ static FORCE_INLINE uint32_t a5hash32( const void * const Msg0, size_t MsgLen, c
     a5hash_umul64(c + Seed3, d + Seed4, &Seed3, &Seed4);
 
   _fin:
-    Seed1 ^= Seed3;
-    Seed2 ^= Seed4;
+    Seed1 ^= Seed4;
+    Seed2 ^= Seed3;
 
     a5hash_umul64(a + Seed1, b + Seed2, &Seed1, &Seed2);
 
@@ -236,7 +225,7 @@ static FORCE_INLINE uint32_t a5hash32( const void * const Msg0, size_t MsgLen, c
 
 //------------------------------------------------------------
 // 128-bit hash function
-template <bool bswap>
+template <bool bswap, bool truncate>
 static FORCE_INLINE uint64_t a5hash128( const void * const Msg0, size_t MsgLen,
         const uint64_t UseSeed, void * const rh ) {
     const uint8_t * Msg = (const uint8_t *)Msg0;
@@ -275,10 +264,12 @@ static FORCE_INLINE uint64_t a5hash128( const void * const Msg0, size_t MsgLen,
 
             a ^= b;
 
-            a5hash_umul128(Seed1 ^ Seed3, Seed2 ^ Seed4, &Seed3, &Seed4);
+            if (!truncate) {
+                a5hash_umul128(Seed1 ^ Seed4, Seed2 ^ Seed3, &Seed3, &Seed4);
 
-            Seed3 ^= Seed4;
-            memcpy(rh, &Seed3, 8);
+                Seed3 ^= Seed4;
+                memcpy(rh, &Seed3, 8);
+            }
 
             return a;
         } else {
@@ -311,8 +302,8 @@ static FORCE_INLINE uint64_t a5hash128( const void * const Msg0, size_t MsgLen,
         a5hash_umul128(c + Seed3, d + Seed4, &Seed3, &Seed4);
 
   _fin:
-        Seed1 ^= Seed3;
-        Seed2 ^= Seed4;
+        Seed1 ^= Seed4;
+        Seed2 ^= Seed3;
 
         a5hash_umul128(a + Seed1, b + Seed2, &Seed1, &Seed2);
 
@@ -320,10 +311,12 @@ static FORCE_INLINE uint64_t a5hash128( const void * const Msg0, size_t MsgLen,
 
         a ^= b;
 
-        a5hash_umul128(Seed1 ^ Seed3, Seed2 ^ Seed4, &Seed3, &Seed4);
+        if (!truncate) {
+            a5hash_umul128(Seed1 ^ Seed4, Seed2 ^ Seed3, &Seed3, &Seed4);
 
-        Seed3 ^= Seed4;
-        memcpy(rh, &Seed3, 8);
+            Seed3 ^= Seed4;
+            memcpy(rh, &Seed3, 8);
+        }
 
         return a;
     } else {
@@ -368,10 +361,10 @@ static FORCE_INLINE uint64_t a5hash128( const void * const Msg0, size_t MsgLen,
                 Seed8  += val10;
             } while (MsgLen > 64);
 
-            Seed1 ^= Seed5;
-            Seed2 ^= Seed6;
-            Seed3 ^= Seed7;
-            Seed4 ^= Seed8;
+            Seed1 ^= Seed6;
+            Seed2 ^= Seed5;
+            Seed3 ^= Seed8;
+            Seed4 ^= Seed7;
 
             if (MsgLen > 32) {
                 goto _tail32;
@@ -428,10 +421,17 @@ static void a5hash_32( const void * in, const size_t len, const seed_t seed, voi
 template <bool bswap>
 static void a5hash_128( const void * in, const size_t len, const seed_t seed, void * out ) {
     uint64_t hashH;
-    uint64_t hashL = a5hash128<bswap>(in, len, (uint64_t)seed, &hashH);
+    uint64_t hashL = a5hash128<bswap, false>(in, len, (uint64_t)seed, &hashH);
 
     PUT_U64<bswap>(hashL, (uint8_t *)out, 0);
     PUT_U64<bswap>(hashH, (uint8_t *)out, 8);
+}
+
+template <bool bswap>
+static void a5hash_128_64( const void * in, const size_t len, const seed_t seed, void * out ) {
+    uint64_t hashL = a5hash128<bswap, true>(in, len, (uint64_t)seed, NULL);
+
+    PUT_U64<bswap>(hashL, (uint8_t *)out, 0);
 }
 
 //------------------------------------------------------------
@@ -441,7 +441,7 @@ REGISTER_FAMILY(a5hash,
 );
 
 REGISTER_HASH(a5hash,
-   $.desc       = "a5hash v5.16, 64-bit version",
+   $.desc       = "a5hash v5.19, 64-bit version",
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
@@ -449,14 +449,14 @@ REGISTER_HASH(a5hash,
          FLAG_IMPL_MULTIPLY          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 64,
-   $.verification_LE = 0xBF40CAE1,
-   $.verification_BE = 0x36B35AD3,
+   $.verification_LE = 0x84490DB0,
+   $.verification_BE = 0x11A303D0,
    $.hashfn_native   = a5hash_64<false>,
    $.hashfn_bswap    = a5hash_64<true>
 );
 
 REGISTER_HASH(a5hash_32,
-   $.desc       = "a5hash v5.16, 32-bit version",
+   $.desc       = "a5hash v5.19, 32-bit version",
    $.hash_flags =
          FLAG_HASH_SMALL_SEED        |
          FLAG_HASH_ENDIAN_INDEPENDENT,
@@ -465,14 +465,14 @@ REGISTER_HASH(a5hash_32,
          FLAG_IMPL_MULTIPLY          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 32,
-   $.verification_LE = 0xA948D11B,
-   $.verification_BE = 0x9C6196A0,
+   $.verification_LE = 0xDDC08A03,
+   $.verification_BE = 0x2F3D6938,
    $.hashfn_native   = a5hash_32<false>,
    $.hashfn_bswap    = a5hash_32<true>
 );
 
 REGISTER_HASH(a5hash_128,
-   $.desc       = "a5hash v5.16, 128-bit version",
+   $.desc       = "a5hash v5.19, 128-bit version",
    $.hash_flags =
          FLAG_HASH_ENDIAN_INDEPENDENT,
    $.impl_flags =
@@ -480,8 +480,23 @@ REGISTER_HASH(a5hash_128,
          FLAG_IMPL_MULTIPLY          |
          FLAG_IMPL_LICENSE_MIT,
    $.bits = 128,
-   $.verification_LE = 0x5BABA4E1,
-   $.verification_BE = 0x890F41CB,
+   $.verification_LE = 0x5A42AB03,
+   $.verification_BE = 0xFEFBE2D2,
    $.hashfn_native   = a5hash_128<false>,
    $.hashfn_bswap    = a5hash_128<true>
+);
+
+REGISTER_HASH(a5hash_128__64,
+   $.desc       = "a5hash v5.19, 128-bit version, 64-bit truncated (rh==NULL)",
+   $.hash_flags =
+         FLAG_HASH_ENDIAN_INDEPENDENT,
+   $.impl_flags =
+         FLAG_IMPL_CANONICAL_LE      |
+         FLAG_IMPL_MULTIPLY          |
+         FLAG_IMPL_LICENSE_MIT,
+   $.bits = 64,
+   $.verification_LE = 0x87446381,
+   $.verification_BE = 0x9247470D,
+   $.hashfn_native   = a5hash_128_64<false>,
+   $.hashfn_bswap    = a5hash_128_64<true>
 );
