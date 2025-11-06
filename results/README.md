@@ -10,18 +10,19 @@ Hashes that currently pass all tests, sorted by average short input speed.
 
 | Hash name | output width | test count | Avg. cycles (1-32 bytes) | Avg. bytes/cycle (bulk) |
 |:----------|-------------:|-----------:|-------------------------:|------------------------:|
-| [a5hash-32](raw/a5hash-32.txt) | 32 | 250 |  24.84 |   2.38|
+| [a5hash-32](raw/a5hash-32.txt) | 32 | 250 |  25.84 |   2.36|
 | [MuseAir.bfast](raw/MuseAir.bfast.txt) | 64 | 250 |  26.28 |   8.64|
-| [a5hash](raw/a5hash.txt) | 64 | 250 |  27.45 |   2.62|
+| [a5hash-128.64](raw/a5hash-128.64.txt) | 64 | 250 |  26.48 |   6.93|
 | [MuseAir](raw/MuseAir.txt) | 64 | 250 |  28.45 |   7.19|
+| [a5hash](raw/a5hash.txt) | 64 | 250 |  28.59 |   2.59|
 | [rust-ahash-fb](raw/rust-ahash-fb.txt) | 64 | 250 |  29.14 |   4.52|
 | [rapidhash-nano](raw/rapidhash-nano.txt) | 64 | 250 |  29.83 |   6.98|
-| [a5hash-128](raw/a5hash-128.txt) | 128 | 250 |  30.11 |   6.93|
 | [rapidhash-micro](raw/rapidhash-micro.txt) | 64 | 250 |  30.21 |   7.94|
 | [rapidhash](raw/rapidhash.txt) | 64 | 250 |  30.41 |   8.82|
 | [MuseAir-128](raw/MuseAir-128.txt) | 128 | 250 |  30.97 |   7.15|
 | [MuseAir-128.bfast](raw/MuseAir-128.bfast.txt) | 128 | 250 |  30.97 |   8.18|
 | [rust-ahash-fb.nofold](raw/rust-ahash-fb.nofold.txt) | 64 | 250 |  31.01 |   3.46|
+| [a5hash-128](raw/a5hash-128.txt) | 128 | 250 |  31.18 |   6.93|
 | [rapidhash-nano.protected](raw/rapidhash-nano.protected.txt) | 64 | 250 |  31.36 |   5.69|
 | [rapidhash.protected](raw/rapidhash.protected.txt) | 64 | 250 |  31.98 |   6.58|
 | [rapidhash-micro.protected](raw/rapidhash-micro.protected.txt) | 64 | 250 |  31.99 |   6.47|
@@ -539,4 +540,4 @@ Hashes that fail Sanity tests, sorted by failing tests and then average short in
 | [donothingOAAT-32](raw/donothingOAAT-32.txt) | 32 | 249 | 250 |  39.10 |   3.41|
 | [donothingOAAT-64](raw/donothingOAAT-64.txt) | 64 | 249 | 250 |  39.22 |   3.40|
 
-All results were generated using: SMHasher3 20251015-release-5035a923
+All results were generated using SMHasher3 20251015-release-5035a923 or 20251106-release-12-0d8e1364
