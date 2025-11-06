@@ -132,9 +132,9 @@ awk -F'\t' '$3!="pass"               {print}' ${TMPDIR}/joined.t |
     sed 's/^/| /'                                                |
     sed 's/$/|/'
 
-VERS=`cat VERSION.TXT`
+VERS=`cat VERSION.TXT | xargs | sed 's/ / or /g'`
 
 cat <<EOF
 
-All results were generated using: $VERS
+All results were generated using SMHasher3 $VERS
 EOF
